@@ -1,0 +1,765 @@
+<html lang="en" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Agronomist Control</title>
+    <style vid="5">
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:wght@400;500&display=swap');
+
+        :root {
+            
+            --bg-color: #fcfcfc;
+            --surface-color: #ffffff;
+            --primary-color: #4a5c48; 
+            --primary-hover: #3d4c3b;
+            --text-main: #3a3a3a; 
+            --text-muted: #7a7a7a;
+            --text-light: #ffffff;
+            --line-color: #3a3a3a;
+            --border-light: #e0e0e0;
+            
+            
+            --accent-red: #8c4a4a; 
+            --accent-yellow: #d1b87a; 
+
+            
+            --font-display: 'Playfair Display', Georgia, serif;
+            --font-body: 'Lora', 'Times New Roman', serif;
+            
+            --tracking-wide: 0.25em;
+            --tracking-medium: 0.1em;
+
+            
+            --radius: 0px; 
+            --border-thin: 1px solid var(--line-color);
+            --border-faint: 1px solid var(--border-light);
+
+            
+            --sp-xs: 4px;
+            --sp-sm: 8px;
+            --sp-md: 16px;
+            --sp-lg: 32px;
+            --sp-xl: 64px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        
+        h1, h2, h3, .nav-link, .btn {
+            font-family: var(--font-display);
+            font-weight: 400;
+        }
+
+        .text-upper-spaced {
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wide);
+            font-size: 0.85rem;
+        }
+
+        .text-lower-spaced {
+            text-transform: lowercase;
+            letter-spacing: var(--tracking-medium);
+        }
+
+        .meta-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 1440px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--sp-lg) var(--sp-xl);
+            border-bottom: var(--border-thin);
+            background: var(--surface-color);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            letter-spacing: var(--tracking-medium);
+            position: relative;
+            padding-left: 40px;
+        }
+
+        
+        .logo::before {
+            content: '';
+            position: absolute;
+            left: -100px; 
+            top: 50%;
+            width: 130px;
+            height: 1px;
+            background-color: var(--line-color);
+        }
+        .logo::after {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: calc(50% - 2.5px);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%; 
+            background-color: var(--line-color);
+        }
+
+        nav {
+            display: flex;
+            gap: var(--sp-lg);
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: color 0.2s ease;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-main);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: var(--sp-xl);
+            display: none; 
+            animation: fadeIn 0.4s ease;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-radius: var(--radius);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: var(--border-thin);
+        }
+        .btn-outline:hover {
+            background: var(--bg-color);
+        }
+
+        .block-header {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: var(--sp-md) var(--sp-lg);
+            margin-bottom: var(--sp-lg);
+            display: inline-block; 
+        }
+
+        .block-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        
+        .form-group {
+            margin-bottom: var(--sp-lg);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--sp-xs);
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: var(--border-thin);
+            background-color: transparent;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--text-main);
+            border-radius: var(--radius);
+            appearance: none; 
+        }
+        
+        select {
+            background-image: linear-gradient(45deg, transparent 50%, var(--text-main) 50%), linear-gradient(135deg, var(--text-main) 50%, transparent 50%);
+            background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: inset 0 0 0 1px var(--primary-color);
+        }
+
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--sp-md);
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: var(--border-faint);
+        }
+
+        th {
+            font-family: var(--font-display);
+            font-weight: normal;
+            color: var(--text-muted);
+            border-bottom: var(--border-thin);
+        }
+
+        
+
+        
+        #view-login {
+            display: flex;
+            height: calc(100vh - 80px); 
+            padding: 0;
+        }
+
+        .login-image-area {
+            flex: 1;
+            background-color: var(--primary-color);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        
+        .login-image-area::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(45deg, #00000010 25%, transparent 25%, transparent 75%, #00000010 75%, #00000010), repeating-linear-gradient(45deg, #00000010 25%, transparent 25%, transparent 75%, #00000010 75%, #00000010);
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+            opacity: 0.3;
+        }
+
+        .login-text-overlay {
+            position: relative;
+            z-index: 1;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .login-form-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            padding: var(--sp-xl);
+            border: var(--border-thin);
+            background: var(--surface-color);
+        }
+
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: var(--sp-xl);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: var(--sp-lg);
+            border-bottom: var(--border-thin);
+            padding-bottom: var(--sp-sm);
+        }
+
+        
+        .weather-widget {
+            border: var(--border-thin);
+            padding: var(--sp-md);
+            background: var(--surface-color);
+        }
+
+        .weather-title {
+            margin-bottom: var(--sp-md);
+            border-bottom: var(--border-faint);
+            padding-bottom: var(--sp-xs);
+        }
+
+        .weather-days {
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-md);
+        }
+
+        .weather-day {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        
+        .weather-date-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            line-height: 1.1;
+            border-right: 1px solid var(--border-light);
+            padding-right: 12px;
+        }
+
+        .weather-icon-placeholder {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .weather-icon-placeholder svg {
+            width: 100%;
+            height: 100%;
+            stroke: var(--text-main);
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        .weather-temp {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+        }
+
+        
+        .task-form-container {
+            max-width: 600px;
+            border: var(--border-thin);
+            padding: var(--sp-xl);
+            background: var(--surface-color);
+        }
+
+        
+        .reports-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: var(--sp-xl);
+        }
+
+        .chart-container {
+            border: var(--border-thin);
+            padding: var(--sp-xl);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--surface-color);
+        }
+
+        
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--accent-red) 0% 25%,      
+                var(--text-muted) 25% 65%,     
+                var(--accent-yellow) 65% 100%  
+            );
+            margin-bottom: var(--sp-lg);
+            border: 1px solid var(--surface-color); 
+            box-shadow: 0 0 0 1px var(--line-color);
+        }
+
+        .chart-legend {
+            width: 100%;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--sp-sm);
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 12px;
+            border-radius: 0; 
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .reports-table-container {
+            border: var(--border-thin);
+            padding: var(--sp-lg);
+            background: var(--surface-color);
+        }
+
+    </style>
+</head>
+<body vid="6">
+
+    <div class="app-container" vid="7">
+        
+        <header id="app-header" style="display: none;" vid="8">
+            <div class="logo text-upper-spaced" vid="9">Agro / Control</div>
+            <nav vid="10">
+                <a class="nav-link text-lower-spaced active" onclick="switchView('dashboard')" vid="11">dashboard</a>
+                <a class="nav-link text-lower-spaced" onclick="switchView('task')" vid="12">tasks</a>
+                <a class="nav-link text-lower-spaced" onclick="switchView('reports')" vid="13">reports</a>
+                <a class="nav-link text-lower-spaced" onclick="switchView('login')" style="margin-left: 24px; color: var(--primary-color);" vid="14">logout</a>
+            </nav>
+        </header>
+
+        
+        <main id="view-login" class="main-content active" style="padding: 0;" vid="15">
+            <div class="login-image-area" vid="16">
+                <div class="login-text-overlay" vid="17">
+                    <h1 class="text-upper-spaced" style="font-size: 2.5rem; letter-spacing: 0.3em; margin-bottom: 16px;" vid="18">
+                        P l a y<br vid="19">w i t h<br vid="20">n a t u r e
+                    </h1>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 32px;" vid="21">
+                        <span style="height: 1px; width: 40px; background: white;" vid="22"></span>
+                        <span class="meta-text" style="color: white;" vid="23">System Access</span>
+                    </div>
+                </div>
+            </div>
+            <div class="login-form-area" vid="24">
+                <div class="login-box" vid="25">
+                    <h2 class="text-upper-spaced" style="margin-bottom: 32px; border-bottom: var(--border-thin); padding-bottom: 16px;" vid="26">Agronomist Login</h2>
+                    <div class="form-group" vid="27">
+                        <label vid="28">Operator ID</label>
+                        <input type="text" value="AGRO-01" vid="29">
+                    </div>
+                    <div class="form-group" vid="30">
+                        <label vid="31">Passcode</label>
+                        <input type="password" value="••••••••" vid="32">
+                    </div>
+                    <button class="btn text-upper-spaced" style="width: 100%; margin-top: 16px;" onclick="login()" vid="33">Enter System</button>
+                </div>
+            </div>
+        </main>
+
+        
+        <main id="view-dashboard" class="main-content" vid="34">
+            <div class="dashboard-header" vid="35">
+                <div vid="36">
+                    <div class="block-header text-upper-spaced" vid="37">
+                        <h2 vid="38">F i e l d <br vid="39"> O v e r v i e w</h2>
+                    </div>
+                    <p class="meta-text" style="margin-top: -8px;" vid="40">Current Status: Active Season</p>
+                </div>
+                <button class="btn text-upper-spaced" onclick="switchView('task')" vid="41">Create Task</button>
+            </div>
+
+            <div class="dashboard-grid" vid="42">
+                
+                <div vid="43">
+                    <table vid="44">
+                        <thead vid="45">
+                            <tr vid="46">
+                                <th class="text-upper-spaced" vid="47">Field ID</th>
+                                <th class="text-upper-spaced" vid="48">Crop</th>
+                                <th class="text-upper-spaced" vid="49">Area (ha)</th>
+                                <th class="text-upper-spaced" vid="50">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody vid="51">
+                            <tr vid="52">
+                                <td vid="53">Field #1</td>
+                                <td vid="54">Winter Wheat</td>
+                                <td vid="55">120.5</td>
+                                <td vid="56"><span style="color: var(--primary-color);" vid="57">●</span> Seeding</td>
+                            </tr>
+                            <tr vid="58">
+                                <td vid="59">Field #2</td>
+                                <td vid="60">Corn</td>
+                                <td vid="61">85.0</td>
+                                <td vid="62"><span style="color: var(--text-muted);" vid="63">●</span> Prepared</td>
+                            </tr>
+                            <tr vid="64">
+                                <td vid="65">Field #3</td>
+                                <td vid="66">Soybeans</td>
+                                <td vid="67">210.0</td>
+                                <td vid="68"><span style="color: var(--text-muted);" vid="69">●</span> Fallow</td>
+                            </tr>
+                            <tr vid="70">
+                                <td vid="71">Field #4</td>
+                                <td vid="72">Winter Wheat</td>
+                                <td vid="73">95.2</td>
+                                <td vid="74"><span style="color: var(--primary-color);" vid="75">●</span> Active Work</td>
+                            </tr>
+                            <tr vid="76">
+                                <td vid="77">Field #5</td>
+                                <td vid="78">Sunflowers</td>
+                                <td vid="79">150.0</td>
+                                <td vid="80"><span style="color: var(--accent-red);" vid="81">●</span> Downtime</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                
+                <aside vid="82">
+                    <div class="weather-widget" vid="83">
+                        <h3 class="weather-title text-upper-spaced" vid="84">Forecast</h3>
+                        <div class="weather-days" vid="85">
+                            
+                            <div class="weather-day" vid="86">
+                                <div class="weather-date-stack" vid="87">
+                                    <span vid="88">24</span><span vid="89">04</span>
+                                </div>
+                                <div class="weather-icon-placeholder" title="Sun" vid="90">
+                                    <svg viewBox="0 0 24 24" vid="91"><circle cx="12" cy="12" r="5" vid="92"></circle><line x1="12" y1="1" x2="12" y2="3" vid="93"></line><line x1="12" y1="21" x2="12" y2="23" vid="94"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" vid="95"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" vid="96"></line><line x1="1" y1="12" x2="3" y2="12" vid="97"></line><line x1="21" y1="12" x2="23" y2="12" vid="98"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" vid="99"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" vid="100"></line></svg>
+                                </div>
+                                <span class="weather-temp" vid="101">18°</span>
+                            </div>
+                            <div style="height: 1px; background: var(--border-light);" vid="102"></div>
+                            
+                            <div class="weather-day" vid="103">
+                                <div class="weather-date-stack" vid="104">
+                                    <span vid="105">25</span><span vid="106">04</span>
+                                </div>
+                                <div class="weather-icon-placeholder" title="Rain" vid="107">
+                                    <svg viewBox="0 0 24 24" vid="108"><line x1="16" y1="13" x2="16" y2="21" vid="109"></line><line x1="8" y1="13" x2="8" y2="21" vid="110"></line><line x1="12" y1="15" x2="12" y2="23" vid="111"></line><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" vid="112"></path></svg>
+                                </div>
+                                <span class="weather-temp" vid="113">14°</span>
+                            </div>
+                            <div style="height: 1px; background: var(--border-light);" vid="114"></div>
+                            
+                            <div class="weather-day" vid="115">
+                                <div class="weather-date-stack" vid="116">
+                                    <span vid="117">26</span><span vid="118">04</span>
+                                </div>
+                                <div class="weather-icon-placeholder" title="Wind" vid="119">
+                                    <svg viewBox="0 0 24 24" vid="120"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" vid="121"></path></svg>
+                                </div>
+                                <span class="weather-temp" vid="122">16°</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        
+        <main id="view-task" class="main-content" vid="123">
+            <div class="block-header text-upper-spaced" style="margin-bottom: var(--sp-xl);" vid="124">
+                <h2 vid="125">C r e a t e <br vid="126"> T a s k</h2>
+            </div>
+
+            <div class="task-form-container" vid="127">
+                <div class="form-group" vid="128">
+                    <label class="text-upper-spaced" vid="129">Assign Operator</label>
+                    <select vid="130">
+                        <option vid="131">Select Employee...</option>
+                        <option vid="132">John Smith (Tractor A)</option>
+                        <option vid="133">Maria Garcia (Harvester)</option>
+                        <option vid="134">David Chen (Sprayer)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" vid="135">
+                    <label class="text-upper-spaced" vid="136">Target Field</label>
+                    <select vid="137">
+                        <option vid="138">Select Field...</option>
+                        <option vid="139">Field #1 (Winter Wheat)</option>
+                        <option vid="140">Field #2 (Corn)</option>
+                        <option vid="141">Field #3 (Soybeans)</option>
+                        <option vid="142">Field #4 (Winter Wheat)</option>
+                        <option vid="143">Field #5 (Sunflowers)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" vid="144">
+                    <label class="text-upper-spaced" vid="145">Work Type</label>
+                    <select vid="146">
+                        <option vid="147">Select Operation...</option>
+                        <option vid="148">Plowing</option>
+                        <option vid="149">Seeding</option>
+                        <option vid="150">Fertilizing</option>
+                        <option vid="151">Harvesting</option>
+                    </select>
+                </div>
+
+                <div class="form-group" vid="152">
+                    <label class="text-upper-spaced" vid="153">Volume (Hectares)</label>
+                    <input type="number" placeholder="Enter planned volume" vid="154">
+                </div>
+
+                <div style="display: flex; gap: 16px; margin-top: 32px; padding-top: 24px; border-top: var(--border-thin);" vid="155">
+                    <button class="btn text-upper-spaced" onclick="switchView('dashboard')" vid="156">Dispatch Task</button>
+                    <button class="btn btn-outline text-upper-spaced" onclick="switchView('dashboard')" vid="157">Cancel</button>
+                </div>
+            </div>
+        </main>
+
+        
+        <main id="view-reports" class="main-content" vid="158">
+            <div class="block-header text-upper-spaced" style="margin-bottom: var(--sp-xl);" vid="159">
+                <h2 vid="160">P e r f o r m a n c e <br vid="161"> R e p o r t s</h2>
+            </div>
+
+            <div class="reports-grid" vid="162">
+                
+                <div class="chart-container" vid="163">
+                    <h3 class="text-upper-spaced" style="margin-bottom: var(--sp-lg); border-bottom: var(--border-thin); padding-bottom: 8px; width: 100%; text-align: center;" vid="164">Downtime Reasons</h3>
+                    <div class="pie-chart" vid="165"></div>
+                    <div class="chart-legend" vid="166">
+                        <div class="legend-item" vid="167">
+                            <div class="legend-color" style="background-color: var(--accent-red);" vid="168"></div>
+                            <span vid="169">Equipment Breakdown (25%)</span>
+                        </div>
+                        <div class="legend-item" vid="170">
+                            <div class="legend-color" style="background-color: var(--text-muted);" vid="171"></div>
+                            <span vid="172">Weather / Rain (40%)</span>
+                        </div>
+                        <div class="legend-item" vid="173">
+                            <div class="legend-color" style="background-color: var(--accent-yellow);" vid="174"></div>
+                            <span vid="175">Logistics / No Fuel (35%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="reports-table-container" vid="176">
+                    <h3 class="text-upper-spaced" style="margin-bottom: var(--sp-md);" vid="177">Actual vs Plan by Operator</h3>
+                    <table vid="178">
+                        <thead vid="179">
+                            <tr vid="180">
+                                <th class="text-upper-spaced" vid="181">Operator</th>
+                                <th class="text-upper-spaced" vid="182">Task</th>
+                                <th class="text-upper-spaced" vid="183">Plan (ha)</th>
+                                <th class="text-upper-spaced" vid="184">Actual (ha)</th>
+                                <th class="text-upper-spaced" vid="185">Variance</th>
+                            </tr>
+                        </thead>
+                        <tbody vid="186">
+                            <tr vid="187">
+                                <td vid="188">John Smith</td>
+                                <td vid="189">Plowing</td>
+                                <td vid="190">50.0</td>
+                                <td vid="191">48.5</td>
+                                <td style="color: var(--accent-red);" vid="192">-3%</td>
+                            </tr>
+                            <tr vid="193">
+                                <td vid="194">Maria Garcia</td>
+                                <td vid="195">Seeding</td>
+                                <td vid="196">120.0</td>
+                                <td vid="197">125.0</td>
+                                <td style="color: var(--primary-color);" vid="198">+4%</td>
+                            </tr>
+                            <tr vid="199">
+                                <td vid="200">David Chen</td>
+                                <td vid="201">Fertilizing</td>
+                                <td vid="202">80.0</td>
+                                <td vid="203">80.0</td>
+                                <td style="color: var(--text-muted);" vid="204">0%</td>
+                            </tr>
+                            <tr vid="205">
+                                <td vid="206">Alex Weaver</td>
+                                <td vid="207">Harvesting</td>
+                                <td vid="208">45.0</td>
+                                <td vid="209">30.0</td>
+                                <td style="color: var(--accent-red);" vid="210">-33%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script vid="211">
+        function switchView(viewId) {
+            
+            document.querySelectorAll('.main-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            
+            document.getElementById('view-' + viewId).classList.add('active');
+
+            
+            const header = document.getElementById('app-header');
+            if(viewId === 'login') {
+                header.style.display = 'none';
+            } else {
+                header.style.display = 'flex';
+            }
+
+            
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('active');
+                if(el.getAttribute('onclick').includes(viewId)) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        
+        function login() {
+            switchView('dashboard');
+        }
+    </script>
+
+</body></html>

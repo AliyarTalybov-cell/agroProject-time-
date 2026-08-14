@@ -1,0 +1,400 @@
+<html lang="ru" vid="0"><head vid="1">
+<meta charset="UTF-8" vid="2">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+<title vid="4">Аналитика простоев техники</title>
+<style vid="5">
+  :root {
+    
+    --clr-brand-dark: #164D33;    
+    --clr-brand-light: #E7EFEA;   
+    --clr-accent-green: #22C55E;  
+    
+    --clr-bg-body: #F3F4F6;
+    --clr-bg-panel: #FFFFFF;
+    
+    --clr-text-primary: #111827;  
+    --clr-text-secondary: #6B7280;
+    --clr-text-inverse: #FFFFFF;  
+    
+    --clr-border: #E5E7EB;        
+    --clr-border-light: #F3F4F6;  
+
+    --radius-panel: 12px;         
+    --radius-badge: 4px;          
+    
+    --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--clr-bg-body);
+    color: var(--clr-text-primary);
+    line-height: 1.5;
+    padding: 32px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  
+  .dashboard-header {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--clr-text-primary);
+  }
+
+  .grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  
+  .panel {
+    background-color: var(--clr-bg-panel);
+    border-radius: var(--radius-panel);
+    border: 1px solid var(--clr-border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    overflow: hidden; 
+  }
+
+  
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  
+  thead {
+    background-color: var(--clr-brand-dark);
+  }
+
+  th {
+    padding: 16px 20px;
+    color: var(--clr-text-inverse);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  th:first-child { padding-left: 24px; }
+  th:last-child { padding-right: 24px; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--clr-border-light);
+    transition: background-color 0.15s ease;
+  }
+
+  tbody tr:hover {
+    background-color: #F9FAFB;
+  }
+
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  td {
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--clr-text-primary);
+    vertical-align: middle;
+  }
+
+  td:first-child { padding-left: 24px; }
+  td:last-child { padding-right: 24px; }
+
+  
+  .cell-employee {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+  }
+
+  
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--clr-brand-dark);
+    color: var(--clr-text-inverse);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  
+  .avatar.alt {
+    background-color: var(--clr-brand-light);
+    color: var(--clr-brand-dark);
+  }
+
+  .cell-time {
+    font-variant-numeric: tabular-nums;
+    color: var(--clr-text-secondary);
+  }
+
+  .cell-duration {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+
+  
+  .reason-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 4px 0;
+  }
+
+  .reason-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  
+  .chart-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chart-panel h2 {
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    margin-bottom: 32px;
+    color: var(--clr-text-primary);
+  }
+
+  
+  .pie-chart {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    
+    background: conic-gradient(
+      var(--clr-brand-dark) 0% 40%,
+      var(--clr-accent-green) 40% 70%,
+      var(--clr-brand-light) 70% 100%
+    );
+    margin-bottom: 32px;
+    
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+  }
+
+  .legend {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--clr-text-secondary);
+  }
+
+  .legend-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .legend-value {
+    font-weight: 500;
+    color: var(--clr-text-primary);
+  }
+
+  
+  .bg-breakdown { background-color: var(--clr-brand-dark); }
+  .bg-rain { background-color: var(--clr-accent-green); }
+  .bg-fuel { background-color: var(--clr-brand-light); }
+
+</style>
+</head>
+<body vid="6">
+
+  <header class="dashboard-header" vid="7">
+    <h1 vid="8">Аналитика простоев техники</h1>
+  </header>
+
+  <main class="grid-layout" vid="9">
+    
+    
+    <section class="panel" vid="10">
+      <div class="table-wrapper" vid="11">
+        <table vid="12">
+          <thead vid="13">
+            <tr vid="14">
+              <th vid="15">Сотрудник</th>
+              <th vid="16">Причина простоя</th>
+              <th vid="17">Начало</th>
+              <th vid="18">Конец</th>
+              <th vid="19">Длительность</th>
+            </tr>
+          </thead>
+          <tbody vid="20">
+            <tr vid="21">
+              <td class="cell-employee" vid="22">
+                <div class="avatar" vid="23">ИП</div>
+                Иван Петров
+              </td>
+              <td vid="24">
+                <div class="reason-badge" vid="25">
+                  <span class="reason-dot bg-breakdown" vid="26"></span>
+                  Поломка узла
+                </div>
+              </td>
+              <td class="cell-time" vid="27">08:15</td>
+              <td class="cell-time" vid="28">11:45</td>
+              <td class="cell-duration" vid="29">3 ч 30 мин</td>
+            </tr>
+            <tr vid="30">
+              <td class="cell-employee" vid="31">
+                <div class="avatar alt" vid="32">АС</div>
+                Алексей Смирнов
+              </td>
+              <td vid="33">
+                <div class="reason-badge" vid="34">
+                  <span class="reason-dot bg-rain" vid="35"></span>
+                  Сильный дождь
+                </div>
+              </td>
+              <td class="cell-time" vid="36">13:00</td>
+              <td class="cell-time" vid="37">15:00</td>
+              <td class="cell-duration" vid="38">2 ч 00 мин</td>
+            </tr>
+            <tr vid="39">
+              <td class="cell-employee" vid="40">
+                <div class="avatar" vid="41">МВ</div>
+                Михаил Волков
+              </td>
+              <td vid="42">
+                <div class="reason-badge" vid="43">
+                  <span class="reason-dot bg-fuel" vid="44"></span>
+                  Дозаправка ГСМ
+                </div>
+              </td>
+              <td class="cell-time" vid="45">10:30</td>
+              <td class="cell-time" vid="46">11:15</td>
+              <td class="cell-duration" vid="47">45 мин</td>
+            </tr>
+            <tr vid="48">
+              <td class="cell-employee" vid="49">
+                <div class="avatar" vid="50">ДН</div>
+                Дмитрий Новиков
+              </td>
+              <td vid="51">
+                <div class="reason-badge" vid="52">
+                  <span class="reason-dot bg-breakdown" vid="53"></span>
+                  Замена ремня
+                </div>
+              </td>
+              <td class="cell-time" vid="54">14:20</td>
+              <td class="cell-time" vid="55">16:50</td>
+              <td class="cell-duration" vid="56">2 ч 30 мин</td>
+            </tr>
+            <tr vid="57">
+              <td class="cell-employee" vid="58">
+                <div class="avatar alt" vid="59">СИ</div>
+                Сергей Иванов
+              </td>
+              <td vid="60">
+                <div class="reason-badge" vid="61">
+                  <span class="reason-dot bg-rain" vid="62"></span>
+                  Сильный дождь
+                </div>
+              </td>
+              <td class="cell-time" vid="63">13:00</td>
+              <td class="cell-time" vid="64">14:45</td>
+              <td class="cell-duration" vid="65">1 ч 45 мин</td>
+            </tr>
+             <tr vid="66">
+              <td class="cell-employee" vid="67">
+                <div class="avatar" vid="68">ПМ</div>
+                Павел Морозов
+              </td>
+              <td vid="69">
+                <div class="reason-badge" vid="70">
+                  <span class="reason-dot bg-fuel" vid="71"></span>
+                  Ожидание топлива
+                </div>
+              </td>
+              <td class="cell-time" vid="72">09:00</td>
+              <td class="cell-time" vid="73">10:20</td>
+              <td class="cell-duration" vid="74">1 ч 20 мин</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    
+    <aside class="panel chart-panel" vid="75">
+      <h2 vid="76">Распределение причин</h2>
+      
+      <div class="pie-chart" vid="77"></div>
+      
+      <div class="legend" vid="78">
+        <div class="legend-item" vid="79">
+          <div class="legend-label" vid="80">
+            <span class="legend-color bg-breakdown" vid="81"></span>
+            <span vid="82">Поломки техники</span>
+          </div>
+          <span class="legend-value" vid="83">40%</span>
+        </div>
+        
+        <div class="legend-item" vid="84">
+          <div class="legend-label" vid="85">
+            <span class="legend-color bg-rain" vid="86"></span>
+            <span vid="87">Погодные условия (дождь)</span>
+          </div>
+          <span class="legend-value" vid="88">30%</span>
+        </div>
+        
+        <div class="legend-item" vid="89">
+          <div class="legend-label" vid="90">
+            <span class="legend-color bg-fuel" vid="91"></span>
+            <span vid="92">Дозаправка / ГСМ</span>
+          </div>
+          <span class="legend-value" vid="93">30%</span>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+
+</body></html>

@@ -1,0 +1,75 @@
+---
+description: Единая кнопка закрытия (крестик) модальных окон — разметка, стили и анимация как в «Новое место хранения»
+alwaysApply: true
+---
+
+# Кнопка закрытия модального окна (крестик)
+
+## Эталон
+
+Референс: `frontend/src/pages/StorageLocationsPage.vue` — модалка «Новое место хранения» / «Редактирование места хранения».
+
+Перед новой модалкой или правкой крестика — свериться с этим файлом. Не придумывать другой крестик (`×` текстом, другой размер, вращение всей кнопки без отдельной анимации SVG и т.д.).
+
+## Разметка (обязательно)
+
+В шапке модалки (`modal-header`), справа от заголовка:
+
+```html
+<button type="button" class="modal-close" aria-label="Закрыть" @click="closeModal">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 6 6 18"/>
+    <path d="m6 6 12 12"/>
+  </svg>
+</button>
+```
+
+- Класс: **`modal-close`** (допускается `modal-close modal-close--design`, если остальные стили эталона не перебиты).
+- `type="button"`, `aria-label="Закрыть"`.
+- Иконка только через **SVG 20×20**, не символ `×` и не картинка.
+
+## Стили и анимация (как в эталоне)
+
+Скопировать поведение из `StorageLocationsPage.vue` (блок `.modal-close`):
+
+| Свойство | Значение |
+|----------|----------|
+| Размер кнопки | `40×40px`, `border-radius: 10px` |
+| По умолчанию | `background: transparent`, `color: var(--text-muted)` |
+| Переходы | `background-color`, `color`, `transform` — **0.2s ease**; у `svg` — `transform 0.2s ease` |
+| **:hover** кнопки | `background: color-mix(in srgb, var(--accent-green) 16%, transparent)`, `color: var(--accent-green)` |
+| **:hover** иконки | только **`svg`**: `transform: rotate(90deg)` (не вращать всю кнопку через `transform` на `button`) |
+| **:disabled** | `opacity: 0.6`, `cursor: not-allowed` |
+
+### Запрещено
+
+- Вращение/масштаб всей кнопки на `:hover` (как в старых вариантах `FieldsPage` / `TasksPage` с `transform: rotate(90deg) scale(1.08)` на `button`).
+- Серый квадрат без зелёного hover или другой палитры без согласования с эталоном.
+- Уменьшенные «крестики» 32px без причины.
+
+### Тёмная тема
+
+Глобально для `.modal-close:hover` уже есть правило в `frontend/src/styles/global.css`. Локальные стили страницы **не должны** ломать зелёный hover эталона; при конфликте — приоритет у паттерна StorageLocations.
+
+### Доступность
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .modal-close,
+  .modal-close svg {
+    transition: none;
+  }
+  .modal-close:hover svg {
+    transform: none;
+  }
+}
+```
+
+## Где применять
+
+- Все новые модалки (`modal-backdrop` + `modal`).
+- При рефакторинге старых модалок (`lands-modal-close`, `task-modal-close`, `app-modal-close`, `modal-close-btn`) — по возможности унифицировать разметку и те же стили; алиасы классов допустимы, **поведение** — как у эталона.
+
+## Вынос в общие стили (желательно)
+
+Если правишь несколько модалок подряд — вынести блок `.modal-close` в `frontend/src/styles/global.css` один раз, а на страницах не дублировать с отличиями.

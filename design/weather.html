@@ -1,0 +1,1816 @@
+image.png
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web" vid="5"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet" vid="6">
+    <style vid="7">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            width: 1280px;
+            height: 960px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+        }
+    </style>
+
+  <style type="text/css">
+*, ::before, ::after {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+  --tw-contain-size:  ;
+  --tw-contain-layout:  ;
+  --tw-contain-paint:  ;
+  --tw-contain-style:  ;
+}
+
+::backdrop {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+  --tw-contain-size:  ;
+  --tw-contain-layout:  ;
+  --tw-contain-paint:  ;
+  --tw-contain-style:  ;
+}/*
+! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com
+*//*
+1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
+2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
+*/
+
+*,
+::before,
+::after {
+  box-sizing: border-box; /* 1 */
+  border-width: 0; /* 2 */
+  border-style: solid; /* 2 */
+  border-color: #e5e7eb; /* 2 */
+}
+
+::before,
+::after {
+  --tw-content: '';
+}
+
+/*
+1. Use a consistent sensible line-height in all browsers.
+2. Prevent adjustments of font size after orientation changes in iOS.
+3. Use a more readable tab size.
+4. Use the user's configured `sans` font-family by default.
+5. Use the user's configured `sans` font-feature-settings by default.
+6. Use the user's configured `sans` font-variation-settings by default.
+7. Disable tap highlights on iOS
+*/
+
+html,
+:host {
+  line-height: 1.5; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+  -moz-tab-size: 4; /* 3 */
+  tab-size: 4; /* 3 */
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */
+  font-feature-settings: normal; /* 5 */
+  font-variation-settings: normal; /* 6 */
+  -webkit-tap-highlight-color: transparent; /* 7 */
+}
+
+/*
+1. Remove the margin in all browsers.
+2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
+*/
+
+body {
+  margin: 0; /* 1 */
+  line-height: inherit; /* 2 */
+}
+
+/*
+1. Add the correct height in Firefox.
+2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+3. Ensure horizontal rules are visible by default.
+*/
+
+hr {
+  height: 0; /* 1 */
+  color: inherit; /* 2 */
+  border-top-width: 1px; /* 3 */
+}
+
+/*
+Add the correct text decoration in Chrome, Edge, and Safari.
+*/
+
+abbr:where([title]) {
+  text-decoration: underline dotted;
+}
+
+/*
+Remove the default font size and weight for headings.
+*/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/*
+Reset links to optimize for opt-in styling instead of opt-out.
+*/
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/*
+Add the correct font weight in Edge and Safari.
+*/
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+/*
+1. Use the user's configured `mono` font-family by default.
+2. Use the user's configured `mono` font-feature-settings by default.
+3. Use the user's configured `mono` font-variation-settings by default.
+4. Correct the odd `em` font sizing in all browsers.
+*/
+
+code,
+kbd,
+samp,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* 1 */
+  font-feature-settings: normal; /* 2 */
+  font-variation-settings: normal; /* 3 */
+  font-size: 1em; /* 4 */
+}
+
+/*
+Add the correct font size in all browsers.
+*/
+
+small {
+  font-size: 80%;
+}
+
+/*
+Prevent `sub` and `sup` elements from affecting the line height in all browsers.
+*/
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/*
+1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+3. Remove gaps between table borders by default.
+*/
+
+table {
+  text-indent: 0; /* 1 */
+  border-color: inherit; /* 2 */
+  border-collapse: collapse; /* 3 */
+}
+
+/*
+1. Change the font styles in all browsers.
+2. Remove the margin in Firefox and Safari.
+3. Remove default padding in all browsers.
+*/
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-feature-settings: inherit; /* 1 */
+  font-variation-settings: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  font-weight: inherit; /* 1 */
+  line-height: inherit; /* 1 */
+  letter-spacing: inherit; /* 1 */
+  color: inherit; /* 1 */
+  margin: 0; /* 2 */
+  padding: 0; /* 3 */
+}
+
+/*
+Remove the inheritance of text transform in Edge and Firefox.
+*/
+
+button,
+select {
+  text-transform: none;
+}
+
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Remove default button styles.
+*/
+
+button,
+input:where([type='button']),
+input:where([type='reset']),
+input:where([type='submit']) {
+  -webkit-appearance: button; /* 1 */
+  background-color: transparent; /* 2 */
+  background-image: none; /* 2 */
+}
+
+/*
+Use the modern Firefox focus style for all focusable elements.
+*/
+
+:-moz-focusring {
+  outline: auto;
+}
+
+/*
+Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
+*/
+
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+
+/*
+Add the correct vertical alignment in Chrome and Firefox.
+*/
+
+progress {
+  vertical-align: baseline;
+}
+
+/*
+Correct the cursor style of increment and decrement buttons in Safari.
+*/
+
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/*
+1. Correct the odd appearance in Chrome and Safari.
+2. Correct the outline style in Safari.
+*/
+
+[type='search'] {
+  -webkit-appearance: textfield; /* 1 */
+  outline-offset: -2px; /* 2 */
+}
+
+/*
+Remove the inner padding in Chrome and Safari on macOS.
+*/
+
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Change font properties to `inherit` in Safari.
+*/
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button; /* 1 */
+  font: inherit; /* 2 */
+}
+
+/*
+Add the correct display in Chrome and Safari.
+*/
+
+summary {
+  display: list-item;
+}
+
+/*
+Removes the default spacing and border for appropriate elements.
+*/
+
+blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+  margin: 0;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+ol,
+ul,
+menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+Reset default styling for dialogs.
+*/
+dialog {
+  padding: 0;
+}
+
+/*
+Prevent resizing textareas horizontally by default.
+*/
+
+textarea {
+  resize: vertical;
+}
+
+/*
+1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
+2. Set the default placeholder color to the user's configured gray 400 color.
+*/
+
+input::placeholder,
+textarea::placeholder {
+  opacity: 1; /* 1 */
+  color: #9ca3af; /* 2 */
+}
+
+/*
+Set the default cursor for buttons.
+*/
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+/*
+Make sure disabled buttons don't get the pointer cursor.
+*/
+:disabled {
+  cursor: default;
+}
+
+/*
+1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
+   This can trigger a poorly considered lint error in some tools but is included by design.
+*/
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block; /* 1 */
+  vertical-align: middle; /* 2 */
+}
+
+/*
+Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
+*/
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Make elements with the HTML hidden attribute stay hidden by default */
+[hidden]:where(:not([hidden="until-found"])) {
+  display: none;
+}
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
+.-right-20 {
+  right: -5rem;
+}
+.-top-20 {
+  top: -5rem;
+}
+.z-10 {
+  z-index: 10;
+}
+.col-span-4 {
+  grid-column: span 4 / span 4;
+}
+.col-span-8 {
+  grid-column: span 8 / span 8;
+}
+.my-1 {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+.mb-4 {
+  margin-bottom: 1rem;
+}
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+.ml-1 {
+  margin-left: 0.25rem;
+}
+.mt-1 {
+  margin-top: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mt-4 {
+  margin-top: 1rem;
+}
+.mt-6 {
+  margin-top: 1.5rem;
+}
+.flex {
+  display: flex;
+}
+.grid {
+  display: grid;
+}
+.hidden {
+  display: none;
+}
+.h-1 {
+  height: 0.25rem;
+}
+.h-10 {
+  height: 2.5rem;
+}
+.h-2 {
+  height: 0.5rem;
+}
+.h-6 {
+  height: 1.5rem;
+}
+.h-8 {
+  height: 2rem;
+}
+.h-80 {
+  height: 20rem;
+}
+.h-full {
+  height: 100%;
+}
+.w-10 {
+  width: 2.5rem;
+}
+.w-2 {
+  width: 0.5rem;
+}
+.w-6 {
+  width: 1.5rem;
+}
+.w-8 {
+  width: 2rem;
+}
+.w-80 {
+  width: 20rem;
+}
+.w-full {
+  width: 100%;
+}
+.flex-1 {
+  flex: 1 1 0%;
+}
+.shrink-0 {
+  flex-shrink: 0;
+}
+.grid-cols-12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.grid-cols-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.grid-cols-8 {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+.flex-col {
+  flex-direction: column;
+}
+.items-start {
+  align-items: flex-start;
+}
+.items-end {
+  align-items: flex-end;
+}
+.items-center {
+  align-items: center;
+}
+.justify-center {
+  justify-content: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-3 {
+  gap: 0.75rem;
+}
+.gap-4 {
+  gap: 1rem;
+}
+.gap-6 {
+  gap: 1.5rem;
+}
+.space-y-0\.5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));
+}
+.space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
+}
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+.overflow-y-auto {
+  overflow-y: auto;
+}
+.rounded-2xl {
+  border-radius: 1rem;
+}
+.rounded-3xl {
+  border-radius: 1.5rem;
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+.border {
+  border-width: 1px;
+}
+.border-blue-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(219 234 254 / var(--tw-border-opacity, 1));
+}
+.border-cyan-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(207 250 254 / var(--tw-border-opacity, 1));
+}
+.border-emerald-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(209 250 229 / var(--tw-border-opacity, 1));
+}
+.border-emerald-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(167 243 208 / var(--tw-border-opacity, 1));
+}
+.border-indigo-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(224 231 255 / var(--tw-border-opacity, 1));
+}
+.border-orange-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(255 237 213 / var(--tw-border-opacity, 1));
+}
+.border-red-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(254 226 226 / var(--tw-border-opacity, 1));
+}
+.border-rose-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(255 228 230 / var(--tw-border-opacity, 1));
+}
+.border-slate-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(241 245 249 / var(--tw-border-opacity, 1));
+}
+.border-slate-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(226 232 240 / var(--tw-border-opacity, 1));
+}
+.border-slate-800 {
+  --tw-border-opacity: 1;
+  border-color: rgb(30 41 59 / var(--tw-border-opacity, 1));
+}
+.bg-amber-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));
+}
+.bg-blue-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(96 165 250 / var(--tw-bg-opacity, 1));
+}
+.bg-blue-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));
+}
+.bg-blue-50\/50 {
+  background-color: rgb(239 246 255 / 0.5);
+}
+.bg-cyan-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(236 254 255 / var(--tw-bg-opacity, 1));
+}
+.bg-cyan-50\/50 {
+  background-color: rgb(236 254 255 / 0.5);
+}
+.bg-emerald-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 250 229 / var(--tw-bg-opacity, 1));
+}
+.bg-emerald-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(236 253 245 / var(--tw-bg-opacity, 1));
+}
+.bg-emerald-50\/50 {
+  background-color: rgb(236 253 245 / 0.5);
+}
+.bg-emerald-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(16 185 129 / var(--tw-bg-opacity, 1));
+}
+.bg-emerald-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(5 150 105 / var(--tw-bg-opacity, 1));
+}
+.bg-emerald-700 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(4 120 87 / var(--tw-bg-opacity, 1));
+}
+.bg-green-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));
+}
+.bg-indigo-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(238 242 255 / var(--tw-bg-opacity, 1));
+}
+.bg-orange-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 247 237 / var(--tw-bg-opacity, 1));
+}
+.bg-orange-50\/50 {
+  background-color: rgb(255 247 237 / 0.5);
+}
+.bg-purple-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(250 245 255 / var(--tw-bg-opacity, 1));
+}
+.bg-red-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));
+}
+.bg-red-50\/50 {
+  background-color: rgb(254 242 242 / 0.5);
+}
+.bg-red-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1));
+}
+.bg-rose-50\/50 {
+  background-color: rgb(255 241 242 / 0.5);
+}
+.bg-sky-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(240 249 255 / var(--tw-bg-opacity, 1));
+}
+.bg-slate-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1));
+}
+.bg-slate-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(148 163 184 / var(--tw-bg-opacity, 1));
+}
+.bg-slate-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(248 250 252 / var(--tw-bg-opacity, 1));
+}
+.bg-slate-900 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(15 23 42 / var(--tw-bg-opacity, 1));
+}
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+.p-1\.5 {
+  padding: 0.375rem;
+}
+.p-2 {
+  padding: 0.5rem;
+}
+.p-3 {
+  padding: 0.75rem;
+}
+.p-4 {
+  padding: 1rem;
+}
+.p-5 {
+  padding: 1.25rem;
+}
+.p-6 {
+  padding: 1.5rem;
+}
+.p-8 {
+  padding: 2rem;
+}
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+.pb-1 {
+  padding-bottom: 0.25rem;
+}
+.pb-10 {
+  padding-bottom: 2.5rem;
+}
+.pr-1 {
+  padding-right: 0.25rem;
+}
+.pr-2 {
+  padding-right: 0.5rem;
+}
+.pr-4 {
+  padding-right: 1rem;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+.text-6xl {
+  font-size: 3.75rem;
+  line-height: 1;
+}
+.text-7xl {
+  font-size: 4.5rem;
+  line-height: 1;
+}
+.text-8xl {
+  font-size: 6rem;
+  line-height: 1;
+}
+.text-\[10px\] {
+  font-size: 10px;
+}
+.text-\[8px\] {
+  font-size: 8px;
+}
+.text-\[9px\] {
+  font-size: 9px;
+}
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+.font-black {
+  font-weight: 900;
+}
+.font-bold {
+  font-weight: 700;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+.italic {
+  font-style: italic;
+}
+.leading-none {
+  line-height: 1;
+}
+.leading-relaxed {
+  line-height: 1.625;
+}
+.tracking-\[0\.2em\] {
+  letter-spacing: 0.2em;
+}
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+.tracking-tighter {
+  letter-spacing: -0.05em;
+}
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+.tracking-widest {
+  letter-spacing: 0.1em;
+}
+.text-amber-600 {
+  --tw-text-opacity: 1;
+  color: rgb(217 119 6 / var(--tw-text-opacity, 1));
+}
+.text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity, 1));
+}
+.text-blue-600 {
+  --tw-text-opacity: 1;
+  color: rgb(37 99 235 / var(--tw-text-opacity, 1));
+}
+.text-blue-700 {
+  --tw-text-opacity: 1;
+  color: rgb(29 78 216 / var(--tw-text-opacity, 1));
+}
+.text-cyan-600 {
+  --tw-text-opacity: 1;
+  color: rgb(8 145 178 / var(--tw-text-opacity, 1));
+}
+.text-cyan-700 {
+  --tw-text-opacity: 1;
+  color: rgb(14 116 144 / var(--tw-text-opacity, 1));
+}
+.text-emerald-100\/70 {
+  color: rgb(209 250 229 / 0.7);
+}
+.text-emerald-100\/90 {
+  color: rgb(209 250 229 / 0.9);
+}
+.text-emerald-400 {
+  --tw-text-opacity: 1;
+  color: rgb(52 211 153 / var(--tw-text-opacity, 1));
+}
+.text-emerald-50 {
+  --tw-text-opacity: 1;
+  color: rgb(236 253 245 / var(--tw-text-opacity, 1));
+}
+.text-emerald-500 {
+  --tw-text-opacity: 1;
+  color: rgb(16 185 129 / var(--tw-text-opacity, 1));
+}
+.text-emerald-600 {
+  --tw-text-opacity: 1;
+  color: rgb(5 150 105 / var(--tw-text-opacity, 1));
+}
+.text-emerald-700 {
+  --tw-text-opacity: 1;
+  color: rgb(4 120 87 / var(--tw-text-opacity, 1));
+}
+.text-green-600 {
+  --tw-text-opacity: 1;
+  color: rgb(22 163 74 / var(--tw-text-opacity, 1));
+}
+.text-indigo-500 {
+  --tw-text-opacity: 1;
+  color: rgb(99 102 241 / var(--tw-text-opacity, 1));
+}
+.text-indigo-600 {
+  --tw-text-opacity: 1;
+  color: rgb(79 70 229 / var(--tw-text-opacity, 1));
+}
+.text-orange-400 {
+  --tw-text-opacity: 1;
+  color: rgb(251 146 60 / var(--tw-text-opacity, 1));
+}
+.text-orange-500 {
+  --tw-text-opacity: 1;
+  color: rgb(249 115 22 / var(--tw-text-opacity, 1));
+}
+.text-orange-600 {
+  --tw-text-opacity: 1;
+  color: rgb(234 88 12 / var(--tw-text-opacity, 1));
+}
+.text-orange-700 {
+  --tw-text-opacity: 1;
+  color: rgb(194 65 12 / var(--tw-text-opacity, 1));
+}
+.text-purple-600 {
+  --tw-text-opacity: 1;
+  color: rgb(147 51 234 / var(--tw-text-opacity, 1));
+}
+.text-red-400 {
+  --tw-text-opacity: 1;
+  color: rgb(248 113 113 / var(--tw-text-opacity, 1));
+}
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+}
+.text-red-600 {
+  --tw-text-opacity: 1;
+  color: rgb(220 38 38 / var(--tw-text-opacity, 1));
+}
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
+}
+.text-rose-600 {
+  --tw-text-opacity: 1;
+  color: rgb(225 29 72 / var(--tw-text-opacity, 1));
+}
+.text-rose-700 {
+  --tw-text-opacity: 1;
+  color: rgb(190 18 60 / var(--tw-text-opacity, 1));
+}
+.text-sky-600 {
+  --tw-text-opacity: 1;
+  color: rgb(2 132 199 / var(--tw-text-opacity, 1));
+}
+.text-slate-300 {
+  --tw-text-opacity: 1;
+  color: rgb(203 213 225 / var(--tw-text-opacity, 1));
+}
+.text-slate-400 {
+  --tw-text-opacity: 1;
+  color: rgb(148 163 184 / var(--tw-text-opacity, 1));
+}
+.text-slate-500 {
+  --tw-text-opacity: 1;
+  color: rgb(100 116 139 / var(--tw-text-opacity, 1));
+}
+.text-slate-600 {
+  --tw-text-opacity: 1;
+  color: rgb(71 85 105 / var(--tw-text-opacity, 1));
+}
+.text-slate-800 {
+  --tw-text-opacity: 1;
+  color: rgb(30 41 59 / var(--tw-text-opacity, 1));
+}
+.text-slate-900 {
+  --tw-text-opacity: 1;
+  color: rgb(15 23 42 / var(--tw-text-opacity, 1));
+}
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+.opacity-5 {
+  opacity: 0.05;
+}
+.opacity-70 {
+  opacity: 0.7;
+}
+.opacity-80 {
+  opacity: 0.8;
+}
+.opacity-90 {
+  opacity: 0.9;
+}
+.shadow-2xl {
+  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.shadow-xl {
+  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.shadow-emerald-900\/10 {
+  --tw-shadow-color: rgb(6 78 59 / 0.1);
+  --tw-shadow: var(--tw-shadow-colored);
+}
+.shadow-emerald-900\/20 {
+  --tw-shadow-color: rgb(6 78 59 / 0.2);
+  --tw-shadow: var(--tw-shadow-colored);
+}
+.ring-2 {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+.ring-emerald-500\/10 {
+  --tw-ring-color: rgb(16 185 129 / 0.1);
+}
+.blur {
+  --tw-blur: blur(8px);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+.blur-3xl {
+  --tw-blur: blur(64px);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+.drop-shadow-2xl {
+  --tw-drop-shadow: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+.backdrop-filter {
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.hover\:text-emerald-600:hover {
+  --tw-text-opacity: 1;
+  color: rgb(5 150 105 / var(--tw-text-opacity, 1));
+}* {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+  </style></head>
+<body class="flex flex-col p-6 gap-6" vid="8">
+
+    
+    <header class="flex justify-between items-center shrink-0" vid="9">
+        <div class="flex items-center gap-4" vid="10">
+            <div class="bg-emerald-600 p-2 rounded-xl text-white" vid="11">
+                <i class="ph-fill ph-plant text-2xl" vid="12"></i>
+            </div>
+            <div vid="13">
+                <h1 class="text-xl font-800 tracking-tight text-slate-900 uppercase" vid="14">АгроМетео Дашборд</h1>
+                <p class="text-xs font-medium text-slate-500" vid="15">Система мониторинга условий Курской области</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-6" vid="16">
+            <div class="text-right" vid="17">
+                <p class="text-sm font-bold text-slate-800" vid="18">Курск, Россия</p>
+                <p class="text-xs text-slate-500" vid="19">Сегодня, 4 мая 2026 г. • 16:31</p>
+            </div>
+            <div class="flex items-center gap-3 bg-white p-1.5 pr-4 rounded-full border border-slate-200 shadow-sm" vid="20">
+                <div class="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs" vid="21">AL</div>
+                <span class="text-xs font-semibold text-slate-600" vid="22">aliyartalybov@icloud.com</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 grid grid-cols-12 gap-6 overflow-hidden" vid="23">
+        
+        
+        <div class="col-span-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar pr-2" vid="24">
+            
+            
+            <section class="hero-gradient rounded-3xl p-8 text-white relative overflow-hidden flex justify-between shrink-0 shadow-lg shadow-emerald-900/10" vid="25">
+                <div class="relative z-10 flex flex-col justify-between" vid="26">
+                    <div vid="27">
+                        <div class="flex items-center gap-2 opacity-80 mb-2" vid="28">
+                            <i class="ph ph-navigation-arrow-fill text-xs" vid="29"></i>
+                            <span class="text-[10px] font-bold tracking-[0.2em] uppercase" vid="30">Локация</span>
+                        </div>
+                        <h2 class="text-4xl font-black mb-1 tracking-tight" vid="31">Курск</h2>
+                        <p class="text-sm text-emerald-100/70 font-medium" vid="32">51.7373° N, 36.1874° E</p>
+                    </div>
+                    <div class="flex items-center gap-6 mt-6" vid="33">
+                        <div class="flex flex-col" vid="34">
+                            <span class="text-7xl font-black leading-none" vid="35">23°C</span>
+                            <span class="text-lg font-medium text-emerald-100/90 mt-2" vid="36">Переменная облачность</span>
+                        </div>
+                        <i class="ph ph-cloud-sun text-8xl opacity-90 drop-shadow-2xl" vid="37"></i>
+                    </div>
+                </div>
+
+                <div class="relative z-10 glass-card rounded-2xl p-6 w-80 shadow-2xl" vid="38">
+                    <div class="flex items-center gap-3 mb-4" vid="39">
+                        <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-900/20" vid="40">
+                            <i class="ph-bold ph-check text-white text-xs" vid="41"></i>
+                        </div>
+                        <span class="text-lg font-bold tracking-tight" vid="42">Рекомендация</span>
+                    </div>
+                    <p class="text-xl font-medium text-emerald-50 mb-6" vid="43">Идеально для опрыскивания</p>
+                    <div class="space-y-3" vid="44">
+                        <div class="flex justify-between items-center text-sm" vid="45">
+                            <span class="flex items-center gap-2 opacity-70" vid="46"><i class="ph ph-wind" vid="47"></i> Ветер в норме</span>
+                            <span class="font-bold" vid="48">2.97 м/с</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm" vid="49">
+                            <span class="flex items-center gap-2 opacity-70" vid="50"><i class="ph ph-drop" vid="51"></i> Вер. осадков</span>
+                            <span class="font-bold" vid="52">65%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-white opacity-5 rounded-full blur-3xl" vid="53"></div>
+            </section>
+
+            
+            <section vid="54">
+                <div class="flex items-center gap-2 mb-4" vid="55">
+                    <i class="ph-bold ph-chart-line-up text-emerald-600" vid="56"></i>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest" vid="57">Подробные показатели</h3>
+                </div>
+                <div class="grid grid-cols-4 gap-4" vid="58">
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="59">
+                        <div class="flex items-center gap-3 mb-3" vid="60">
+                            <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600" vid="61"><i class="ph ph-wind" vid="62"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="63">Ветер</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="64">2.97 <span class="text-xs font-medium text-slate-400" vid="65">м/с, З</span></p>
+                        <p class="text-[10px] text-slate-400 mt-1" vid="66">Порывы: 8.3 м/с</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="67">
+                        <div class="flex items-center gap-3 mb-3" vid="68">
+                            <div class="w-8 h-8 bg-cyan-50 rounded-lg flex items-center justify-center text-cyan-600" vid="69"><i class="ph ph-drop" vid="70"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="71">Влажность</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="72">32%</p>
+                        <p class="text-[10px] text-blue-500 font-medium mt-1 uppercase tracking-tighter" vid="73">Воздух очень сухой</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="74">
+                        <div class="flex items-center gap-3 mb-3" vid="75">
+                            <div class="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600" vid="76"><i class="ph ph-gauge" vid="77"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="78">Давление</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="79">988 <span class="text-xs font-medium text-slate-400" vid="80">гПа</span></p>
+                        <p class="text-[10px] text-slate-400 mt-1" vid="81">Привед: 1013 гПа</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="82">
+                        <div class="flex items-center gap-3 mb-3" vid="83">
+                            <div class="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600" vid="84"><i class="ph ph-eye" vid="85"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="86">Видимость</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="87">45.7 <span class="text-xs font-medium text-slate-400" vid="88">км</span></p>
+                        <p class="text-[10px] text-emerald-500 font-medium mt-1" vid="89">Отличная видимость</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="90">
+                        <div class="flex items-center gap-3 mb-2" vid="91">
+                            <div class="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500" vid="92"><i class="ph ph-cloud" vid="93"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="94">Облачность</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800 mb-2" vid="95">35%</p>
+                        <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden" vid="96">
+                            <div class="bg-slate-400 h-full" style="width: 35%" vid="97"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="98">
+                        <div class="flex items-center gap-3 mb-2" vid="99">
+                            <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500" vid="100"><i class="ph ph-cloud-rain" vid="101"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="102">Вер. осадков</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800 mb-2" vid="103">0%</p>
+                        <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden" vid="104">
+                            <div class="bg-blue-400 h-full" style="width: 0%" vid="105"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="106">
+                        <div class="flex items-center gap-3 mb-3" vid="107">
+                            <div class="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600" vid="108"><i class="ph ph-sun" vid="109"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="110">УФ-Индекс</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="111">5.8 <span class="text-xs font-bold text-orange-500" vid="112">Высокий</span></p>
+                        <p class="text-[10px] text-slate-400 mt-1" vid="113">Требуется защита</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="114">
+                        <div class="flex items-center gap-3 mb-2" vid="115">
+                            <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center text-red-500" vid="116"><i class="ph ph-sun-horizon" vid="117"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="118">Солнце</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] font-bold" vid="119">
+                            <span class="text-slate-500" vid="120">Вос: 05:00</span>
+                            <span class="text-slate-500" vid="121">Зак: 20:03</span>
+                        </div>
+                        <p class="text-[9px] text-red-400 mt-1 italic" vid="122">День: 15 ч 3 мин</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="123">
+                        <div class="flex items-center gap-3 mb-3" vid="124">
+                            <div class="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600" vid="125"><i class="ph ph-thermometer-hot" vid="126"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="127">Темп. почвы</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="128">24.5°C</p>
+                        <p class="text-[10px] text-slate-400 mt-1" vid="129">Поверхность почвы</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="130">
+                        <div class="flex items-center gap-3 mb-3" vid="131">
+                            <div class="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600" vid="132"><i class="ph ph-waves" vid="133"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="134">Влажн. почвы</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="135">0.321</p>
+                        <p class="text-[10px] text-slate-400 mt-1" vid="136">Верхний слой 0–1 см</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="137">
+                        <div class="flex items-center gap-3 mb-3" vid="138">
+                            <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-green-600" vid="139"><i class="ph ph-leaf" vid="140"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="141">Листья</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="142">1.9 <span class="text-xs font-medium text-slate-400" vid="143">кПа</span></p>
+                        <p class="text-[10px] text-orange-500 font-medium mt-1" vid="144">Стресс листа</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow" vid="145">
+                        <div class="flex items-center gap-3 mb-3" vid="146">
+                            <div class="w-8 h-8 bg-sky-50 rounded-lg flex items-center justify-center text-sky-600" vid="147"><i class="ph ph-cloud-rain text-xl" vid="148"></i></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase" vid="149">Осадки сейчас</span>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800" vid="150">0 <span class="text-xs font-medium text-slate-400" vid="151">мм</span></p>
+                        <p class="text-[9px] text-slate-400 mt-1" vid="152">Дождь: 0, ливни: 0</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow col-span-4" vid="153">
+                        <div class="flex items-center justify-between" vid="154">
+                            <div class="flex items-center gap-3" vid="155">
+                                <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600" vid="156"><i class="ph ph-thermometer-cold" vid="157"></i></div>
+                                <div vid="158">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase" vid="159">Точка росы</span>
+                                    <p class="text-lg font-bold text-slate-800" vid="160">5.3°C</p>
+                                </div>
+                            </div>
+                            <div class="text-right" vid="161">
+                                <p class="text-[10px] font-medium text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100" vid="162">Риск конденсата и росы</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section vid="163">
+                <div class="flex items-center gap-2 mb-4" vid="164">
+                    <i class="ph-bold ph-calendar-check text-emerald-600" vid="165"></i>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest" vid="166">Агро-условия на 24 часа</h3>
+                </div>
+                <div class="grid grid-cols-6 gap-3" vid="167">
+                    <div class="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100" vid="168">
+                        <p class="text-[9px] font-bold text-emerald-700 uppercase mb-1" vid="169">Опрыскивание</p>
+                        <p class="text-base font-bold text-slate-900" vid="170">с 20:00</p>
+                        <p class="text-[8px] text-emerald-600 font-medium mt-1" vid="171">Осадки 0%</p>
+                    </div>
+                    <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100" vid="172">
+                        <p class="text-[9px] font-bold text-blue-700 uppercase mb-1" vid="173">Осадки 24ч</p>
+                        <p class="text-base font-bold text-slate-900" vid="174">0%</p>
+                        <p class="text-[8px] text-blue-600 font-medium mt-1" vid="175">Чистое небо</p>
+                    </div>
+                    <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100" vid="176">
+                        <p class="text-[9px] font-bold text-orange-700 uppercase mb-1" vid="177">Ветер</p>
+                        <p class="text-base font-bold text-slate-900" vid="178">9.2 м/с</p>
+                        <p class="text-[8px] text-orange-600 font-medium mt-1" vid="179">Рабочий режим</p>
+                    </div>
+                    <div class="bg-cyan-50/50 p-4 rounded-2xl border border-cyan-100" vid="180">
+                        <p class="text-[9px] font-bold text-cyan-700 uppercase mb-1" vid="181">Влага почвы</p>
+                        <p class="text-base font-bold text-slate-900" vid="182">0.321</p>
+                        <p class="text-[8px] text-cyan-600 font-medium mt-1" vid="183">В норме</p>
+                    </div>
+                    <div class="bg-red-50/50 p-4 rounded-2xl border border-red-100" vid="184">
+                        <p class="text-[9px] font-bold text-red-700 uppercase mb-1" vid="185">Испарение</p>
+                        <p class="text-base font-bold text-slate-900" vid="186">4.6 мм</p>
+                        <p class="text-[8px] text-red-600 font-medium mt-1" vid="187">Высокая потеря</p>
+                    </div>
+                    <div class="bg-rose-50/50 p-4 rounded-2xl border border-rose-100" vid="188">
+                        <p class="text-[9px] font-bold text-rose-700 uppercase mb-1" vid="189">Стресс</p>
+                        <p class="text-base font-bold text-slate-900" vid="190">1.90 кПа</p>
+                        <p class="text-[8px] text-rose-600 font-medium mt-1" vid="191">Сушит лист</p>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section vid="192">
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow" vid="193">
+                    <div class="flex justify-between items-center mb-6" vid="194">
+                        <div vid="195">
+                            <h3 class="text-sm font-bold uppercase tracking-wider" vid="196">Почасовой риск работ</h3>
+                            <p class="text-xs text-slate-400" vid="197">Осадки, порывы ветра, почва и УФ на ближайшие часы</p>
+                        </div>
+                        <i class="ph ph-clock text-2xl text-slate-300" vid="198"></i>
+                    </div>
+                    <div class="grid grid-cols-8 gap-2" vid="199">
+                        
+                        <div class="text-center p-3 bg-slate-50 rounded-xl border border-slate-100" vid="200">
+                            <span class="text-[10px] font-bold text-slate-400" vid="201">16:00</span>
+                            <p class="text-lg font-black text-slate-800 my-1" vid="202">0%</p>
+                            <div class="space-y-0.5" vid="203">
+                                <p class="text-[8px] text-slate-400 font-bold uppercase" vid="204">8.5 м/с</p>
+                                <p class="text-[9px] text-orange-600 font-bold" vid="205">25.3°</p>
+                            </div>
+                        </div>
+                        <div class="text-center p-3 bg-slate-50 rounded-xl border border-slate-100" vid="206">
+                            <span class="text-[10px] font-bold text-slate-400" vid="207">17:00</span>
+                            <p class="text-lg font-black text-slate-800 my-1" vid="208">0%</p>
+                            <div class="space-y-0.5" vid="209">
+                                <p class="text-[8px] text-slate-400 font-bold uppercase" vid="210">8.0 м/с</p>
+                                <p class="text-[9px] text-orange-600 font-bold" vid="211">23.7°</p>
+                            </div>
+                        </div>
+                        <div class="text-center p-3 bg-slate-50 rounded-xl border border-slate-100" vid="212">
+                            <span class="text-[10px] font-bold text-slate-400" vid="213">18:00</span>
+                            <p class="text-lg font-black text-slate-800 my-1" vid="214">0%</p>
+                            <div class="space-y-0.5" vid="215">
+                                <p class="text-[8px] text-slate-400 font-bold uppercase" vid="216">7.4 м/с</p>
+                                <p class="text-[9px] text-orange-600 font-bold" vid="217">22.0°</p>
+                            </div>
+                        </div>
+                        <div class="text-center p-3 bg-slate-50 rounded-xl border border-slate-100" vid="218">
+                            <span class="text-[10px] font-bold text-slate-400" vid="219">19:00</span>
+                            <p class="text-lg font-black text-slate-800 my-1" vid="220">0%</p>
+                            <div class="space-y-0.5" vid="221">
+                                <p class="text-[8px] text-slate-400 font-bold uppercase" vid="222">6.3 м/с</p>
+                                <p class="text-[9px] text-orange-600 font-bold" vid="223">19.4°</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center p-3 bg-emerald-50 rounded-xl border border-emerald-200 ring-2 ring-emerald-500/10" vid="224">
+                            <span class="text-[10px] font-bold text-emerald-600" vid="225">20:00</span>
+                            <p class="text-lg font-black text-emerald-700 my-1" vid="226">0%</p>
+                            <div class="space-y-0.5" vid="227">
+                                <p class="text-[8px] text-emerald-600 font-bold uppercase" vid="228">4.3 м/с</p>
+                                <p class="text-[9px] text-slate-500 font-bold" vid="229">16.2°</p>
+                            </div>
+                        </div>
+                        <div class="text-center p-3 bg-emerald-50 rounded-xl border border-emerald-200" vid="230">
+                            <span class="text-[10px] font-bold text-emerald-600" vid="231">21:00</span>
+                            <p class="text-lg font-black text-emerald-700 my-1" vid="232">0%</p>
+                            <div class="space-y-0.5" vid="233">
+                                <p class="text-[8px] text-emerald-600 font-bold uppercase" vid="234">2.7 м/с</p>
+                                <p class="text-[9px] text-slate-500 font-bold" vid="235">14.3°</p>
+                            </div>
+                        </div>
+                        <div class="text-center p-3 bg-emerald-50 rounded-xl border border-emerald-200" vid="236">
+                            <span class="text-[10px] font-bold text-emerald-600" vid="237">22:00</span>
+                            <p class="text-lg font-black text-emerald-700 my-1" vid="238">0%</p>
+                            <div class="space-y-0.5" vid="239">
+                                <p class="text-[8px] text-emerald-600 font-bold uppercase" vid="240">2.7 м/с</p>
+                                <p class="text-[9px] text-slate-500 font-bold" vid="241">13.0°</p>
+                            </div>
+                        </div>
+                        <div class="text-center p-3 bg-emerald-50 rounded-xl border border-emerald-200" vid="242">
+                            <span class="text-[10px] font-bold text-emerald-600" vid="243">23:00</span>
+                            <p class="text-lg font-black text-emerald-700 my-1" vid="244">0%</p>
+                            <div class="space-y-0.5" vid="245">
+                                <p class="text-[8px] text-emerald-600 font-bold uppercase" vid="246">2.5 м/с</p>
+                                <p class="text-[9px] text-slate-500 font-bold" vid="247">12.0°</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section class="pb-10" vid="248">
+                <div class="flex items-center gap-2 mb-4" vid="249">
+                    <i class="ph-bold ph-squares-four text-emerald-600" vid="250"></i>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest" vid="251">Состояние полей</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-4" vid="252">
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow flex justify-between items-start" vid="253">
+                        <div vid="254">
+                            <p class="text-xs font-bold text-emerald-700 mb-1" vid="255">Пшеница</p>
+                            <h4 class="text-sm font-bold text-slate-900" vid="256">09836481 №1</h4>
+                            <div class="mt-4 flex gap-4" vid="257">
+                                <div vid="258"><p class="text-[10px] text-slate-400" vid="259">Влажность</p><p class="text-xs font-bold" vid="260">32%</p></div>
+                                <div vid="261"><p class="text-[10px] text-slate-400" vid="262">Осадки</p><p class="text-xs font-bold" vid="263">0%</p></div>
+                                <div vid="264"><p class="text-[10px] text-slate-400" vid="265">Давление</p><p class="text-xs font-bold" vid="266">992 мм</p></div>
+                            </div>
+                        </div>
+                        <div class="text-right" vid="267">
+                            <p class="text-xl font-black text-slate-800" vid="268">23°C</p>
+                            <p class="text-[10px] text-slate-400 font-bold" vid="269">3.14 м/с, З</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow flex justify-between items-start" vid="270">
+                        <div vid="271">
+                            <p class="text-xs font-bold text-emerald-700 mb-1" vid="272">Озимый ячмень</p>
+                            <h4 class="text-sm font-bold text-slate-900" vid="273">ЗУ ЗСН на II кв. 2024</h4>
+                            <div class="mt-4 flex gap-4" vid="274">
+                                <div vid="275"><p class="text-[10px] text-slate-400" vid="276">Влажность</p><p class="text-xs font-bold" vid="277">35%</p></div>
+                                <div vid="278"><p class="text-[10px] text-slate-400" vid="279">Осадки</p><p class="text-xs font-bold" vid="280">0%</p></div>
+                                <div vid="281"><p class="text-[10px] text-slate-400" vid="282">Давление</p><p class="text-xs font-bold" vid="283">989 мм</p></div>
+                            </div>
+                        </div>
+                        <div class="text-right" vid="284">
+                            <p class="text-xl font-black text-slate-800" vid="285">22°C</p>
+                            <p class="text-[10px] text-slate-400 font-bold" vid="286">3 м/с, ЮЗ</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow flex justify-between items-start" vid="287">
+                        <div vid="288">
+                            <p class="text-xs font-bold text-emerald-700 mb-1" vid="289">Кукуруза</p>
+                            <h4 class="text-sm font-bold text-slate-900" vid="290">Поле № 2 Кукуруза</h4>
+                            <div class="mt-4 flex gap-4" vid="291">
+                                <div vid="292"><p class="text-[10px] text-slate-400" vid="293">Влажность</p><p class="text-xs font-bold" vid="294">35%</p></div>
+                                <div vid="295"><p class="text-[10px] text-slate-400" vid="296">Осадки</p><p class="text-xs font-bold" vid="297">0%</p></div>
+                                <div vid="298"><p class="text-[10px] text-slate-400" vid="299">Давление</p><p class="text-xs font-bold" vid="300">990 мм</p></div>
+                            </div>
+                        </div>
+                        <div class="text-right" vid="301">
+                            <p class="text-xl font-black text-slate-800" vid="302">23°C</p>
+                            <p class="text-[10px] text-slate-400 font-bold" vid="303">3.42 м/с, З</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow flex justify-between items-start" vid="304">
+                        <div vid="305">
+                            <p class="text-xs font-bold text-emerald-700 mb-1" vid="306">Растениеводство</p>
+                            <h4 class="text-sm font-bold text-slate-900" vid="307">Поле №12 Золотухинское</h4>
+                            <div class="mt-4 flex gap-4" vid="308">
+                                <div vid="309"><p class="text-[10px] text-slate-400" vid="310">Влажность</p><p class="text-xs font-bold" vid="311">33%</p></div>
+                                <div vid="312"><p class="text-[10px] text-slate-400" vid="313">Осадки</p><p class="text-xs font-bold" vid="314">0%</p></div>
+                                <div vid="315"><p class="text-[10px] text-slate-400" vid="316">Давление</p><p class="text-xs font-bold" vid="317">984 мм</p></div>
+                            </div>
+                        </div>
+                        <div class="text-right" vid="318">
+                            <p class="text-xl font-black text-slate-800" vid="319">23°C</p>
+                            <p class="text-[10px] text-slate-400 font-bold" vid="320">3.54 м/с, З</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow flex justify-between items-start" vid="321">
+                        <div vid="322">
+                            <p class="text-xs font-bold text-emerald-700 mb-1" vid="323">Пшеница</p>
+                            <h4 class="text-sm font-bold text-slate-900" vid="324">Поле №13 Пшеница</h4>
+                            <div class="mt-4 flex gap-4" vid="325">
+                                <div vid="326"><p class="text-[10px] text-slate-400" vid="327">Влажность</p><p class="text-xs font-bold" vid="328">35%</p></div>
+                                <div vid="329"><p class="text-[10px] text-slate-400" vid="330">Осадки</p><p class="text-xs font-bold" vid="331">0%</p></div>
+                                <div vid="332"><p class="text-[10px] text-slate-400" vid="333">Давление</p><p class="text-xs font-bold" vid="334">987 мм</p></div>
+                            </div>
+                        </div>
+                        <div class="text-right" vid="335">
+                            <p class="text-xl font-black text-slate-800" vid="336">22°C</p>
+                            <p class="text-[10px] text-slate-400 font-bold" vid="337">3.55 м/с, З</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow flex justify-between items-start" vid="338">
+                        <div vid="339">
+                            <p class="text-xs font-bold text-emerald-700 mb-1" vid="340">Озимая пшеница</p>
+                            <h4 class="text-sm font-bold text-slate-900" vid="341">Поле №7 Прилепское</h4>
+                            <div class="mt-4 flex gap-4" vid="342">
+                                <div vid="343"><p class="text-[10px] text-slate-400" vid="344">Влажность</p><p class="text-xs font-bold" vid="345">35%</p></div>
+                                <div vid="346"><p class="text-[10px] text-slate-400" vid="347">Осадки</p><p class="text-xs font-bold" vid="348">0%</p></div>
+                                <div vid="349"><p class="text-[10px] text-slate-400" vid="350">Давление</p><p class="text-xs font-bold" vid="351">992 мм</p></div>
+                            </div>
+                        </div>
+                        <div class="text-right" vid="352">
+                            <p class="text-xl font-black text-slate-800" vid="353">22°C</p>
+                            <p class="text-[10px] text-slate-400 font-bold" vid="354">3.04 м/с, ЮЗ</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        
+        <aside class="col-span-4 flex flex-col gap-6 overflow-y-auto custom-scrollbar pr-1" vid="355">
+            
+            
+            <section class="bg-white rounded-3xl p-6 border border-slate-200 card-shadow" vid="356">
+                <div class="flex items-center justify-between mb-4" vid="357">
+                    <h3 class="text-sm font-bold uppercase tracking-wider" vid="358">Прогноз на 5 дней</h3>
+                    <i class="ph ph-calendar-blank text-slate-400" vid="359"></i>
+                </div>
+                <div class="space-y-3" vid="360">
+                    
+                    <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-2xl border border-emerald-100" vid="361">
+                        <div class="flex items-center gap-3" vid="362">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm" vid="363"><i class="ph ph-cloud-sun text-xl" vid="364"></i></div>
+                            <div vid="365"><p class="text-sm font-bold" vid="366">Сегодня</p><p class="text-[10px] text-slate-400" vid="367">4 Май</p></div>
+                        </div>
+                        <div class="text-right" vid="368">
+                            <p class="text-sm font-bold" vid="369">23° <span class="text-slate-400 text-xs" vid="370">8°</span></p>
+                            <p class="text-[9px] text-emerald-600 font-bold" vid="371">Осадки: 0% • 0мм</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100" vid="372">
+                        <div class="flex items-center gap-3" vid="373">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-orange-500 shadow-sm" vid="374"><i class="ph ph-sun text-xl" vid="375"></i></div>
+                            <div vid="376"><p class="text-sm font-bold" vid="377">Завтра</p><p class="text-[10px] text-slate-400" vid="378">5 Май</p></div>
+                        </div>
+                        <div class="text-right" vid="379">
+                            <p class="text-sm font-bold" vid="380">26° <span class="text-slate-400 text-xs" vid="381">11°</span></p>
+                            <p class="text-[9px] text-slate-400" vid="382">Осадки: 0% • 0мм</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100" vid="383">
+                        <div class="flex items-center gap-3" vid="384">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-orange-500 shadow-sm" vid="385"><i class="ph ph-sun text-xl" vid="386"></i></div>
+                            <div vid="387"><p class="text-sm font-bold" vid="388">Ср, 6 Май</p><p class="text-[10px] text-slate-400" vid="389">6 Май</p></div>
+                        </div>
+                        <div class="text-right" vid="390">
+                            <p class="text-sm font-bold" vid="391">26° <span class="text-slate-400 text-xs" vid="392">13°</span></p>
+                            <p class="text-[9px] text-slate-400" vid="393">Осадки: 0% • 0мм</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100" vid="394">
+                        <div class="flex items-center gap-3" vid="395">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-orange-400 shadow-sm" vid="396"><i class="ph ph-cloud-sun text-xl" vid="397"></i></div>
+                            <div vid="398"><p class="text-sm font-bold" vid="399">Чт, 7 Май</p><p class="text-[10px] text-slate-400" vid="400">7 Май</p></div>
+                        </div>
+                        <div class="text-right" vid="401">
+                            <p class="text-sm font-bold" vid="402">26° <span class="text-slate-400 text-xs" vid="403">14°</span></p>
+                            <p class="text-[9px] text-slate-400" vid="404">Осадки: 0% • 0мм</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100" vid="405">
+                        <div class="flex items-center gap-3" vid="406">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-500 shadow-sm" vid="407"><i class="ph ph-cloud-rain text-xl" vid="408"></i></div>
+                            <div vid="409"><p class="text-sm font-bold" vid="410">Пт, 8 Май</p><p class="text-[10px] text-slate-400" vid="411">8 Май</p></div>
+                        </div>
+                        <div class="text-right" vid="412">
+                            <p class="text-sm font-bold" vid="413">25° <span class="text-slate-400 text-xs" vid="414">13°</span></p>
+                            <p class="text-[9px] text-blue-500 font-bold" vid="415">Осадки: 4% • 0мм</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section class="bg-white rounded-3xl p-6 border border-slate-200 card-shadow" vid="416">
+                <div class="flex items-center justify-between mb-6" vid="417">
+                    <h3 class="text-sm font-bold uppercase tracking-wider" vid="418">Качество воздуха</h3>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100" vid="419">УМЕРЕННО</span>
+                </div>
+                <div class="flex items-end gap-4 mb-6" vid="420">
+                    <span class="text-6xl font-black text-slate-800 leading-none" vid="421">37</span>
+                    <div class="pb-1" vid="422"><i class="ph-fill ph-wind text-2xl text-emerald-500" vid="423"></i></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3" vid="424">
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100" vid="425"><p class="text-[9px] text-slate-400 font-bold uppercase" vid="426">PM2.5</p><p class="text-sm font-bold" vid="427">6</p></div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100" vid="428"><p class="text-[9px] text-slate-400 font-bold uppercase" vid="429">PM10</p><p class="text-sm font-bold" vid="430">9</p></div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100" vid="431"><p class="text-[9px] text-slate-400 font-bold uppercase" vid="432">O₃</p><p class="text-sm font-bold" vid="433">93</p></div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100" vid="434"><p class="text-[9px] text-slate-400 font-bold uppercase" vid="435">Пыль</p><p class="text-sm font-bold" vid="436">0</p></div>
+                </div>
+            </section>
+
+            
+            <section class="bg-white rounded-3xl p-6 border border-slate-200 card-shadow" vid="437">
+                <h3 class="text-sm font-bold uppercase tracking-wider mb-2" vid="438">Рекомендации на сегодня</h3>
+                <p class="text-[10px] text-slate-400 mb-6" vid="439">Быстрые правила по текущему прогнозу</p>
+                <div class="space-y-4" vid="440">
+                    <div class="flex gap-4" vid="441">
+                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0" vid="442"><i class="ph ph-check text-emerald-600 text-xs font-bold" vid="443"></i></div>
+                        <div vid="444"><p class="text-xs font-bold" vid="445">Опрыскивание <span class="text-emerald-600 ml-1" vid="446">с 20:00</span></p><p class="text-[9px] text-slate-400" vid="447">Порывы 4.3 м/с, осадки 0%</p></div>
+                    </div>
+                    <div class="flex gap-4" vid="448">
+                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0" vid="449"><i class="ph ph-check text-emerald-600 text-xs font-bold" vid="450"></i></div>
+                        <div vid="451"><p class="text-xs font-bold" vid="452">Осадки 24ч <span class="text-blue-600 ml-1" vid="453">0%</span></p><p class="text-[9px] text-slate-400" vid="454">Критичных осадков не видно</p></div>
+                    </div>
+                    <div class="flex gap-4" vid="455">
+                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0" vid="456"><i class="ph ph-check text-emerald-600 text-xs font-bold" vid="457"></i></div>
+                        <div vid="458"><p class="text-xs font-bold" vid="459">Ветер <span class="text-orange-600 ml-1" vid="460">9.2 м/с</span></p><p class="text-[9px] text-slate-400" vid="461">Условия по ветру рабочие</p></div>
+                    </div>
+                    <div class="flex gap-4" vid="462">
+                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0" vid="463"><i class="ph ph-check text-emerald-600 text-xs font-bold" vid="464"></i></div>
+                        <div vid="465"><p class="text-xs font-bold" vid="466">Влага почвы <span class="text-emerald-600 ml-1" vid="467">0.321</span></p><p class="text-[9px] text-slate-400" vid="468">Верхний слой в норме</p></div>
+                    </div>
+                </div>
+            </section>
+
+            
+            <section class="bg-slate-900 rounded-3xl p-6 text-white border border-slate-800 shadow-xl" vid="469">
+                <div class="flex items-center gap-2 mb-4" vid="470">
+                    <i class="ph ph-map-trifold text-emerald-400" vid="471"></i>
+                    <h3 class="text-sm font-bold uppercase tracking-wider" vid="472">Карта наблюдения</h3>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed italic mb-6" vid="473">
+                    Поля на карте показаны по их геометрии: точечные — зелёными метками, контурные — зелёными полигонами. Красная метка — точка выбора.
+                </p>
+                <div class="flex gap-4 opacity-80" vid="474">
+                    <span class="text-[9px] flex items-center gap-2" vid="475"><div class="w-2 h-2 rounded-full bg-emerald-500" vid="476"></div> Метка</span>
+                    <span class="text-[9px] flex items-center gap-2" vid="477"><div class="w-2 h-2 rounded-full bg-red-500" vid="478"></div> Выбор</span>
+                </div>
+            </section>
+
+        </aside>
+    </main>
+
+    
+    <footer class="flex justify-between items-center text-[10px] text-slate-400 font-medium shrink-0 px-2" vid="479">
+        <p vid="480">© 2026 АгроМетеоСистема • Данные Open-Meteo &amp; Яндекс</p>
+        <div class="flex gap-6" vid="481">
+            <a href="#" class="hover:text-emerald-600 transition-colors" vid="482">Помощь</a>
+            <a href="#" class="hover:text-emerald-600 transition-colors" vid="483">Архив данных</a>
+            <a href="#" class="hover:text-emerald-600 transition-colors" vid="484">Настройки</a>
+        </div>
+    </footer>
+
+
+</body></html>

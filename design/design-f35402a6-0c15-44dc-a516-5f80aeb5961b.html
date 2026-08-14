@@ -1,0 +1,447 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Экран оператора - Вариант 2</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" vid="6">
+    <style vid="7">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F6F5; 
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        
+        .select-sim {
+            transition: all 0.2s ease;
+        }
+        
+        @keyframes progress-stripes {
+            from { background-position: 1rem 0; }
+            to { background-position: 0 0; }
+        }
+        
+        .animate-stripes {
+            background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+            background-size: 1rem 1rem;
+            animation: progress-stripes 1s linear infinite;
+        }
+
+        
+        .dash-card {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex text-slate-800" vid="8">
+
+    
+    <aside class="w-[280px] bg-[#163A28] border-r border-[#102B1E] flex flex-col flex-shrink-0 z-20 text-slate-300" vid="9">
+        
+        <div class="h-20 flex items-center px-6 border-b border-[#1C4A33] bg-[#133222]" vid="10">
+            <div class="flex items-center gap-3" vid="11">
+                <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center" vid="12">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-white" vid="13">
+                        <path fill-rule="evenodd" d="M15 3.75a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V5.56l-4.72 4.72a.75.75 0 11-1.06-1.06l4.72-4.72h-2.69a.75.75 0 01-.75-.75z" clip-rule="evenodd" vid="14"></path>
+                        <path fill-rule="evenodd" d="M1.5 10.5a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-2.69l-4.72 4.72a.75.75 0 11-1.06-1.06l4.72-4.72H2.25a.75.75 0 01-.75-.75z" clip-rule="evenodd" vid="15"></path>
+                    </svg>
+                </div>
+                <span class="text-xl font-extrabold tracking-widest text-white" vid="16">AGRO<span class="text-emerald-400" vid="17">CTRL</span></span>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 flex flex-col gap-2 px-4" vid="18">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1C4A33] hover:text-white transition-all group" vid="19">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-emerald-500/70 group-hover:text-emerald-400" vid="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" vid="21"></path>
+                </svg>
+                <span class="font-medium text-sm" vid="22">Обзор</span>
+            </a>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1C4A33] hover:text-white transition-all group" vid="23">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-emerald-500/70 group-hover:text-emerald-400" vid="24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" vid="25"></path>
+                </svg>
+                <span class="font-medium text-sm" vid="26">Поля и Культуры</span>
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1C4A33] hover:text-white transition-all group" vid="27">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-emerald-500/70 group-hover:text-emerald-400" vid="28">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" vid="29"></path>
+                </svg>
+                <span class="font-medium text-sm" vid="30">Техника</span>
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1C4A33] hover:text-white transition-all group" vid="31">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-emerald-500/70 group-hover:text-emerald-400" vid="32">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 15.75h3.75M18 10.5V19.5a2.25 2.25 0 01-2.25 2.25H6.25A2.25 2.25 0 014 19.5V10.5A2.25 2.25 0 016.25 8.25h11.5A2.25 2.25 0 0118 10.5z" vid="33"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 8.25v-2.25A2.25 2.25 0 0112.75 3h.5A2.25 2.25 0 0115.5 5.25v3" vid="34"></path>
+                </svg>
+                <span class="font-medium text-sm" vid="35">Задачи</span>
+            </a>
+
+            <div class="mt-8 mb-2 px-5 text-[10px] font-bold text-emerald-600/60 tracking-widest uppercase" vid="36">Операции</div>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-900/40 relative" vid="37">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5" vid="38">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" vid="39"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" vid="40"></path>
+                </svg>
+                <span class="font-bold text-sm" vid="41">Экран оператора</span>
+            </a>
+
+            <div class="mt-8 mb-2 px-5 text-[10px] font-bold text-emerald-600/60 tracking-widest uppercase" vid="42">Связь</div>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1C4A33] hover:text-white transition-all group" vid="43">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-emerald-500/70 group-hover:text-emerald-400" vid="44">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" vid="45"></path>
+                </svg>
+                <span class="font-medium text-sm" vid="46">Сотрудники</span>
+            </a>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1C4A33] hover:text-white transition-all group" vid="47">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-emerald-500/70 group-hover:text-emerald-400" vid="48">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" vid="49"></path>
+                </svg>
+                <span class="font-medium text-sm" vid="50">Чат</span>
+            </a>
+        </nav>
+        
+        
+        <div class="p-4 border-t border-[#1C4A33] bg-[#133222]/50 mt-auto" vid="51">
+            <div class="flex items-center gap-3" vid="52">
+                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold border-2 border-[#1C4A33]" vid="53">
+                    ИА
+                </div>
+                <div vid="54">
+                    <div class="text-sm font-bold text-white" vid="55">Иванов Алексей</div>
+                    <div class="text-[10px] text-emerald-400 font-medium tracking-wide uppercase" vid="56">John Deere 8R</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    
+    <main class="flex-1 flex flex-col h-full relative z-10" vid="57">
+        
+        
+        <header class="h-20 px-8 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between flex-shrink-0 sticky top-0 z-10" vid="58">
+            <div vid="59">
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight" vid="60">Рабочее место</h1>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1" vid="61">Режим активного мониторинга</p>
+            </div>
+            <div class="flex items-center gap-6" vid="62">
+                <div class="flex items-center gap-3 px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-100" vid="63">
+                    <div class="relative flex h-3.5 w-3.5" vid="64">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" vid="65"></span>
+                      <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white" vid="66"></span>
+                    </div>
+                    <span class="text-sm font-bold text-emerald-800" vid="67">На смене (Работаем)</span>
+                </div>
+            </div>
+        </header>
+
+        
+        <div class="flex-1 overflow-y-auto p-6 md:p-8" vid="68">
+            <div class="max-w-[1400px] mx-auto space-y-6" vid="69">
+
+                
+                <section class="bg-white rounded-[24px] dash-card border border-slate-200/60 overflow-hidden" vid="70">
+                    <div class="p-6 md:p-8 flex flex-col lg:flex-row gap-8 lg:gap-12 relative overflow-hidden" vid="71">
+                        
+                        
+                        <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none" vid="72"></div>
+
+                        
+                        <div class="lg:w-1/3 flex flex-col relative z-10" vid="73">
+                            <div class="inline-flex items-center gap-2 mb-4" vid="74">
+                                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider" vid="75">Текущая задача</span>
+                            </div>
+                            
+                            <h2 class="text-3xl font-black text-slate-900 mb-2 leading-tight" vid="76">Поле №1 <br vid="77"><span class="text-[#2F6B4F]" vid="78">Культивация</span></h2>
+                            
+                            <div class="mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6" vid="79">
+                                <div class="flex items-center justify-between mb-2" vid="80">
+                                    <span class="text-sm font-medium text-slate-500" vid="81">Время в работе</span>
+                                </div>
+                                <div class="flex items-center gap-3" vid="82">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8 text-emerald-500" vid="83">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" vid="84"></path>
+                                    </svg>
+                                    <span class="text-4xl font-mono font-black text-slate-800 tracking-tighter" vid="85">02:15<span class="text-slate-400 text-2xl" vid="86">:34</span></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto" vid="87">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" vid="88">Заметки оператора</label>
+                                <textarea placeholder="Добавить комментарий к задаче..." class="w-full h-12 min-h-[48px] bg-white border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-y" vid="89"></textarea>
+                            </div>
+                        </div>
+
+                        
+                        <div class="hidden lg:block w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent" vid="90"></div>
+
+                        
+                        <div class="lg:w-2/3 flex flex-col justify-between relative z-10" vid="91">
+                            
+                            
+                            <div class="mb-8" vid="92">
+                                <div class="flex justify-between items-end mb-4" vid="93">
+                                    <div vid="94">
+                                        <span class="block text-sm font-bold text-slate-600 mb-1" vid="95">Прогресс выполнения</span>
+                                        <span class="text-xs font-medium text-slate-400" vid="96">Обработано 32 из 50 Га</span>
+                                    </div>
+                                    <div class="text-right" vid="97">
+                                        <span class="text-3xl font-black text-[#2F6B4F]" vid="98">65%</span>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-5 p-1 shadow-inner overflow-hidden" vid="99">
+                                    <div class="bg-emerald-500 h-full rounded-full relative shadow-sm animate-stripes transition-all duration-500 ease-out" style="width: 65%" vid="100"></div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-8" vid="101">
+                                <div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm" vid="102">
+                                    <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500" vid="103">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6" vid="104">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m0 0l-3-3m3 3l3-3" vid="105"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9A3 3 0 1012 3a3 3 0 000 6z" vid="106"></path>
+                                        </svg>
+                                    </div>
+                                    <div vid="107">
+                                        <div class="text-xs font-bold text-slate-400 uppercase" vid="108">Топливо</div>
+                                        <div class="flex items-baseline gap-2" vid="109">
+                                            <span class="text-2xl font-black text-slate-800" vid="110">75<span class="text-sm text-slate-500" vid="111">%</span></span>
+                                        </div>
+                                        <div class="w-20 bg-slate-200 rounded-full h-1.5 mt-1" vid="112">
+                                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 75%" vid="113"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm" vid="114">
+                                    <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500" vid="115">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6" vid="116">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" vid="117"></path>
+                                        </svg>
+                                    </div>
+                                    <div vid="118">
+                                        <div class="text-xs font-bold text-slate-400 uppercase" vid="119">Скорость</div>
+                                        <div class="flex items-baseline gap-1" vid="120">
+                                            <span class="text-2xl font-black text-slate-800" vid="121">12.5</span>
+                                            <span class="text-sm font-semibold text-slate-500" vid="122">км/ч</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="flex flex-col sm:flex-row gap-4 mt-auto" vid="123">
+                                <button class="flex-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 hover:border-red-500 font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3 group" vid="124">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 transition-transform group-hover:scale-110" vid="125">
+                                      <path fill-rule="evenodd" d="M4.5 7.5a3 3 0 013-3h9a3 3 0 013 3v9a3 3 0 01-3 3h-9a3 3 0 01-3-3v-9z" clip-rule="evenodd" vid="126"></path>
+                                    </svg>
+                                    <span class="uppercase tracking-widest text-sm" vid="127">Завершить смену</span>
+                                </button>
+                                <button class="flex-1 bg-orange-50 hover:bg-orange-500 text-orange-600 hover:text-white border border-orange-200 hover:border-orange-500 font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3 group" vid="128">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 transition-transform group-hover:scale-110" vid="129">
+                                      <path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clip-rule="evenodd" vid="130"></path>
+                                    </svg>
+                                    <span class="uppercase tracking-widest text-sm" vid="131">Пауза / Простой</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-10" vid="132">
+                    
+                    
+                    <div class="lg:col-span-4 bg-white rounded-[20px] dash-card border border-slate-200/60 p-6 flex flex-col" vid="133">
+                        <div class="flex items-center justify-between mb-6" vid="134">
+                            <h2 class="text-lg font-black text-slate-800" vid="135">Следующая задача</h2>
+                            <div class="bg-slate-100 text-slate-500 w-8 h-8 rounded-full flex items-center justify-center" vid="136">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4" vid="137">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" vid="138"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 flex-1" vid="139">
+                            
+                            <div vid="140">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" vid="141">Выбор поля</label>
+                                <div class="w-full bg-slate-50 border-2 border-transparent hover:border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-colors group" vid="142">
+                                    <div class="flex flex-col" vid="143">
+                                        <span class="font-bold text-slate-800 text-sm" vid="144">Поле №12 — Пшеница озимая</span>
+                                        <span class="text-xs font-medium text-slate-400 mt-0.5" vid="145">S: 120 Га • L: 2.5 км</span>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-slate-400" vid="146">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" vid="147"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div vid="148">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" vid="149">Тип операции</label>
+                                <div class="w-full bg-slate-50 border-2 border-transparent hover:border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-colors group" vid="150">
+                                    <div class="flex flex-col" vid="151">
+                                        <span class="font-bold text-slate-800 text-sm" vid="152">Посев (Сеялка Kinze)</span>
+                                        <span class="text-xs font-medium text-slate-400 mt-0.5" vid="153">Норма: 200 кг/Га</span>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-slate-400" vid="154">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" vid="155"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100 border-dashed text-center" vid="156">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-slate-400 mx-auto mb-2" vid="157">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" vid="158"></path>
+                            </svg>
+                            <p class="text-xs font-semibold text-slate-500" vid="159">Ожидание завершения текущей задачи для старта</p>
+                        </div>
+                    </div>
+
+                    
+                    <div class="lg:col-span-4 flex flex-col gap-6" vid="160">
+                        
+                        <div class="bg-white rounded-[20px] dash-card border border-slate-200/60 p-6" vid="161">
+                            <h2 class="text-lg font-black text-slate-800 mb-4" vid="162">Техника</h2>
+                            
+                            <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white relative overflow-hidden shadow-lg" vid="163">
+                                
+                                <svg class="absolute -right-4 -bottom-4 w-32 h-32 text-white/5" fill="currentColor" viewBox="0 0 24 24" vid="164">
+                                    <path d="M19 13v-2h-1.5l-1.32-3.95A1.996 1.996 0 0014.29 6H9.51a1.99 1.99 0 00-1.89 1.05L6.3 11H3v5h1.22c.42 1.69 1.96 3 3.78 3s3.36-1.31 3.78-3h2.44c.42 1.69 1.96 3 3.78 3s3.36-1.31 3.78-3H21v-3h-2zm-11 5c-.83 0-1.5-.67-1.5-1.5S7.17 15 8 15s1.5.67 1.5 1.5S8.83 18 8 18zm8 0c-.83 0-1.5-.67-1.5-1.5S15.17 15 16 15s1.5.67 1.5 1.5S16.83 18 16 18zm-4.5-7h-3.4l.87-2.61c.1-.29.36-.49.66-.49h1.87v3.1z" vid="165"></path>
+                                </svg>
+
+                                <div class="relative z-10" vid="166">
+                                    <div class="flex justify-between items-start mb-6" vid="167">
+                                        <div vid="168">
+                                            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1" vid="169">Трактор</div>
+                                            <h3 class="font-bold text-xl leading-none" vid="170">John Deere 8R</h3>
+                                        </div>
+                                        <span class="bg-white/20 backdrop-blur-sm text-white text-xs font-mono font-bold px-2.5 py-1 rounded" vid="171">АХ 1234 СЕ</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-lg backdrop-blur-sm mb-4" vid="172">
+                                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center" vid="173">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-emerald-300" vid="174">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.83M11.42 15.17l-3.976-3.976c-.522-.522-1.282-.522-1.804 0l-3.218 3.218a.5.5 0 00.707.707l3.218-3.218a1.5 1.5 0 012.122 0l3.976 3.976zM11.42 15.17l4.088-4.088c.522-.522.522-1.282 0-1.804l-3.218-3.218a.5.5 0 00-.707.707l3.218 3.218a1.5 1.5 0 010 2.122l-4.088 4.088" vid="175"></path>
+                                            </svg>
+                                        </div>
+                                        <div vid="176">
+                                            <div class="text-[10px] text-slate-300 uppercase tracking-wider font-semibold" vid="177">Прицепное орудие</div>
+                                            <div class="font-semibold text-sm" vid="178">Плуг 8-корпусной</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-between items-center text-xs font-medium text-emerald-300" vid="179">
+                                        <span class="flex items-center gap-1.5" vid="180">
+                                            <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" vid="181"></div>
+                                            Системы в норме
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bg-white rounded-[20px] dash-card border border-red-100 flex-1 p-6 relative overflow-hidden group" vid="182">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-red-50 rounded-bl-full flex items-start justify-end p-3 transition-colors group-hover:bg-red-100" vid="183">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-red-400" vid="184">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" vid="185"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-lg font-black text-slate-800 mb-2" vid="186">Связь с диспетчером</h2>
+                            <p class="text-xs font-medium text-slate-500 mb-4 pr-10" vid="187">Отправьте быстрое уведомление о проблеме на поле.</p>
+                            
+                            <button class="w-full bg-white border-2 border-slate-200 hover:border-slate-800 text-slate-700 font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-between group/btn" vid="188">
+                                <span vid="189">Создать тикет</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform" vid="190">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" vid="191"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                    <div class="lg:col-span-4 bg-white rounded-[20px] dash-card border border-slate-200/60 p-6 flex flex-col h-full" vid="192">
+                        <div class="flex items-center justify-between mb-6" vid="193">
+                            <h2 class="text-lg font-black text-slate-800" vid="194">Журнал смены</h2>
+                            <span class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full" vid="195">Сегодня, 24 Окт</span>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto relative pr-2" vid="196">
+                            
+                            <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100" vid="197"></div>
+
+                            <div class="space-y-6 relative" vid="198">
+                                
+                                <div class="flex gap-4 relative" vid="199">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-100 border-4 border-white flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm" vid="200">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500" vid="201"></div>
+                                    </div>
+                                    <div class="pt-1" vid="202">
+                                        <div class="text-[10px] font-black tracking-widest text-emerald-600 uppercase mb-1" vid="203">08:40 - Сейчас</div>
+                                        <div class="text-sm font-bold text-slate-800" vid="204">Поле №1 — Культивация</div>
+                                        <div class="text-xs font-medium text-slate-500 mt-0.5" vid="205">В работе (02:15 ч)</div>
+                                    </div>
+                                </div>
+
+                                
+                                <div class="flex gap-4 relative" vid="206">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 border-4 border-white flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm text-slate-400" vid="207">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4" vid="208">
+                                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" vid="209"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="pt-1" vid="210">
+                                        <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-1" vid="211">08:15 - 08:40</div>
+                                        <div class="text-sm font-bold text-slate-700" vid="212">Переезд</div>
+                                        <div class="text-xs font-medium text-slate-500 mt-0.5" vid="213">База → Поле №1 (25 мин)</div>
+                                    </div>
+                                </div>
+
+                                
+                                <div class="flex gap-4 relative" vid="214">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 border-4 border-white flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm text-slate-400" vid="215">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4" vid="216">
+                                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" vid="217"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="pt-1" vid="218">
+                                        <div class="text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-1" vid="219">08:00 - 08:15</div>
+                                        <div class="text-sm font-bold text-slate-700" vid="220">ЕТО (Обслуживание)</div>
+                                        <div class="text-xs font-medium text-slate-500 mt-0.5" vid="221">База (15 мин)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+
+</body></html>

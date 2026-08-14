@@ -1,0 +1,65 @@
+---
+description: Анимация наведения на кликабельные строки реестров (таблица и карточки)
+globs: frontend/src/pages/**/*.vue
+alwaysApply: false
+---
+
+# Hover-анимация строк реестра
+
+## Когда применять
+
+- Кликабельные строки таблиц и списков (реестры задач, полей, техники, складов и т.п.).
+- **Не** применять к строкам без действия по клику и к заголовкам таблицы.
+
+## Референс
+
+Эталон: `TaskManagementPage.vue` — классы `task-list-row`, `task-list-title-main`, `task-list-cell-num`.
+
+## Обязательный паттерн
+
+1. **Класс строки** — `{раздел}-list-row` (или согласованный с разделом аналог), `cursor: pointer`.
+2. **Переходы** — `background-color`, `box-shadow`, при карточной вёрстке ещё `transform` (~`0.22s ease`).
+3. **Десктоп (таблица `tr`)** — без `transform` на `tr` (нестабильно в части браузеров):
+   - фон: `color-mix(in srgb, var(--accent-green) 9%, var(--bg-panel))`;
+   - акцент: `box-shadow: inset 3px 0 0 var(--accent-green)`;
+   - опционально: подсветка ключевой ячейки (название, №) цветом `var(--accent-green)`.
+4. **Мобильные карточки** (`@media`, строка как `display: block`) — допустимы `translateY(-2px)` и лёгкая внешняя тень + `inset` слева.
+5. **Тёмная тема** — отдельный `[data-theme='dark']` для `:hover` (фон чуть сильнее, ~`16%` `accent-green` на `--bg-elevated`).
+6. **Доступность** — `@media (prefers-reduced-motion: reduce)`: только фон/тень, без `transform` и без анимации цвета текста.
+
+## Именование (новый реестр)
+
+| Элемент | Класс |
+|--------|--------|
+| Строка | `{prefix}-list-row` |
+| Заголовок строки | `{prefix}-list-title-main` |
+| Номер / метка | `{prefix}-list-cell-num` |
+
+Селектор hover: `.{prefix}-list-table tbody tr.{prefix}-list-row:hover`.
+
+## Запрещено
+
+- Резкий смен фона без `transition`.
+- Хардкод `#2d5a3d` вместо `var(--accent-green)`.
+- `transform: scale` на всей строке таблицы на десктопе.
+- Игнорировать `prefers-reduced-motion`.
+
+## Мини-шаблон (скопировать и заменить `task` на префикс раздела)
+
+```css
+.{prefix}-list-row {
+  cursor: pointer;
+  transition: background-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+}
+
+.{prefix}-list-table tbody tr.{prefix}-list-row:hover {
+  background-color: color-mix(in srgb, var(--accent-green) 9%, var(--bg-panel));
+  box-shadow: inset 3px 0 0 var(--accent-green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .{prefix}-list-row { transition: background-color 0.15s ease, box-shadow 0.15s ease; }
+}
+```
+
+После добавления hover в новый реестр — проверить светлую и тёмную тему и мобильную карточную вёрстку.

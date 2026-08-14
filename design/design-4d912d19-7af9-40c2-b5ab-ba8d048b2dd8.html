@@ -1,0 +1,487 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Аналитика простоев техники</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" vid="5">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" vid="6">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet" vid="7">
+    <style vid="8">
+        :root {
+            
+            --bg-app: #F7F8FA;
+            --bg-surface: #FFFFFF;
+            --bg-input: #F4F5F6;
+            --bg-hover: #F8F9FA;
+            
+            --accent-green: #8EE6A3;
+            --accent-green-hover: #7BD992;
+            
+            --text-primary: #1A1D1F;
+            --text-secondary: #6F767E;
+            --text-tertiary: #9A9FA5;
+            
+            --border-light: #EFEFEF;
+            --border-medium: #E6E8EC;
+            
+            
+            --radius-card: 16px;
+            --radius-input: 8px;
+            --radius-pill: 99px;
+            
+            
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.04);
+            
+            
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-app);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        
+        .topbar {
+            background-color: var(--bg-surface);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--text-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-icon svg {
+            fill: var(--bg-surface);
+            width: 18px;
+            height: 18px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .control-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--bg-input);
+            padding: 8px 16px;
+            border-radius: var(--radius-input);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .control-pill:hover {
+            background-color: var(--border-medium);
+        }
+
+        .control-pill svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--text-secondary);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--border-medium);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239A9FA5"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
+            background-size: cover;
+        }
+
+        
+        .main-container {
+            padding: 32px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-green);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-input);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-green-hover);
+        }
+
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        
+        .card {
+            background-color: var(--bg-surface);
+            border-radius: var(--radius-card);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 16px;
+            font-size: 14px;
+        }
+
+        
+        th {
+            background-color: var(--accent-green);
+            color: var(--text-primary);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        
+        th:first-child {
+            border-top-left-radius: var(--radius-input);
+            border-bottom-left-radius: var(--radius-input);
+        }
+
+        th:last-child {
+            border-top-right-radius: var(--radius-input);
+            border-bottom-right-radius: var(--radius-input);
+        }
+
+        
+        td {
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .td-secondary {
+            color: var(--text-secondary);
+        }
+
+        .badge-reason {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background-color: var(--bg-input);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        
+        .chart-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
+            padding-top: 16px;
+        }
+
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            
+            background: conic-gradient(
+                var(--accent-green) 0% 40%, 
+                var(--text-primary) 40% 70%, 
+                var(--border-medium) 70% 100%
+            );
+            position: relative;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.1); 
+        }
+
+        
+        
+        .chart-legend {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .legend-label-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-breakdown { background-color: var(--accent-green); }
+        .dot-rain { background-color: var(--text-primary); }
+        .dot-fuel { background-color: var(--border-medium); }
+
+        .legend-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body vid="9">
+
+    <header class="topbar" vid="10">
+        <div class="brand" vid="11">
+            <div class="brand-icon" vid="12">
+                <svg viewBox="0 0 24 24" vid="13"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" vid="14"></path></svg>
+            </div>
+            AgroDash
+        </div>
+        
+        <div class="topbar-actions" vid="15">
+            <div class="control-pill" vid="16">
+                <svg viewBox="0 0 24 24" vid="17"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z" vid="18"></path></svg>
+                Сегодня
+            </div>
+            <div class="control-pill" vid="19">
+                <svg viewBox="0 0 24 24" vid="20"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" vid="21"></path></svg>
+                Фильтры
+            </div>
+            <div class="user-profile" vid="22">
+                <div class="avatar" vid="23"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container" vid="24">
+        <div class="page-header" vid="25">
+            <h1 class="page-title" vid="26">Журнал простоев техники</h1>
+            <button class="btn-primary" vid="27">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vid="28"><line x1="12" y1="5" x2="12" y2="19" vid="29"></line><line x1="5" y1="12" x2="19" y2="12" vid="30"></line></svg>
+                Добавить запись
+            </button>
+        </div>
+
+        <div class="dashboard-grid" vid="31">
+            
+            
+            <section class="card" vid="32">
+                <div class="card-header" vid="33">
+                    <h2 class="card-title" vid="34">Детализация за смену</h2>
+                </div>
+                <div class="table-container" vid="35">
+                    <table vid="36">
+                        <thead vid="37">
+                            <tr vid="38">
+                                <th vid="39">Сотрудник</th>
+                                <th vid="40">Причина простоя</th>
+                                <th vid="41">Начало</th>
+                                <th vid="42">Конец</th>
+                                <th class="text-right" vid="43">Длительность</th>
+                            </tr>
+                        </thead>
+                        <tbody vid="44">
+                            <tr vid="45">
+                                <td vid="46">
+                                    <strong vid="47">Иванов И.И.</strong>
+                                    <div class="td-secondary" style="font-size: 12px; margin-top: 4px;" vid="48">Трактор John Deere</div>
+                                </td>
+                                <td vid="49"><span class="badge-reason" vid="50">Поломка гидравлики</span></td>
+                                <td class="td-secondary" vid="51">08:15</td>
+                                <td class="td-secondary" vid="52">12:45</td>
+                                <td class="text-right" vid="53"><strong vid="54">4ч 30м</strong></td>
+                            </tr>
+                            <tr vid="55">
+                                <td vid="56">
+                                    <strong vid="57">Петров П.П.</strong>
+                                    <div class="td-secondary" style="font-size: 12px; margin-top: 4px;" vid="58">Комбайн CLAAS</div>
+                                </td>
+                                <td vid="59"><span class="badge-reason" vid="60">Сильный дождь</span></td>
+                                <td class="td-secondary" vid="61">14:00</td>
+                                <td class="td-secondary" vid="62">15:30</td>
+                                <td class="text-right" vid="63"><strong vid="64">1ч 30м</strong></td>
+                            </tr>
+                            <tr vid="65">
+                                <td vid="66">
+                                    <strong vid="67">Сидоров С.С.</strong>
+                                    <div class="td-secondary" style="font-size: 12px; margin-top: 4px;" vid="68">Погрузчик Manitou</div>
+                                </td>
+                                <td vid="69"><span class="badge-reason" vid="70">Ожидание топлива</span></td>
+                                <td class="td-secondary" vid="71">09:00</td>
+                                <td class="td-secondary" vid="72">11:00</td>
+                                <td class="text-right" vid="73"><strong vid="74">2ч 00м</strong></td>
+                            </tr>
+                            <tr vid="75">
+                                <td vid="76">
+                                    <strong vid="77">Смирнов А.А.</strong>
+                                    <div class="td-secondary" style="font-size: 12px; margin-top: 4px;" vid="78">Сеялка Kinze</div>
+                                </td>
+                                <td vid="79"><span class="badge-reason" vid="80">Замена подшипника</span></td>
+                                <td class="td-secondary" vid="81">10:30</td>
+                                <td class="td-secondary" vid="82">11:15</td>
+                                <td class="text-right" vid="83"><strong vid="84">0ч 45м</strong></td>
+                            </tr>
+                            <tr vid="85">
+                                <td vid="86">
+                                    <strong vid="87">Кузнецов В.В.</strong>
+                                    <div class="td-secondary" style="font-size: 12px; margin-top: 4px;" vid="88">Трактор МТЗ-82</div>
+                                </td>
+                                <td vid="89"><span class="badge-reason" vid="90">Дождь</span></td>
+                                <td class="td-secondary" vid="91">16:00</td>
+                                <td class="td-secondary" vid="92">18:00</td>
+                                <td class="text-right" vid="93"><strong vid="94">2ч 00м</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            
+            <aside class="card" vid="95">
+                <div class="card-header" vid="96">
+                    <h2 class="card-title" vid="97">Сводка причин</h2>
+                </div>
+                <div class="chart-wrapper" vid="98">
+                    <div class="pie-chart" vid="99"></div>
+                    
+                    <div class="chart-legend" vid="100">
+                        <div class="legend-item" vid="101">
+                            <div class="legend-label-group" vid="102">
+                                <div class="legend-dot dot-breakdown" vid="103"></div>
+                                Поломки
+                            </div>
+                            <span class="legend-value" vid="104">40%</span>
+                        </div>
+                        <div class="legend-item" vid="105">
+                            <div class="legend-label-group" vid="106">
+                                <div class="legend-dot dot-rain" vid="107"></div>
+                                Погодные условия (Дождь)
+                            </div>
+                            <span class="legend-value" vid="108">30%</span>
+                        </div>
+                        <div class="legend-item" vid="109">
+                            <div class="legend-label-group" vid="110">
+                                <div class="legend-dot dot-fuel" vid="111"></div>
+                                Ожидание топлива
+                            </div>
+                            <span class="legend-value" vid="112">30%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+
+</body></html>

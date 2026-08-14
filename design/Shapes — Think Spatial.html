@@ -1,0 +1,710 @@
+<html lang="en" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Shapes — Think Spatial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" vid="5">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" vid="6">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet" vid="7">
+    
+    
+
+    <style vid="8">
+        :root {
+            --bg-color: #000000;
+            --text-main: #FFFFFF;
+            --text-muted: #8A8A8A;
+            --text-meta: #555555;
+            
+            --font-display: 'Playfair Display', serif;
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            
+            --grid-gap: 24px;
+            --container-width: 1440px;
+            --padding-edge: 48px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        
+        h1, h2, h3, .serif-text {
+            font-family: var(--font-display);
+            font-weight: 400;
+        }
+
+        .meta-text {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-meta);
+        }
+
+        
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px var(--padding-edge);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            mix-blend-mode: difference;
+        }
+
+        .logo {
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-muted);
+        }
+
+        main {
+            padding-top: 160px;
+        }
+
+        
+        .hero {
+            text-align: center;
+            padding: 60px 0 120px;
+            position: relative;
+        }
+
+        .hero-heading {
+            font-size: clamp(4rem, 8vw, 7rem);
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -0.03em;
+            max-width: 800px;
+            margin-inline: auto;
+        }
+
+        .hero-sub {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            max-width: 400px;
+            margin-inline: auto;
+            font-weight: 300;
+        }
+
+        
+        .spatial-stage {
+            perspective: 1500px;
+            width: 100%;
+            height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 120px;
+            overflow: hidden;
+        }
+
+        .gallery-track {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            position: relative;
+            width: 100%;
+        }
+
+        .spatial-card {
+            position: absolute;
+            width: 320px;
+            height: 480px;
+            border-radius: 24px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+            padding: 32px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .spatial-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 60%);
+            z-index: 1;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            line-height: 1.1;
+            margin-bottom: 8px;
+        }
+
+        .card-meta {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            font-family: var(--font-ui);
+        }
+
+        
+        .card-1 { transform: translateX(-650px) translateZ(-400px) rotateY(25deg); opacity: 0.3; background-image: url('https://images.pexels.com/photos/2832039/pexels-photo-2832039.jpeg?auto=compress&cs=tinysrgb&w=800'); }
+        .card-2 { transform: translateX(-350px) translateZ(-200px) rotateY(15deg); opacity: 0.7; background-image: url('https://images.pexels.com/photos/310452/pexels-photo-310452.jpeg?auto=compress&cs=tinysrgb&w=800'); }
+        .card-3 { transform: translateX(0) translateZ(50px) rotateY(0deg); opacity: 1; z-index: 10; background-image: url('https://images.pexels.com/photos/5443041/pexels-photo-5443041.jpeg?auto=compress&cs=tinysrgb&w=800'); }
+        .card-4 { transform: translateX(350px) translateZ(-200px) rotateY(-15deg); opacity: 0.7; background-image: url('https://images.pexels.com/photos/2832034/pexels-photo-2832034.jpeg?auto=compress&cs=tinysrgb&w=800'); }
+        .card-5 { transform: translateX(650px) translateZ(-400px) rotateY(-25deg); opacity: 0.3; background-image: url('https://images.pexels.com/photos/3361480/pexels-photo-3361480.jpeg?auto=compress&cs=tinysrgb&w=800'); }
+
+
+        
+        .trusted-section {
+            padding: 80px var(--padding-edge);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 60px;
+        }
+
+        .trusted-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .logo-row {
+            display: flex;
+            gap: 80px;
+            opacity: 0.5;
+            filter: grayscale(100%) contrast(200%);
+        }
+
+        .logo-row svg {
+            height: 24px;
+            fill: currentColor;
+        }
+
+        
+        .section-container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 160px var(--padding-edge);
+        }
+
+        
+        .testimonial-big {
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .testimonial-big blockquote {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 40px;
+        }
+
+        .testimonial-big blockquote::before {
+            content: '“';
+            position: absolute;
+            transform: translateX(-120%);
+            color: var(--text-meta);
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .author-name {
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .author-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        
+        .workflow-header {
+            margin-bottom: 100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .workflow-header h2 {
+            font-size: 3rem;
+        }
+
+        .workflow-list {
+            display: flex;
+            flex-direction: column;
+            gap: 120px;
+        }
+
+        .workflow-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .workflow-item:nth-child(even) {
+            direction: rtl;
+        }
+        .workflow-item:nth-child(even) > * {
+            direction: ltr;
+        }
+
+        .workflow-number {
+            font-family: var(--font-display);
+            font-size: 8rem;
+            line-height: 0.8;
+            color: var(--text-meta);
+            opacity: 0.3;
+            margin-bottom: 24px;
+        }
+
+        .workflow-text h3 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .workflow-text p {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            max-width: 400px;
+            font-weight: 300;
+        }
+
+        .workflow-visual {
+            width: 100%;
+            aspect-ratio: 4/5;
+            background-color: #111;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .workflow-visual img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: opacity 0.5s ease, transform 10s ease;
+        }
+
+        .workflow-visual:hover img {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .tools-tags {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .tool-tag {
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        
+        .benefits-section {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 80px;
+            margin-top: 80px;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .benefit-card {
+            padding: 40px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .benefit-icon {
+            margin-bottom: 24px;
+            color: var(--text-muted);
+        }
+
+        .benefit-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .benefit-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        
+        .marquee-wrapper {
+            width: 100%;
+            overflow: hidden;
+            padding: 120px 0;
+            background: #050505;
+            position: relative;
+        }
+        
+        .marquee-wrapper::before,
+        .marquee-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 15vw;
+            z-index: 10;
+        }
+        
+        .marquee-wrapper::before {
+            left: 0;
+            background: linear-gradient(to right, #000 0%, transparent 100%);
+        }
+        
+        .marquee-wrapper::after {
+            right: 0;
+            background: linear-gradient(to left, #000 0%, transparent 100%);
+        }
+
+        .marquee-content {
+            display: flex;
+            width: fit-content;
+            animation: scroll 40s linear infinite;
+        }
+
+        .marquee-item {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            white-space: nowrap;
+            padding: 0 4vw;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4vw;
+        }
+        
+        .marquee-item span {
+            color: var(--text-main);
+        }
+
+        .marquee-separator {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-meta);
+            border-radius: 50%;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } 
+        }
+
+        
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100px 100px;
+            background-position: center center;
+            mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+        }
+        
+        
+        .sys-label {
+            position: absolute;
+            top: 120px;
+            right: var(--padding-edge);
+            text-align: right;
+        }
+    </style>
+</head>
+<body vid="9">
+
+    <div class="bg-grid" vid="10"></div>
+
+    <header class="site-header" vid="11">
+        <div class="logo" vid="12">Shapes —</div>
+        <nav class="nav-links" vid="13">
+            <a href="#" vid="14">Platform</a>
+            <a href="#" vid="15">Workflow</a>
+            <a href="#" vid="16">Enterprise</a>
+            <a href="#" vid="17">Sign in</a>
+        </nav>
+    </header>
+
+    <div class="sys-label meta-text" vid="18">
+        SYS.REQ // ONLINE<br vid="19">
+        VER. 2.0.4
+    </div>
+
+    <main vid="20">
+        
+        <section class="hero" vid="21">
+            <div class="meta-text" style="margin-bottom: 2rem;" vid="22">[ Spatial Computing ]</div>
+            <h1 class="hero-heading" vid="23">Think spatial.</h1>
+            <p class="hero-sub" vid="24">Shapes is a collaborative design platform for wearables and spatial environments.</p>
+        </section>
+
+        
+        <section class="spatial-stage" vid="25">
+            <div class="gallery-track" vid="26">
+                
+                <div class="spatial-card card-1" vid="27">
+                    <div class="card-content" vid="28">
+                        <div class="card-meta" vid="29">Material Properties</div>
+                        <h3 class="card-title serif-text" vid="30">Volumetric<br vid="31">Fabrics</h3>
+                    </div>
+                </div>
+                
+                <div class="spatial-card card-2" vid="32">
+                    <div class="card-content" vid="33">
+                        <div class="card-meta" vid="34">Prototyping</div>
+                        <h3 class="card-title serif-text" vid="35">Haptic<br vid="36">Feedback</h3>
+                    </div>
+                </div>
+                
+                <div class="spatial-card card-3" vid="37">
+                    <div class="card-content" vid="38">
+                        <div class="card-meta" vid="39">Environment</div>
+                        <h3 class="card-title serif-text" vid="40">Spatial<br vid="41">Assembly</h3>
+                    </div>
+                </div>
+                
+                <div class="spatial-card card-4" vid="42">
+                    <div class="card-content" vid="43">
+                        <div class="card-meta" vid="44">Rendering</div>
+                        <h3 class="card-title serif-text" vid="45">Real-time<br vid="46">Light</h3>
+                    </div>
+                </div>
+                
+                <div class="spatial-card card-5" vid="47">
+                    <div class="card-content" vid="48">
+                        <div class="card-meta" vid="49">Export</div>
+                        <h3 class="card-title serif-text" vid="50">Engine<br vid="51">Ready</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="trusted-section" vid="52">
+            <div class="trusted-label" vid="53">Trusted by spatial teams at</div>
+            <div class="logo-row" vid="54">
+                
+                <svg viewBox="0 0 100 30" vid="55"><path d="M0 15 L15 0 L30 15 L15 30 Z M40 0 H70 V30 H40 Z M80 15 A 15 15 0 1 0 110 15 A 15 15 0 1 0 80 15" vid="56"></path></svg>
+                <svg viewBox="0 0 120 30" vid="57"><path d="M0 30 L20 0 L40 30 Z M50 30 L50 0 L80 15 Z M90 0 H120 V10 H90 Z M90 20 H120 V30 H90 Z" vid="58"></path></svg>
+                <svg viewBox="0 0 90 30" vid="59"><circle cx="15" cy="15" r="15" vid="60"></circle><rect x="40" y="0" width="30" height="30" rx="5" vid="61"></rect><polygon points="85,30 90,0 105,15" vid="62"></polygon></svg>
+                <svg viewBox="0 0 100 30" vid="63"><path d="M0 15 Q 25 -10 50 15 T 100 15" fill="none" stroke="currentColor" stroke-width="4" vid="64"></path></svg>
+            </div>
+        </section>
+
+        
+        <section class="section-container" vid="65">
+            <div class="testimonial-big" vid="66">
+                <div class="meta-text" style="margin-bottom: 2rem;" vid="67">[ Paradigm Shift ]</div>
+                <blockquote class="serif-text" vid="68">
+                    Finally, a tool that understands depth. Shapes translates our physical design intuition directly into digital space.
+                </blockquote>
+                <div class="author-info" vid="69">
+                    <span class="author-name" vid="70">Elena Rostova</span>
+                    <span class="author-role" vid="71">Lead Wearables Architect, Nexus</span>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="section-container" vid="72">
+            <div class="workflow-header" vid="73">
+                <div vid="74">
+                    <div class="meta-text" style="margin-bottom: 1rem;" vid="75">[ System Architecture ]</div>
+                    <h2 class="serif-text" vid="76">Fluid integration.</h2>
+                </div>
+                <div class="meta-text" style="text-align: right;" vid="77">
+                    SEQ_01 — 04<br vid="78">
+                    LINEAR PROGRESSION
+                </div>
+            </div>
+
+            <div class="workflow-list" vid="79">
+                
+                <div class="workflow-item" vid="80">
+                    <div class="workflow-text" vid="81">
+                        <div class="workflow-number" vid="82">01</div>
+                        <h3 class="serif-text" vid="83">Import your assets.</h3>
+                        <p vid="84">Bring in geometry and textures from your existing pipeline. Shapes natively understands formats from industry standards, eliminating conversion friction.</p>
+                        <div class="tools-tags" vid="85">
+                            <span class="tool-tag" vid="86">Figma</span>
+                            <span class="tool-tag" vid="87">Blender</span>
+                            <span class="tool-tag" vid="88">Unity</span>
+                            <span class="tool-tag" vid="89">Unreal</span>
+                        </div>
+                    </div>
+                    <div class="workflow-visual" vid="90">
+                        <img src="https://images.pexels.com/photos/842711/pexels-photo-842711.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Abstract wireframe structures" vid="91">
+                        <div class="meta-text" style="position: absolute; bottom: 24px; right: 24px; background: rgba(0,0,0,0.5); padding: 4px 8px;" vid="92">IMG_SRC: RAW</div>
+                    </div>
+                </div>
+
+                
+                <div class="workflow-item" vid="93">
+                    <div class="workflow-text" vid="94">
+                        <div class="workflow-number" vid="95">02</div>
+                        <h3 class="serif-text" vid="96">Assemble the scene.</h3>
+                        <p vid="97">Use intuitive spatial design tools to compose your wearables. Manipulate materials, adjust lighting, and establish the physical properties of digital objects in true 3D space.</p>
+                    </div>
+                    <div class="workflow-visual" vid="98">
+                        <img src="https://images.pexels.com/photos/2246476/pexels-photo-2246476.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Textural material manipulation" vid="99">
+                    </div>
+                </div>
+
+                
+                <div class="workflow-item" vid="100">
+                    <div class="workflow-text" vid="101">
+                        <div class="workflow-number" vid="102">03</div>
+                        <h3 class="serif-text" vid="103">Prototype interactions.</h3>
+                        <p vid="104">Define how materials behave and interfaces react without writing code. Set up state changes, haptic triggers, and spatial logic rapidly.</p>
+                    </div>
+                    <div class="workflow-visual" vid="105">
+                        <img src="https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Dynamic light and interaction" vid="106">
+                    </div>
+                </div>
+
+                
+                <div class="workflow-item" vid="107">
+                    <div class="workflow-text" vid="108">
+                        <div class="workflow-number" vid="109">04</div>
+                        <h3 class="serif-text" vid="110">Present in real-time.</h3>
+                        <p vid="111">Share a live environment with your team. Review designs collaboratively, leave spatial annotations, and finalize decisions synchronously from anywhere.</p>
+                    </div>
+                    <div class="workflow-visual" vid="112">
+                        <img src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=800" alt="Team collaboration abstraction" vid="113">
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="benefits-section" vid="114">
+                <div class="benefits-grid" vid="115">
+                    <div class="benefit-card" vid="116">
+                        <div class="meta-text" style="margin-bottom: 1rem;" vid="117">SEC.CERT // A1</div>
+                        <h3 class="serif-text" vid="118">Enterprise grade security.</h3>
+                        <p vid="119">Your intellectual property is protected by end-to-end encryption, SOC2 compliance, and granular role-based access controls designed for massive studios.</p>
+                    </div>
+                    <div class="benefit-card" vid="120">
+                        <div class="meta-text" style="margin-bottom: 1rem;" vid="121">EDU.PATH // 01</div>
+                        <h3 class="serif-text" vid="122">Accessible mastery.</h3>
+                        <p vid="123">Despite its power, Shapes is built to be learned fast. Access a comprehensive library of tutorials, live training sessions, and dedicated support.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="section-container" style="padding-top: 0;" vid="124">
+            <div class="testimonial-big" vid="125">
+                <blockquote class="serif-text" vid="126">
+                    It feels less like software and more like a physical workshop. We cut our prototyping cycle by weeks.
+                </blockquote>
+                <div class="author-info" vid="127">
+                    <span class="author-name" vid="128">Marcus Chen</span>
+                    <span class="author-role" vid="129">Director of Product, Aura Spatial</span>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="marquee-wrapper" vid="130">
+            <div class="meta-text" style="position: absolute; top: 40px; left: var(--padding-edge); z-index: 20;" vid="131">[ Industry Consensus ]</div>
+            
+            <div class="marquee-content" vid="132">
+                
+                <div class="marquee-item" vid="133">
+                    "The new standard for spatial UI" <span vid="134">— Wired</span>
+                    <div class="marquee-separator" vid="135"></div>
+                    "Shapes makes 3D feel native" <span vid="136">— Design Anthology</span>
+                    <div class="marquee-separator" vid="137"></div>
+                    "Essential for modern hardware teams" <span vid="138">— Fast Company</span>
+                    <div class="marquee-separator" vid="139"></div>
+                </div>
+                
+                <div class="marquee-item" vid="140">
+                    "The new standard for spatial UI" <span vid="141">— Wired</span>
+                    <div class="marquee-separator" vid="142"></div>
+                    "Shapes makes 3D feel native" <span vid="143">— Design Anthology</span>
+                    <div class="marquee-separator" vid="144"></div>
+                    "Essential for modern hardware teams" <span vid="145">— Fast Company</span>
+                    <div class="marquee-separator" vid="146"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer style="padding: 60px var(--padding-edge); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;" vid="147">
+        <div class="logo" vid="148">Shapes — 2024</div>
+        <div class="meta-text" vid="149">SYSTEM NORM: NOMINAL</div>
+    </footer>
+
+
+</body></html>

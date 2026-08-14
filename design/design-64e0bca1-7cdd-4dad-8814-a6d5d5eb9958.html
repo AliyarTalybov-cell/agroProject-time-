@@ -1,0 +1,352 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Аналитика простоев техники</title>
+    <style vid="5">
+        
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap');
+
+        :root {
+            
+            --bg-page: #F7F8F9;
+            --bg-card: #FFFFFF;
+            --text-main: #111111;
+            --text-muted: #6B7280;
+            --border-light: #E5E7EB;
+            --border-medium: #D1D5DB;
+            
+            
+            --green-bg-light: #ECFDF5;
+            --green-border-soft: #A7F3D0;
+            --green-text-dark: #065F46;
+            --green-accent: #10B981; 
+
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            
+            --radius-card: 12px;
+            --radius-small: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .app-title {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .user-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-card);
+            overflow: hidden; 
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.875rem;
+        }
+
+        
+        th {
+            background-color: var(--green-bg-light);
+            color: var(--green-text-dark);
+            font-weight: 500;
+            border-bottom: 2px solid var(--green-border-soft);
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #F9FAFB;
+        }
+
+        .cell-duration {
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+        }
+
+        
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid var(--border-light);
+            background: var(--bg-page);
+        }
+
+        
+        .chart-card {
+            padding: 1.5rem;
+        }
+
+        .pie-chart-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            
+            background: conic-gradient(
+                var(--text-main) 0% 40%, 
+                var(--border-medium) 40% 70%, 
+                var(--green-accent) 70% 100%
+            );
+            border: 1px solid var(--border-light);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .legend-label-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .color-breakdown { background-color: var(--text-main); }
+        .color-rain { background-color: var(--border-medium); }
+        .color-fuel { background-color: var(--green-accent); }
+
+        .legend-value {
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body vid="6">
+
+    <div class="container" vid="7">
+        <header class="app-header" vid="8">
+            <h1 class="app-title" vid="9">Аналитика простоев</h1>
+            <div class="user-controls" vid="10">
+                <span vid="11">Агроном: Смирнов А.</span>
+                <span vid="12">•</span>
+                <span vid="13">Сегодня, 24 Окт</span>
+            </div>
+        </header>
+
+        <main class="dashboard-grid" vid="14">
+            
+            
+            <section class="card" vid="15">
+                <div class="card-header" vid="16">
+                    <h2 class="card-title" vid="17">Журнал простоев техники</h2>
+                    <p class="card-desc" vid="18">Детальный отчет по сотрудникам и причинам за текущую смену.</p>
+                </div>
+                
+                <div class="table-container" vid="19">
+                    <table vid="20">
+                        <thead vid="21">
+                            <tr vid="22">
+                                <th vid="23">Сотрудник</th>
+                                <th vid="24">Причина простоя</th>
+                                <th vid="25">Начало</th>
+                                <th vid="26">Конец</th>
+                                <th vid="27">Длительность</th>
+                            </tr>
+                        </thead>
+                        <tbody vid="28">
+                            <tr vid="29">
+                                <td vid="30">Иванов И.И.</td>
+                                <td vid="31"><span class="status-tag" vid="32">Поломка гидравлики</span></td>
+                                <td vid="33">08:15</td>
+                                <td vid="34">11:45</td>
+                                <td class="cell-duration" vid="35">3 ч 30 мин</td>
+                            </tr>
+                            <tr vid="36">
+                                <td vid="37">Петров П.П.</td>
+                                <td vid="38"><span class="status-tag" vid="39">Сильный дождь</span></td>
+                                <td vid="40">12:00</td>
+                                <td vid="41">14:00</td>
+                                <td class="cell-duration" vid="42">2 ч 00 мин</td>
+                            </tr>
+                            <tr vid="43">
+                                <td vid="44">Сидоров С.С.</td>
+                                <td vid="45"><span class="status-tag" vid="46">Ожидание топлива</span></td>
+                                <td vid="47">14:30</td>
+                                <td vid="48">16:00</td>
+                                <td class="cell-duration" vid="49">1 ч 30 мин</td>
+                            </tr>
+                            <tr vid="50">
+                                <td vid="51">Николаев Н.Н.</td>
+                                <td vid="52"><span class="status-tag" vid="53">Поломка жатки</span></td>
+                                <td vid="54">09:00</td>
+                                <td vid="55">10:15</td>
+                                <td class="cell-duration" vid="56">1 ч 15 мин</td>
+                            </tr>
+                             <tr vid="57">
+                                <td vid="58">Кузнецов К.К.</td>
+                                <td vid="59"><span class="status-tag" vid="60">Дождь</span></td>
+                                <td vid="61">12:00</td>
+                                <td vid="62">12:45</td>
+                                <td class="cell-duration" vid="63">0 ч 45 мин</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            
+            <aside class="card chart-card" vid="64">
+                <h2 class="card-title" vid="65">Сводка причин</h2>
+                <p class="card-desc" vid="66">Распределение времени простоя</p>
+                
+                <div class="pie-chart-container" vid="67">
+                    <div class="pie-chart" aria-label="Диаграмма распределения простоев" vid="68"></div>
+                </div>
+
+                <div class="legend" vid="69">
+                    <div class="legend-item" vid="70">
+                        <div class="legend-label-group" vid="71">
+                            <div class="legend-color color-breakdown" vid="72"></div>
+                            <span vid="73">Поломки</span>
+                        </div>
+                        <span class="legend-value" vid="74">40%</span>
+                    </div>
+                    
+                    <div class="legend-item" vid="75">
+                        <div class="legend-label-group" vid="76">
+                            <div class="legend-color color-rain" vid="77"></div>
+                            <span vid="78">Погодные условия</span>
+                        </div>
+                        <span class="legend-value" vid="79">30%</span>
+                    </div>
+
+                    <div class="legend-item" vid="80">
+                        <div class="legend-label-group" vid="81">
+                            <div class="legend-color color-fuel" vid="82"></div>
+                            <span vid="83">Ожидание ГСМ</span>
+                        </div>
+                        <span class="legend-value" vid="84">30%</span>
+                    </div>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+
+</body></html>

@@ -1,0 +1,1539 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Агро-контроль - Чат</title>
+    
+    
+    <style vid="7">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+
+  <style type="text/css">
+*, ::before, ::after {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+  --tw-contain-size:  ;
+  --tw-contain-layout:  ;
+  --tw-contain-paint:  ;
+  --tw-contain-style:  ;
+}
+
+::backdrop {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+  --tw-contain-size:  ;
+  --tw-contain-layout:  ;
+  --tw-contain-paint:  ;
+  --tw-contain-style:  ;
+}/*
+! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com
+*//*
+1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
+2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
+*/
+
+*,
+::before,
+::after {
+  box-sizing: border-box; /* 1 */
+  border-width: 0; /* 2 */
+  border-style: solid; /* 2 */
+  border-color: #e5e7eb; /* 2 */
+}
+
+::before,
+::after {
+  --tw-content: '';
+}
+
+/*
+1. Use a consistent sensible line-height in all browsers.
+2. Prevent adjustments of font size after orientation changes in iOS.
+3. Use a more readable tab size.
+4. Use the user's configured `sans` font-family by default.
+5. Use the user's configured `sans` font-feature-settings by default.
+6. Use the user's configured `sans` font-variation-settings by default.
+7. Disable tap highlights on iOS
+*/
+
+html,
+:host {
+  line-height: 1.5; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+  -moz-tab-size: 4; /* 3 */
+  tab-size: 4; /* 3 */
+  font-family: Inter, system-ui, sans-serif; /* 4 */
+  font-feature-settings: normal; /* 5 */
+  font-variation-settings: normal; /* 6 */
+  -webkit-tap-highlight-color: transparent; /* 7 */
+}
+
+/*
+1. Remove the margin in all browsers.
+2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
+*/
+
+body {
+  margin: 0; /* 1 */
+  line-height: inherit; /* 2 */
+}
+
+/*
+1. Add the correct height in Firefox.
+2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+3. Ensure horizontal rules are visible by default.
+*/
+
+hr {
+  height: 0; /* 1 */
+  color: inherit; /* 2 */
+  border-top-width: 1px; /* 3 */
+}
+
+/*
+Add the correct text decoration in Chrome, Edge, and Safari.
+*/
+
+abbr:where([title]) {
+  text-decoration: underline dotted;
+}
+
+/*
+Remove the default font size and weight for headings.
+*/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/*
+Reset links to optimize for opt-in styling instead of opt-out.
+*/
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/*
+Add the correct font weight in Edge and Safari.
+*/
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+/*
+1. Use the user's configured `mono` font-family by default.
+2. Use the user's configured `mono` font-feature-settings by default.
+3. Use the user's configured `mono` font-variation-settings by default.
+4. Correct the odd `em` font sizing in all browsers.
+*/
+
+code,
+kbd,
+samp,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* 1 */
+  font-feature-settings: normal; /* 2 */
+  font-variation-settings: normal; /* 3 */
+  font-size: 1em; /* 4 */
+}
+
+/*
+Add the correct font size in all browsers.
+*/
+
+small {
+  font-size: 80%;
+}
+
+/*
+Prevent `sub` and `sup` elements from affecting the line height in all browsers.
+*/
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/*
+1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+3. Remove gaps between table borders by default.
+*/
+
+table {
+  text-indent: 0; /* 1 */
+  border-color: inherit; /* 2 */
+  border-collapse: collapse; /* 3 */
+}
+
+/*
+1. Change the font styles in all browsers.
+2. Remove the margin in Firefox and Safari.
+3. Remove default padding in all browsers.
+*/
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-feature-settings: inherit; /* 1 */
+  font-variation-settings: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  font-weight: inherit; /* 1 */
+  line-height: inherit; /* 1 */
+  letter-spacing: inherit; /* 1 */
+  color: inherit; /* 1 */
+  margin: 0; /* 2 */
+  padding: 0; /* 3 */
+}
+
+/*
+Remove the inheritance of text transform in Edge and Firefox.
+*/
+
+button,
+select {
+  text-transform: none;
+}
+
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Remove default button styles.
+*/
+
+button,
+input:where([type='button']),
+input:where([type='reset']),
+input:where([type='submit']) {
+  -webkit-appearance: button; /* 1 */
+  background-color: transparent; /* 2 */
+  background-image: none; /* 2 */
+}
+
+/*
+Use the modern Firefox focus style for all focusable elements.
+*/
+
+:-moz-focusring {
+  outline: auto;
+}
+
+/*
+Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
+*/
+
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+
+/*
+Add the correct vertical alignment in Chrome and Firefox.
+*/
+
+progress {
+  vertical-align: baseline;
+}
+
+/*
+Correct the cursor style of increment and decrement buttons in Safari.
+*/
+
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/*
+1. Correct the odd appearance in Chrome and Safari.
+2. Correct the outline style in Safari.
+*/
+
+[type='search'] {
+  -webkit-appearance: textfield; /* 1 */
+  outline-offset: -2px; /* 2 */
+}
+
+/*
+Remove the inner padding in Chrome and Safari on macOS.
+*/
+
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Change font properties to `inherit` in Safari.
+*/
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button; /* 1 */
+  font: inherit; /* 2 */
+}
+
+/*
+Add the correct display in Chrome and Safari.
+*/
+
+summary {
+  display: list-item;
+}
+
+/*
+Removes the default spacing and border for appropriate elements.
+*/
+
+blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+  margin: 0;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+ol,
+ul,
+menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+Reset default styling for dialogs.
+*/
+dialog {
+  padding: 0;
+}
+
+/*
+Prevent resizing textareas horizontally by default.
+*/
+
+textarea {
+  resize: vertical;
+}
+
+/*
+1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
+2. Set the default placeholder color to the user's configured gray 400 color.
+*/
+
+input::placeholder,
+textarea::placeholder {
+  opacity: 1; /* 1 */
+  color: #9ca3af; /* 2 */
+}
+
+/*
+Set the default cursor for buttons.
+*/
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+/*
+Make sure disabled buttons don't get the pointer cursor.
+*/
+:disabled {
+  cursor: default;
+}
+
+/*
+1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
+   This can trigger a poorly considered lint error in some tools but is included by design.
+*/
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block; /* 1 */
+  vertical-align: middle; /* 2 */
+}
+
+/*
+Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
+*/
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Make elements with the HTML hidden attribute stay hidden by default */
+[hidden]:where(:not([hidden="until-found"])) {
+  display: none;
+}
+.pointer-events-none {
+  pointer-events: none;
+}
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
+.inset-y-0 {
+  top: 0px;
+  bottom: 0px;
+}
+.bottom-0 {
+  bottom: 0px;
+}
+.left-0 {
+  left: 0px;
+}
+.right-0 {
+  right: 0px;
+}
+.top-1\/2 {
+  top: 50%;
+}
+.z-10 {
+  z-index: 10;
+}
+.mb-0\.5 {
+  margin-bottom: 0.125rem;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+.ml-1 {
+  margin-left: 0.25rem;
+}
+.ml-2 {
+  margin-left: 0.5rem;
+}
+.ml-4 {
+  margin-left: 1rem;
+}
+.ml-auto {
+  margin-left: auto;
+}
+.mr-1 {
+  margin-right: 0.25rem;
+}
+.mt-0\.5 {
+  margin-top: 0.125rem;
+}
+.mt-1 {
+  margin-top: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mt-4 {
+  margin-top: 1rem;
+}
+.mt-8 {
+  margin-top: 2rem;
+}
+.block {
+  display: block;
+}
+.flex {
+  display: flex;
+}
+.h-1 {
+  height: 0.25rem;
+}
+.h-10 {
+  height: 2.5rem;
+}
+.h-12 {
+  height: 3rem;
+}
+.h-2 {
+  height: 0.5rem;
+}
+.h-20 {
+  height: 5rem;
+}
+.h-3 {
+  height: 0.75rem;
+}
+.h-4 {
+  height: 1rem;
+}
+.h-5 {
+  height: 1.25rem;
+}
+.h-6 {
+  height: 1.5rem;
+}
+.h-8 {
+  height: 2rem;
+}
+.h-9 {
+  height: 2.25rem;
+}
+.h-\[72px\] {
+  height: 72px;
+}
+.h-screen {
+  height: 100vh;
+}
+.max-h-32 {
+  max-height: 8rem;
+}
+.w-1 {
+  width: 0.25rem;
+}
+.w-10 {
+  width: 2.5rem;
+}
+.w-12 {
+  width: 3rem;
+}
+.w-2 {
+  width: 0.5rem;
+}
+.w-3 {
+  width: 0.75rem;
+}
+.w-4 {
+  width: 1rem;
+}
+.w-5 {
+  width: 1.25rem;
+}
+.w-6 {
+  width: 1.5rem;
+}
+.w-64 {
+  width: 16rem;
+}
+.w-8 {
+  width: 2rem;
+}
+.w-9 {
+  width: 2.25rem;
+}
+.w-\[380px\] {
+  width: 380px;
+}
+.w-full {
+  width: 100%;
+}
+.max-w-3xl {
+  max-width: 48rem;
+}
+.flex-1 {
+  flex: 1 1 0%;
+}
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+.-translate-y-1\/2 {
+  --tw-translate-y: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+.translate-x-0\.5 {
+  --tw-translate-x: 0.125rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.resize-none {
+  resize: none;
+}
+.flex-row-reverse {
+  flex-direction: row-reverse;
+}
+.flex-col {
+  flex-direction: column;
+}
+.items-start {
+  align-items: flex-start;
+}
+.items-end {
+  align-items: flex-end;
+}
+.items-center {
+  align-items: center;
+}
+.items-baseline {
+  align-items: baseline;
+}
+.justify-center {
+  justify-content: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.gap-1 {
+  gap: 0.25rem;
+}
+.gap-1\.5 {
+  gap: 0.375rem;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-3 {
+  gap: 0.75rem;
+}
+.gap-4 {
+  gap: 1rem;
+}
+.gap-6 {
+  gap: 1.5rem;
+}
+.space-y-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
+}
+.space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
+}
+.self-end {
+  align-self: flex-end;
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+.overflow-y-auto {
+  overflow-y: auto;
+}
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rounded {
+  border-radius: 0.25rem;
+}
+.rounded-2xl {
+  border-radius: 1rem;
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+.rounded-r-md {
+  border-top-right-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+.rounded-tl-sm {
+  border-top-left-radius: 0.125rem;
+}
+.rounded-tr-sm {
+  border-top-right-radius: 0.125rem;
+}
+.border {
+  border-width: 1px;
+}
+.border-2 {
+  border-width: 2px;
+}
+.border-b {
+  border-bottom-width: 1px;
+}
+.border-l {
+  border-left-width: 1px;
+}
+.border-l-4 {
+  border-left-width: 4px;
+}
+.border-r {
+  border-right-width: 1px;
+}
+.border-t {
+  border-top-width: 1px;
+}
+.border-none {
+  border-style: none;
+}
+.border-agro-border {
+  --tw-border-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+}
+.border-agro-green {
+  --tw-border-opacity: 1;
+  border-color: rgb(62 93 66 / var(--tw-border-opacity, 1));
+}
+.border-gray-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
+}
+.border-gray-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+}
+.border-gray-50 {
+  --tw-border-opacity: 1;
+  border-color: rgb(249 250 251 / var(--tw-border-opacity, 1));
+}
+.border-transparent {
+  border-color: transparent;
+}
+.border-white {
+  --tw-border-opacity: 1;
+  border-color: rgb(255 255 255 / var(--tw-border-opacity, 1));
+}
+.bg-\[\#fafbfa\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(250 251 250 / var(--tw-bg-opacity, 1));
+}
+.bg-agro-bg {
+  --tw-bg-opacity: 1;
+  background-color: rgb(244 246 244 / var(--tw-bg-opacity, 1));
+}
+.bg-agro-green {
+  --tw-bg-opacity: 1;
+  background-color: rgb(62 93 66 / var(--tw-bg-opacity, 1));
+}
+.bg-agro-lightgreen {
+  --tw-bg-opacity: 1;
+  background-color: rgb(238 245 239 / var(--tw-bg-opacity, 1));
+}
+.bg-blue-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));
+}
+.bg-gray-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+}
+.bg-gray-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
+}
+.bg-gray-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(156 163 175 / var(--tw-bg-opacity, 1));
+}
+.bg-gray-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+}
+.bg-green-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));
+}
+.bg-orange-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 237 213 / var(--tw-bg-opacity, 1));
+}
+.bg-purple-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1));
+}
+.bg-red-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));
+}
+.bg-rose-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 228 230 / var(--tw-bg-opacity, 1));
+}
+.bg-teal-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(204 251 241 / var(--tw-bg-opacity, 1));
+}
+.bg-transparent {
+  background-color: transparent;
+}
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+.p-2 {
+  padding: 0.5rem;
+}
+.p-3 {
+  padding: 0.75rem;
+}
+.p-4 {
+  padding: 1rem;
+}
+.p-5 {
+  padding: 1.25rem;
+}
+.p-6 {
+  padding: 1.5rem;
+}
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+.py-0\.5 {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+}
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+.py-1\.5 {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+.py-2\.5 {
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+}
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+.pl-10 {
+  padding-left: 2.5rem;
+}
+.pl-3 {
+  padding-left: 0.75rem;
+}
+.pl-6 {
+  padding-left: 1.5rem;
+}
+.pr-3 {
+  padding-right: 0.75rem;
+}
+.font-sans {
+  font-family: Inter, system-ui, sans-serif;
+}
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+.text-\[15px\] {
+  font-size: 15px;
+}
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+.font-bold {
+  font-weight: 700;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+.leading-relaxed {
+  line-height: 1.625;
+}
+.leading-tight {
+  line-height: 1.25;
+}
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+.text-agro-activetext {
+  --tw-text-opacity: 1;
+  color: rgb(44 90 50 / var(--tw-text-opacity, 1));
+}
+.text-agro-dark {
+  --tw-text-opacity: 1;
+  color: rgb(30 53 34 / var(--tw-text-opacity, 1));
+}
+.text-agro-green {
+  --tw-text-opacity: 1;
+  color: rgb(62 93 66 / var(--tw-text-opacity, 1));
+}
+.text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity, 1));
+}
+.text-blue-600 {
+  --tw-text-opacity: 1;
+  color: rgb(37 99 235 / var(--tw-text-opacity, 1));
+}
+.text-gray-400 {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+.text-gray-500 {
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+.text-gray-600 {
+  --tw-text-opacity: 1;
+  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+}
+.text-gray-700 {
+  --tw-text-opacity: 1;
+  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+}
+.text-gray-800 {
+  --tw-text-opacity: 1;
+  color: rgb(31 41 55 / var(--tw-text-opacity, 1));
+}
+.text-gray-900 {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity, 1));
+}
+.text-green-600 {
+  --tw-text-opacity: 1;
+  color: rgb(22 163 74 / var(--tw-text-opacity, 1));
+}
+.text-orange-600 {
+  --tw-text-opacity: 1;
+  color: rgb(234 88 12 / var(--tw-text-opacity, 1));
+}
+.text-purple-600 {
+  --tw-text-opacity: 1;
+  color: rgb(147 51 234 / var(--tw-text-opacity, 1));
+}
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+}
+.text-rose-600 {
+  --tw-text-opacity: 1;
+  color: rgb(225 29 72 / var(--tw-text-opacity, 1));
+}
+.text-teal-600 {
+  --tw-text-opacity: 1;
+  color: rgb(13 148 136 / var(--tw-text-opacity, 1));
+}
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+.underline {
+  text-decoration-line: underline;
+}
+.underline-offset-4 {
+  text-underline-offset: 4px;
+}
+.placeholder-gray-400::placeholder {
+  --tw-placeholder-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-placeholder-opacity, 1));
+}
+.placeholder-gray-500::placeholder {
+  --tw-placeholder-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-placeholder-opacity, 1));
+}
+.shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.transition-shadow {
+  transition-property: box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.focus-within\:border-agro-green:focus-within {
+  --tw-border-opacity: 1;
+  border-color: rgb(62 93 66 / var(--tw-border-opacity, 1));
+}
+.focus-within\:ring-1:focus-within {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+.focus-within\:ring-agro-green:focus-within {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(62 93 66 / var(--tw-ring-opacity, 1));
+}
+.hover\:bg-agro-activetext:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(44 90 50 / var(--tw-bg-opacity, 1));
+}
+.hover\:bg-agro-lightgreen\/80:hover {
+  background-color: rgb(238 245 239 / 0.8);
+}
+.hover\:bg-gray-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+}
+.hover\:bg-gray-50:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+}
+.hover\:bg-white:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+.hover\:text-agro-green:hover {
+  --tw-text-opacity: 1;
+  color: rgb(62 93 66 / var(--tw-text-opacity, 1));
+}
+.hover\:text-gray-600:hover {
+  --tw-text-opacity: 1;
+  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+}
+.hover\:text-gray-800:hover {
+  --tw-text-opacity: 1;
+  color: rgb(31 41 55 / var(--tw-text-opacity, 1));
+}
+.focus\:outline-none:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.focus\:ring-0:focus {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+.focus\:ring-2:focus {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+.focus\:ring-agro-green:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(62 93 66 / var(--tw-ring-opacity, 1));
+}* {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+  </style></head>
+<body class="bg-agro-bg text-gray-800 font-sans h-screen w-full flex overflow-hidden" vid="8">
+
+    <aside class="w-64 bg-white border-r border-agro-border flex flex-col flex-shrink-0 z-10" vid="9">
+        <div class="h-20 flex items-center px-6" vid="10">
+            <div class="flex items-center gap-3" vid="11">
+                <svg class="w-8 h-8 text-agro-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vid="12">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" vid="13"></path>
+                </svg>
+                <span class="text-xl font-bold text-agro-dark" vid="14">Агро-контроль</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-4 overflow-y-auto" vid="15">
+            <ul class="space-y-1 px-3" vid="16">
+                <li vid="17">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="18">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="19"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" vid="20"></path></svg>
+                        <span class="font-medium" vid="21">Обзор</span>
+                    </a>
+                </li>
+                <li vid="22">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="23">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" vid="25"></path></svg>
+                        <span class="font-medium" vid="26">Погода</span>
+                    </a>
+                </li>
+                <li vid="27">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="28">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="29"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" vid="30"></path></svg>
+                        <span class="font-medium" vid="31">Поля и Культуры</span>
+                    </a>
+                </li>
+                <li vid="32">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="33">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="34"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" vid="35"></path></svg>
+                        <span class="font-medium" vid="36">Техника</span>
+                    </a>
+                </li>
+                <li vid="37">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="38">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="39"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" vid="40"></path></svg>
+                        <span class="font-medium" vid="41">Задачи</span>
+                    </a>
+                </li>
+                <li vid="42">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="43">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="44"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" vid="45"></path></svg>
+                        <span class="font-medium" vid="46">Календарь</span>
+                    </a>
+                </li>
+                <li vid="47">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="48">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="49"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" vid="50"></path></svg>
+                        <span class="font-medium" vid="51">Аналитика</span>
+                    </a>
+                </li>
+                <li vid="52">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-agro-lightgreen text-agro-activetext transition-colors relative" vid="53">
+                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-agro-green rounded-r-md" vid="54"></div>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="55"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" vid="56"></path></svg>
+                        <span class="font-medium" vid="57">Сообщения</span>
+                        <span class="ml-auto bg-agro-green text-white text-xs font-bold px-2 py-0.5 rounded-full" vid="58">3</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-8 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" vid="59">
+                Операции
+            </div>
+            <ul class="space-y-1 px-3" vid="60">
+                <li vid="61">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors" vid="62">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="63"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" vid="64"></path></svg>
+                        <span class="font-medium" vid="65">Экран оператора</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="border-t border-agro-border p-4" vid="66">
+            <div class="flex items-center gap-2 text-sm text-gray-600" vid="67">
+                <div class="w-2 h-2 rounded-full bg-green-500" vid="68"></div>
+                Система онлайн
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden" vid="69">
+        <header class="h-[72px] bg-white border-b border-agro-border flex items-center justify-between px-8 flex-shrink-0 z-10" vid="70">
+            <h1 class="text-2xl font-bold text-gray-900" vid="71">Сообщения</h1>
+            
+            <div class="flex items-center gap-6" vid="72">
+                <button class="text-gray-400 hover:text-gray-600 transition-colors" vid="73">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="74"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" vid="75"></path></svg>
+                </button>
+                <div class="flex items-center gap-4 border-l border-gray-200 pl-6" vid="76">
+                    <div class="flex items-center gap-3" vid="77">
+                        <div class="w-9 h-9 rounded-full bg-agro-green text-white flex items-center justify-center font-bold text-sm" vid="78">
+                            TA
+                        </div>
+                        <span class="text-sm font-medium text-gray-700" vid="79">talybovaasja@mail.ru</span>
+                    </div>
+                    <a href="#" class="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-4" vid="80">Выйти</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 p-6 flex gap-6 overflow-hidden" vid="81">
+            <div class="w-[380px] bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col flex-shrink-0 overflow-hidden" vid="82">
+                <div class="p-5 border-b border-gray-100" vid="83">
+                    <div class="relative" vid="84">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" vid="85">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" vid="86">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" vid="87"></path>
+                            </svg>
+                        </div>
+                        <input type="text" class="block w-full pl-10 pr-3 py-2.5 border-none rounded-xl bg-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-agro-green transition-shadow" placeholder="Поиск сотрудника..." vid="88">
+                    </div>
+                    <div class="flex gap-2 mt-4" vid="89">
+                        <button class="px-4 py-1.5 rounded-full bg-agro-lightgreen text-agro-activetext text-sm font-medium" vid="90">Все</button>
+                        <button class="px-4 py-1.5 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 text-sm font-medium transition-colors" vid="91">Непрочитанные</button>
+                        <button class="px-4 py-1.5 rounded-full bg-transparent text-gray-500 hover:bg-gray-100 text-sm font-medium transition-colors" vid="92">Команды</button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto" vid="93">
+                    <div class="flex items-center p-4 bg-agro-lightgreen border-l-4 border-agro-green cursor-pointer hover:bg-agro-lightgreen/80 transition-colors" vid="94">
+                        <div class="relative" vid="95">
+                            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg" vid="96">
+                                ИП
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" vid="97"></div>
+                        </div>
+                        <div class="ml-4 flex-1 overflow-hidden" vid="98">
+                            <div class="flex justify-between items-baseline" vid="99">
+                                <h3 class="text-sm font-semibold text-gray-900 truncate" vid="100">Иван Петров</h3>
+                                <span class="text-xs text-agro-green font-medium" vid="101">10:42</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-0.5" vid="102">Главный агроном</div>
+                            <p class="text-sm text-gray-600 truncate" vid="103">Влажность упала на 5%, требуется полив.</p>
+                        </div>
+                        <div class="ml-2 flex flex-col items-end gap-1" vid="104">
+                            <span class="w-5 h-5 bg-agro-green text-white text-xs font-bold flex items-center justify-center rounded-full" vid="105">2</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-transparent" vid="106">
+                        <div class="relative" vid="107">
+                            <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-lg" vid="108">
+                                АС
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 border-2 border-white rounded-full" vid="109"></div>
+                        </div>
+                        <div class="ml-4 flex-1 overflow-hidden" vid="110">
+                            <div class="flex justify-between items-baseline" vid="111">
+                                <h3 class="text-sm font-semibold text-gray-900 truncate" vid="112">Анна Смирнова</h3>
+                                <span class="text-xs text-gray-400" vid="113">Вчера</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-0.5" vid="114">Механизатор (Поле 3)</div>
+                            <p class="text-sm text-gray-500 truncate" vid="115">Трактор John Deere прошел ТО, готов к работе.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-transparent" vid="116">
+                        <div class="relative" vid="117">
+                            <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg" vid="118">
+                                СИ
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" vid="119"></div>
+                        </div>
+                        <div class="ml-4 flex-1 overflow-hidden" vid="120">
+                            <div class="flex justify-between items-baseline" vid="121">
+                                <h3 class="text-sm font-semibold text-gray-900 truncate" vid="122">Сергей Иванов</h3>
+                                <span class="text-xs text-gray-400" vid="123">Вчера</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-0.5" vid="124">Бригадир</div>
+                            <p class="text-sm text-gray-500 truncate flex items-center gap-1" vid="125">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="126"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" vid="127"></path></svg>
+                                Принято, выводим смену в 6:00.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-transparent" vid="128">
+                        <div class="relative" vid="129">
+                            <div class="w-12 h-12 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-lg" vid="130">
+                                МС
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" vid="131"></div>
+                        </div>
+                        <div class="ml-4 flex-1 overflow-hidden" vid="132">
+                            <div class="flex justify-between items-baseline" vid="133">
+                                <h3 class="text-sm font-semibold text-gray-900 truncate" vid="134">Мария Соколова</h3>
+                                <span class="text-xs text-gray-400" vid="135">Пн</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-0.5" vid="136">Лаборант</div>
+                            <p class="text-sm text-gray-500 truncate font-medium text-gray-800" vid="137">Файл: Анализ_почвы_участок_А.pdf</p>
+                        </div>
+                        <div class="ml-2 flex flex-col items-end gap-1" vid="138">
+                            <span class="w-5 h-5 bg-agro-green text-white text-xs font-bold flex items-center justify-center rounded-full" vid="139">1</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-transparent" vid="140">
+                        <div class="relative" vid="141">
+                            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-lg" vid="142">
+                                ДК
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 border-2 border-white rounded-full" vid="143"></div>
+                        </div>
+                        <div class="ml-4 flex-1 overflow-hidden" vid="144">
+                            <div class="flex justify-between items-baseline" vid="145">
+                                <h3 class="text-sm font-semibold text-gray-900 truncate" vid="146">Дмитрий Козлов</h3>
+                                <span class="text-xs text-gray-400" vid="147">12 мар</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-0.5" vid="148">Логист</div>
+                            <p class="text-sm text-gray-500 truncate" vid="149">Удобрения доставлены на склад №2.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden" vid="150">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white z-10" vid="151">
+                    <div class="flex items-center gap-4" vid="152">
+                        <div class="relative" vid="153">
+                            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg" vid="154">
+                                ИП
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" vid="155"></div>
+                        </div>
+                        <div vid="156">
+                            <h2 class="text-lg font-bold text-gray-900 leading-tight" vid="157">Иван Петров</h2>
+                            <p class="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5" vid="158">
+                                Главный агроном
+                                <span class="w-1 h-1 rounded-full bg-gray-300" vid="159"></span>
+                                <span class="text-green-600 font-medium" vid="160">В сети</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3" vid="161">
+                        <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors" title="Поиск по чату" vid="162">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="163"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" vid="164"></path></svg>
+                        </button>
+                        <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors" title="Информация" vid="165">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="166"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" vid="167"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 p-6 overflow-y-auto bg-[#fafbfa]" vid="168">
+                    <div class="flex justify-center mb-6" vid="169">
+                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-full" vid="170">Сегодня, 15 марта</span>
+                    </div>
+
+                    <div class="space-y-6" vid="171">
+                        <div class="flex gap-4 max-w-3xl" vid="172">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-1" vid="173">
+                                ИП
+                            </div>
+                            <div class="flex flex-col gap-1 items-start" vid="174">
+                                <div class="bg-white border border-gray-100 text-gray-800 px-5 py-3 rounded-2xl rounded-tl-sm shadow-sm" vid="175">
+                                    <p class="text-[15px] leading-relaxed" vid="176">Привет! Подготовил отчет по влажности почвы на 5-м поле. Данные за последнюю неделю загружены в систему.</p>
+                                </div>
+                                <span class="text-xs text-gray-400 ml-1" vid="177">10:15</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 max-w-3xl flex-row-reverse self-end ml-auto" vid="178">
+                            <div class="w-8 h-8 rounded-full bg-agro-green text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-1" vid="179">
+                                TA
+                            </div>
+                            <div class="flex flex-col gap-1 items-end" vid="180">
+                                <div class="bg-agro-green text-white px-5 py-3 rounded-2xl rounded-tr-sm shadow-sm" vid="181">
+                                    <p class="text-[15px] leading-relaxed" vid="182">Отлично, спасибо. Как там показатели в сравнении с нормой?</p>
+                                </div>
+                                <div class="flex items-center gap-1 mr-1" vid="183">
+                                    <span class="text-xs text-gray-400" vid="184">10:30</span>
+                                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="185"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" vid="186"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 max-w-3xl" vid="187">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-1" vid="188">
+                                ИП
+                            </div>
+                            <div class="flex flex-col gap-1 items-start" vid="189">
+                                <div class="bg-white border border-gray-100 text-gray-800 px-5 py-3 rounded-2xl rounded-tl-sm shadow-sm" vid="190">
+                                    <p class="text-[15px] leading-relaxed" vid="191">Влажность упала на 5% ниже оптимальной отметки на южном склоне. Судя по прогнозу (осадков 0%), требуется дополнительный полив сегодня вечером.</p>
+                                </div>
+                                <div class="bg-white border border-gray-100 text-gray-800 p-3 rounded-xl rounded-tl-sm shadow-sm flex items-center gap-3 mt-1 cursor-pointer hover:bg-gray-50 transition-colors w-64" vid="192">
+                                    <div class="w-10 h-10 bg-red-50 rounded flex items-center justify-center text-red-500" vid="193">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="194"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" vid="195"></path></svg>
+                                    </div>
+                                    <div class="flex-1 overflow-hidden" vid="196">
+                                        <p class="text-sm font-medium text-gray-900 truncate" vid="197">Отчет_поле5.pdf</p>
+                                        <p class="text-xs text-gray-500" vid="198">2.4 MB</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-400 ml-1" vid="199">10:42</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-white border-t border-gray-100" vid="200">
+                    <div class="flex items-end gap-3 bg-gray-50 rounded-2xl p-2 border border-gray-200 focus-within:border-agro-green focus-within:ring-1 focus-within:ring-agro-green transition-all" vid="201">
+                        <button class="p-2 text-gray-400 hover:text-agro-green transition-colors rounded-xl hover:bg-white flex-shrink-0" title="Прикрепить файл" vid="202">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="203"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" vid="204"></path></svg>
+                        </button>
+                        
+                        <textarea rows="1" class="w-full bg-transparent border-none focus:outline-none focus:ring-0 resize-none max-h-32 py-2.5 text-[15px] text-gray-800 placeholder-gray-400" placeholder="Напишите сообщение Ивану..." vid="205"></textarea>
+                        
+                        <div class="flex items-center gap-1 flex-shrink-0" vid="206">
+                            <button class="p-2 text-gray-400 hover:text-agro-green transition-colors rounded-xl hover:bg-white" title="Эмодзи" vid="207">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="208"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" vid="209"></path></svg>
+                            </button>
+                            <button class="p-2 bg-agro-green hover:bg-agro-activetext text-white transition-colors rounded-xl shadow-sm flex items-center justify-center ml-1" vid="210">
+                                <svg class="w-5 h-5 translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" vid="211"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" vid="212"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-2 px-2" vid="213">
+                        <span class="text-xs text-gray-400" vid="214">Нажмите Enter для отправки, Shift+Enter для переноса</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+</body></html>

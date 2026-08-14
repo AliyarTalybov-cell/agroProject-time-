@@ -1,0 +1,29 @@
+---
+description: Новые страницы Vue — сразу UI/UX как в проекте, без долгих итераций
+globs: frontend/src/pages/**/*.vue
+alwaysApply: false
+---
+
+# Новые страницы: UI/UX без «отсебятины»
+
+## Сначала референсы (обязательно до вёрстки)
+
+1. **Реестр с тулбаром, таблицей, пагинацией** — `FieldsPage.vue` (`fields-page`, `fields-header`, `fields-card`, `fields-toolbar`, `fields-table`, `fields-pagination`, кнопка добавления с иконкой).
+2. **Модалки, формы, кнопки модалки** — `StorageLocationsPage.vue` (эталон крестика и шапки), `TaskManagementPage.vue` / `FieldsPage.vue` (`modal-backdrop`, `modal`, `modal-header`); крестик — строго по `.cursor/rules/modal-close-button.mdc`.
+3. **Действия в строке таблицы** — `FieldsPage.vue` (`fields-action-btn`, `UiDeleteButton`).
+4. **Заголовок страницы** — в шапке приложения уже есть `route.meta.title` (`App.vue` → `app-topbar-title`). **Не дублировать** `<h1>` с тем же текстом на странице; достаточно подзаголовка/описания и действий.
+
+## Чеклист перед первым коммитом страницы
+
+- [ ] Структура и классы взяты из референса выше, а не придуманы с нуля.
+- [ ] Кнопки, иконки, hover — как у референса (в т.ч. анимации плюса/крестика).
+- [ ] Кликабельные строки реестра — hover по `table-row-hover-animation.mdc` (референс: `TaskManagementPage.vue`, класс `*-list-row`).
+- [ ] Пагинация — те же классы, что у референса (`fields-*` или `task-pagination-*` — но **не смешивать** стили разных разделов в одной странице без причины).
+- [ ] Тёмная тема: поля ввода, плашки статусов, иконки — проверить `[data-theme='dark']`; при копировании светлых `#fff` заменить на переменные темы.
+- [ ] `UiDeleteButton` в таблице с `overflow`: плашка «Удалить» не должна обрезаться — `overflow` у обёртки таблицы и `z-index` при необходимости (см. `StorageLocationsPage.vue`).
+- [ ] Данные — **сразу** Supabase/API, без мок-массивов на фронте.
+- [ ] Подтверждение удаления — стандартная модалка проекта, не `window.confirm`.
+
+## Если сомневаешься
+
+Расширить список референсов можно по `ui-navigation-consistency.mdc` и `architecture-and-compatibility.mdc` (раздел про переиспользование UI).

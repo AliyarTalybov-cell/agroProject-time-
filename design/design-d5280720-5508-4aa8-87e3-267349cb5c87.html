@@ -1,0 +1,424 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">AGRO_CTRL - Поля и Культуры</title>
+    <style vid="5">
+        :root {
+            --bg-base: #0a1208;
+            --bg-panel: rgba(20, 35, 15, 0.6);
+            --bg-panel-hover: rgba(30, 50, 22, 0.8);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.55);
+            --accent-green: #68ad33; 
+            --accent-green-hover: #7bce3c;
+            --danger-red: #d33c3c;
+            --warning-orange: #d3823c;
+            --wheat-gold: #e8c547;
+            --corn-yellow: #f4d35e;
+            --soy-green: #4f772d;
+            
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #162611 0%, transparent 70%),
+                              linear-gradient(to bottom, transparent, #050a04);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .type-label {
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .type-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .type-action {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 1px;
+            text-decoration-color: var(--accent-green);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .type-action:hover {
+            color: var(--accent-green);
+        }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .sidebar {
+            border-right: 1px solid var(--border-color);
+            padding: var(--space-xl) var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            margin-bottom: var(--space-xl);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .nav-item.active {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-color: var(--accent-green);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            padding: var(--space-xl);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        .map-container {
+            position: relative;
+            height: 400px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            border-radius: 2px;
+        }
+
+        .map-svg {
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .field-polygon {
+            stroke: #fff;
+            stroke-width: 1;
+            stroke-opacity: 0.3;
+            cursor: pointer;
+            transition: fill-opacity 0.3s;
+        }
+        .field-polygon:hover {
+            fill-opacity: 0.8;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-panel);
+            padding: var(--space-md);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .field-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.3s;
+        }
+        .field-card:hover {
+            border-color: var(--accent-green);
+        }
+
+        .field-image {
+            height: 140px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .crop-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #000;
+        }
+
+        .field-info {
+            padding: var(--space-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .progress-bar-container {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-green);
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        .color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .mb-1 { margin-bottom: var(--space-sm); }
+        .mt-1 { margin-top: var(--space-sm); }
+    </style>
+</head>
+<body vid="6">
+
+    <div class="app-layout" vid="7">
+        
+        <nav class="sidebar" vid="8">
+            <div class="logo type-label" vid="9">A G R O _ C T R L</div>
+            <ul class="nav-menu" vid="10">
+                <li vid="11"><a href="#" class="nav-item" vid="12">Панель управления</a></li>
+                <li vid="13"><a href="#" class="nav-item active" vid="14">Поля и культуры</a></li>
+                <li vid="15"><a href="#" class="nav-item" vid="16">Журнал работ</a></li>
+                <li vid="17"><a href="#" class="nav-item" vid="18">Отчеты</a></li>
+                <li vid="19"><a href="#" class="nav-item" vid="20">Настройки</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content" vid="21">
+            <header class="header-area" vid="22">
+                <div vid="23">
+                    <div class="type-label mb-1" vid="24">Текущий раздел</div>
+                    <h1 class="page-title" vid="25">Мониторинг полей</h1>
+                </div>
+                <div class="type-action" vid="26">Добавить поле +</div>
+            </header>
+
+            
+            <div class="map-container" vid="27">
+                <svg class="map-svg" viewBox="0 0 1000 400" preserveAspectRatio="none" vid="28">
+                    <path class="field-polygon" d="M100,50 L300,40 L350,150 L120,160 Z" fill="var(--wheat-gold)" fill-opacity="0.4" vid="29"></path>
+                    <path class="field-polygon" d="M320,45 L500,60 L520,180 L370,190 Z" fill="var(--corn-yellow)" fill-opacity="0.4" vid="30"></path>
+                    <path class="field-polygon" d="M530,70 L750,80 L730,250 L550,230 Z" fill="var(--soy-green)" fill-opacity="0.4" vid="31"></path>
+                    <path class="field-polygon" d="M130,180 L380,210 L340,350 L100,320 Z" fill="var(--accent-green)" fill-opacity="0.4" vid="32"></path>
+                    <path class="field-polygon" d="M410,210 L720,270 L680,380 L450,350 Z" fill="var(--wheat-gold)" fill-opacity="0.4" vid="33"></path>
+                </svg>
+                <div class="map-overlay" vid="34">
+                    <div class="type-label mb-1" vid="35">Легенда культур</div>
+                    <div class="legend-item" vid="36"><div class="color-dot" style="background: var(--wheat-gold);" vid="37"></div> Пшеница озимая</div>
+                    <div class="legend-item" vid="38"><div class="color-dot" style="background: var(--corn-yellow);" vid="39"></div> Кукуруза</div>
+                    <div class="legend-item" vid="40"><div class="color-dot" style="background: var(--soy-green);" vid="41"></div> Соя</div>
+                    <div class="legend-item" vid="42"><div class="color-dot" style="background: var(--accent-green);" vid="43"></div> Подсолнечник</div>
+                </div>
+            </div>
+
+            
+            <div class="field-grid" vid="44">
+                
+                <div class="field-card" vid="45">
+                    <div class="field-image" style="background-image: url('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&amp;fit=crop&amp;w=400&amp;q=80');" vid="46">
+                        <span class="crop-badge" style="background: var(--wheat-gold);" vid="47">Пшеница</span>
+                    </div>
+                    <div class="field-info" vid="48">
+                        <div vid="49">
+                            <div class="type-label" vid="50">Поле #5 • 120 Га</div>
+                            <div class="type-value" vid="51">Стадия: Восковая спелость</div>
+                        </div>
+                        <div vid="52">
+                            <div class="type-label mb-1" vid="53">Готовность к уборке: 85%</div>
+                            <div class="progress-bar-container" vid="54">
+                                <div class="progress-bar" style="width: 85%;" vid="55"></div>
+                            </div>
+                        </div>
+                        <div class="stats-row" vid="56">
+                            <div vid="57">
+                                <div class="type-label" vid="58">Прогноз</div>
+                                <div class="type-value" vid="59">45 ц/га</div>
+                            </div>
+                            <div class="text-right" vid="60">
+                                <div class="type-label" vid="61">Сбор</div>
+                                <div class="type-value" vid="62">12.08</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="field-card" vid="63">
+                    <div class="field-image" style="background-image: url('https://images.unsplash.com/photo-1594488344604-037042831a29?auto=format&amp;fit=crop&amp;w=400&amp;q=80');" vid="64">
+                        <span class="crop-badge" style="background: var(--corn-yellow);" vid="65">Кукуруза</span>
+                    </div>
+                    <div class="field-info" vid="66">
+                        <div vid="67">
+                            <div class="type-label" vid="68">Поле #12 • 85 Га</div>
+                            <div class="type-value" vid="69">Стадия: Цветение</div>
+                        </div>
+                        <div vid="70">
+                            <div class="type-label mb-1" vid="71">Готовность к уборке: 40%</div>
+                            <div class="progress-bar-container" vid="72">
+                                <div class="progress-bar" style="width: 40%; background: var(--warning-orange);" vid="73"></div>
+                            </div>
+                        </div>
+                        <div class="stats-row" vid="74">
+                            <div vid="75">
+                                <div class="type-label" vid="76">Прогноз</div>
+                                <div class="type-value" vid="77">72 ц/ga</div>
+                            </div>
+                            <div class="text-right" vid="78">
+                                <div class="type-label" vid="79">Сбор</div>
+                                <div class="type-value" vid="80">25.09</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="field-card" vid="81">
+                    <div class="field-image" style="background-image: url('https://images.unsplash.com/photo-1530507629858-e4977d30e9e0?auto=format&amp;fit=crop&amp;w=400&amp;q=80');" vid="82">
+                        <span class="crop-badge" style="background: var(--soy-green); color: white;" vid="83">Соя</span>
+                    </div>
+                    <div class="field-info" vid="84">
+                        <div vid="85">
+                            <div class="type-label" vid="86">Поле #3 • 210 Га</div>
+                            <div class="type-value" vid="87">Стадия: Налив бобов</div>
+                        </div>
+                        <div vid="88">
+                            <div class="type-label mb-1" vid="89">Готовность к уборке: 60%</div>
+                            <div class="progress-bar-container" vid="90">
+                                <div class="progress-bar" style="width: 60%;" vid="91"></div>
+                            </div>
+                        </div>
+                        <div class="stats-row" vid="92">
+                            <div vid="93">
+                                <div class="type-label" vid="94">Прогноз</div>
+                                <div class="type-value" vid="95">28 ц/га</div>
+                            </div>
+                            <div class="text-right" vid="96">
+                                <div class="type-label" vid="97">Сбор</div>
+                                <div class="type-value" vid="98">05.09</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="field-card" vid="99">
+                    <div class="field-image" style="background-image: url('https://images.unsplash.com/photo-1464303350174-88981f335b71?auto=format&amp;fit=crop&amp;w=400&amp;q=80');" vid="100">
+                        <span class="crop-badge" style="background: var(--accent-green);" vid="101">Подсолнечник</span>
+                    </div>
+                    <div class="field-info" vid="102">
+                        <div vid="103">
+                            <div class="type-label" vid="104">Поле #8 • 155 Га</div>
+                            <div class="type-value" vid="105">Стадия: Созревание</div>
+                        </div>
+                        <div vid="106">
+                            <div class="type-label mb-1" vid="107">Готовность к уборке: 92%</div>
+                            <div class="progress-bar-container" vid="108">
+                                <div class="progress-bar" style="width: 92%;" vid="109"></div>
+                            </div>
+                        </div>
+                        <div class="stats-row" vid="110">
+                            <div vid="111">
+                                <div class="type-label" vid="112">Прогноз</div>
+                                <div class="type-value" vid="113">34 ц/га</div>
+                            </div>
+                            <div class="text-right" vid="114">
+                                <div class="type-label" vid="115">Сбор</div>
+                                <div class="type-value" vid="116">15.08</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body></html>

@@ -1,0 +1,451 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">AGRO_CTRL - Отчеты</title>
+    <style vid="5">
+        :root {
+            --bg-base: #0a1208;
+            --bg-panel: rgba(20, 35, 15, 0.6);
+            --bg-panel-hover: rgba(30, 50, 22, 0.8);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.55);
+            --accent-green: #68ad33; 
+            --accent-green-hover: #7bce3c;
+            --danger-red: #d33c3c;
+            --warning-orange: #d3823c;
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #162611 0%, transparent 70%),
+                              linear-gradient(to bottom, transparent, #050a04);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .type-label {
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .type-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .type-action {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 1px;
+            text-decoration-color: var(--accent-green);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .type-action:hover {
+            color: var(--accent-green);
+        }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .sidebar {
+            border-right: 1px solid var(--border-color);
+            padding: var(--space-xl) var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .logo {
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            margin-bottom: var(--space-xl);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .nav-item.active {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-color: var(--accent-green);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            padding: var(--space-xl);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: var(--space-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-header {
+            margin-bottom: var(--space-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--space-md);
+        }
+
+        .col-8 { grid-column: span 8; }
+        .col-4 { grid-column: span 4; }
+        .col-12 { grid-column: span 12; }
+
+        
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 4px;
+            margin-top: var(--space-md);
+        }
+        .heatmap-cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+        }
+        .h-low { background: #1a2e12; }
+        .h-med { background: #3d661e; }
+        .h-high { background: var(--accent-green); }
+
+        
+        .bar-chart-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 200px;
+            padding-top: var(--space-lg);
+        }
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .bar-stack {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column-reverse;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            position: relative;
+        }
+        .bar-actual {
+            background: var(--accent-green);
+            width: 100%;
+            border-radius: 2px;
+        }
+        .bar-plan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 2px dashed rgba(255,255,255,0.4);
+            z-index: 2;
+        }
+
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th {
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+        td {
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .progress-mini-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            width: 100px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: var(--space-sm);
+        }
+        .progress-mini-fill {
+            height: 100%;
+            background: var(--accent-green);
+        }
+
+        .mb-1 { margin-bottom: var(--space-sm); }
+        .text-right { text-align: right; }
+        .filters {
+            display: flex;
+            gap: var(--space-lg);
+        }
+    </style>
+</head>
+<body vid="6">
+
+    <div class="app-layout" vid="7">
+        <nav class="sidebar" vid="8">
+            <div class="logo type-label" vid="9">A G R O _ C T R L</div>
+            <ul class="nav-menu" vid="10">
+                <li vid="11"><a href="#" class="nav-item" vid="12">Дашборд</a></li>
+                <li vid="13"><a href="#" class="nav-item" vid="14">Поля и Культуры</a></li>
+                <li vid="15"><a href="#" class="nav-item" vid="16">Журнал работ</a></li>
+                <li vid="17"><a href="#" class="nav-item active" vid="18">Отчеты</a></li>
+                <li vid="19"><a href="#" class="nav-item" vid="20">Настройки</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content" vid="21">
+            <header class="header-area" vid="22">
+                <div vid="23">
+                    <div class="type-label mb-1" vid="24">Аналитический модуль</div>
+                    <h1 class="page-title" vid="25">Отчеты и Производительность</h1>
+                </div>
+                <div class="filters" vid="26">
+                    <div vid="27">
+                        <span class="type-label" vid="28">Период:</span>
+                        <span class="type-action" style="margin-left: 8px;" vid="29">Последние 30 дней</span>
+                    </div>
+                    <div vid="30">
+                        <span class="type-label" vid="31">Экспорт:</span>
+                        <span class="type-action" style="margin-left: 8px;" vid="32">PDF / XLS</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-grid" vid="33">
+                
+                
+                <div class="panel col-8" vid="34">
+                    <div class="panel-header" vid="35">
+                        <span class="type-label" vid="36">Выполнение плана по неделям (Га)</span>
+                        <div style="display: flex; gap: 12px;" vid="37">
+                           <span class="type-label" style="text-transform: none; color: var(--accent-green);" vid="38">● Факт</span>
+                           <span class="type-label" style="text-transform: none; border-bottom: 1px dashed var(--text-secondary);" vid="39">-- План</span>
+                        </div>
+                    </div>
+                    <div class="bar-chart-container" vid="40">
+                        
+                        <div class="bar-group" vid="41">
+                            <div class="bar-stack" vid="42">
+                                <div class="bar-plan-line" style="bottom: 85%;" vid="43"></div>
+                                <div class="bar-actual" style="height: 75%;" vid="44"></div>
+                            </div>
+                            <span class="type-label" vid="45">ПН</span>
+                        </div>
+                        
+                        <div class="bar-group" vid="46">
+                            <div class="bar-stack" vid="47">
+                                <div class="bar-plan-line" style="bottom: 70%;" vid="48"></div>
+                                <div class="bar-actual" style="height: 85%;" vid="49"></div>
+                            </div>
+                            <span class="type-label" vid="50">ВТ</span>
+                        </div>
+                        
+                        <div class="bar-group" vid="51">
+                            <div class="bar-stack" vid="52">
+                                <div class="bar-plan-line" style="bottom: 80%;" vid="53"></div>
+                                <div class="bar-actual" style="height: 78%;" vid="54"></div>
+                            </div>
+                            <span class="type-label" vid="55">СР</span>
+                        </div>
+                        
+                        <div class="bar-group" vid="56">
+                            <div class="bar-stack" vid="57">
+                                <div class="bar-plan-line" style="bottom: 90%;" vid="58"></div>
+                                <div class="bar-actual" style="height: 92%;" vid="59"></div>
+                            </div>
+                            <span class="type-label" vid="60">ЧТ</span>
+                        </div>
+                        
+                        <div class="bar-group" vid="61">
+                            <div class="bar-stack" vid="62">
+                                <div class="bar-plan-line" style="bottom: 75%;" vid="63"></div>
+                                <div class="bar-actual" style="height: 40%; background: var(--warning-orange);" vid="64"></div>
+                            </div>
+                            <span class="type-label" vid="65">ПТ</span>
+                        </div>
+                        
+                        <div class="bar-group" vid="66">
+                            <div class="bar-stack" vid="67">
+                                <div class="bar-plan-line" style="bottom: 60%;" vid="68"></div>
+                                <div class="bar-actual" style="height: 55%;" vid="69"></div>
+                            </div>
+                            <span class="type-label" vid="70">СБ</span>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="panel col-4" vid="71">
+                    <div class="panel-header" vid="72">
+                        <span class="type-label" vid="73">Общие показатели</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: var(--space-lg);" vid="74">
+                        <div vid="75">
+                            <div class="type-label" vid="76">Эффективность смен</div>
+                            <div class="type-value" style="font-size: 2rem;" vid="77">94.2%</div>
+                            <div class="type-label" style="color: var(--accent-green);" vid="78">↑ 2.4% vs прошл. нед.</div>
+                        </div>
+                        <div vid="79">
+                            <div class="type-label" vid="80">Средний расход ГСМ</div>
+                            <div class="type-value" style="font-size: 2rem;" vid="81">14.8 <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-secondary);" vid="82">л/га</span></div>
+                            <div class="type-label" style="color: var(--danger-red);" vid="83">↓ -0.5% vs норматив</div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="panel col-12" vid="84">
+                    <div class="panel-header" vid="85">
+                        <span class="type-label" vid="86">Тепловая карта активности техники (24 часа / 7 дней)</span>
+                        <div style="display: flex; gap: 8px; align-items: center;" vid="87">
+                            <span class="type-label" style="font-size: 0.6rem;" vid="88">Простой</span>
+                            <div style="width: 40px; height: 8px; background: linear-gradient(to right, #1a2e12, var(--accent-green));" vid="89"></div>
+                            <span class="type-label" style="font-size: 0.6rem;" vid="90">Макс. нагрузка</span>
+                        </div>
+                    </div>
+                    <div class="heatmap-grid" vid="91">
+                        
+                        <div class="heatmap-cell h-low" vid="92"></div><div class="heatmap-cell h-low" vid="93"></div><div class="heatmap-cell h-low" vid="94"></div><div class="heatmap-cell h-low" vid="95"></div>
+                        <div class="heatmap-cell h-med" vid="96"></div><div class="heatmap-cell h-high" vid="97"></div><div class="heatmap-cell h-high" vid="98"></div><div class="heatmap-cell h-high" vid="99"></div>
+                        <div class="heatmap-cell h-high" vid="100"></div><div class="heatmap-cell h-med" vid="101"></div><div class="heatmap-cell h-high" vid="102"></div><div class="heatmap-cell h-high" vid="103"></div>
+                        <div class="heatmap-cell h-high" vid="104"></div><div class="heatmap-cell h-high" vid="105"></div><div class="heatmap-cell h-high" vid="106"></div><div class="heatmap-cell h-high" vid="107"></div>
+                        <div class="heatmap-cell h-med" vid="108"></div><div class="heatmap-cell h-med" vid="109"></div><div class="heatmap-cell h-low" vid="110"></div><div class="heatmap-cell h-low" vid="111"></div>
+                        <div class="heatmap-cell h-low" vid="112"></div><div class="heatmap-cell h-low" vid="113"></div><div class="heatmap-cell h-low" vid="114"></div><div class="heatmap-cell h-low" vid="115"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px;" vid="116">
+                        <span class="type-label" vid="117">00:00</span>
+                        <span class="type-label" vid="118">06:00</span>
+                        <span class="type-label" vid="119">12:00</span>
+                        <span class="type-label" vid="120">18:00</span>
+                        <span class="type-label" vid="121">23:59</span>
+                    </div>
+                </div>
+
+                
+                <div class="panel col-12" vid="122">
+                    <div class="panel-header" vid="123">
+                        <span class="type-label" vid="124">Сравнение эффективности бригад</span>
+                    </div>
+                    <table vid="125">
+                        <thead vid="126">
+                            <tr vid="127">
+                                <th class="type-label" vid="128">Подразделение / Бригада</th>
+                                <th class="type-label" vid="129">План (Га)</th>
+                                <th class="type-label" vid="130">Факт (Га)</th>
+                                <th class="type-label" vid="131">Отклонение</th>
+                                <th class="type-label text-right" vid="132">Выполнение (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody vid="133">
+                            <tr vid="134">
+                                <td class="type-value" vid="135">Северная Бригада #1</td>
+                                <td vid="136">1,250</td>
+                                <td vid="137">1,285</td>
+                                <td style="color: var(--accent-green);" vid="138">+35</td>
+                                <td class="text-right type-value" vid="139">
+                                    102.8%
+                                    <div class="progress-mini-bar" vid="140"><div class="progress-mini-fill" style="width: 100%;" vid="141"></div></div>
+                                </td>
+                            </tr>
+                            <tr vid="142">
+                                <td class="type-value" vid="143">Центральный Отряд #4</td>
+                                <td vid="144">2,100</td>
+                                <td vid="145">1,940</td>
+                                <td style="color: var(--danger-red);" vid="146">-160</td>
+                                <td class="text-right type-value" vid="147">
+                                    92.4%
+                                    <div class="progress-mini-bar" vid="148"><div class="progress-mini-fill" style="width: 92%;" vid="149"></div></div>
+                                </td>
+                            </tr>
+                            <tr vid="150">
+                                <td class="type-value" vid="151">Южная Группа (Мех)</td>
+                                <td vid="152">850</td>
+                                <td vid="153">845</td>
+                                <td style="color: var(--warning-orange);" vid="154">-5</td>
+                                <td class="text-right type-value" vid="155">
+                                    99.4%
+                                    <div class="progress-mini-bar" vid="156"><div class="progress-mini-fill" style="width: 99%;" vid="157"></div></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+</body></html>

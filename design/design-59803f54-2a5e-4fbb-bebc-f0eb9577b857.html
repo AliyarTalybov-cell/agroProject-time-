@@ -1,0 +1,719 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Агро-контроль - Аналитика</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" vid="6">
+    <script src="https://unpkg.com/@phosphor-icons/web" vid="7"></script>
+    <script vid="8">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        agro: {
+                            dark: '#265433', 
+                            light: '#EAF2EC', 
+                            bg: '#F5F7FA',   
+                            border: '#E5E7EB',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style vid="9">
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        
+        .doughnut-chart {
+            background: conic-gradient(
+                #22c55e 0% 55%,   
+                #3b82f6 55% 85%,  
+                #94a3b8 85% 100%  
+            );
+        }
+    </style>
+</head>
+<body class="flex h-screen bg-agro-bg font-sans text-gray-800 overflow-hidden" vid="10">
+
+    
+    <aside class="w-[260px] bg-white border-r border-agro-border flex flex-col flex-shrink-0 z-10 relative" vid="11">
+        
+        <div class="h-16 flex items-center px-6 border-b border-agro-border" vid="12">
+            <div class="flex items-center gap-3" vid="13">
+                <svg width="24" height="28" viewBox="0 0 24 28" fill="none" xmlns="http://www.w3.org/2000/svg" vid="14">
+                    <path d="M12 0L0 4V13.3333C0 20.72 5.14667 27.5333 12 29.3333C18.8533 27.5333 24 20.72 24 13.3333V4L12 0ZM12 26.56C6.61333 24.9067 2.66667 19.36 2.66667 13.3333V6.01333L12 2.90667L21.3333 6.01333V13.3333C21.3333 19.36 17.3867 24.9067 12 26.56Z" fill="#265433" vid="15"></path>
+                </svg>
+                <span class="text-xl font-bold text-agro-dark tracking-tight" vid="16">Агро-контроль</span>
+            </div>
+        </div>
+
+        
+        <nav class="flex-1 overflow-y-auto py-4" vid="17">
+            <ul class="space-y-1" vid="18">
+                <li vid="19">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="20">
+                        <i class="ph ph-squares-four text-xl" vid="21"></i>
+                        <span class="font-medium" vid="22">Обзор</span>
+                    </a>
+                </li>
+                <li vid="23">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="24">
+                        <i class="ph ph-cloud-sun text-xl" vid="25"></i>
+                        <span class="font-medium" vid="26">Погода</span>
+                    </a>
+                </li>
+                <li vid="27">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="28">
+                        <i class="ph ph-house text-xl" vid="29"></i>
+                        <span class="font-medium" vid="30">Поля и Культуры</span>
+                    </a>
+                </li>
+                <li vid="31">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="32">
+                        <i class="ph ph-tractor text-xl" vid="33"></i>
+                        <span class="font-medium" vid="34">Техника</span>
+                    </a>
+                </li>
+                <li vid="35">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="36">
+                        <i class="ph ph-check-square-offset text-xl" vid="37"></i>
+                        <span class="font-medium" vid="38">Задачи</span>
+                    </a>
+                </li>
+                <li vid="39">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="40">
+                        <i class="ph ph-calendar-blank text-xl" vid="41"></i>
+                        <span class="font-medium" vid="42">Календарь</span>
+                    </a>
+                </li>
+                <li class="relative" vid="43">
+                    
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-agro-dark rounded-r" vid="44"></div>
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 bg-agro-light text-gray-900 transition-colors" vid="45">
+                        <i class="ph ph-file-text text-xl text-agro-dark" vid="46"></i>
+                        <span class="font-medium" vid="47">Аналитика</span>
+                    </a>
+                </li>
+
+                
+                <li class="pt-6 pb-2 px-6" vid="48">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider" vid="49">Операции</span>
+                </li>
+                <li vid="50">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="51">
+                        <i class="ph ph-desktop text-xl" vid="52"></i>
+                        <span class="font-medium" vid="53">Экран оператора</span>
+                    </a>
+                </li>
+
+                
+                <li class="pt-6 pb-2 px-6" vid="54">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider" vid="55">Связь</span>
+                </li>
+                <li vid="56">
+                    <a href="#" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50 transition-colors" vid="57">
+                        <i class="ph ph-users text-xl" vid="58"></i>
+                        <span class="font-medium" vid="59">Сотрудники</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        
+        <div class="p-6 border-t border-agro-border" vid="60">
+            <a href="#" class="flex items-center gap-3 text-gray-500 hover:text-gray-900 transition-colors" vid="61">
+                <div class="w-2 h-2 rounded-full bg-red-500" vid="62"></div>
+                <span class="font-medium" vid="63">Выйти</span>
+            </a>
+        </div>
+    </aside>
+
+    
+    <main class="flex-1 flex flex-col min-w-0" vid="64">
+        
+        <header class="h-16 bg-white border-b border-agro-border flex items-center justify-between px-8 flex-shrink-0 z-10" vid="65">
+            <h1 class="text-xl font-bold text-gray-900" vid="66">Аналитика: Дашборд руководителя</h1>
+            
+            <div class="flex items-center gap-6" vid="67">
+                <button class="text-gray-400 hover:text-gray-600 transition-colors" vid="68">
+                    <i class="ph ph-sun text-2xl" vid="69"></i>
+                </button>
+                <div class="flex items-center gap-3" vid="70">
+                    <div class="w-8 h-8 rounded-full bg-agro-dark text-white flex items-center justify-center text-sm font-bold" vid="71">
+                        AL
+                    </div>
+                    <span class="text-sm font-medium text-gray-700" vid="72">aliyartalybov@icloud.com</span>
+                </div>
+            </div>
+        </header>
+
+        
+        <div class="flex-1 overflow-y-auto p-8" vid="73">
+            <div class="max-w-[1400px] mx-auto space-y-6" vid="74">
+
+                
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm" vid="75">
+                    <div class="flex flex-wrap items-center gap-4" vid="76">
+                        <div class="relative" vid="77">
+                            <select class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-agro-dark/20 focus:border-agro-dark text-sm font-medium cursor-pointer min-w-[200px]" vid="78">
+                                <option vid="79">Все сотрудники</option>
+                                <option vid="80">Алияр Талыбов</option>
+                                <option vid="81">Артур Моров</option>
+                                <option vid="82">Иван Иванов</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500" vid="83">
+                                <i class="ph ph-caret-down" vid="84"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden text-sm font-medium bg-gray-50" vid="85">
+                            <button class="px-4 py-2 bg-white text-gray-900 shadow-sm border-r border-gray-200" vid="86">Сегодня</button>
+                            <button class="px-4 py-2 text-gray-500 hover:bg-gray-100 transition-colors border-r border-gray-200" vid="87">Неделя</button>
+                            <button class="px-4 py-2 text-gray-500 hover:bg-gray-100 transition-colors" vid="88">Месяц</button>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-sm text-gray-500" vid="89">
+                            <span vid="90">С: <input type="date" value="2026-03-18" class="bg-transparent border-b border-gray-300 focus:outline-none focus:border-agro-dark pb-1 ml-1 cursor-pointer" vid="91"></span>
+                            <span vid="92">По: <input type="date" value="2026-03-18" class="bg-transparent border-b border-gray-300 focus:outline-none focus:border-agro-dark pb-1 ml-1 cursor-pointer" vid="93"></span>
+                        </div>
+                    </div>
+                    
+                    <button class="bg-agro-dark hover:bg-green-800 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2" vid="94">
+                        <i class="ph ph-arrows-clockwise" vid="95"></i>
+                        Обновить данные
+                    </button>
+                </div>
+
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4" vid="96">
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4" vid="97">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600" vid="98">
+                            <i class="ph ph-users text-2xl" vid="99"></i>
+                        </div>
+                        <div vid="100">
+                            <p class="text-sm text-gray-500 font-medium mb-1" vid="101">Люди в полях</p>
+                            <div class="flex items-baseline gap-2" vid="102">
+                                <h3 class="text-2xl font-bold text-gray-900" vid="103">8</h3>
+                                <span class="text-xs text-gray-400" vid="104">из 12</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4" vid="105">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600" vid="106">
+                            <i class="ph ph-tractor text-2xl" vid="107"></i>
+                        </div>
+                        <div vid="108">
+                            <p class="text-sm text-gray-500 font-medium mb-1" vid="109">Техника в работе</p>
+                            <div class="flex items-baseline gap-2" vid="110">
+                                <h3 class="text-2xl font-bold text-gray-900" vid="111">6</h3>
+                                <span class="text-xs text-gray-400" vid="112">из 8 ед.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4" vid="113">
+                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600" vid="114">
+                            <i class="ph ph-warning-circle text-2xl" vid="115"></i>
+                        </div>
+                        <div vid="116">
+                            <p class="text-sm text-gray-500 font-medium mb-1" vid="117">Простои сегодня</p>
+                            <div class="flex items-baseline gap-2" vid="118">
+                                <h3 class="text-2xl font-bold text-gray-900" vid="119">1.5 ч</h3>
+                                <span class="text-xs text-red-500 font-medium flex items-center" vid="120"><i class="ph ph-trend-up" vid="121"></i> +12%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4" vid="122">
+                        <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600" vid="123">
+                            <i class="ph ph-check-square-offset text-2xl" vid="124"></i>
+                        </div>
+                        <div vid="125">
+                            <p class="text-sm text-gray-500 font-medium mb-1" vid="126">Задачи на сегодня</p>
+                            <div class="flex items-baseline gap-2" vid="127">
+                                <h3 class="text-2xl font-bold text-gray-900" vid="128">4</h3>
+                                <span class="text-xs text-gray-400" vid="129">осталось</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div vid="130">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2" vid="131">
+                        <i class="ph ph-users-three text-agro-dark" vid="132"></i> Статус работы сотрудников (Live)
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" vid="133">
+                        
+                        
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 relative overflow-hidden" vid="134">
+                            
+                            <div class="absolute top-0 left-0 w-full h-1 bg-green-500" vid="135"></div>
+                            
+                            <div class="flex justify-between items-start mb-4" vid="136">
+                                <div class="flex items-center gap-3" vid="137">
+                                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-sm" vid="138">
+                                        AT
+                                    </div>
+                                    <div vid="139">
+                                        <h4 class="text-sm font-bold text-gray-900" vid="140">Алияр Талыбов</h4>
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 mt-1" vid="141">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500" vid="142"></span> В работе
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3" vid="143">
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100" vid="144">
+                                    <div class="flex items-center gap-2 text-xs text-gray-500 mb-1" vid="145">
+                                        <i class="ph ph-map-pin" vid="146"></i> Поле №12 - Пшеница
+                                    </div>
+                                    <div class="text-sm font-medium text-gray-800" vid="147">Посев озимой пшеницы</div>
+                                </div>
+                                
+                                <div vid="148">
+                                    <div class="flex justify-between text-xs mb-1.5" vid="149">
+                                        <span class="text-gray-500" vid="150">Прогресс за смену</span>
+                                        <span class="font-medium text-gray-700" vid="151">65% (32/50 Га)</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-1.5" vid="152">
+                                        <div class="bg-green-500 h-1.5 rounded-full" style="width: 65%" vid="153"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-100" vid="154">
+                                    <span class="flex items-center gap-1" vid="155"><i class="ph ph-tractor" vid="156"></i> МТЗ 1221</span>
+                                    <span class="flex items-center gap-1" vid="157"><i class="ph ph-clock" vid="158"></i> В работе 4ч 15м</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 relative overflow-hidden" vid="159">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-green-500" vid="160"></div>
+                            
+                            <div class="flex justify-between items-start mb-4" vid="161">
+                                <div class="flex items-center gap-3" vid="162">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm" vid="163">
+                                        AM
+                                    </div>
+                                    <div vid="164">
+                                        <h4 class="text-sm font-bold text-gray-900" vid="165">Артур Моров</h4>
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 mt-1" vid="166">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500" vid="167"></span> В работе
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3" vid="168">
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100" vid="169">
+                                    <div class="flex items-center gap-2 text-xs text-gray-500 mb-1" vid="170">
+                                        <i class="ph ph-map-pin" vid="171"></i> Поле №11 - Кукуруза
+                                    </div>
+                                    <div class="text-sm font-medium text-gray-800" vid="172">Сбор урожая</div>
+                                </div>
+                                
+                                <div vid="173">
+                                    <div class="flex justify-between text-xs mb-1.5" vid="174">
+                                        <span class="text-gray-500" vid="175">Прогресс за смену</span>
+                                        <span class="font-medium text-gray-700" vid="176">40% (12/30 Га)</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-1.5" vid="177">
+                                        <div class="bg-green-500 h-1.5 rounded-full" style="width: 40%" vid="178"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-100" vid="179">
+                                    <span class="flex items-center gap-1" vid="180"><i class="ph ph-tractor" vid="181"></i> CLAAS LEXION</span>
+                                    <span class="flex items-center gap-1" vid="182"><i class="ph ph-clock" vid="183"></i> В работе 3ч 00м</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 relative overflow-hidden" vid="184">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-red-500" vid="185"></div>
+                            
+                            <div class="flex justify-between items-start mb-4" vid="186">
+                                <div class="flex items-center gap-3" vid="187">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm" vid="188">
+                                        ИИ
+                                    </div>
+                                    <div vid="189">
+                                        <h4 class="text-sm font-bold text-gray-900" vid="190">Иван Иванов</h4>
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 mt-1" vid="191">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" vid="192"></span> Простой
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3" vid="193">
+                                <div class="bg-red-50 rounded-lg p-3 border border-red-100" vid="194">
+                                    <div class="flex items-center gap-2 text-xs text-red-600 font-medium mb-1" vid="195">
+                                        <i class="ph ph-wrench" vid="196"></i> Поломка техники
+                                    </div>
+                                    <div class="text-sm font-medium text-gray-800" vid="197">Ожидание запчасти</div>
+                                </div>
+                                
+                                <div vid="198">
+                                    <div class="flex justify-between text-xs mb-1.5" vid="199">
+                                        <span class="text-gray-500" vid="200">Ожидаемое время простоя</span>
+                                        <span class="font-medium text-red-600" vid="201">&gt; 2 часов</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-1.5" vid="202">
+                                        <div class="bg-red-500 h-1.5 rounded-full" style="width: 100%" vid="203"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-100" vid="204">
+                                    <span class="flex items-center gap-1" vid="205"><i class="ph ph-tractor" vid="206"></i> КАМАЗ 65115</span>
+                                    <span class="flex items-center gap-1" vid="207"><i class="ph ph-map-pin" vid="208"></i> База</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 relative overflow-hidden opacity-80" vid="209">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-gray-400" vid="210"></div>
+                            
+                            <div class="flex justify-between items-start mb-4" vid="211">
+                                <div class="flex items-center gap-3" vid="212">
+                                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-sm" vid="213">
+                                        СМ
+                                    </div>
+                                    <div vid="214">
+                                        <h4 class="text-sm font-bold text-gray-900" vid="215">Сергей Минин</h4>
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 mt-1" vid="216">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400" vid="217"></span> Ожидание задачи
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3" vid="218">
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100 flex items-center justify-center h-[60px]" vid="219">
+                                    <span class="text-sm text-gray-400" vid="220">Нет активной операции</span>
+                                </div>
+                                
+                                <div vid="221">
+                                    <div class="flex justify-between text-xs mb-1.5" vid="222">
+                                        <span class="text-gray-500" vid="223">Прогресс смены</span>
+                                        <span class="font-medium text-gray-500" vid="224">0%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-1.5" vid="225">
+                                        <div class="bg-gray-300 h-1.5 rounded-full" style="width: 0%" vid="226"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center text-xs text-gray-400 pt-2 border-t border-gray-100" vid="227">
+                                    <span class="flex items-center gap-1" vid="228">Техника не назначена</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" vid="229">
+                    
+                    
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col" vid="230">
+                        <div class="p-5 border-b border-gray-100 flex justify-between items-center" vid="231">
+                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2" vid="232">
+                                <i class="ph ph-plant text-agro-dark" vid="233"></i> Активные поля
+                            </h2>
+                            <button class="text-sm text-agro-dark font-medium hover:underline" vid="234">Все поля</button>
+                        </div>
+                        <div class="p-0 flex-1 overflow-auto" vid="235">
+                            <table class="w-full text-left border-collapse" vid="236">
+                                <thead vid="237">
+                                    <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-semibold uppercase tracking-wider" vid="238">
+                                        <th class="px-5 py-3" vid="239">Поле / Культура</th>
+                                        <th class="px-5 py-3" vid="240">Операция</th>
+                                        <th class="px-5 py-3" vid="241">Выполнение</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100" vid="242">
+                                    <tr class="hover:bg-gray-50 transition-colors" vid="243">
+                                        <td class="px-5 py-4" vid="244">
+                                            <div class="font-medium text-gray-900" vid="245">Поле №12</div>
+                                            <div class="text-xs text-yellow-600 bg-yellow-50 inline-block px-1.5 py-0.5 rounded mt-1 border border-yellow-100" vid="246">Пшеница</div>
+                                        </td>
+                                        <td class="px-5 py-4 text-sm text-gray-600" vid="247">
+                                            Посев<br vid="248">
+                                            <span class="text-xs text-gray-400" vid="249">Алияр Талыбов</span>
+                                        </td>
+                                        <td class="px-5 py-4" vid="250">
+                                            <div class="flex items-center gap-3" vid="251">
+                                                <div class="w-full bg-gray-200 rounded-full h-2 max-w-[100px]" vid="252">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 65%" vid="253"></div>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-700" vid="254">65%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors" vid="255">
+                                        <td class="px-5 py-4" vid="256">
+                                            <div class="font-medium text-gray-900" vid="257">Поле №11</div>
+                                            <div class="text-xs text-orange-600 bg-orange-50 inline-block px-1.5 py-0.5 rounded mt-1 border border-orange-100" vid="258">Кукуруза</div>
+                                        </td>
+                                        <td class="px-5 py-4 text-sm text-gray-600" vid="259">
+                                            Сбор урожая<br vid="260">
+                                            <span class="text-xs text-gray-400" vid="261">Артур Моров</span>
+                                        </td>
+                                        <td class="px-5 py-4" vid="262">
+                                            <div class="flex items-center gap-3" vid="263">
+                                                <div class="w-full bg-gray-200 rounded-full h-2 max-w-[100px]" vid="264">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 40%" vid="265"></div>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-700" vid="266">40%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors" vid="267">
+                                        <td class="px-5 py-4" vid="268">
+                                            <div class="font-medium text-gray-900" vid="269">Поле №1</div>
+                                            <div class="text-xs text-green-600 bg-green-50 inline-block px-1.5 py-0.5 rounded mt-1 border border-green-100" vid="270">Соя</div>
+                                        </td>
+                                        <td class="px-5 py-4 text-sm text-gray-600" vid="271">
+                                            Обработка гербицидами<br vid="272">
+                                            <span class="text-xs text-red-500" vid="273">Остановлено</span>
+                                        </td>
+                                        <td class="px-5 py-4" vid="274">
+                                            <div class="flex items-center gap-3" vid="275">
+                                                <div class="w-full bg-red-100 rounded-full h-2 max-w-[100px]" vid="276">
+                                                    <div class="bg-red-500 h-2 rounded-full" style="width: 15%" vid="277"></div>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-700" vid="278">15%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col" vid="279">
+                        <div class="p-5 border-b border-gray-100 flex justify-between items-center" vid="280">
+                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2" vid="281">
+                                <i class="ph ph-tractor text-agro-dark" vid="282"></i> Статус техники
+                            </h2>
+                            <div class="flex gap-2" vid="283">
+                                <span class="flex items-center gap-1 text-xs font-medium text-gray-500" vid="284"><div class="w-2 h-2 rounded-full bg-green-500" vid="285"></div> В работе</span>
+                                <span class="flex items-center gap-1 text-xs font-medium text-gray-500" vid="286"><div class="w-2 h-2 rounded-full bg-red-500" vid="287"></div> Простой</span>
+                            </div>
+                        </div>
+                        <div class="p-0 flex-1 overflow-auto" vid="288">
+                            <ul class="divide-y divide-gray-100" vid="289">
+                                
+                                <li class="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between" vid="290">
+                                    <div class="flex items-center gap-4" vid="291">
+                                        <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center border border-green-100" vid="292">
+                                            <i class="ph ph-tractor text-xl" vid="293"></i>
+                                        </div>
+                                        <div vid="294">
+                                            <h4 class="text-sm font-bold text-gray-900" vid="295">МТЗ Беларус 1221</h4>
+                                            <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-2" vid="296">
+                                                <span class="bg-gray-100 px-1.5 rounded font-mono" vid="297">0055 KP 46</span>
+                                                <span vid="298">Алияр Талыбов</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800" vid="299">
+                                        Исправна
+                                    </span>
+                                </li>
+
+                                
+                                <li class="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between" vid="300">
+                                    <div class="flex items-center gap-4" vid="301">
+                                        <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center border border-green-100" vid="302">
+                                            <i class="ph ph-tractor text-xl" vid="303"></i>
+                                        </div>
+                                        <div vid="304">
+                                            <h4 class="text-sm font-bold text-gray-900" vid="305">CLAAS LEXION 8700</h4>
+                                            <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-2" vid="306">
+                                                <span class="bg-gray-100 px-1.5 rounded font-mono" vid="307">8821 KT 46</span>
+                                                <span vid="308">Артур Моров</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800" vid="309">
+                                        Исправна
+                                    </span>
+                                </li>
+
+                                
+                                <li class="p-4 hover:bg-red-50/50 transition-colors flex items-center justify-between bg-red-50/30" vid="310">
+                                    <div class="flex items-center gap-4" vid="311">
+                                        <div class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center border border-red-200" vid="312">
+                                            <i class="ph ph-wrench text-xl" vid="313"></i>
+                                        </div>
+                                        <div vid="314">
+                                            <h4 class="text-sm font-bold text-gray-900" vid="315">КАМАЗ 65115</h4>
+                                            <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-2" vid="316">
+                                                <span class="bg-gray-100 px-1.5 rounded font-mono" vid="317">E 777 KX 46</span>
+                                                <span class="text-red-600 font-medium" vid="318">Иван Иванов</span>
+                                            </div>
+                                            <p class="text-xs text-red-500 mt-1" vid="319">Причина: Двигатель глохнет</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800" vid="320">
+                                        В ремонте
+                                    </span>
+                                </li>
+                                
+                                
+                                <li class="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between opacity-70" vid="321">
+                                    <div class="flex items-center gap-4" vid="322">
+                                        <div class="w-10 h-10 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center border border-gray-200" vid="323">
+                                            <i class="ph ph-truck text-xl" vid="324"></i>
+                                        </div>
+                                        <div vid="325">
+                                            <h4 class="text-sm font-bold text-gray-900" vid="326">ГАЗон NEXT</h4>
+                                            <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-2" vid="327">
+                                                <span class="bg-gray-100 px-1.5 rounded font-mono" vid="328">A 123 AA 77</span>
+                                                <span vid="329">Нет оператора</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" vid="330">
+                                        Ожидание
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div vid="331">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2" vid="332">
+                        <i class="ph ph-chart-bar text-agro-dark" vid="333"></i> Статистика задач
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" vid="334">
+                        
+                        
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex flex-col items-center justify-center col-span-1" vid="335">
+                            <h3 class="text-sm font-bold text-gray-700 w-full text-left mb-6" vid="336">Распределение по статусам</h3>
+                            
+                            
+                            <div class="relative w-40 h-40 rounded-full doughnut-chart flex items-center justify-center shadow-inner mb-6" vid="337">
+                                
+                                <div class="w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center shadow-sm" vid="338">
+                                    <span class="text-2xl font-bold text-gray-900" vid="339">18</span>
+                                    <span class="text-xs text-gray-500" vid="340">Всего задач</span>
+                                </div>
+                            </div>
+                            
+                            
+                            <div class="w-full space-y-3" vid="341">
+                                <div class="flex justify-between items-center text-sm" vid="342">
+                                    <div class="flex items-center gap-2" vid="343">
+                                        <span class="w-3 h-3 rounded-sm bg-green-500" vid="344"></span>
+                                        <span class="text-gray-600" vid="345">Выполнено</span>
+                                    </div>
+                                    <span class="font-bold text-gray-900" vid="346">10</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm" vid="347">
+                                    <div class="flex items-center gap-2" vid="348">
+                                        <span class="w-3 h-3 rounded-sm bg-blue-500" vid="349"></span>
+                                        <span class="text-gray-600" vid="350">В процессе</span>
+                                    </div>
+                                    <span class="font-bold text-gray-900" vid="351">5</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm" vid="352">
+                                    <div class="flex items-center gap-2" vid="353">
+                                        <span class="w-3 h-3 rounded-sm bg-slate-400" vid="354"></span>
+                                        <span class="text-gray-600" vid="355">К выполнению</span>
+                                    </div>
+                                    <span class="font-bold text-gray-900" vid="356">3</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 col-span-1 md:col-span-2 flex flex-col" vid="357">
+                            <h3 class="text-sm font-bold text-gray-700 mb-6" vid="358">Выполнение задач по сотрудникам (за неделю)</h3>
+                            
+                            <div class="flex-1 flex items-end gap-6 pt-4 h-[200px] relative" vid="359">
+                                
+                                <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 text-xs text-gray-400" vid="360">
+                                    <div class="flex items-center border-t border-gray-100 w-full h-0" vid="361"><span class="bg-white pr-2 -translate-y-2" vid="362">15</span></div>
+                                    <div class="flex items-center border-t border-gray-100 w-full h-0" vid="363"><span class="bg-white pr-2 -translate-y-2" vid="364">10</span></div>
+                                    <div class="flex items-center border-t border-gray-100 w-full h-0" vid="365"><span class="bg-white pr-2 -translate-y-2" vid="366">5</span></div>
+                                    <div class="flex items-center border-t border-gray-200 w-full h-0" vid="367"><span class="bg-white pr-2 -translate-y-2" vid="368">0</span></div>
+                                </div>
+
+                                
+                                <div class="relative flex-1 flex flex-col items-center justify-end h-full z-10 group" vid="369">
+                                    <div class="w-12 bg-green-500 rounded-t-sm hover:bg-green-600 transition-colors relative" style="height: 80%;" vid="370">
+                                        
+                                        <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity" vid="371">12 задач</div>
+                                    </div>
+                                    <div class="h-8 mt-2 text-xs text-gray-600 text-center font-medium leading-tight" vid="372">Алияр Т.</div>
+                                </div>
+
+                                <div class="relative flex-1 flex flex-col items-center justify-end h-full z-10 group" vid="373">
+                                    <div class="w-12 bg-green-500 rounded-t-sm hover:bg-green-600 transition-colors relative" style="height: 60%;" vid="374">
+                                        <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity" vid="375">9 задач</div>
+                                    </div>
+                                    <div class="h-8 mt-2 text-xs text-gray-600 text-center font-medium leading-tight" vid="376">Артур М.</div>
+                                </div>
+
+                                <div class="relative flex-1 flex flex-col items-center justify-end h-full z-10 group" vid="377">
+                                    <div class="w-12 bg-green-500 rounded-t-sm hover:bg-green-600 transition-colors relative" style="height: 20%;" vid="378">
+                                        <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity" vid="379">3 задачи</div>
+                                    </div>
+                                    <div class="h-8 mt-2 text-xs text-gray-600 text-center font-medium leading-tight" vid="380">Иван И.</div>
+                                </div>
+
+                                <div class="relative flex-1 flex flex-col items-center justify-end h-full z-10 group" vid="381">
+                                    <div class="w-12 bg-green-500 rounded-t-sm hover:bg-green-600 transition-colors relative" style="height: 45%;" vid="382">
+                                        <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity" vid="383">7 задач</div>
+                                    </div>
+                                    <div class="h-8 mt-2 text-xs text-gray-600 text-center font-medium leading-tight" vid="384">Сергей М.</div>
+                                </div>
+
+                                <div class="relative flex-1 flex flex-col items-center justify-end h-full z-10 group" vid="385">
+                                    <div class="w-12 bg-green-500 rounded-t-sm hover:bg-green-600 transition-colors relative" style="height: 30%;" vid="386">
+                                        <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity" vid="387">5 задач</div>
+                                    </div>
+                                    <div class="h-8 mt-2 text-xs text-gray-600 text-center font-medium leading-tight" vid="388">Петр С.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</body></html>

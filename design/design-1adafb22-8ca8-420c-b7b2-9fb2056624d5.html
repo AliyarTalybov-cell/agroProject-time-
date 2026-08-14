@@ -1,0 +1,806 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Управление полями - АгроХолдинг</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" vid="6"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" vid="7">
+    <script vid="8">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#4CAF50', 
+                            600: '#388e3c',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style vid="9">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-overlay-enter {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+        .modal-content-enter {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast-enter { animation: slideInRight 0.3s forwards; }
+        .toast-exit { animation: slideOutRight 0.3s forwards; }
+    </style>
+</head>
+<body class="h-screen w-full flex overflow-hidden text-gray-800 antialiased" vid="10">
+
+    
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex shrink-0 z-20" vid="11">
+        <div class="h-16 flex items-center px-6 border-b border-gray-100 shrink-0" vid="12">
+            <div class="flex items-center gap-2 text-agro-600" vid="13">
+                <i class="ph-fill ph-plant text-2xl" vid="14"></i>
+                <span class="text-xl font-bold tracking-tight text-gray-900" vid="15">АгроХолдинг</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar" vid="16">
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group" vid="17">
+                <i class="ph ph-squares-four text-xl text-gray-400 group-hover:text-gray-600" vid="18"></i>
+                <span class="font-medium text-sm" vid="19">Дашборд</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-agro-50 text-agro-700 transition-colors" vid="20">
+                <i class="ph-fill ph-map-trifold text-xl text-agro-600" vid="21"></i>
+                <span class="font-medium text-sm" vid="22">Управление полями</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group" vid="23">
+                <i class="ph ph-users text-xl text-gray-400 group-hover:text-gray-600" vid="24"></i>
+                <span class="font-medium text-sm" vid="25">Сотрудники</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group" vid="26">
+                <i class="ph ph-tractor text-xl text-gray-400 group-hover:text-gray-600" vid="27"></i>
+                <span class="font-medium text-sm" vid="28">Техника</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group" vid="29">
+                <i class="ph ph-chart-line-up text-xl text-gray-400 group-hover:text-gray-600" vid="30"></i>
+                <span class="font-medium text-sm" vid="31">Отчеты</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100 shrink-0" vid="32">
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group" vid="33">
+                <i class="ph ph-gear text-xl text-gray-400 group-hover:text-gray-600" vid="34"></i>
+                <span class="font-medium text-sm" vid="35">Настройки</span>
+            </a>
+        </div>
+    </aside>
+
+    
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative" vid="36">
+        
+        
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 z-10" vid="37">
+            <div class="flex items-center gap-3" vid="38">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 p-1 rounded-md hover:bg-gray-100 transition-colors" vid="39">
+                    <i class="ph ph-list text-2xl" vid="40"></i>
+                </button>
+                
+                <div class="md:hidden flex items-center gap-2 text-agro-600" vid="41">
+                    <i class="ph-fill ph-plant text-xl" vid="42"></i>
+                    <span class="font-bold text-gray-900" vid="43">АгроХолдинг</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4" vid="44">
+                <button class="text-gray-400 hover:text-gray-600 relative p-1.5 rounded-full hover:bg-gray-100 transition-colors" vid="45">
+                    <i class="ph ph-bell text-xl" vid="46"></i>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" vid="47"></span>
+                </button>
+                <div class="h-8 w-px bg-gray-200 hidden sm:block" vid="48"></div>
+                <div class="flex items-center gap-3 cursor-pointer group" vid="49">
+                    <div class="h-8 w-8 rounded-full bg-agro-100 text-agro-700 flex items-center justify-center font-bold text-sm border border-agro-200 group-hover:bg-agro-200 transition-colors" vid="50">
+                        АИ
+                    </div>
+                    <div class="hidden sm:block" vid="51">
+                        <p class="text-sm font-medium text-gray-900 leading-tight" vid="52">Алексей Иванов</p>
+                        <p class="text-xs text-gray-500" vid="53">Администратор</p>
+                    </div>
+                    <i class="ph ph-caret-down text-gray-400 text-xs hidden sm:block group-hover:text-gray-600" vid="54"></i>
+                </div>
+            </div>
+        </header>
+
+        
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar" vid="55">
+            
+            <div class="max-w-[1400px] mx-auto" vid="56">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6" vid="57">
+                    <div vid="58">
+                        <h1 class="text-2xl font-bold text-gray-900" vid="59">Управление полями</h1>
+                        <p class="mt-1 text-sm text-gray-500" vid="60">Реестр сельскохозяйственных угодий и назначение ответственных</p>
+                    </div>
+                    
+                    <button onclick="openModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-agro-500 hover:bg-agro-600 text-white text-sm font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agro-500 transition-colors w-full sm:w-auto" vid="61">
+                        <i class="ph ph-plus text-lg" vid="62"></i>
+                        Добавить поле
+                    </button>
+                </div>
+
+                
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden" vid="63">
+                    
+                    
+                    <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white" vid="64">
+                        <div class="relative w-full max-w-md" vid="65">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" vid="66">
+                                <i class="ph ph-magnifying-glass text-gray-400 text-lg" vid="67"></i>
+                            </div>
+                            <input type="text" id="searchInput" placeholder="Поиск по названию или культуре..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-agro-500 focus:border-agro-500 transition-colors" vid="68">
+                        </div>
+                        
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end" vid="69">
+                            <button class="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors" vid="70">
+                                <i class="ph ph-funnel text-gray-400" vid="71"></i>
+                                Фильтры
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                    <div class="overflow-x-auto custom-scrollbar" vid="72">
+                        <table class="min-w-full divide-y divide-gray-200" vid="73">
+                            <thead class="bg-gray-50/80" vid="74">
+                                <tr vid="75">
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider group cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" vid="76">
+                                        <div class="flex items-center gap-1" vid="77">
+                                            Название
+                                            <i class="ph-fill ph-caret-up-down text-gray-400 group-hover:text-gray-600" vid="78"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider group cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" vid="79">
+                                        <div class="flex items-center gap-1" vid="80">
+                                            Площадь (га)
+                                            <i class="ph-fill ph-caret-up-down text-gray-400 group-hover:text-gray-600" vid="81"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider group cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" vid="82">
+                                        <div class="flex items-center gap-1" vid="83">
+                                            Культура
+                                            <i class="ph-fill ph-caret-up-down text-gray-400 group-hover:text-gray-600" vid="84"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell min-w-[250px]" vid="85">
+                                        Описание
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" vid="86">
+                                        Ответственный
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" vid="87">
+                                        Действия
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200 text-sm" id="tableBody" vid="88">
+                                
+                                
+                                <tr class="hover:bg-gray-50/80 transition-colors" id="row-1" vid="89">
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="90">
+                                        <div class="font-medium text-gray-900" vid="91">Поле №12 – Пшеница</div>
+                                        <div class="text-xs text-gray-500 mt-0.5" vid="92">Кад. №: 23:43:0112003:45</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="93">
+                                        <div class="text-gray-900 font-medium" vid="94">42.5</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="95">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200" vid="96">
+                                            <i class="ph-fill ph-grains mr-1" vid="97"></i> Пшеница
+                                        </span>
+                                        <div class="text-xs text-gray-500 mt-1" vid="98">Пашня</div>
+                                    </td>
+                                    <td class="px-6 py-4 hidden md:table-cell" vid="99">
+                                        <div class="text-gray-600 max-w-xs truncate" title="От дороги до ручья, прямоугольник 500×200 м, северная часть участка 45" vid="100">
+                                            От дороги до ручья, прямоугольник 500×200 м...
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="101">
+                                        <div class="relative group/select" vid="102">
+                                            <select onchange="showToast('Назначение обновлено')" class="appearance-none block w-full pl-2 pr-8 py-1.5 text-sm font-medium text-gray-700 bg-transparent border border-transparent rounded hover:border-gray-300 focus:outline-none focus:ring-1 focus:ring-agro-500 focus:border-agro-500 cursor-pointer transition-colors" vid="103">
+                                                <option value="1" selected="" vid="104">Иванов А.С.</option>
+                                                <option value="2" vid="105">Петрова М.В.</option>
+                                                <option value="3" vid="106">Сидоров В.И.</option>
+                                                <option value="none" vid="107">-- Не назначен --</option>
+                                            </select>
+                                            <i class="ph ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover/select:text-gray-600 transition-colors" vid="108"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right" vid="109">
+                                        <div class="flex items-center justify-end gap-1" vid="110">
+                                            <button title="Просмотреть схему" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" vid="111">
+                                                <i class="ph ph-paperclip text-lg" vid="112"></i>
+                                            </button>
+                                            <button title="Редактировать" onclick="openModal()" class="p-1.5 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-md transition-colors" vid="113">
+                                                <i class="ph ph-pencil-simple text-lg" vid="114"></i>
+                                            </button>
+                                            <button title="Удалить" onclick="deleteRow('row-1')" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" vid="115">
+                                                <i class="ph ph-trash text-lg" vid="116"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                
+                                <tr class="hover:bg-gray-50/80 transition-colors" id="row-2" vid="117">
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="118">
+                                        <div class="font-medium text-gray-900" vid="119">Участок "Южный"</div>
+                                        <div class="text-xs text-gray-400 italic mt-0.5" vid="120">Нет кад. номера</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="121">
+                                        <div class="text-gray-900 font-medium" vid="122">120.0</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="123">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200" vid="124">
+                                            <i class="ph-fill ph-plant mr-1" vid="125"></i> Подсолнечник
+                                        </span>
+                                        <div class="text-xs text-gray-500 mt-1" vid="126">Пашня</div>
+                                    </td>
+                                    <td class="px-6 py-4 hidden md:table-cell" vid="127">
+                                        <div class="text-gray-600 max-w-xs truncate" title="Рядом с лесополосой, южная граница хозяйства, склон 5 градусов" vid="128">
+                                            Рядом с лесополосой, южная граница...
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="129">
+                                        <div class="relative group/select" vid="130">
+                                            <select onchange="showToast('Назначение обновлено')" class="appearance-none block w-full pl-2 pr-8 py-1.5 text-sm font-medium text-gray-700 bg-transparent border border-transparent rounded hover:border-gray-300 focus:outline-none focus:ring-1 focus:ring-agro-500 focus:border-agro-500 cursor-pointer transition-colors" vid="131">
+                                                <option value="1" vid="132">Иванов А.С.</option>
+                                                <option value="2" selected="" vid="133">Петрова М.В.</option>
+                                                <option value="3" vid="134">Сидоров В.И.</option>
+                                                <option value="none" vid="135">-- Не назначен --</option>
+                                            </select>
+                                            <i class="ph ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover/select:text-gray-600 transition-colors" vid="136"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right" vid="137">
+                                        <div class="flex items-center justify-end gap-1" vid="138">
+                                            <button title="Нет схемы" class="p-1.5 text-gray-300 cursor-not-allowed rounded-md" vid="139">
+                                                <i class="ph ph-paperclip text-lg" vid="140"></i>
+                                            </button>
+                                            <button title="Редактировать" onclick="openModal()" class="p-1.5 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-md transition-colors" vid="141">
+                                                <i class="ph ph-pencil-simple text-lg" vid="142"></i>
+                                            </button>
+                                            <button title="Удалить" onclick="deleteRow('row-2')" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" vid="143">
+                                                <i class="ph ph-trash text-lg" vid="144"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                
+                                <tr class="hover:bg-gray-50/80 transition-colors" id="row-3" vid="145">
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="146">
+                                        <div class="font-medium text-gray-900" vid="147">Залежь у реки</div>
+                                        <div class="text-xs text-gray-500 mt-0.5" vid="148">Кад. №: 23:43:0112003:88</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="149">
+                                        <div class="text-gray-900 font-medium" vid="150">15.2</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="151">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200" vid="152">
+                                            <i class="ph-fill ph-leaf mr-1" vid="153"></i> Нет культуры
+                                        </span>
+                                        <div class="text-xs text-gray-500 mt-1" vid="154">Залежь</div>
+                                    </td>
+                                    <td class="px-6 py-4 hidden md:table-cell" vid="155">
+                                        <div class="text-gray-600 max-w-xs truncate" title="Заболоченная местность в низине, не обрабатывается 3 года" vid="156">
+                                            Заболоченная местность в низине, не обраба...
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="157">
+                                        <div class="relative group/select" vid="158">
+                                            <select onchange="showToast('Назначение обновлено')" class="appearance-none block w-full pl-2 pr-8 py-1.5 text-sm font-medium text-gray-400 italic bg-transparent border border-dashed border-gray-300 rounded hover:border-gray-400 hover:border-solid hover:text-gray-700 hover:not-italic focus:outline-none focus:ring-1 focus:ring-agro-500 focus:border-agro-500 cursor-pointer transition-all" vid="159">
+                                                <option value="1" vid="160">Иванов А.С.</option>
+                                                <option value="2" vid="161">Петрова М.В.</option>
+                                                <option value="3" vid="162">Сидоров В.И.</option>
+                                                <option value="none" selected="" vid="163">Не назначен</option>
+                                            </select>
+                                            <i class="ph ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover/select:text-gray-600 transition-colors" vid="164"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right" vid="165">
+                                        <div class="flex items-center justify-end gap-1" vid="166">
+                                            <button title="Просмотреть схему" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" vid="167">
+                                                <i class="ph ph-paperclip text-lg" vid="168"></i>
+                                            </button>
+                                            <button title="Редактировать" onclick="openModal()" class="p-1.5 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-md transition-colors" vid="169">
+                                                <i class="ph ph-pencil-simple text-lg" vid="170"></i>
+                                            </button>
+                                            <button title="Удалить" onclick="deleteRow('row-3')" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" vid="171">
+                                                <i class="ph ph-trash text-lg" vid="172"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                
+                                <tr class="hover:bg-gray-50/80 transition-colors" id="row-4" vid="173">
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="174">
+                                        <div class="font-medium text-gray-900" vid="175">Поле №8 – Соя</div>
+                                        <div class="text-xs text-gray-500 mt-0.5" vid="176">Кад. №: 23:43:0112003:12</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="177">
+                                        <div class="text-gray-900 font-medium" vid="178">85.0</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="179">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200" vid="180">
+                                            <i class="ph-fill ph-plant mr-1" vid="181"></i> Соя
+                                        </span>
+                                        <div class="text-xs text-gray-500 mt-1" vid="182">Пашня</div>
+                                    </td>
+                                    <td class="px-6 py-4 hidden md:table-cell" vid="183">
+                                        <div class="text-gray-600 max-w-xs truncate" title="Центральный массив, ровный участок" vid="184">
+                                            Центральный массив, ровный участок
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" vid="185">
+                                        <div class="relative group/select" vid="186">
+                                            <select onchange="showToast('Назначение обновлено')" class="appearance-none block w-full pl-2 pr-8 py-1.5 text-sm font-medium text-gray-700 bg-transparent border border-transparent rounded hover:border-gray-300 focus:outline-none focus:ring-1 focus:ring-agro-500 focus:border-agro-500 cursor-pointer transition-colors" vid="187">
+                                                <option value="1" vid="188">Иванов А.С.</option>
+                                                <option value="2" vid="189">Петрова М.В.</option>
+                                                <option value="3" selected="" vid="190">Сидоров В.И.</option>
+                                                <option value="none" vid="191">-- Не назначен --</option>
+                                            </select>
+                                            <i class="ph ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover/select:text-gray-600 transition-colors" vid="192"></i>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right" vid="193">
+                                        <div class="flex items-center justify-end gap-1" vid="194">
+                                            <button title="Нет схемы" class="p-1.5 text-gray-300 cursor-not-allowed rounded-md" vid="195">
+                                                <i class="ph ph-paperclip text-lg" vid="196"></i>
+                                            </button>
+                                            <button title="Редактировать" onclick="openModal()" class="p-1.5 text-gray-400 hover:text-agro-600 hover:bg-agro-50 rounded-md transition-colors" vid="197">
+                                                <i class="ph ph-pencil-simple text-lg" vid="198"></i>
+                                            </button>
+                                            <button title="Удалить" onclick="deleteRow('row-4')" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" vid="199">
+                                                <i class="ph ph-trash text-lg" vid="200"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    
+                    <div class="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between sm:px-6 mt-auto" vid="201">
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between" vid="202">
+                            <div vid="203">
+                                <p class="text-sm text-gray-700" vid="204">
+                                    Показано от <span class="font-medium" vid="205">1</span> до <span class="font-medium" vid="206">4</span> из <span class="font-medium" vid="207">24</span> полей
+                                </p>
+                            </div>
+                            <div vid="208">
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination" vid="209">
+                                    <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50" disabled="" vid="210">
+                                        <span class="sr-only" vid="211">Предыдущая</span>
+                                        <i class="ph ph-caret-left" vid="212"></i>
+                                    </button>
+                                    <button aria-current="page" class="z-10 bg-agro-50 border-agro-500 text-agro-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium" vid="213">
+                                        1
+                                    </button>
+                                    <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium" vid="214">
+                                        2
+                                    </button>
+                                    <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium" vid="215">
+                                        3
+                                    </button>
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700" vid="216">
+                                        ...
+                                    </span>
+                                    <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" vid="217">
+                                        <span class="sr-only" vid="218">Следующая</span>
+                                        <i class="ph ph-caret-right" vid="219"></i>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    
+    <div id="modalOverlay" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden" aria-hidden="true" vid="220"></div>
+    
+    <div id="fieldModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" vid="221">
+        <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0" vid="222">
+            
+            <div id="modalContent" class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-2xl border border-gray-100 flex flex-col max-h-[90vh]" vid="223">
+                
+                
+                <div class="bg-white px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0" vid="224">
+                    <h3 class="text-lg font-bold leading-6 text-gray-900 flex items-center gap-2" id="modal-title" vid="225">
+                        <i class="ph-fill ph-plant text-agro-500 text-xl" vid="226"></i>
+                        Новое поле
+                    </h3>
+                    <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-agro-500" vid="227">
+                        <span class="sr-only" vid="228">Закрыть</span>
+                        <i class="ph ph-x text-lg" vid="229"></i>
+                    </button>
+                </div>
+
+                
+                <div class="px-6 py-6 overflow-y-auto flex-1 custom-scrollbar" vid="230">
+                    <form id="fieldForm" class="space-y-6" novalidate="" vid="231">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5" vid="232">
+                            
+                            
+                            <div class="md:col-span-2" vid="233">
+                                <label for="fieldName" class="block text-sm font-medium text-gray-700 mb-1" vid="234">
+                                    Название поля <span class="text-red-500" vid="235">*</span>
+                                </label>
+                                <input type="text" id="fieldName" name="fieldName" placeholder="Например: Поле №12 – Пшеница" required="" class="block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-agro-500 focus:border-agro-500 sm:text-sm px-3 py-2 text-gray-900 placeholder-gray-400 transition-colors outline-none" vid="236">
+                                <p class="mt-1 text-xs text-red-600 hidden" id="fieldNameError" vid="237">Пожалуйста, введите название поля.</p>
+                            </div>
+
+                            
+                            <div vid="238">
+                                <label for="cadastral" class="block text-sm font-medium text-gray-700 mb-1" vid="239">
+                                    Кадастровый номер <span class="text-gray-400 font-normal" vid="240">(опц.)</span>
+                                </label>
+                                <input type="text" id="cadastral" name="cadastral" placeholder="XX:XX:XXXXXXX:XX" class="block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-agro-500 focus:border-agro-500 sm:text-sm px-3 py-2 text-gray-900 placeholder-gray-400 transition-colors outline-none" vid="241">
+                            </div>
+
+                            
+                            <div vid="242">
+                                <label for="area" class="block text-sm font-medium text-gray-700 mb-1" vid="243">
+                                    Площадь, га <span class="text-red-500" vid="244">*</span>
+                                </label>
+                                <div class="relative rounded-md shadow-sm" vid="245">
+                                    <input type="number" step="0.01" id="area" name="area" placeholder="0.00" required="" class="block w-full border border-gray-300 rounded-lg focus:ring-agro-500 focus:border-agro-500 sm:text-sm px-3 py-2 pr-10 text-gray-900 placeholder-gray-400 transition-colors outline-none" vid="246">
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3" vid="247">
+                                        <span class="text-gray-500 sm:text-sm" vid="248">га</span>
+                                    </div>
+                                </div>
+                                <p class="mt-1 text-xs text-red-600 hidden" id="areaError" vid="249">Введите корректную площадь.</p>
+                            </div>
+
+                            
+                            <div vid="250">
+                                <label for="landType" class="block text-sm font-medium text-gray-700 mb-1" vid="251">
+                                    Тип земли
+                                </label>
+                                <select id="landType" name="landType" class="block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-agro-500 focus:border-agro-500 sm:text-sm px-3 py-2 text-gray-900 bg-white transition-colors outline-none cursor-pointer" vid="252">
+                                    <option value="arable" vid="253">Пашня</option>
+                                    <option value="hayfield" vid="254">Сенокос</option>
+                                    <option value="pasture" vid="255">Пастбище</option>
+                                    <option value="fallow" vid="256">Залежь</option>
+                                </select>
+                            </div>
+
+                            
+                            <div vid="257">
+                                <label for="crop" class="block text-sm font-medium text-gray-700 mb-1" vid="258">
+                                    Культура
+                                </label>
+                                <select id="crop" name="crop" class="block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-agro-500 focus:border-agro-500 sm:text-sm px-3 py-2 text-gray-900 bg-white transition-colors outline-none cursor-pointer" vid="259">
+                                    <option value="wheat" vid="260">Пшеница</option>
+                                    <option value="corn" vid="261">Кукуруза</option>
+                                    <option value="sunflower" vid="262">Подсолнечник</option>
+                                    <option value="soy" vid="263">Соя</option>
+                                    <option value="barley" vid="264">Ячмень</option>
+                                    <option value="none" vid="265">Нет (пар)</option>
+                                </select>
+                            </div>
+
+                            
+                            <div class="md:col-span-2 sm:w-1/2 pr-3" vid="266">
+                                <label for="year" class="block text-sm font-medium text-gray-700 mb-1" vid="267">
+                                    Год посева
+                                </label>
+                                <input type="number" id="year" name="year" value="2024" class="block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-agro-500 focus:border-agro-500 sm:text-sm px-3 py-2 text-gray-900 transition-colors outline-none" vid="268">
+                            </div>
+
+                            
+                            <div class="md:col-span-2" vid="269">
+                                <label for="description" class="block text-sm font-medium text-gray-700 mb-1" vid="270">
+                                    Описание местоположения
+                                </label>
+                                <textarea id="description" name="description" rows="3" placeholder="Опишите границы текстом (например: От дороги до ручья, прямоугольник 500×200 м...)" class="block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-agro-500 focus:border-agro-500 sm:text-sm px-3 py-2 text-gray-900 placeholder-gray-400 transition-colors outline-none resize-none custom-scrollbar" vid="271"></textarea>
+                            </div>
+
+                            
+                            <div class="md:col-span-2" vid="272">
+                                <label class="block text-sm font-medium text-gray-700 mb-1" vid="273">
+                                    Прикрепить схему/план <span class="text-gray-400 font-normal" vid="274">(опц.)</span>
+                                </label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-agro-400 hover:bg-agro-50/50 transition-colors cursor-pointer group" onclick="document.getElementById('file-upload').click()" vid="275">
+                                    <div class="space-y-1 text-center" vid="276">
+                                        <i class="ph ph-upload-simple text-3xl text-gray-400 group-hover:text-agro-500 transition-colors" vid="277"></i>
+                                        <div class="flex text-sm text-gray-600 justify-center" vid="278">
+                                            <label for="file-upload" class="relative cursor-pointer rounded-md bg-transparent font-medium text-agro-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-agro-500 hover:text-agro-500" vid="279">
+                                                <span vid="280">Загрузить файл</span>
+                                                <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".jpg,.jpeg,.png,.pdf" vid="281">
+                                            </label>
+                                            <p class="pl-1" vid="282">или перетащите сюда</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500" vid="283">JPG, PNG, PDF до 10MB</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="selectedFile" class="hidden mt-2 flex items-center justify-between p-2 border border-gray-200 rounded bg-gray-50" vid="284">
+                                    <div class="flex items-center gap-2 overflow-hidden" vid="285">
+                                        <i class="ph-fill ph-file-pdf text-red-500 text-lg shrink-0" id="fileIcon" vid="286"></i>
+                                        <span class="text-sm text-gray-700 truncate" id="fileName" vid="287">scheme.pdf</span>
+                                    </div>
+                                    <button type="button" onclick="removeFile(event)" class="text-gray-400 hover:text-red-500 p-1 shrink-0" vid="288">
+                                        <i class="ph ph-x" vid="289"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0 rounded-b-xl" vid="290">
+                    <button type="button" onclick="closeModal()" class="inline-flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-agro-500 focus:ring-offset-2 sm:w-auto transition-colors" vid="291">
+                        Отмена
+                    </button>
+                    <button type="button" onclick="saveField()" class="inline-flex w-full justify-center rounded-lg border border-transparent bg-agro-500 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-agro-600 focus:outline-none focus:ring-2 focus:ring-agro-500 focus:ring-offset-2 sm:w-auto transition-colors" vid="292">
+                        Сохранить поле
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none" vid="293"></div>
+
+    <script vid="294">
+        
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('fieldModal');
+        const modalContent = document.getElementById('modalContent');
+        const form = document.getElementById('fieldForm');
+
+        function openModal() {
+            form.reset();
+            resetValidation();
+            removeFile();
+            
+            modalOverlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            
+            
+            modalOverlay.classList.add('modal-overlay-enter');
+            modalContent.classList.add('modal-content-enter');
+            
+            setTimeout(() => {
+                modalOverlay.classList.remove('modal-overlay-enter');
+                modalContent.classList.remove('modal-content-enter');
+            }, 300);
+        }
+
+        function closeModal() {
+            modalOverlay.style.opacity = '0';
+            modalContent.classList.add('modal-exit-active');
+            
+            setTimeout(() => {
+                modalOverlay.classList.add('hidden');
+                modal.classList.add('hidden');
+                modalOverlay.style.opacity = '';
+                modalContent.classList.remove('modal-exit-active');
+            }, 150);
+        }
+
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal || e.target.parentElement === modal) {
+                closeModal();
+            }
+        });
+
+        
+        function resetValidation() {
+            const inputs = ['fieldName', 'area'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                const err = document.getElementById(id + 'Error');
+                el.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                el.classList.add('border-gray-300', 'focus:ring-agro-500', 'focus:border-agro-500');
+                err.classList.add('hidden');
+            });
+        }
+
+        function showError(id) {
+            const el = document.getElementById(id);
+            const err = document.getElementById(id + 'Error');
+            el.classList.remove('border-gray-300', 'focus:ring-agro-500', 'focus:border-agro-500');
+            el.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+            err.classList.remove('hidden');
+        }
+
+        function saveField() {
+            resetValidation();
+            let isValid = true;
+
+            const name = document.getElementById('fieldName');
+            if (!name.value.trim()) {
+                showError('fieldName');
+                isValid = false;
+            }
+
+            const area = document.getElementById('area');
+            if (!area.value || isNaN(area.value) || Number(area.value) <= 0) {
+                showError('area');
+                isValid = false;
+            }
+
+            if (isValid) {
+                closeModal();
+                showToast('Новое поле успешно сохранено!');
+            }
+        }
+
+        
+        document.getElementById('fieldName').addEventListener('input', function() {
+            if(this.value.trim()) {
+                this.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                this.classList.add('border-gray-300', 'focus:ring-agro-500', 'focus:border-agro-500');
+                document.getElementById('fieldNameError').classList.add('hidden');
+            }
+        });
+        document.getElementById('area').addEventListener('input', function() {
+            if(this.value && Number(this.value) > 0) {
+                this.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                this.classList.add('border-gray-300', 'focus:ring-agro-500', 'focus:border-agro-500');
+                document.getElementById('areaError').classList.add('hidden');
+            }
+        });
+
+        
+        const fileInput = document.getElementById('file-upload');
+        const selectedFileDiv = document.getElementById('selectedFile');
+        const fileNameSpan = document.getElementById('fileName');
+        const fileIcon = document.getElementById('fileIcon');
+
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                fileNameSpan.textContent = file.name;
+                
+                
+                fileIcon.className = 'ph-fill text-lg shrink-0 ';
+                if(file.name.toLowerCase().endsWith('.pdf')) {
+                    fileIcon.className += 'ph-file-pdf text-red-500';
+                } else if(file.name.toLowerCase().match(/\.(jpg|jpeg|png)$/)) {
+                    fileIcon.className += 'ph-image text-blue-500';
+                } else {
+                    fileIcon.className += 'ph-file text-gray-500';
+                }
+                
+                selectedFileDiv.classList.remove('hidden');
+            }
+        });
+
+        function removeFile(e) {
+            if(e) e.stopPropagation();
+            fileInput.value = '';
+            selectedFileDiv.classList.add('hidden');
+        }
+
+        
+        function deleteRow(rowId) {
+            if(confirm('Вы уверены, что хотите удалить это поле?')) {
+                const row = document.getElementById(rowId);
+                row.style.opacity = '0';
+                row.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    row.remove();
+                    showToast('Поле удалено', 'error');
+                }, 300);
+            }
+        }
+
+        
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const iconClass = type === 'success' ? 'ph-check-circle text-agro-500' : 'ph-info text-red-500';
+            const borderClass = type === 'success' ? 'border-agro-500' : 'border-red-500';
+            
+            toast.className = `pointer-events-auto flex items-center gap-3 bg-white p-4 rounded-lg shadow-lg border-l-4 ${borderClass} min-w-[300px] toast-enter`;
+            
+            toast.innerHTML = `
+                <i class="ph-fill ${iconClass} text-xl"></i>
+                <span class="text-sm font-medium text-gray-800">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+            
+            for(let row of rows) {
+                const text = row.textContent.toLowerCase();
+                if(text.includes(term)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    </script>
+
+</body></html>

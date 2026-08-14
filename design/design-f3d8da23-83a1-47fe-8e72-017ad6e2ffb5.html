@@ -1,0 +1,610 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Сотрудники - Агрономическая система</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" vid="6"></script>
+    <style vid="7">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+    <script vid="8">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3d5c40',
+                        primaryHover: '#2c432e',
+                        bgMain: '#f4f5f6',
+                        textDark: '#1a202c',
+                        textMuted: '#64748b',
+                        borderLight: '#e2e8f0',
+                        badgeBg: '#eef2ec',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-bgMain text-textDark h-screen flex flex-col overflow-hidden" vid="9">
+
+    
+    <header class="bg-white border-b border-borderLight h-16 flex items-center justify-between px-8 shrink-0 z-10 relative shadow-sm" vid="10">
+        <div class="flex items-center gap-3" vid="11">
+            <div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-white" vid="12">
+                <i class="ph ph-plant text-xl" vid="13"></i>
+            </div>
+            <span class="font-bold text-lg text-primary tracking-tight" vid="14">AgroSystem</span>
+        </div>
+        <div class="flex items-center gap-6" vid="15">
+            <button class="text-textMuted hover:text-primary transition-colors" vid="16">
+                <i class="ph ph-bell text-2xl" vid="17"></i>
+            </button>
+            <div class="flex items-center gap-3 border-l border-borderLight pl-6" vid="18">
+                <div class="text-right hidden md:block" vid="19">
+                    <div class="text-sm font-semibold" vid="20">Алексей Иванов</div>
+                    <div class="text-xs text-textMuted" vid="21">Администратор</div>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm" vid="22">АИ</div>
+            </div>
+        </div>
+    </header>
+
+    
+    <main class="flex-1 overflow-y-auto custom-scrollbar p-8" vid="23">
+        <div class="max-w-7xl mx-auto space-y-8" vid="24">
+            
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4" vid="25">
+                <div vid="26">
+                    <h1 class="text-3xl font-bold text-textDark mb-1" vid="27">Сотрудники</h1>
+                    <p class="text-textMuted" vid="28">Управление персоналом и доступом к системе.</p>
+                </div>
+                <div class="flex items-center gap-3" vid="29">
+                    <div class="relative w-full md:w-64" vid="30">
+                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-textMuted text-lg" vid="31"></i>
+                        <input type="text" placeholder="Поиск сотрудника..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-borderLight rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" vid="32">
+                    </div>
+                    <button class="flex items-center gap-2 bg-white border border-borderLight px-4 py-2.5 rounded-lg text-sm font-medium text-textDark hover:bg-gray-50 transition-colors" vid="33">
+                        <i class="ph ph-faders text-lg" vid="34"></i>
+                        Фильтры
+                    </button>
+                    <button class="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primaryHover transition-colors shadow-sm" vid="35">
+                        <i class="ph ph-plus text-lg" vid="36"></i>
+                        Добавить
+                    </button>
+                </div>
+            </div>
+
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" vid="37">
+                
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Артур Моров', 'Механик', 'Руководитель', 'АМ', 'talybovaasja@mail.ru', '+79122234433', 'Агрономическая служба', '17 марта в 20:37', '15 марта 2026 г.', 'active')" vid="38">
+                    <div class="flex justify-between items-start mb-4" vid="39">
+                        <div class="flex items-center gap-3" vid="40">
+                            <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="41">АМ</div>
+                            <div vid="42">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="43">Артур Моров</h3>
+                                <p class="text-xs text-textMuted" vid="44">Механик</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="45">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="46"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="47">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="48">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="49"></i> <span class="truncate" vid="50">talybovaasja@mail.ru</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="51">
+                            <i class="ph ph-phone text-gray-400" vid="52"></i> <span vid="53">+79122234433</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="54">
+                        <div class="flex items-center gap-1.5" vid="55">
+                            <div class="w-2 h-2 rounded-full bg-[#10b981]" vid="56"></div>
+                            <span class="text-xs font-medium text-gray-700" vid="57">Активен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary text-white text-[11px] font-medium tracking-wide" vid="58">
+                            <i class="ph ph-check text-[10px]" vid="59"></i> Руководитель
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Елена Смирнова', 'Главный Агроном', 'Руководитель', 'ЕС', 'e.smirnova@agro.com', '+79998887766', 'Агрономическая служба', 'Сегодня в 09:15', '10 января 2024 г.', 'active')" vid="60">
+                    <div class="flex justify-between items-start mb-4" vid="61">
+                        <div class="flex items-center gap-3" vid="62">
+                            <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="63">ЕС</div>
+                            <div vid="64">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="65">Елена Смирнова</h3>
+                                <p class="text-xs text-textMuted" vid="66">Главный Агроном</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="67">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="68"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="69">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="70">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="71"></i> <span class="truncate" vid="72">e.smirnova@agro.com</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="73">
+                            <i class="ph ph-phone text-gray-400" vid="74"></i> <span vid="75">+79998887766</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="76">
+                        <div class="flex items-center gap-1.5" vid="77">
+                            <div class="w-2 h-2 rounded-full bg-[#10b981]" vid="78"></div>
+                            <span class="text-xs font-medium text-gray-700" vid="79">Активен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary text-white text-[11px] font-medium tracking-wide" vid="80">
+                            <i class="ph ph-check text-[10px]" vid="81"></i> Руководитель
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Иван Петров', 'Тракторист', 'Сотрудник', 'ИП', 'i.petrov@agro.com', '+79001112233', 'Технический отдел', 'Вчера в 18:00', '05 мая 2025 г.', 'active')" vid="82">
+                    <div class="flex justify-between items-start mb-4" vid="83">
+                        <div class="flex items-center gap-3" vid="84">
+                            <div class="w-12 h-12 rounded-full bg-gray-400 text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="85">ИП</div>
+                            <div vid="86">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="87">Иван Петров</h3>
+                                <p class="text-xs text-textMuted" vid="88">Тракторист</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="89">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="90"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="91">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="92">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="93"></i> <span class="truncate" vid="94">i.petrov@agro.com</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="95">
+                            <i class="ph ph-phone text-gray-400" vid="96"></i> <span vid="97">+79001112233</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="98">
+                        <div class="flex items-center gap-1.5" vid="99">
+                            <div class="w-2 h-2 rounded-full bg-[#10b981]" vid="100"></div>
+                            <span class="text-xs font-medium text-gray-700" vid="101">Активен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-100 text-textMuted text-[11px] font-medium tracking-wide" vid="102">
+                            Сотрудник
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Анна Кузнецова', 'Бухгалтер', 'Сотрудник', 'АК', 'a.kuznecova@agro.com', '+79554443322', 'Финансовый отдел', '2 недели назад', '12 августа 2023 г.', 'inactive')" vid="103">
+                    <div class="flex justify-between items-start mb-4" vid="104">
+                        <div class="flex items-center gap-3" vid="105">
+                            <div class="w-12 h-12 rounded-full bg-gray-400 text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="106">АК</div>
+                            <div vid="107">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="108">Анна Кузнецова</h3>
+                                <p class="text-xs text-textMuted" vid="109">Бухгалтер</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="110">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="111"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="112">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="113">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="114"></i> <span class="truncate" vid="115">a.kuznecova@agro.com</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="116">
+                            <i class="ph ph-phone text-gray-400" vid="117"></i> <span vid="118">+79554443322</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="119">
+                        <div class="flex items-center gap-1.5" vid="120">
+                            <div class="w-2 h-2 rounded-full bg-gray-300" vid="121"></div>
+                            <span class="text-xs font-medium text-gray-500" vid="122">Неактивен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-100 text-textMuted text-[11px] font-medium tracking-wide" vid="123">
+                            Сотрудник
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Дмитрий Соколов', 'Агроном', 'Сотрудник', 'ДС', 'd.sokolov@agro.com', '+79887776655', 'Агрономическая служба', 'Сегодня в 11:30', '20 февраля 2026 г.', 'active')" vid="124">
+                    <div class="flex justify-between items-start mb-4" vid="125">
+                        <div class="flex items-center gap-3" vid="126">
+                            <div class="w-12 h-12 rounded-full bg-gray-400 text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="127">ДС</div>
+                            <div vid="128">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="129">Дмитрий Соколов</h3>
+                                <p class="text-xs text-textMuted" vid="130">Агроном</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="131">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="132"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="133">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="134">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="135"></i> <span class="truncate" vid="136">d.sokolov@agro.com</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="137">
+                            <i class="ph ph-phone text-gray-400" vid="138"></i> <span vid="139">+79887776655</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="140">
+                        <div class="flex items-center gap-1.5" vid="141">
+                            <div class="w-2 h-2 rounded-full bg-[#10b981]" vid="142"></div>
+                            <span class="text-xs font-medium text-gray-700" vid="143">Активен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-100 text-textMuted text-[11px] font-medium tracking-wide" vid="144">
+                            Сотрудник
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Мария Попова', 'HR Специалист', 'Сотрудник', 'МП', 'm.popova@agro.com', '+79223334455', 'Отдел кадров', 'Сегодня в 10:05', '01 ноября 2025 г.', 'active')" vid="145">
+                    <div class="flex justify-between items-start mb-4" vid="146">
+                        <div class="flex items-center gap-3" vid="147">
+                            <div class="w-12 h-12 rounded-full bg-gray-400 text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="148">МП</div>
+                            <div vid="149">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="150">Мария Попова</h3>
+                                <p class="text-xs text-textMuted" vid="151">HR Специалист</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="152">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="153"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="154">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="155">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="156"></i> <span class="truncate" vid="157">m.popova@agro.com</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="158">
+                            <i class="ph ph-phone text-gray-400" vid="159"></i> <span vid="160">+79223334455</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="161">
+                        <div class="flex items-center gap-1.5" vid="162">
+                            <div class="w-2 h-2 rounded-full bg-[#10b981]" vid="163"></div>
+                            <span class="text-xs font-medium text-gray-700" vid="164">Активен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-100 text-textMuted text-[11px] font-medium tracking-wide" vid="165">
+                            Сотрудник
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Сергей Волков', 'Охранник', 'Сотрудник', 'СВ', 's.volkov@agro.com', '+79776665544', 'Служба безопасности', 'Сегодня в 08:00', '15 декабря 2024 г.', 'active')" vid="166">
+                    <div class="flex justify-between items-start mb-4" vid="167">
+                        <div class="flex items-center gap-3" vid="168">
+                            <div class="w-12 h-12 rounded-full bg-gray-400 text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="169">СВ</div>
+                            <div vid="170">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="171">Сергей Волков</h3>
+                                <p class="text-xs text-textMuted" vid="172">Охранник</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="173">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="174"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="175">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="176">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="177"></i> <span class="truncate" vid="178">s.volkov@agro.com</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="179">
+                            <i class="ph ph-phone text-gray-400" vid="180"></i> <span vid="181">+79776665544</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="182">
+                        <div class="flex items-center gap-1.5" vid="183">
+                            <div class="w-2 h-2 rounded-full bg-[#10b981]" vid="184"></div>
+                            <span class="text-xs font-medium text-gray-700" vid="185">Активен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-100 text-textMuted text-[11px] font-medium tracking-wide" vid="186">
+                            Сотрудник
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer group" onclick="openModal('Ольга Новикова', 'Логист', 'Руководитель', 'ОН', 'o.novikova@agro.com', '+79112223344', 'Отдел логистики', 'Вчера в 16:45', '08 сентября 2025 г.', 'active')" vid="187">
+                    <div class="flex justify-between items-start mb-4" vid="188">
+                        <div class="flex items-center gap-3" vid="189">
+                            <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold shadow-inner" vid="190">ОН</div>
+                            <div vid="191">
+                                <h3 class="font-semibold text-textDark group-hover:text-primary transition-colors" vid="192">Ольга Новикова</h3>
+                                <p class="text-xs text-textMuted" vid="193">Логист</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-textDark opacity-0 group-hover:opacity-100 transition-opacity" vid="194">
+                            <i class="ph ph-dots-three-vertical text-xl" vid="195"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 mb-5" vid="196">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 truncate" vid="197">
+                            <i class="ph ph-envelope-simple text-gray-400" vid="198"></i> <span class="truncate" vid="199">o.novikova@agro.com</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600" vid="200">
+                            <i class="ph ph-phone text-gray-400" vid="201"></i> <span vid="202">+79112223344</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-50" vid="203">
+                        <div class="flex items-center gap-1.5" vid="204">
+                            <div class="w-2 h-2 rounded-full bg-[#10b981]" vid="205"></div>
+                            <span class="text-xs font-medium text-gray-700" vid="206">Активен</span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary text-white text-[11px] font-medium tracking-wide" vid="207">
+                            <i class="ph ph-check text-[10px]" vid="208"></i> Руководитель
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    
+    <div id="profileModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4 sm:p-6" onclick="handleOutsideClick(event)" vid="209">
+        
+        
+        <div class="bg-bgMain w-full max-w-[1100px] h-[90vh] sm:h-auto sm:max-h-[90vh] rounded-[24px] shadow-2xl relative flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="modalContainer" vid="210">
+            
+            
+            <button onclick="closeModal()" class="absolute top-6 right-6 p-2 bg-white/50 backdrop-blur rounded-full hover:bg-gray-200 transition-colors z-20 shadow-sm border border-gray-100" vid="211">
+                <i class="ph ph-x text-xl text-gray-600" vid="212"></i>
+            </button>
+
+            
+            <div class="overflow-y-auto custom-scrollbar flex-1 p-6 sm:p-10" vid="213">
+                
+                <div class="mb-8" vid="214">
+                    <h2 class="text-2xl font-bold text-textDark" vid="215">Настройки профиля</h2>
+                    <p class="text-sm text-textMuted mt-1" vid="216">Управляйте личными данными и настройками учетной записи сотрудника.</p>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-8" vid="217">
+                    
+                    
+                    <div class="w-full lg:w-[340px] flex-shrink-0 space-y-6" vid="218">
+                        
+                        
+                        <div class="bg-white rounded-2xl p-8 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col items-center text-center" vid="219">
+                            <div id="modalAvatar" class="w-28 h-28 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold mb-5 shadow-inner" vid="220">АМ</div>
+                            <h3 id="modalName" class="text-xl font-bold text-textDark mb-1" vid="221">Артур Моров</h3>
+                            <p id="modalPosition" class="text-sm text-textMuted mb-5" vid="222">Механик</p>
+                            <div id="modalRoleContainer" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-white text-sm font-medium" vid="223">
+                                <i class="ph ph-check" id="modalRoleIcon" vid="224"></i> <span id="modalRoleText" vid="225">Руководитель</span>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bg-white rounded-2xl p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100" vid="226">
+                            <h4 class="font-bold text-textDark mb-5 text-sm" vid="227">Контактная информация</h4>
+                            <div class="space-y-4" vid="228">
+                                <div class="flex items-start gap-3" vid="229">
+                                    <i class="ph ph-envelope-simple text-gray-400 text-lg mt-0.5" vid="230"></i>
+                                    <span id="modalEmailSidebar" class="text-sm text-textDark break-all" vid="231">talybovaasja@mail.ru</span>
+                                </div>
+                                <div class="h-px w-full bg-gray-50" vid="232"></div>
+                                <div class="flex items-start gap-3" vid="233">
+                                    <i class="ph ph-phone text-gray-400 text-lg mt-0.5" vid="234"></i>
+                                    <span id="modalPhoneSidebar" class="text-sm text-textDark" vid="235">+79122234433</span>
+                                </div>
+                                <div class="h-px w-full bg-gray-50" vid="236"></div>
+                                <div class="flex items-start gap-3" vid="237">
+                                    <i class="ph ph-buildings text-gray-400 text-lg mt-0.5" vid="238"></i>
+                                    <span id="modalDepartmentSidebar" class="text-sm text-textDark leading-tight" vid="239">Агрономическая служба</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="bg-white rounded-2xl p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100" vid="240">
+                            <h4 class="font-bold text-textDark mb-5 text-sm" vid="241">Активность аккаунта</h4>
+                            <div class="space-y-4 text-sm" vid="242">
+                                <div class="grid grid-cols-2 gap-4" vid="243">
+                                    <span class="text-textMuted" vid="244">Последний вход</span>
+                                    <span id="modalLastLogin" class="text-right font-medium text-textDark" vid="245">17 марта в 20:37</span>
+                                </div>
+                                <div class="h-px w-full bg-gray-50" vid="246"></div>
+                                <div class="grid grid-cols-2 gap-4" vid="247">
+                                    <span class="text-textMuted" vid="248">Дата регистрации</span>
+                                    <span id="modalRegDate" class="text-right font-medium text-textDark" vid="249">15 марта 2026 г.</span>
+                                </div>
+                                <div class="h-px w-full bg-gray-50" vid="250"></div>
+                                <div class="flex justify-between items-center gap-4" vid="251">
+                                    <span class="text-textMuted" vid="252">Статус</span>
+                                    <div class="flex items-center gap-1.5" vid="253">
+                                        <div id="modalStatusDot" class="w-2 h-2 rounded-full bg-[#10b981]" vid="254"></div>
+                                        <span id="modalStatusText" class="font-medium text-textDark" vid="255">Активен</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    
+                    <div class="flex-1 bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col" vid="256">
+                        
+                        
+                        <div class="px-8 pt-6 border-b border-borderLight flex gap-8" vid="257">
+                            <button class="pb-4 border-b-2 border-primary text-primary font-medium text-sm transition-colors" vid="258">Личные данные</button>
+                            <button class="pb-4 border-b-2 border-transparent text-textMuted hover:text-textDark font-medium text-sm transition-colors" vid="259">Безопасность</button>
+                            <button class="pb-4 border-b-2 border-transparent text-textMuted hover:text-textDark font-medium text-sm transition-colors" vid="260">Уведомления</button>
+                        </div>
+
+                        
+                        <div class="p-8 flex-1" vid="261">
+                            <h3 class="text-lg font-bold text-textDark mb-1" vid="262">Основная информация</h3>
+                            <p class="text-sm text-textMuted mb-8" vid="263">Обновите ваши персональные данные и контактную информацию.</p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" vid="264">
+                                <div vid="265">
+                                    <label class="block text-sm text-textMuted mb-2" vid="266">Имя</label>
+                                    <input type="text" id="modalFirstNameInput" readonly="" class="w-full px-4 py-2.5 bg-white border border-borderLight rounded-lg text-textDark text-sm focus:outline-none focus:border-gray-400 transition-colors" value="Артур" vid="267">
+                                </div>
+                                <div vid="268">
+                                    <label class="block text-sm text-textMuted mb-2" vid="269">Фамилия</label>
+                                    <input type="text" id="modalLastNameInput" readonly="" class="w-full px-4 py-2.5 bg-white border border-borderLight rounded-lg text-textDark text-sm focus:outline-none focus:border-gray-400 transition-colors" value="Моров" vid="270">
+                                </div>
+                                <div class="md:col-span-2" vid="271">
+                                    <label class="block text-sm text-textMuted mb-2" vid="272">Отчество (необязательно)</label>
+                                    <input type="text" id="modalMiddleNameInput" readonly="" placeholder="Отчество" class="w-full px-4 py-2.5 bg-white border border-borderLight rounded-lg text-textDark text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder:text-gray-300" vid="273">
+                                </div>
+                            </div>
+
+                            <div class="space-y-6" vid="274">
+                                <div vid="275">
+                                    <label class="block text-sm text-textMuted mb-2" vid="276">Электронная почта</label>
+                                    <div class="relative" vid="277">
+                                        <i class="ph ph-envelope-simple absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="278"></i>
+                                        <input type="email" id="modalEmailInput" readonly="" class="w-full pl-11 pr-4 py-2.5 bg-white border border-borderLight rounded-lg text-textDark text-sm focus:outline-none focus:border-gray-400 transition-colors" value="talybovaasja@mail.ru" vid="279">
+                                    </div>
+                                </div>
+                                <div vid="280">
+                                    <label class="block text-sm text-textMuted mb-2" vid="281">Номер телефона</label>
+                                    <div class="relative" vid="282">
+                                        <i class="ph ph-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="283"></i>
+                                        <input type="tel" id="modalPhoneInput" readonly="" class="w-full pl-11 pr-4 py-2.5 bg-white border border-borderLight rounded-lg text-textDark text-sm focus:outline-none focus:border-gray-400 transition-colors" value="+79122234433" vid="284">
+                                    </div>
+                                </div>
+                                <div vid="285">
+                                    <label class="block text-sm text-textMuted mb-2" vid="286">Должность</label>
+                                    <div class="relative" vid="287">
+                                        <input type="text" id="modalPositionInput" readonly="" class="w-full pl-4 pr-10 py-2.5 bg-white border border-borderLight rounded-lg text-textDark text-sm focus:outline-none focus:border-gray-400 transition-colors cursor-default" value="Механик" vid="288">
+                                        <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" vid="289"></i>
+                                    </div>
+                                </div>
+                                <div vid="290">
+                                    <label class="flex items-center gap-1.5 text-sm text-textMuted mb-2" vid="291">
+                                        Роль в системе <i class="ph ph-info text-gray-400 text-base cursor-help" vid="292"></i>
+                                    </label>
+                                    <div class="w-full px-4 py-2.5 bg-gray-50 border border-borderLight rounded-lg flex items-center gap-2" vid="293">
+                                        <i class="ph ph-lock-key text-gray-400" vid="294"></i>
+                                        <span id="modalSystemRoleInput" class="text-sm text-textDark" vid="295">Руководитель</span>
+                                    </div>
+                                    <p class="text-xs text-textMuted mt-2" vid="296">Для изменения роли обратитесь в ИТ-отдел.</p>
+                                </div>
+                                
+                                <div class="pt-2" vid="297">
+                                    <label class="block text-sm text-textMuted mb-2" vid="298">Дополнительная информация</label>
+                                    <textarea readonly="" placeholder="Краткая информация о себе или обязанностях" class="w-full px-4 py-3 bg-white border border-borderLight rounded-lg text-textDark text-sm focus:outline-none focus:border-gray-400 transition-colors placeholder:text-gray-400 min-h-[100px] resize-y" vid="299"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-8" vid="300">
+                                <button onclick="closeModal()" class="bg-primary hover:bg-primaryHover text-white font-medium py-2.5 px-6 rounded-lg transition-colors shadow-sm text-sm" vid="301">
+                                    Сохранить изменения
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script vid="302">
+        const modal = document.getElementById('profileModal');
+        const modalContainer = document.getElementById('modalContainer');
+
+        function openModal(name, position, role, initials, email, phone, department, lastLogin, regDate, status) {
+            
+            const nameParts = name.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts[1] || '';
+
+            
+            document.getElementById('modalAvatar').innerText = initials;
+            document.getElementById('modalName').innerText = name;
+            document.getElementById('modalPosition').innerText = position;
+            
+            const roleContainer = document.getElementById('modalRoleContainer');
+            const roleIcon = document.getElementById('modalRoleIcon');
+            const roleText = document.getElementById('modalRoleText');
+            
+            roleText.innerText = role;
+            if(role === 'Руководитель') {
+                roleContainer.className = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-white text-sm font-medium';
+                roleIcon.className = 'ph ph-check';
+                document.getElementById('modalAvatar').className = 'w-28 h-28 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold mb-5 shadow-inner';
+            } else {
+                roleContainer.className = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gray-100 text-textMuted text-sm font-medium';
+                roleIcon.className = 'hidden'; 
+                document.getElementById('modalAvatar').className = 'w-28 h-28 rounded-full bg-gray-400 text-white flex items-center justify-center text-3xl font-bold mb-5 shadow-inner';
+            }
+
+            document.getElementById('modalEmailSidebar').innerText = email;
+            document.getElementById('modalPhoneSidebar').innerText = phone;
+            document.getElementById('modalDepartmentSidebar').innerText = department;
+            
+            document.getElementById('modalLastLogin').innerText = lastLogin;
+            document.getElementById('modalRegDate').innerText = regDate;
+            
+            const statusDot = document.getElementById('modalStatusDot');
+            const statusText = document.getElementById('modalStatusText');
+            if(status === 'active') {
+                statusDot.className = 'w-2 h-2 rounded-full bg-[#10b981]';
+                statusText.innerText = 'Активен';
+            } else {
+                statusDot.className = 'w-2 h-2 rounded-full bg-gray-300';
+                statusText.innerText = 'Неактивен';
+            }
+
+            
+            document.getElementById('modalFirstNameInput').value = firstName;
+            document.getElementById('modalLastNameInput').value = lastName;
+            document.getElementById('modalEmailInput').value = email;
+            document.getElementById('modalPhoneInput').value = phone;
+            document.getElementById('modalPositionInput').value = position;
+            document.getElementById('modalSystemRoleInput').innerText = role;
+
+            
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContainer.classList.remove('scale-95');
+                modalContainer.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContainer.classList.remove('scale-100');
+            modalContainer.classList.add('scale-95');
+            
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function handleOutsideClick(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+
+</body></html>

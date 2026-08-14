@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/ui-preflight-reminder.py",
+        "matcher": "Write|Edit|TabWrite"
+      }
+    ]
+  }
+}

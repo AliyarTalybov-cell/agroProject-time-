@@ -1,0 +1,434 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">AGRO_CTRL - Настройки</title>
+    <style vid="5">
+        :root {
+            --bg-base: #0a1208;
+            --bg-panel: rgba(20, 35, 15, 0.6);
+            --bg-panel-hover: rgba(30, 50, 22, 0.8);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.55);
+            --accent-green: #68ad33; 
+            --accent-green-hover: #7bce3c;
+            --danger-red: #d33c3c;
+            --warning-orange: #d3823c;
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #162611 0%, transparent 70%),
+                              linear-gradient(to bottom, transparent, #050a04);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .type-label {
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .type-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .type-action {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 1px;
+            text-decoration-color: var(--accent-green);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .type-action:hover {
+            color: var(--accent-green);
+        }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .sidebar {
+            border-right: 1px solid var(--border-color);
+            padding: var(--space-xl) var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .logo {
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            margin-bottom: var(--space-xl);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .nav-item.active {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-color: var(--accent-green);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            padding: var(--space-xl) 60px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-xl);
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: var(--space-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-header {
+            margin-bottom: var(--space-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: var(--space-sm);
+        }
+
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+            padding: var(--space-sm);
+            border: 1px solid transparent;
+            transition: background 0.2s;
+        }
+        .user-profile:hover {
+            background: rgba(255,255,255,0.03);
+            border-color: var(--border-color);
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background: #1a2a16;
+            border: 1px solid var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--accent-green);
+            overflow: hidden;
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .setting-row:last-child { border-bottom: none; }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 18px;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1a2a16;
+            border: 1px solid var(--border-color);
+            transition: .3s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 10px; width: 10px;
+            left: 3px; bottom: 3px;
+            background-color: var(--text-secondary);
+            transition: .3s;
+        }
+        input:checked + .slider { background-color: var(--accent-green); border-color: var(--accent-green); }
+        input:checked + .slider:before { transform: translateX(18px); background-color: #000; }
+
+        
+        .integration-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) 0;
+        }
+        .icon-box {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .mb-1 { margin-bottom: var(--space-sm); }
+        .mt-2 { margin-top: var(--space-md); }
+
+    </style>
+</head>
+<body vid="6">
+
+    <div class="app-layout" vid="7">
+        
+        <nav class="sidebar" vid="8">
+            <div class="logo type-label" vid="9">A G R O _ C T R L</div>
+            <ul class="nav-menu" vid="10">
+                <li vid="11"><a href="#" class="nav-item" vid="12">Дашборд</a></li>
+                <li vid="13"><a href="#" class="nav-item" vid="14">Поля и Культуры</a></li>
+                <li vid="15"><a href="#" class="nav-item" vid="16">Журнал Работ</a></li>
+                <li vid="17"><a href="#" class="nav-item" vid="18">Отчеты</a></li>
+                <li vid="19"><a href="#" class="nav-item active" vid="20">Настройки</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content" vid="21">
+            <header class="header-area" vid="22">
+                <div vid="23">
+                    <div class="type-label mb-1" vid="24">Конфигурация системы</div>
+                    <h1 class="page-title" vid="25">Настройки</h1>
+                </div>
+            </header>
+
+            <div class="settings-grid" vid="26">
+                
+                
+                <div class="panel" vid="27">
+                    <div class="panel-header" vid="28">
+                        <span class="type-label" vid="29">Управление пользователями</span>
+                        <span class="type-action" vid="30">+ Добавить</span>
+                    </div>
+                    
+                    <div class="user-profile" vid="31">
+                        <div class="avatar" vid="32">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&amp;h=100&amp;fit=crop" alt="User" vid="33">
+                        </div>
+                        <div style="flex-grow: 1;" vid="34">
+                            <div class="type-value" vid="35">Александр Волков</div>
+                            <div class="type-label" style="letter-spacing: 0.1em;" vid="36">Главный агроном / Администратор</div>
+                        </div>
+                        <span class="type-action" vid="37">Ред.</span>
+                    </div>
+
+                    <div class="user-profile" vid="38">
+                        <div class="avatar" vid="39">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&amp;h=100&amp;fit=crop" alt="User" vid="40">
+                        </div>
+                        <div style="flex-grow: 1;" vid="41">
+                            <div class="type-value" vid="42">Дмитрий Петров</div>
+                            <div class="type-label" style="letter-spacing: 0.1em;" vid="43">Оператор техники</div>
+                        </div>
+                        <span class="type-action" vid="44">Ред.</span>
+                    </div>
+
+                    <div class="user-profile" vid="45">
+                        <div class="avatar" vid="46">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&amp;h=100&amp;fit=crop" alt="User" vid="47">
+                        </div>
+                        <div style="flex-grow: 1;" vid="48">
+                            <div class="type-value" vid="49">Марина Соколова</div>
+                            <div class="type-label" style="letter-spacing: 0.1em;" vid="50">Логист</div>
+                        </div>
+                        <span class="type-action" vid="51">Ред.</span>
+                    </div>
+                </div>
+
+                
+                <div class="panel" vid="52">
+                    <div class="panel-header" vid="53">
+                        <span class="type-label" vid="54">Уведомления и алерты</span>
+                    </div>
+                    
+                    <div class="setting-row" vid="55">
+                        <div vid="56">
+                            <div class="type-value" vid="57">Критические поломки</div>
+                            <div class="type-label" style="letter-spacing: 0.05em;" vid="58">Push и SMS оповещения 24/7</div>
+                        </div>
+                        <label class="toggle" vid="59">
+                            <input type="checkbox" checked="" vid="60">
+                            <span class="slider" vid="61"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row" vid="62">
+                        <div vid="63">
+                            <div class="type-value" vid="64">Прогноз погоды</div>
+                            <div class="type-label" style="letter-spacing: 0.05em;" vid="65">Ежедневный отчет в 06:00</div>
+                        </div>
+                        <label class="toggle" vid="66">
+                            <input type="checkbox" checked="" vid="67">
+                            <span class="slider" vid="68"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row" vid="69">
+                        <div vid="70">
+                            <div class="type-value" vid="71">Отчеты по сменам</div>
+                            <div class="type-label" style="letter-spacing: 0.05em;" vid="72">Уведомление о завершении работ</div>
+                        </div>
+                        <label class="toggle" vid="73">
+                            <input type="checkbox" vid="74">
+                            <span class="slider" vid="75"></span>
+                        </label>
+                    </div>
+                </div>
+
+                
+                <div class="panel" vid="76">
+                    <div class="panel-header" vid="77">
+                        <span class="type-label" vid="78">Интеграции и API</span>
+                    </div>
+                    
+                    <div class="integration-item" vid="79">
+                        <div class="icon-box" vid="80">🛰</div>
+                        <div style="flex-grow: 1;" vid="81">
+                            <div class="type-value" vid="82">John Deere Operations Center</div>
+                            <div class="type-label" style="letter-spacing: 0.05em; color: var(--accent-green);" vid="83">Подключено</div>
+                        </div>
+                        <span class="type-action" vid="84">Настроить</span>
+                    </div>
+
+                    <div class="integration-item" vid="85">
+                        <div class="icon-box" vid="86">☁</div>
+                        <div style="flex-grow: 1;" vid="87">
+                            <div class="type-value" vid="88">MeteoBlue Weather API</div>
+                            <div class="type-label" style="letter-spacing: 0.05em; color: var(--accent-green);" vid="89">Подключено</div>
+                        </div>
+                        <span class="type-action" vid="90">Настроить</span>
+                    </div>
+
+                    <div class="integration-item" vid="91">
+                        <div class="icon-box" vid="92">📍</div>
+                        <div style="flex-grow: 1;" vid="93">
+                            <div class="type-value" vid="94">Wialon GPS Tracking</div>
+                            <div class="type-label" style="letter-spacing: 0.05em; color: var(--warning-orange);" vid="95">Ошибка авторизации</div>
+                        </div>
+                        <span class="type-action" vid="96">Обновить</span>
+                    </div>
+                </div>
+
+                
+                <div class="panel" vid="97">
+                    <div class="panel-header" vid="98">
+                        <span class="type-label" vid="99">Безопасность и доступ</span>
+                    </div>
+                    
+                    <div class="setting-row" vid="100">
+                        <div vid="101">
+                            <div class="type-value" vid="102">Двухфакторная аутентификация</div>
+                            <div class="type-label" style="letter-spacing: 0.05em;" vid="103">Повышенная защита аккаунтов</div>
+                        </div>
+                        <label class="toggle" vid="104">
+                            <input type="checkbox" checked="" vid="105">
+                            <span class="slider" vid="106"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row" vid="107">
+                        <div vid="108">
+                            <div class="type-value" vid="109">Журнал входов</div>
+                            <div class="type-label" style="letter-spacing: 0.05em;" vid="110">История сессий всех пользователей</div>
+                        </div>
+                        <span class="type-action" vid="111">Просмотр</span>
+                    </div>
+
+                    <div class="setting-row" vid="112">
+                        <div vid="113">
+                            <div class="type-value" vid="114">Ключи доступа API</div>
+                            <div class="type-label" style="letter-spacing: 0.05em;" vid="115">Управление внешними токенами</div>
+                        </div>
+                        <span class="type-action" vid="116">Управление</span>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+</body></html>

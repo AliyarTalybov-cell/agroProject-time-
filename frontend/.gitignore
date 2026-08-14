@@ -1,0 +1,16 @@
+# Локальные переменные (ключи Supabase и др.) — не коммитить
+.env
+.env.local
+.env.*.local
+
+# Сборка и кэш
+dist/
+node_modules/
+*.tsbuildinfo
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

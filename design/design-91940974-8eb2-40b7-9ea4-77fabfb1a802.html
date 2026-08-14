@@ -1,0 +1,456 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">AGROCTRL - Экосистема</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17" vid="5"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet" vid="6">
+    <style vid="7">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAF9;
+            color: #0F172A;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #F8FAF9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 5px; border: 2px solid #F8FAF9; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #1B4D3E 0%, #10B981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(27, 77, 62, 0.1);
+        }
+
+        .blob-shape {
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            animation: morph 8s ease-in-out infinite both alternate;
+        }
+
+        @keyframes morph {
+            0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+            100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+        }
+
+        .feature-grid-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+        }
+    </style>
+</head>
+<body class="w-full h-full overflow-x-hidden relative text-slate-800" vid="8">
+
+    
+    <nav class="fixed top-0 inset-x-0 z-50 glass-nav border-b border-slate-200/50 transition-all duration-300" vid="9">
+        <div class="max-w-[1440px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between" vid="10">
+            
+            
+            <div class="flex items-center gap-2" vid="11">
+                <div class="w-8 h-8 bg-[#1B4D3E] rounded-lg flex items-center justify-center" vid="12">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-white" vid="13">
+                        <path fill-rule="evenodd" d="M15 3.75a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V5.56l-4.72 4.72a.75.75 0 11-1.06-1.06l4.72-4.72h-2.69a.75.75 0 01-.75-.75z" clip-rule="evenodd" vid="14"></path>
+                        <path fill-rule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.062 4.255c.119.476-.046.972-.418 1.258l-2.073 1.594a15.352 15.352 0 005.183 5.183l1.594-2.073c.286-.372.782-.537 1.258-.418l4.255 1.062c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clip-rule="evenodd" vid="15"></path>
+                    </svg>
+                </div>
+                <span class="text-xl font-black tracking-wider text-slate-900" vid="16">AGRO<span class="text-slate-400" vid="17">CTRL</span></span>
+            </div>
+
+            
+            <div class="hidden lg:flex items-center gap-1 p-1 bg-slate-100/80 rounded-full border border-slate-200/50" vid="18">
+                <a href="#" class="px-5 py-2 rounded-full bg-white shadow-sm text-sm font-bold text-[#1B4D3E]" vid="19">Экосистема</a>
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors" vid="20">Модули</a>
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors" vid="21">Интеграции</a>
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors" vid="22">Кейсы</a>
+            </div>
+
+            
+            <div class="flex items-center gap-4" vid="23">
+                <div class="hidden md:flex flex-col items-end mr-2" vid="24">
+                    <span class="text-sm font-bold text-slate-900 leading-none" vid="25">Иванов А.</span>
+                    <span class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider" vid="26">Админ</span>
+                </div>
+                <button class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center" vid="27">
+                    <span class="font-black text-slate-500 text-sm" vid="28">ИА</span>
+                </button>
+                <div class="w-px h-6 bg-slate-200 mx-1 hidden md:block" vid="29"></div>
+                <button class="hidden md:flex bg-[#1B4D3E] hover:bg-[#133A2E] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-[#1B4D3E]/20" vid="30">
+                    Открыть платформу
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="w-full" vid="31">
+        
+        
+        <section class="relative pt-40 pb-32 px-6 lg:px-12 overflow-hidden flex flex-col items-center text-center" vid="32">
+            
+            
+            <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[60%] bg-emerald-100/40 blob-shape blur-3xl -z-10" vid="33"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] bg-blue-50/60 blob-shape blur-3xl -z-10" style="animation-delay: -4s;" vid="34"></div>
+
+            <div class="max-w-4xl mx-auto z-10" vid="35">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-8" vid="36">
+                    <span class="flex w-2.5 h-2.5 relative" vid="37">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" vid="38"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" vid="39"></span>
+                    </span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-600" vid="40">Система активна · Версия 3.0</span>
+                </div>
+
+                <h1 class="text-6xl md:text-7xl lg:text-[5.5rem] font-black leading-[0.95] tracking-tight text-slate-900 mb-6" vid="41">
+                    Единый центр <br vid="42">
+                    <span class="text-gradient" vid="43">агро-управления</span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-slate-500 font-medium mb-12 max-w-2xl mx-auto leading-relaxed" vid="44">
+                    Свяжите агрономов, механизаторов и руководство в одной экосистеме. Точные данные от планирования посевной до уборки урожая.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4" vid="45">
+                    <button class="w-full sm:w-auto px-8 py-4 bg-[#1B4D3E] text-white rounded-2xl font-bold text-lg shadow-xl shadow-[#1B4D3E]/20 hover:scale-105 transition-all" vid="46">
+                        Запросить демо
+                    </button>
+                    <button class="w-full sm:w-auto px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl font-bold text-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center justify-center gap-2" vid="47">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5" vid="48"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" vid="49"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" vid="50"></path></svg>
+                        Смотреть видео
+                    </button>
+                </div>
+            </div>
+
+            
+            <div class="mt-24 w-full max-w-[1200px] relative z-20 mx-auto group perspective-1000" vid="51">
+                <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-900/10 border-8 border-white bg-white transform transition-transform duration-700 group-hover:rotate-x-2 group-hover:scale-[1.01]" vid="52">
+                    <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&amp;fit=crop&amp;q=80&amp;w=1600" alt="Интерфейс системы" class="w-full h-[400px] md:h-[600px] object-cover" vid="53">
+                    
+                    
+                    <div class="absolute bottom-6 left-6 md:bottom-12 md:left-12 bg-white/90 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50 max-w-sm" vid="54">
+                        <div class="flex items-center justify-between mb-4" vid="55">
+                            <div class="flex items-center gap-3" vid="56">
+                                <div class="w-10 h-10 rounded-full bg-[#1B4D3E]/10 flex items-center justify-center" vid="57">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-[#1B4D3E]" vid="58"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" vid="59"></path></svg>
+                                </div>
+                                <div vid="60">
+                                    <p class="text-sm font-bold text-slate-900" vid="61">Выработка за день</p>
+                                    <p class="text-xs text-slate-500 font-medium" vid="62">Поле "Южное-12"</p>
+                                </div>
+                            </div>
+                            <span class="text-emerald-500 font-bold text-sm bg-emerald-50 px-2 py-1 rounded-md" vid="63">+14%</span>
+                        </div>
+                        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden" vid="64">
+                            <div class="h-full bg-gradient-to-r from-[#1B4D3E] to-emerald-400 w-[75%] rounded-full" vid="65"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-3" vid="66">Выполнено 450 Га из 600 Га</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="py-24 px-6 lg:px-12 bg-white relative z-30" vid="67">
+            <div class="max-w-[1440px] mx-auto" vid="68">
+                
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8" vid="69">
+                    <div class="max-w-2xl" vid="70">
+                        <span class="text-emerald-600 font-bold tracking-widest uppercase text-xs mb-3 block" vid="71">Для кого платформа</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-slate-900 leading-tight" vid="72">Синергия всех ролей<br vid="73">в одном интерфейсе</h2>
+                    </div>
+                    <p class="text-slate-500 font-medium max-w-md text-lg" vid="74">
+                        Инструменты адаптируются под пользователя, предоставляя ровно тот функционал, который нужен для работы.
+                    </p>
+                </div>
+
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6" vid="75">
+                    
+                    
+                    <div class="col-span-1 md:col-span-8 bg-[#1B4D3E] rounded-[2rem] p-8 md:p-12 relative overflow-hidden group" vid="76">
+                        <div class="absolute right-0 bottom-0 w-2/3 h-full opacity-20 transition-transform duration-700 group-hover:scale-110 group-hover:opacity-30" vid="77">
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-white fill-current" vid="78">
+                                <path d="M45.7,-76.1C58.9,-69.3,69,-55.4,77.4,-41.2C85.8,-27,92.5,-13.5,91.8,-0.4C91.1,12.7,83,25.4,74.1,36.7C65.2,48,55.5,57.9,43.7,66.1C31.9,74.3,18,80.8,3.2,75.3C-11.6,69.8,-25.3,52.3,-38.4,41C-51.5,29.7,-64,24.6,-70.5,14.6C-77,4.6,-77.5,-10.3,-72.2,-22.8C-66.9,-35.3,-55.8,-45.4,-44,-52.8C-32.2,-60.2,-16.1,-64.9,0.3,-65.4C16.7,-65.9,32.5,-82.9,45.7,-76.1Z" transform="translate(100 100)" vid="79"></path>
+                            </svg>
+                        </div>
+                        
+                        <div class="relative z-10 flex flex-col h-full justify-between" vid="80">
+                            <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-emerald-300 mb-8 border border-white/20" vid="81">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7" vid="82"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" vid="83"></path></svg>
+                            </div>
+                            <div vid="84">
+                                <h3 class="text-3xl font-black text-white mb-4" vid="85">Руководители и инвесторы</h3>
+                                <p class="text-emerald-100/80 font-medium text-lg max-w-lg leading-relaxed" vid="86">
+                                    Дашборды с ключевыми показателями в реальном времени. Контроль бюджета, расчет рентабельности гектара и прозрачная отчетность.
+                                </p>
+                            </div>
+                            
+                            <div class="mt-10 bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-6 max-w-sm backdrop-blur-sm" vid="87">
+                                <div vid="88">
+                                    <div class="text-emerald-300 text-xs font-bold uppercase tracking-wide mb-1" vid="89">Прибыль (прогноз)</div>
+                                    <div class="text-white font-black text-2xl" vid="90">₽ 142.5 млн</div>
+                                </div>
+                                <div class="w-px h-10 bg-white/20" vid="91"></div>
+                                <div vid="92">
+                                    <div class="text-emerald-300 text-xs font-bold uppercase tracking-wide mb-1" vid="93">Затраты</div>
+                                    <div class="text-white font-black text-xl" vid="94">₽ 89.2 млн</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="col-span-1 md:col-span-4 bg-slate-50 border border-slate-200/60 rounded-[2rem] p-8 md:p-10 card-lift flex flex-col justify-between" vid="95">
+                        <div class="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-emerald-600 mb-8 border border-slate-100" vid="96">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7" vid="97"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" vid="98"></path></svg>
+                        </div>
+                        <div vid="99">
+                            <h3 class="text-2xl font-black text-slate-900 mb-4" vid="100">Агрономы</h3>
+                            <p class="text-slate-600 font-medium leading-relaxed" vid="101">
+                                Техкарты, севооборот, спутниковые снимки NDVI и дневник скаутинга полей в мобильном приложении.
+                            </p>
+                        </div>
+                    </div>
+
+                    
+                    <div class="col-span-1 md:col-span-4 bg-emerald-50/50 border border-emerald-100 rounded-[2rem] p-8 md:p-10 card-lift flex flex-col justify-between" vid="102">
+                        <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-700 mb-8" vid="103">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7" vid="104"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" vid="105"></path><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" vid="106"></path></svg>
+                        </div>
+                        <div vid="107">
+                            <h3 class="text-2xl font-black text-slate-900 mb-4" vid="108">Диспетчеры</h3>
+                            <p class="text-slate-600 font-medium leading-relaxed" vid="109">
+                                Выдача путевых листов в 1 клик. GPS-трекинг техники, контроль геозон и уровня топлива.
+                            </p>
+                        </div>
+                    </div>
+
+                    
+                    <div class="col-span-1 md:col-span-8 bg-slate-900 rounded-[2rem] p-8 md:p-12 relative overflow-hidden group" vid="110">
+                        <img src="https://images.unsplash.com/photo-1594488311330-804107577517?auto=format&amp;fit=crop&amp;q=80&amp;w=1200" alt="Трактор" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000 group-hover:opacity-30" vid="111">
+                        <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent" vid="112"></div>
+                        
+                        <div class="relative z-10 flex flex-col h-full justify-between" vid="113">
+                            <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white mb-8 border border-white/20" vid="114">
+                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7" vid="115"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25" vid="116"></path></svg>
+                            </div>
+                            <div class="max-w-md" vid="117">
+                                <h3 class="text-3xl font-black text-white mb-4" vid="118">Механизаторы</h3>
+                                <p class="text-slate-300 font-medium text-lg leading-relaxed mb-6" vid="119">
+                                    Электронный путевой лист в планшете. Навигация по проходам, фиксация простоев и автоматическое закрытие смены.
+                                </p>
+                                <button class="px-5 py-2.5 bg-white text-slate-900 rounded-lg font-bold text-sm hover:bg-slate-100 transition-colors" vid="120">Смотреть интерфейс планшета</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="py-24 px-6 lg:px-12 bg-slate-50 border-y border-slate-200/50" vid="121">
+            <div class="max-w-[1440px] mx-auto" vid="122">
+                <div class="text-center mb-20" vid="123">
+                    <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-6" vid="124">4 шага к цифровому полю</h2>
+                    <p class="text-slate-500 font-medium text-lg" vid="125">Жизненный цикл сельскохозяйственной операции</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative" vid="126">
+                    
+                    <div class="hidden md:block absolute top-[40px] left-[10%] right-[10%] h-0.5 bg-slate-200" vid="127"></div>
+
+                    
+                    <div class="relative z-10 flex flex-col items-center text-center group" vid="128">
+                        <div class="w-20 h-20 bg-white border-4 border-slate-50 shadow-lg rounded-full flex items-center justify-center font-black text-2xl text-slate-300 mb-6 transition-colors group-hover:border-emerald-100 group-hover:text-[#1B4D3E]" vid="129">01</div>
+                        <h4 class="text-xl font-black text-slate-900 mb-3" vid="130">Планирование</h4>
+                        <p class="text-slate-600 font-medium text-sm leading-relaxed px-4" vid="131">Создание технологической карты и расчет потребности ТМЦ.</p>
+                    </div>
+                    
+                    
+                    <div class="relative z-10 flex flex-col items-center text-center group md:mt-12" vid="132">
+                        <div class="w-20 h-20 bg-white border-4 border-slate-50 shadow-lg rounded-full flex items-center justify-center font-black text-2xl text-slate-300 mb-6 transition-colors group-hover:border-emerald-100 group-hover:text-[#1B4D3E]" vid="133">02</div>
+                        <h4 class="text-xl font-black text-slate-900 mb-3" vid="134">Назначение</h4>
+                        <p class="text-slate-600 font-medium text-sm leading-relaxed px-4" vid="135">Формирование нарядов, привязка техники и людей к полю.</p>
+                    </div>
+
+                    
+                    <div class="relative z-10 flex flex-col items-center text-center group" vid="136">
+                        <div class="w-20 h-20 bg-white border-4 border-slate-50 shadow-lg rounded-full flex items-center justify-center font-black text-2xl text-slate-300 mb-6 transition-colors group-hover:border-emerald-100 group-hover:text-[#1B4D3E]" vid="137">03</div>
+                        <h4 class="text-xl font-black text-slate-900 mb-3" vid="138">Исполнение</h4>
+                        <p class="text-slate-600 font-medium text-sm leading-relaxed px-4" vid="139">Сбор телеметрии GPS, контроль скорости и расхода ГСМ.</p>
+                    </div>
+
+                    
+                    <div class="relative z-10 flex flex-col items-center text-center group md:mt-12" vid="140">
+                        <div class="w-20 h-20 bg-white border-4 border-slate-50 shadow-lg rounded-full flex items-center justify-center font-black text-2xl text-emerald-500 mb-6 transition-colors border-emerald-100 shadow-emerald-500/20" vid="141">04</div>
+                        <h4 class="text-xl font-black text-slate-900 mb-3" vid="142">Факт и анализ</h4>
+                        <p class="text-slate-600 font-medium text-sm leading-relaxed px-4" vid="143">Автоматическое закрытие путевых листов и расчет сдельной ЗП.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="py-24 bg-white" vid="144">
+            
+            
+            <div class="w-full relative py-20 lg:py-32 overflow-hidden mb-12" vid="145">
+                <div class="absolute inset-0 bg-[#F4F7F5]" vid="146"></div>
+                
+                <div class="absolute right-0 top-0 w-full lg:w-2/3 h-full rounded-l-[4rem] overflow-hidden" vid="147">
+                    <img src="https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&amp;fit=crop&amp;q=80&amp;w=1400" alt="Поля с высоты" class="w-full h-full object-cover" vid="148">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#F4F7F5] via-transparent to-transparent" vid="149"></div>
+                </div>
+                
+                <div class="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-10 flex items-center" vid="150">
+                    <div class="bg-white/95 backdrop-blur-xl p-10 lg:p-14 rounded-[2.5rem] shadow-2xl max-w-xl border border-white" vid="151">
+                        <div class="text-[#1B4D3E] font-black tracking-widest uppercase text-sm mb-6 flex items-center gap-3" vid="152">
+                            <span class="w-8 h-px bg-[#1B4D3E]" vid="153"></span>
+                            Модуль: Агрономия
+                        </div>
+                        <h3 class="text-4xl lg:text-5xl font-black text-slate-900 mb-6 leading-tight" vid="154">Умное<br vid="155">планирование</h3>
+                        <p class="text-slate-600 font-medium text-lg leading-relaxed mb-10" vid="156">
+                            Точный расчет семян, удобрений и СЗР на основе исторических данных поля. Система анализирует урожайность прошлых лет и рекомендует оптимальную норму высева.
+                        </p>
+                        <ul class="space-y-5" vid="157">
+                            <li class="flex items-start gap-4" vid="158">
+                                <div class="mt-1 bg-emerald-100 rounded-full p-1 text-[#1B4D3E]" vid="159">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" vid="160"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" vid="161"></path></svg>
+                                </div>
+                                <div vid="162">
+                                    <h5 class="font-bold text-slate-900" vid="163">Интерактивная карта</h5>
+                                    <p class="text-sm text-slate-500 mt-1" vid="164">Визуализация истории севооборота</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4" vid="165">
+                                <div class="mt-1 bg-emerald-100 rounded-full p-1 text-[#1B4D3E]" vid="166">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" vid="167"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" vid="168"></path></svg>
+                                </div>
+                                <div vid="169">
+                                    <h5 class="font-bold text-slate-900" vid="170">Справочник ТМЦ</h5>
+                                    <p class="text-sm text-slate-500 mt-1" vid="171">Интеграция с номенклатурой из 1С</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="w-full relative py-20 lg:py-32 overflow-hidden bg-[#1A1F2B]" vid="172">
+                
+                <div class="absolute left-0 top-0 w-full lg:w-2/3 h-full rounded-r-[4rem] overflow-hidden opacity-50" vid="173">
+                    <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&amp;fit=crop&amp;q=80&amp;w=1400" alt="Трактор GPS" class="w-full h-full object-cover" vid="174">
+                    <div class="absolute inset-0 bg-gradient-to-l from-[#1A1F2B] via-transparent to-transparent" vid="175"></div>
+                </div>
+                
+                <div class="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-10 flex items-center justify-end" vid="176">
+                    <div class="bg-[#232A38]/90 backdrop-blur-xl p-10 lg:p-14 rounded-[2.5rem] shadow-2xl max-w-xl border border-white/5" vid="177">
+                        <div class="text-emerald-400 font-black tracking-widest uppercase text-sm mb-6 flex items-center gap-3" vid="178">
+                            <span class="w-8 h-px bg-emerald-400" vid="179"></span>
+                            Модуль: Телематика
+                        </div>
+                        <h3 class="text-4xl lg:text-5xl font-black text-white mb-6 leading-tight" vid="180">Контроль <br vid="181">каждого метра</h3>
+                        <p class="text-slate-400 font-medium text-lg leading-relaxed mb-10" vid="182">
+                            Следите за перемещением техники в реальном времени. Система автоматически фиксирует нарушения геозон, скоростного режима и оповещает о простоях с включенным двигателем.
+                        </p>
+                        
+                        
+                        <div class="bg-black/40 rounded-2xl p-6 border border-white/5 mb-6" vid="183">
+                            <div class="flex justify-between items-center mb-4" vid="184">
+                                <div class="flex items-center gap-3" vid="185">
+                                    <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" vid="186"></div>
+                                    <span class="text-white font-bold" vid="187">John Deere 8R 340</span>
+                                </div>
+                                <span class="text-slate-400 text-sm font-medium" vid="188">Сигнал: Отличный</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4" vid="189">
+                                <div class="bg-white/5 rounded-xl p-3" vid="190">
+                                    <div class="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1" vid="191">Скорость</div>
+                                    <div class="text-emerald-400 font-black text-xl" vid="192">11.5 км/ч</div>
+                                </div>
+                                <div class="bg-white/5 rounded-xl p-3" vid="193">
+                                    <div class="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1" vid="194">Топливо</div>
+                                    <div class="text-white font-black text-xl" vid="195">420 Л</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        
+        <footer class="bg-[#113126] pt-32 pb-12 px-6 lg:px-12 relative overflow-hidden rounded-t-[3rem] lg:rounded-t-[5rem] -mt-10 relative z-40" vid="196">
+            
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0A1D16]" vid="197"></div>
+            <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/3" vid="198"></div>
+            
+            <div class="max-w-[1440px] mx-auto relative z-10 flex flex-col items-center" vid="199">
+                
+                <div class="text-center max-w-3xl mb-16" vid="200">
+                    <h2 class="text-5xl md:text-6xl md:leading-tight font-black text-white mb-6" vid="201">
+                        Готовы перейти на <br vid="202">нормальное управление?
+                    </h2>
+                    <p class="text-xl text-emerald-100/70 font-medium mb-10" vid="203">
+                        Внедрение занимает от 2 до 4 недель. Проведем аудит процессов и настроим интеграцию с вашей учетной системой (1С).
+                    </p>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-5" vid="204">
+                        <button class="w-full sm:w-auto px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-[#0A1D16] rounded-2xl font-black text-lg transition-all shadow-lg shadow-emerald-500/20" vid="205">
+                            Начать внедрение
+                        </button>
+                        <button class="w-full sm:w-auto px-10 py-5 bg-white/5 text-white border border-white/10 hover:bg-white/10 rounded-2xl font-bold text-lg transition-all" vid="206">
+                            Скачать презентацию
+                        </button>
+                    </div>
+                </div>
+
+                
+                <div class="w-full border-t border-white/10 pt-12 flex flex-col md:flex-row items-center justify-between gap-8" vid="207">
+                    <div class="flex items-center gap-2" vid="208">
+                        <span class="text-xl font-black tracking-wider text-white" vid="209">AGRO<span class="text-emerald-500" vid="210">CTRL</span></span>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm font-medium text-emerald-100/60" vid="211">
+                        <a href="#" class="hover:text-white transition-colors" vid="212">О платформе</a>
+                        <a href="#" class="hover:text-white transition-colors" vid="213">Модули</a>
+                        <a href="#" class="hover:text-white transition-colors" vid="214">Безопасность данных</a>
+                        <a href="#" class="hover:text-white transition-colors" vid="215">Контакты</a>
+                    </div>
+
+                    <div class="flex items-center gap-6" vid="216">
+                        <a href="#" class="text-emerald-100/60 hover:text-white transition-colors" vid="217">
+                            <span class="sr-only" vid="218">VK</span>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" vid="219"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" vid="220"></path></svg>
+                        </a>
+                        <a href="#" class="text-emerald-100/60 hover:text-white transition-colors font-bold tracking-wide" vid="221">
+                            8 (800) 555-01-99
+                        </a>
+                    </div>
+                </div>
+                <div class="w-full text-center mt-8 text-xs font-medium text-white/30 uppercase tracking-widest" vid="222">
+                    © 2024 AGROCTRL. Все права защищены.
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+
+</body></html>

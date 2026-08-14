@@ -1,0 +1,618 @@
+<html lang="en" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Agronomist Control</title>
+    <style vid="5">
+        :root {
+            
+            --bg-base: #0a1208;
+            --bg-panel: rgba(20, 35, 15, 0.6);
+            --bg-panel-hover: rgba(30, 50, 22, 0.8);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.55);
+            --accent-green: #68ad33; 
+            --accent-green-hover: #7bce3c;
+            --danger-red: #d33c3c;
+            --warning-orange: #d3823c;
+            
+            
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            
+            background-image: radial-gradient(circle at 50% 0%, #162611 0%, transparent 70%),
+                              linear-gradient(to bottom, transparent, #050a04);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        
+        
+        .type-label {
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        
+        .type-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        
+        .type-action {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 1px;
+            text-decoration-color: var(--accent-green);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .type-action:hover {
+            color: var(--accent-green);
+        }
+
+        
+        
+        .app-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr 320px;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        
+        .sidebar {
+            border-right: 1px solid var(--border-color);
+            padding: var(--space-xl) var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            color: var(--accent-green);
+            margin-bottom: var(--space-xl);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .nav-item.active {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-color: var(--accent-green);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        
+        .main-content {
+            padding: var(--space-xl);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: var(--space-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-header {
+            margin-bottom: var(--space-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+        }
+
+        .wide-panel {
+            grid-column: span 3;
+        }
+
+        
+        .weather-days {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            text-align: center;
+        }
+        
+        .weather-day {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            border: 1px solid transparent;
+        }
+        .weather-day.active {
+            border-color: var(--border-color);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .weather-icon {
+            font-size: 1.5rem;
+            color: var(--accent-green);
+        }
+        .weather-icon.rain { color: #64b5f6; }
+        .weather-icon.wind { color: #e0e0e0; }
+
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        
+        .status {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .status.active { color: var(--accent-green); }
+        .status.downtime { color: var(--danger-red); }
+        .status.planned { color: var(--text-secondary); }
+
+        
+        .reports-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--space-xl);
+            align-items: center;
+        }
+
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .pie-chart {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--danger-red) 0% 45%, 
+                var(--warning-orange) 45% 70%, 
+                var(--text-secondary) 70% 100%
+            );
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 8px;
+            height: 8px;
+        }
+
+        
+        .task-sidebar {
+            background: rgba(10, 18, 8, 0.95); 
+            border-left: 1px solid var(--border-color);
+            padding: var(--space-xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        
+        input, select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            padding: var(--space-sm) 0;
+            outline: none;
+            transition: border-color 0.2s;
+            appearance: none;
+        }
+
+        select {
+            cursor: pointer;
+            background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+            background-position: calc(100% - 15px) calc(1em + 2px), calc(100% - 10px) calc(1em + 2px);
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+        }
+        
+        select option {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+        }
+
+        input:focus, select:focus {
+            border-bottom-color: var(--accent-green);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--space-md) var(--space-xl);
+            font-family: var(--font-family);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-green-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-primary);
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: auto;
+        }
+
+        
+        .mb-1 { margin-bottom: var(--space-sm); }
+        .mb-2 { margin-bottom: var(--space-md); }
+        .text-right { text-align: right; }
+
+    </style>
+</head>
+<body vid="6">
+
+    <div class="app-layout" vid="7">
+        
+        
+        <nav class="sidebar" vid="8">
+            <div class="logo type-label" style="font-size: 0.9rem; color: var(--accent-green);" vid="9">A G R O _ C T R L</div>
+            <ul class="nav-menu" vid="10">
+                <li vid="11"><a href="#" class="nav-item active" vid="12">Dashboard</a></li>
+                <li vid="13"><a href="#" class="nav-item" vid="14">Fields &amp; Crops</a></li>
+                <li vid="15"><a href="#" class="nav-item" vid="16">Work Log</a></li>
+                <li vid="17"><a href="#" class="nav-item" vid="18">Reports</a></li>
+                <li vid="19"><a href="#" class="nav-item" vid="20">Settings</a></li>
+            </ul>
+        </nav>
+
+        
+        <main class="main-content" vid="21">
+            <header class="header-area" vid="22">
+                <div vid="23">
+                    <div class="type-label mb-1" vid="24">Current View</div>
+                    <h1 class="page-title" vid="25">Operations Dashboard</h1>
+                </div>
+            </header>
+
+            <div class="dashboard-grid" vid="26">
+                
+                
+                <div class="panel" vid="27">
+                    <div class="panel-header" vid="28">
+                        <span class="type-label" vid="29">3-Day Forecast</span>
+                        <span class="type-action" vid="30">Details</span>
+                    </div>
+                    <div class="weather-days" vid="31">
+                        <div class="weather-day active" vid="32">
+                            <span class="type-label" vid="33">Today</span>
+                            <span class="weather-icon" vid="34">☀</span>
+                            <span class="type-value" vid="35">24°</span>
+                        </div>
+                        <div class="weather-day" vid="36">
+                            <span class="type-label" vid="37">Tmw</span>
+                            <span class="weather-icon rain" vid="38">⛆</span>
+                            <span class="type-value" vid="39">18°</span>
+                        </div>
+                        <div class="weather-day" vid="40">
+                            <span class="type-label" vid="41">Fri</span>
+                            <span class="weather-icon wind" vid="42">☄</span>
+                            <span class="type-value" vid="43">20°</span>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="panel" vid="44">
+                    <div class="panel-header" vid="45">
+                        <span class="type-label" vid="46">Active Fleet</span>
+                    </div>
+                    <div vid="47">
+                        <div class="type-value" style="font-size: 2.5rem; line-height: 1;" vid="48">12<span style="font-size: 1rem; color: var(--text-secondary); font-weight: normal;" vid="49">/15</span></div>
+                        <div class="type-label mt-1" style="margin-top: 8px;" vid="50">Vehicles operational</div>
+                    </div>
+                </div>
+
+                <div class="panel" vid="51">
+                    <div class="panel-header" vid="52">
+                        <span class="type-label" vid="53">Total Coverage</span>
+                    </div>
+                    <div vid="54">
+                        <div class="type-value" style="font-size: 2.5rem; line-height: 1;" vid="55">450<span style="font-size: 1rem; color: var(--text-secondary); font-weight: normal;" vid="56"> ha</span></div>
+                        <div class="type-label mt-1" style="margin-top: 8px;" vid="57">Completed today</div>
+                    </div>
+                </div>
+
+                
+                <div class="panel wide-panel" vid="58">
+                    <div class="panel-header" vid="59">
+                        <span class="type-label" vid="60">Active Fields Overview</span>
+                        <span class="type-action" vid="61">View Map</span>
+                    </div>
+                    <table vid="62">
+                        <thead vid="63">
+                            <tr vid="64">
+                                <th class="type-label" vid="65">Field ID</th>
+                                <th class="type-label" vid="66">Crop</th>
+                                <th class="type-label" vid="67">Current Task</th>
+                                <th class="type-label" vid="68">Status</th>
+                                <th class="type-label text-right" vid="69">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody vid="70">
+                            <tr vid="71">
+                                <td class="type-value" vid="72">Field #5</td>
+                                <td vid="73">Winter Wheat</td>
+                                <td vid="74">Plowing</td>
+                                <td vid="75"><span class="status active" vid="76">In Progress</span></td>
+                                <td class="text-right type-value" vid="77">65%</td>
+                            </tr>
+                            <tr vid="78">
+                                <td class="type-value" vid="79">Field #12</td>
+                                <td vid="80">Corn</td>
+                                <td vid="81">Sowing</td>
+                                <td vid="82"><span class="status downtime" vid="83">Downtime</span></td>
+                                <td class="text-right type-value" vid="84">12%</td>
+                            </tr>
+                            <tr vid="85">
+                                <td class="type-value" vid="86">Field #3</td>
+                                <td vid="87">Soybeans</td>
+                                <td class="type-action" vid="88">Assign Task</td>
+                                <td vid="89"><span class="status planned" vid="90">Idle</span></td>
+                                <td class="text-right type-value" vid="91">-</td>
+                            </tr>
+                            <tr vid="92">
+                                <td class="type-value" vid="93">Field #8</td>
+                                <td vid="94">Sunflowers</td>
+                                <td vid="95">Fertilizing</td>
+                                <td vid="96"><span class="status active" vid="97">In Progress</span></td>
+                                <td class="text-right type-value" vid="98">89%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                
+                <div class="panel wide-panel" vid="99">
+                    <div class="panel-header" vid="100">
+                        <span class="type-label" vid="101">Shift Performance &amp; Downtime</span>
+                        <span class="type-action" vid="102">Full Report</span>
+                    </div>
+                    
+                    <div class="reports-grid" vid="103">
+                        <div class="chart-container" vid="104">
+                            <div class="pie-chart" vid="105"></div>
+                            <div class="chart-legend" vid="106">
+                                <div class="legend-item" vid="107"><div class="legend-color" style="background: var(--danger-red);" vid="108"></div> Breakdown</div>
+                                <div class="legend-item" vid="109"><div class="legend-color" style="background: var(--warning-orange);" vid="110"></div> Weather</div>
+                                <div class="legend-item" vid="111"><div class="legend-color" style="background: var(--text-secondary);" vid="112"></div> Logistics</div>
+                            </div>
+                        </div>
+
+                        <table vid="113">
+                            <thead vid="114">
+                                <tr vid="115">
+                                    <th class="type-label" vid="116">Employee</th>
+                                    <th class="type-label" vid="117">Task</th>
+                                    <th class="type-label text-right" vid="118">Plan (ha)</th>
+                                    <th class="type-label text-right" vid="119">Actual (ha)</th>
+                                    <th class="type-label text-right" vid="120">Delta</th>
+                                </tr>
+                            </thead>
+                            <tbody vid="121">
+                                <tr vid="122">
+                                    <td class="type-value" vid="123">J. Smith</td>
+                                    <td vid="124">Plowing</td>
+                                    <td class="text-right" vid="125">120</td>
+                                    <td class="text-right" vid="126">115</td>
+                                    <td class="text-right" style="color: var(--warning-orange);" vid="127">-5</td>
+                                </tr>
+                                <tr vid="128">
+                                    <td class="type-value" vid="129">M. Johnson</td>
+                                    <td vid="130">Sowing</td>
+                                    <td class="text-right" vid="131">80</td>
+                                    <td class="text-right" vid="132">85</td>
+                                    <td class="text-right" style="color: var(--accent-green);" vid="133">+5</td>
+                                </tr>
+                                <tr vid="134">
+                                    <td class="type-value" vid="135">D. Williams</td>
+                                    <td vid="136">Fertilizing</td>
+                                    <td class="text-right" vid="137">200</td>
+                                    <td class="text-right" vid="138">140</td>
+                                    <td class="text-right" style="color: var(--danger-red);" vid="139">-60</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        
+        <aside class="task-sidebar" vid="140">
+            <div class="header-area" style="padding-bottom: 0; border: none;" vid="141">
+                <h2 class="type-label" style="font-size: 0.9rem; color: var(--text-primary);" vid="142">Create Task</h2>
+            </div>
+
+            <div class="form-group" vid="143">
+                <label class="type-label" vid="144">Employee</label>
+                <select vid="145">
+                    <option value="" disabled="" selected="" vid="146">Select operator...</option>
+                    <option vid="147">J. Smith</option>
+                    <option vid="148">M. Johnson</option>
+                    <option vid="149">D. Williams</option>
+                </select>
+            </div>
+
+            <div class="form-group" vid="150">
+                <label class="type-label" vid="151">Target Field</label>
+                <select vid="152">
+                    <option value="" disabled="" selected="" vid="153">Select field...</option>
+                    <option vid="154">Field #3 (Soybeans)</option>
+                    <option vid="155">Field #5 (Winter Wheat)</option>
+                    <option vid="156">Field #12 (Corn)</option>
+                </select>
+            </div>
+
+            <div class="form-group" vid="157">
+                <label class="type-label" vid="158">Work Type</label>
+                <select vid="159">
+                    <option value="" disabled="" selected="" vid="160">Select operation...</option>
+                    <option vid="161">Plowing</option>
+                    <option vid="162">Sowing</option>
+                    <option vid="163">Fertilizing</option>
+                    <option vid="164">Harvesting</option>
+                </select>
+            </div>
+
+            <div class="form-group" vid="165">
+                <label class="type-label" vid="166">Target Volume (Hectares)</label>
+                <input type="number" placeholder="0.00" vid="167">
+            </div>
+
+            <div class="form-group" vid="168">
+                <label class="type-label" vid="169">Notes</label>
+                <input type="text" placeholder="Optional instructions..." vid="170">
+            </div>
+
+            <button class="btn btn-primary btn-block" vid="171">Dispatch Task</button>
+            <button class="btn btn-outline btn-block" style="margin-top: var(--space-sm);" vid="172">Cancel</button>
+        </aside>
+
+    </div>
+
+
+</body></html>

@@ -1,0 +1,226 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Сотрудники — Профиль</title>
+    <script src="https://cdn.tailwindcss.com" vid="5"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" vid="6"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" vid="7">
+    <style vid="8">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f6f5;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .switch-input:checked + .switch-bg {
+            background-color: #3d5c40;
+        }
+        .switch-input:checked + .switch-bg .switch-dot {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen w-screen flex flex-col overflow-hidden" vid="9">
+
+    
+    <header class="bg-white border-b border-gray-200 px-8 py-5 shrink-0 flex items-center justify-between shadow-sm z-10" vid="10">
+        <div vid="11">
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight" vid="12">Сотрудники</h1>
+            <p class="text-sm text-gray-500 mt-1" vid="13">Управляйте списком персонала и доступом к системе</p>
+        </div>
+        <div class="flex items-center gap-4" vid="14">
+            <div class="relative" vid="15">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="16"></i>
+                <input type="text" placeholder="Поиск сотрудников..." class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] w-64 bg-gray-50 transition-all" vid="17">
+            </div>
+            <button class="bg-[#3d5c40] hover:bg-[#2e4530] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm" vid="18">
+                <i class="ph ph-plus text-lg" vid="19"></i>
+                Добавить сотрудника
+            </button>
+        </div>
+    </header>
+
+    
+    <main class="flex-1 overflow-y-auto p-8 opacity-40 blur-[2px]" vid="20">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 max-w-[1600px] mx-auto" vid="21">
+            
+            <div class="bg-white rounded-xl h-64 border border-gray-100" vid="22"></div>
+            <div class="bg-white rounded-xl h-64 border border-gray-100" vid="23"></div>
+            <div class="bg-white rounded-xl h-64 border border-gray-100" vid="24"></div>
+            <div class="bg-white rounded-xl h-64 border border-gray-100" vid="25"></div>
+            <div class="bg-white rounded-xl h-64 border border-gray-100" vid="26"></div>
+        </div>
+    </main>
+
+    
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm" vid="27">
+        
+        
+        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in duration-300" vid="28">
+            
+            
+            <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between shrink-0" vid="29">
+                <div class="flex items-center gap-4" vid="30">
+                    <div class="w-12 h-12 rounded-full bg-[#f3f6f5] flex items-center justify-center text-[#3d5c40]" vid="31">
+                        <i class="ph ph-user-circle-gear text-3xl" vid="32"></i>
+                    </div>
+                    <div vid="33">
+                        <h2 class="text-xl font-bold text-gray-900 leading-none" vid="34">Редактирование сотрудника</h2>
+                        <p class="text-sm text-gray-500 mt-1.5" vid="35">ID: 482910 — Дата регистрации: 15 марта 2026 г.</p>
+                    </div>
+                </div>
+                <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors" vid="36">
+                    <i class="ph ph-x text-2xl" vid="37"></i>
+                </button>
+            </div>
+
+            
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-8" vid="38">
+                <div class="flex flex-col lg:flex-row gap-10" vid="39">
+                    
+                    
+                    <div class="lg:w-[260px] shrink-0 flex flex-col items-center" vid="40">
+                        <div class="relative group" vid="41">
+                            <div class="w-40 h-40 rounded-full bg-[#3d5c40] text-white flex items-center justify-center text-5xl font-bold shadow-lg border-4 border-white" vid="42">
+                                AM
+                            </div>
+                            <button class="absolute bottom-1 right-1 w-10 h-10 bg-white rounded-full shadow-md border border-gray-100 flex items-center justify-center text-gray-600 hover:text-[#3d5c40] transition-colors" vid="43">
+                                <i class="ph ph-camera text-xl" vid="44"></i>
+                            </button>
+                        </div>
+
+                        <div class="mt-8 w-full space-y-6" vid="45">
+                            
+                            <div class="bg-[#f8faf9] p-4 rounded-xl border border-gray-100" vid="46">
+                                <div class="flex items-center justify-between" vid="47">
+                                    <span class="text-sm font-semibold text-gray-700" vid="48">Статус аккаунта</span>
+                                    <label class="relative inline-flex items-center cursor-pointer" vid="49">
+                                        <input type="checkbox" checked="" class="sr-only peer switch-input" vid="50">
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-[#3d5c40]/20 switch-bg transition-all" vid="51">
+                                            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all switch-dot shadow-sm" vid="52"></div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="mt-2 flex items-center gap-1.5" vid="53">
+                                    <span class="w-2 h-2 rounded-full bg-[#3d5c40]" vid="54"></span>
+                                    <span class="text-xs font-medium text-[#3d5c40]" vid="55">Активен</span>
+                                </div>
+                            </div>
+
+                            
+                            <div class="space-y-4 px-1" vid="56">
+                                <div class="flex flex-col gap-1" vid="57">
+                                    <span class="text-[11px] uppercase tracking-wider font-bold text-gray-400" vid="58">Последний вход</span>
+                                    <span class="text-sm font-medium text-gray-700" vid="59">17 марта 2026, 20:37</span>
+                                </div>
+                                <div class="flex flex-col gap-1" vid="60">
+                                    <span class="text-[11px] uppercase tracking-wider font-bold text-gray-400" vid="61">Локация входа</span>
+                                    <span class="text-sm font-medium text-gray-700" vid="62">Офис (IP: 192.168.1.42)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="flex-1" vid="63">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6" vid="64">
+                            
+                            <div class="col-span-2" vid="65">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2" vid="66">ФИО сотрудника</label>
+                                <div class="relative" vid="67">
+                                    <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="68"></i>
+                                    <input type="text" value="Артур Моров" class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] focus:bg-white transition-all" vid="69">
+                                </div>
+                            </div>
+
+                            <div vid="70">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2" vid="71">Email адрес</label>
+                                <div class="relative" vid="72">
+                                    <i class="ph ph-envelope-simple absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="73"></i>
+                                    <input type="email" value="talybovaasja@mail.ru" class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] focus:bg-white transition-all" vid="74">
+                                </div>
+                            </div>
+
+                            <div vid="75">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2" vid="76">Номер телефона</label>
+                                <div class="relative" vid="77">
+                                    <i class="ph ph-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="78"></i>
+                                    <input type="tel" value="+7 912 223-44-33" class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] focus:bg-white transition-all" vid="79">
+                                </div>
+                            </div>
+
+                            <div vid="80">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2" vid="81">Должность</label>
+                                <div class="relative" vid="82">
+                                    <i class="ph ph-briefcase absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="83"></i>
+                                    <select class="w-full pl-11 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] focus:bg-white transition-all appearance-none" vid="84">
+                                        <option vid="85">Механик</option>
+                                        <option vid="86">Агроном</option>
+                                        <option vid="87">Инженер</option>
+                                        <option vid="88">Водитель</option>
+                                    </select>
+                                    <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" vid="89"></i>
+                                </div>
+                            </div>
+
+                            <div vid="90">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2" vid="91">Роль в системе</label>
+                                <div class="relative" vid="92">
+                                    <i class="ph ph-shield-check absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="93"></i>
+                                    <select class="w-full pl-11 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] focus:bg-white transition-all appearance-none" vid="94">
+                                        <option vid="95">Руководитель</option>
+                                        <option vid="96">Администратор</option>
+                                        <option vid="97">Пользователь</option>
+                                        <option vid="98">Только чтение</option>
+                                    </select>
+                                    <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" vid="99"></i>
+                                </div>
+                            </div>
+
+                            <div class="col-span-2" vid="100">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2" vid="101">Отдел / Служба</label>
+                                <div class="relative" vid="102">
+                                    <i class="ph ph-buildings absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" vid="103"></i>
+                                    <input type="text" value="Агрономическая служба" class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] focus:bg-white transition-all" vid="104">
+                                </div>
+                            </div>
+
+                            <div class="col-span-2" vid="105">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2" vid="106">Заметки (внутренние)</label>
+                                <textarea rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3d5c40]/20 focus:border-[#3d5c40] focus:bg-white transition-all resize-none" placeholder="Дополнительная информация о квалификации или доступах..." vid="107"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="px-8 py-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between shrink-0" vid="108">
+                <button class="flex items-center gap-2 text-rose-600 hover:text-rose-700 font-medium text-sm transition-colors" vid="109">
+                    <i class="ph ph-trash text-lg" vid="110"></i>
+                    Удалить сотрудника
+                </button>
+                <div class="flex items-center gap-3" vid="111">
+                    <button class="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-white transition-all" vid="112">
+                        Закрыть
+                    </button>
+                    <button class="px-8 py-2.5 rounded-xl bg-[#3d5c40] hover:bg-[#2e4530] text-white font-semibold text-sm shadow-md transition-all flex items-center gap-2" vid="113">
+                        <i class="ph ph-floppy-disk" vid="114"></i>
+                        Сохранить изменения
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body></html>

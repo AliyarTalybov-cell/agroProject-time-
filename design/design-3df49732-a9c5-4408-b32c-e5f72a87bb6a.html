@@ -1,0 +1,537 @@
+<html lang="en" vid="0"><head vid="1">
+<meta charset="UTF-8" vid="2">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+<title vid="4">Agronomist Control</title>
+<style vid="5">
+    
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+    :root {
+        
+        --bg-deep: #070b08;        
+        --bg-surface: #0d140f;     
+        --bg-elevated: #151e17;    
+        --border-subtle: #1f2c22;  
+        --text-primary: #ffffff;   
+        --text-secondary: #8c9b8f; 
+        --accent: #4a6b44;         
+        --accent-hover: #5d8256;
+        --danger: #8a4d45;         
+        
+        --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 16px;
+        --space-4: 24px;
+        --space-5: 32px;
+        --space-6: 48px;
+        --space-8: 64px;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background-color: var(--bg-deep);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        line-height: 1.5;
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+        
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+        min-height: 100vh;
+        display: flex;
+        overflow-x: hidden;
+    }
+
+    
+    
+
+    .sidebar {
+        width: 200px;
+        border-right: 1px solid var(--border-subtle);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: var(--space-5) var(--space-4);
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        background: rgba(7, 11, 8, 0.8);
+        backdrop-filter: blur(10px);
+        z-index: 10;
+    }
+
+    .logo {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        
+    }
+
+    .nav-links {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        margin-top: var(--space-8);
+    }
+
+    .nav-link {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 13px;
+        transition: color 0.2s;
+    }
+
+    .nav-link.active, .nav-link:hover {
+        color: var(--text-primary);
+    }
+
+    .main-content {
+        flex: 1;
+        padding: var(--space-6) var(--space-8);
+        max-width: 1400px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-8);
+    }
+
+    
+    
+
+    h1 {
+        font-size: 28px;
+        font-weight: 300;
+        letter-spacing: -0.5px;
+    }
+
+    h2 {
+        font-size: 16px;
+        font-weight: 400;
+        color: var(--text-primary);
+        margin-bottom: var(--space-4);
+        letter-spacing: 0px;
+    }
+
+    .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    
+
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: var(--space-6);
+    }
+
+    
+    button {
+        background: var(--accent);
+        color: var(--text-primary);
+        border: none;
+        padding: 10px 20px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 2px;
+        transition: background 0.2s;
+    }
+
+    button:hover {
+        background: var(--accent-hover);
+    }
+
+    button.secondary {
+        background: transparent;
+        border: 1px solid var(--border-subtle);
+    }
+
+    button.secondary:hover {
+        background: var(--bg-elevated);
+    }
+
+    
+    .section-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: var(--space-6);
+    }
+
+    .panel {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        padding: var(--space-5);
+        border-radius: 4px;
+    }
+
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    th {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    td {
+        padding: var(--space-3) 0;
+        border-bottom: 1px solid var(--border-subtle);
+        font-size: 13px;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-right: var(--space-2);
+    }
+
+    
+    .weather-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-3);
+    }
+
+    .weather-day {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--space-3);
+        background: var(--bg-elevated);
+        border-radius: 2px;
+    }
+
+    .weather-day .label { margin-bottom: var(--space-2); }
+    .weather-day .temp { font-size: 16px; margin-top: var(--space-2); }
+    
+    .icon-svg {
+        width: 24px;
+        height: 24px;
+        stroke: var(--text-primary);
+        stroke-width: 1.5;
+        fill: none;
+    }
+
+    
+    .form-group {
+        margin-bottom: var(--space-4);
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: var(--space-2);
+    }
+
+    select, input {
+        width: 100%;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-primary);
+        padding: 10px 12px;
+        font-family: inherit;
+        font-size: 13px;
+        border-radius: 2px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    select:focus, input:focus {
+        border-color: var(--text-secondary);
+    }
+
+    
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238c9b8f' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+    }
+
+    
+    .reports-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: var(--space-6);
+        margin-top: var(--space-8);
+        padding-top: var(--space-8);
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    
+    .pie-chart-container {
+        display: flex;
+        align-items: center;
+        gap: var(--space-5);
+    }
+
+    .pie-chart {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(
+            var(--accent) 0% 60%, 
+            var(--danger) 60% 85%, 
+            var(--bg-elevated) 85% 100%
+        );
+    }
+
+    .legend {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .legend-color {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        margin-right: var(--space-2);
+    }
+
+</style>
+</head>
+<body vid="6">
+
+    
+    <aside class="sidebar" vid="7">
+        <div vid="8">
+            <div class="logo" vid="9">AGRONOMIST</div>
+            <nav class="nav-links" vid="10">
+                <a href="#" class="nav-link active" vid="11">Dashboard</a>
+                <a href="#" class="nav-link" vid="12">Fields &amp; Crops</a>
+                <a href="#" class="nav-link" vid="13">Work Orders</a>
+                <a href="#" class="nav-link" vid="14">Reports</a>
+            </nav>
+        </div>
+        <div class="logo" style="color: var(--text-secondary);" vid="15">v 1.0.4</div>
+    </aside>
+
+    <main class="main-content" vid="16">
+        
+        <header class="header-actions" vid="17">
+            <div vid="18">
+                <div class="label" style="margin-bottom: 8px;" vid="19">Season 2024</div>
+                <h1 vid="20">Field Operations</h1>
+            </div>
+            <button vid="21">Create Task</button>
+        </header>
+
+        <div class="section-container" vid="22">
+            
+            
+            <div class="panel" vid="23">
+                <h2 vid="24">Active Fields</h2>
+                <table vid="25">
+                    <thead vid="26">
+                        <tr vid="27">
+                            <th vid="28">Field Name</th>
+                            <th vid="29">Crop</th>
+                            <th vid="30">Area (ha)</th>
+                            <th vid="31">Current Status</th>
+                        </tr>
+                    </thead>
+                    <tbody vid="32">
+                        <tr vid="33">
+                            <td vid="34">North 01</td>
+                            <td vid="35">Winter Wheat</td>
+                            <td vid="36">120.5</td>
+                            <td vid="37"><span class="status-dot" vid="38"></span>Plowing in progress</td>
+                        </tr>
+                        <tr vid="39">
+                            <td vid="40">South 04</td>
+                            <td vid="41">Corn</td>
+                            <td vid="42">85.0</td>
+                            <td vid="43"><span class="status-dot" style="background: var(--text-secondary)" vid="44"></span>Idle</td>
+                        </tr>
+                        <tr vid="45">
+                            <td vid="46">East 12</td>
+                            <td vid="47">Soybeans</td>
+                            <td vid="48">210.0</td>
+                            <td vid="49"><span class="status-dot" style="background: var(--danger)" vid="50"></span>Downtime - Rain</td>
+                        </tr>
+                        <tr vid="51">
+                            <td vid="52">West 05</td>
+                            <td vid="53">Barley</td>
+                            <td vid="54">95.5</td>
+                            <td vid="55"><span class="status-dot" vid="56"></span>Seeding</td>
+                        </tr>
+                        <tr vid="57">
+                            <td vid="58">North 02</td>
+                            <td vid="59">Winter Wheat</td>
+                            <td vid="60">110.0</td>
+                            <td vid="61"><span class="status-dot" style="background: var(--text-secondary)" vid="62"></span>Planned</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            
+            <div style="display: flex; flex-direction: column; gap: var(--space-6);" vid="63">
+                
+                
+                <div class="panel" vid="64">
+                    <h2 vid="65">Conditions</h2>
+                    <div class="weather-grid" vid="66">
+                        <div class="weather-day" vid="67">
+                            <span class="label" vid="68">Today</span>
+                            
+                            <svg class="icon-svg" viewBox="0 0 24 24" vid="69"><circle cx="12" cy="12" r="4" vid="70"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" vid="71"></path></svg>
+                            <span class="temp" vid="72">22°</span>
+                        </div>
+                        <div class="weather-day" vid="73">
+                            <span class="label" vid="74">Tomorrow</span>
+                            
+                            <svg class="icon-svg" viewBox="0 0 24 24" vid="75"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" vid="76"></path><path d="M16 20l-2 2m-4-2l-2 2m4-6l-2 2" vid="77"></path></svg>
+                            <span class="temp" vid="78">16°</span>
+                        </div>
+                        <div class="weather-day" vid="79">
+                            <span class="label" vid="80">Wed</span>
+                            
+                            <svg class="icon-svg" viewBox="0 0 24 24" vid="81"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" vid="82"></path></svg>
+                            <span class="temp" vid="83">18°</span>
+                        </div>
+                    </div>
+                </div>
+
+                
+                
+                <div class="panel" style="border-color: var(--accent); background: rgba(74, 107, 68, 0.05);" vid="84">
+                    <h2 style="color: var(--accent);" vid="85">Assign New Task</h2>
+                    <div class="form-group" vid="86">
+                        <label vid="87">Operator</label>
+                        <select vid="88">
+                            <option vid="89">Select Employee...</option>
+                            <option vid="90">John Peterson</option>
+                            <option vid="91">Marcus Vance</option>
+                            <option vid="92">Elena Rostova</option>
+                        </select>
+                    </div>
+                    <div class="form-group" vid="93">
+                        <label vid="94">Target Field</label>
+                        <select vid="95">
+                            <option vid="96">Select Field...</option>
+                            <option vid="97">North 01 (120.5 ha)</option>
+                            <option vid="98">South 04 (85.0 ha)</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: var(--space-3);" vid="99">
+                        <div class="form-group" style="flex: 2;" vid="100">
+                            <label vid="101">Work Type</label>
+                            <select vid="102">
+                                <option vid="103">Plowing</option>
+                                <option vid="104">Seeding</option>
+                                <option vid="105">Harvesting</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;" vid="106">
+                            <label vid="107">Vol. (ha)</label>
+                            <input type="number" placeholder="0.0" vid="108">
+                        </div>
+                    </div>
+                    <button style="width: 100%; margin-top: var(--space-2);" vid="109">Dispatch to Mobile</button>
+                </div>
+
+            </div>
+        </div>
+
+        
+        <div class="reports-grid" vid="110">
+            
+            <div class="panel" vid="111">
+                <h2 vid="112">Downtime Reasons</h2>
+                <div class="pie-chart-container" vid="113">
+                    <div class="pie-chart" vid="114"></div>
+                    <div class="legend" vid="115">
+                        <div class="legend-item" vid="116">
+                            <div class="legend-color" style="background: var(--accent);" vid="117"></div> Weather (60%)
+                        </div>
+                        <div class="legend-item" vid="118">
+                            <div class="legend-color" style="background: var(--danger);" vid="119"></div> Breakdown (25%)
+                        </div>
+                        <div class="legend-item" vid="120">
+                            <div class="legend-color" style="background: var(--bg-elevated);" vid="121"></div> No Fuel (15%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" vid="122">
+                <h2 vid="123">Actual vs Plan by Operator</h2>
+                <table vid="124">
+                    <thead vid="125">
+                        <tr vid="126">
+                            <th vid="127">Operator</th>
+                            <th vid="128">Assigned Task</th>
+                            <th vid="129">Plan (ha)</th>
+                            <th vid="130">Actual (ha)</th>
+                            <th vid="131">Efficiency</th>
+                        </tr>
+                    </thead>
+                    <tbody vid="132">
+                        <tr vid="133">
+                            <td vid="134">J. Peterson</td>
+                            <td vid="135">Plowing - North 01</td>
+                            <td vid="136">40.0</td>
+                            <td vid="137"><span style="color: var(--text-primary);" vid="138">42.5</span></td>
+                            <td vid="139">106%</td>
+                        </tr>
+                        <tr vid="140">
+                            <td vid="141">M. Vance</td>
+                            <td vid="142">Seeding - West 05</td>
+                            <td vid="143">60.0</td>
+                            <td vid="144"><span style="color: var(--text-secondary);" vid="145">45.0</span></td>
+                            <td vid="146">75%</td>
+                        </tr>
+                        <tr vid="147">
+                            <td vid="148">E. Rostova</td>
+                            <td vid="149">Idle</td>
+                            <td vid="150">-</td>
+                            <td vid="151">-</td>
+                            <td vid="152">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </main>
+
+
+</body></html>

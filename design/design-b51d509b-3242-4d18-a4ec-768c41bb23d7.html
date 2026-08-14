@@ -1,0 +1,646 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Аналитика простоев техники</title>
+    <style vid="5">
+        
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap');
+
+        :root {
+            
+            --bg-page: #F7F8F9;
+            --bg-card: #FFFFFF;
+            --text-main: #111111;
+            --text-muted: #6B7280;
+            --border-light: #E5E7EB;
+            --border-medium: #D1D5DB;
+            
+            
+            --green-bg-light: #ECFDF5;
+            --green-border-soft: #A7F3D0;
+            --green-text-dark: #065F46;
+            --green-accent: #10B981; 
+
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            
+            --radius-card: 12px;
+            --radius-small: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .app-title {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .user-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-card);
+            overflow: hidden; 
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.875rem;
+        }
+
+        
+        th {
+            background-color: var(--green-bg-light);
+            color: var(--green-text-dark);
+            font-weight: 500;
+            border-bottom: 2px solid var(--green-border-soft);
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #F9FAFB;
+        }
+
+        .cell-duration {
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+        }
+
+        
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid var(--border-light);
+            background: var(--bg-page);
+        }
+
+        
+        .chart-card {
+            padding: 1.5rem;
+        }
+
+        .pie-chart-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            
+            background: conic-gradient(
+                var(--text-main) 0% 40%, 
+                var(--border-medium) 40% 70%, 
+                var(--green-accent) 70% 100%
+            );
+            border: 1px solid var(--border-light);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .legend-label-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .color-breakdown { background-color: var(--text-main); }
+        .color-rain { background-color: var(--border-medium); }
+        .color-fuel { background-color: var(--green-accent); }
+
+        .legend-value {
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body vid="6">
+
+    <div class="container" vid="7">
+        <header class="app-header" vid="8">
+            <h1 class="app-title" vid="9">Аналитика простоев</h1>
+            <div class="user-controls" vid="10">
+                <span vid="11">Агроном: Смирнов А.</span>
+                <span vid="12">•</span>
+                <span vid="13">Сегодня, 24 Окт</span>
+            </div>
+        </header>
+
+        <main class="dashboard-grid" vid="14">
+            
+            
+            <section class="card" vid="15">
+                <div class="card-header" vid="16">
+                    <h2 class="card-title" vid="17">Журнал простоев техники</h2>
+                    <p class="card-desc" vid="18">Детальный отчет по сотрудникам и причинам за текущую смену.</p>
+                </div>
+                
+                <div class="table-container" vid="19">
+                    <table vid="20">
+                        <thead vid="21">
+                            <tr vid="22">
+                                <th vid="23">Сотрудник</th>
+                                <th vid="24">Причина простоя</th>
+                                <th vid="25">Начало</th>
+                                <th vid="26">Конец</th>
+                                <th vid="27">Длительность</th>
+                            </tr>
+                        </thead>
+                        <tbody vid="28">
+                            <tr vid="29">
+                                <td vid="30">Иванов И.И.</td>
+                                <td vid="31"><span class="status-tag" vid="32">Поломка гидравлики</span></td>
+                                <td vid="33">08:15</td>
+                                <td vid="34">11:45</td>
+                                <td class="cell-duration" vid="35">3 ч 30 мин</td>
+                            </tr>
+                            <tr vid="36">
+                                <td vid="37">Петров П.П.</td>
+                                <td vid="38"><span class="status-tag" vid="39">Сильный дождь</span></td>
+                                <td vid="40">12:00</td>
+                                <td vid="41">14:00</td>
+                                <td class="cell-duration" vid="42">2 ч 00 мин</td>
+                            </tr>
+                            <tr vid="43">
+                                <td vid="44">Сидоров С.С.</td>
+                                <td vid="45"><span class="status-tag" vid="46">Ожидание топлива</span></td>
+                                <td vid="47">14:30</td>
+                                <td vid="48">16:00</td>
+                                <td class="cell-duration" vid="49">1 ч 30 мин</td>
+                            </tr>
+                            <tr vid="50">
+                                <td vid="51">Николаев Н.Н.</td>
+                                <td vid="52"><span class="status-tag" vid="53">Поломка жатки</span></td>
+                                <td vid="54">09:00</td>
+                                <td vid="55">10:15</td>
+                                <td class="cell-duration" vid="56">1 ч 15 мин</td>
+                            </tr>
+                             <tr vid="57">
+                                <td vid="58">Кузнецов К.К.</td>
+                                <td vid="59"><span class="status-tag" vid="60">Дождь</span></td>
+                                <td vid="61">12:00</td>
+                                <td vid="62">12:45</td>
+                                <td class="cell-duration" vid="63">0 ч 45 мин</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            
+            <aside class="card chart-card" vid="64">
+                <h2 class="card-title" vid="65">Сводка причин</h2>
+                <p class="card-desc" vid="66">Распределение времени простоя</p>
+                
+                <div class="pie-chart-container" vid="67">
+                    <div class="pie-chart" aria-label="Диаграмма распределения простоев" vid="68"></div>
+                </div>
+
+                <div class="legend" vid="69">
+                    <div class="legend-item" vid="70">
+                        <div class="legend-label-group" vid="71">
+                            <div class="legend-color color-breakdown" vid="72"></div>
+                            <span vid="73">Поломки</span>
+                        </div>
+                        <span class="legend-value" vid="74">40%</span>
+                    </div>
+                    
+                    <div class="legend-item" vid="75">
+                        <div class="legend-label-group" vid="76">
+                            <div class="legend-color color-rain" vid="77"></div>
+                            <span vid="78">Погодные условия</span>
+                        </div>
+                        <span class="legend-value" vid="79">30%</span>
+                    </div>
+
+                    <div class="legend-item" vid="80">
+                        <div class="legend-label-group" vid="81">
+                            <div class="legend-color color-fuel" vid="82"></div>
+                            <span vid="83">Ожидание ГСМ</span>
+                        </div>
+                        <span class="legend-value" vid="84">30%</span>
+                    </div>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+
+    <!-- Modal: Add Downtime Record -->
+    <div class="modal-overlay" id="addModal" style="display: none;" vid="85">
+        <div class="modal" vid="86">
+            <div class="modal-header" vid="87">
+                <h3 vid="88">Добавить запись о простое</h3>
+                <button class="modal-close" onclick="closeModal('addModal')" vid="89">×</button>
+            </div>
+            <div class="modal-body" vid="90">
+                <div class="form-group" vid="91">
+                    <label vid="92">Сотрудник</label>
+                    <select class="form-control" vid="93">
+                        <option vid="94">Выберите сотрудника</option>
+                        <option vid="95">Иванов Алексей</option>
+                        <option vid="96">Смирнов Дмитрий</option>
+                        <option vid="97">Петров Сергей</option>
+                    </select>
+                </div>
+                <div class="form-group" vid="98">
+                    <label vid="99">Причина простоя</label>
+                    <select class="form-control" vid="100">
+                        <option vid="101">Выберите причину</option>
+                        <option vid="102">Поломка гидравлики</option>
+                        <option vid="103">Сильный дождь</option>
+                        <option vid="104">Ожидание топлива</option>
+                        <option vid="105">Поломка жатки</option>
+                        <option vid="106">Замена ремня</option>
+                    </select>
+                </div>
+                <div class="form-row" vid="107">
+                    <div class="form-group" vid="108">
+                        <label vid="109">Начало</label>
+                        <input type="time" class="form-control" value="08:00" vid="110">
+                    </div>
+                    <div class="form-group" vid="111">
+                        <label vid="112">Конец</label>
+                        <input type="time" class="form-control" value="10:00" vid="113">
+                    </div>
+                </div>
+                <div class="form-group" vid="114">
+                    <label vid="115">Комментарий</label>
+                    <textarea class="form-control" rows="2" placeholder="Опишите детали..." vid="116"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" vid="117">
+                <button class="btn-outline" onclick="closeModal('addModal')" vid="118">Отмена</button>
+                <button class="btn-primary" onclick="closeModal('addModal')" vid="119">Сохранить запись</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Record Details -->
+    <div class="modal-overlay" id="detailModal" style="display: none;" vid="120">
+        <div class="modal modal-sm" vid="121">
+            <div class="modal-header" vid="122">
+                <h3 vid="123">Детали записи</h3>
+                <button class="modal-close" onclick="closeModal('detailModal')" vid="124">×</button>
+            </div>
+            <div class="modal-body" vid="125">
+                <div class="detail-row" vid="126">
+                    <span class="detail-label" vid="127">Сотрудник</span>
+                    <span class="detail-value" vid="128">Иванов Алексей</span>
+                </div>
+                <div class="detail-row" vid="129">
+                    <span class="detail-label" vid="130">Причина</span>
+                    <span class="detail-value" vid="131"><span class="status-dot dot-breakdown" vid="132"></span> Поломка гидравлики</span>
+                </div>
+                <div class="detail-row" vid="133">
+                    <span class="detail-label" vid="134">Период</span>
+                    <span class="detail-value" vid="135">08:30 – 11:00</span>
+                </div>
+                <div class="detail-row" vid="136">
+                    <span class="detail-label" vid="137">Длительность</span>
+                    <span class="detail-value duration-highlight" vid="138">2 ч 30 мин</span>
+                </div>
+                <div class="detail-row" vid="139">
+                    <span class="detail-label" vid="140">Техника</span>
+                    <span class="detail-value" vid="141">Трактор John Deere 8R</span>
+                </div>
+                <div class="detail-comment" vid="142">
+                    <span class="detail-label" vid="143">Комментарий</span>
+                    <p vid="144">Требуется замена гидроцилиндра подъема навески. Заказана запчасть.</p>
+                </div>
+            </div>
+            <div class="modal-footer" vid="145">
+                <button class="btn-outline" onclick="closeModal('detailModal')" vid="146">Закрыть</button>
+                <button class="btn-primary" onclick="closeModal('detailModal')" vid="147">Редактировать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Filters -->
+    <div class="modal-overlay" id="filterModal" style="display: none;" vid="148">
+        <div class="modal" vid="149">
+            <div class="modal-header" vid="150">
+                <h3 vid="151">Фильтры</h3>
+                <button class="modal-close" onclick="closeModal('filterModal')" vid="152">×</button>
+            </div>
+            <div class="modal-body" vid="153">
+                <div class="form-group" vid="154">
+                    <label vid="155">Период</label>
+                    <div class="form-row" vid="156">
+                        <input type="date" class="form-control" value="2024-04-15" vid="157">
+                        <span style="color: var(--text-secondary); padding: 8px;" vid="158">—</span>
+                        <input type="date" class="form-control" value="2024-04-21" vid="159">
+                    </div>
+                </div>
+                <div class="form-group" vid="160">
+                    <label vid="161">Сотрудники</label>
+                    <div class="checkbox-list" vid="162">
+                        <label class="checkbox-item" vid="163"><input type="checkbox" checked="" vid="164"> Иванов Алексей</label>
+                        <label class="checkbox-item" vid="165"><input type="checkbox" checked="" vid="166"> Смирнов Дмитрий</label>
+                        <label class="checkbox-item" vid="167"><input type="checkbox" checked="" vid="168"> Кузнецов Иван</label>
+                        <label class="checkbox-item" vid="169"><input type="checkbox" checked="" vid="170"> Попов Сергей</label>
+                        <label class="checkbox-item" vid="171"><input type="checkbox" checked="" vid="172"> Волков Андрей</label>
+                    </div>
+                </div>
+                <div class="form-group" vid="173">
+                    <label vid="174">Причины простоя</label>
+                    <div class="checkbox-list" vid="175">
+                        <label class="checkbox-item" vid="176"><input type="checkbox" checked="" vid="177"> Поломки</label>
+                        <label class="checkbox-item" vid="178"><input type="checkbox" checked="" vid="179"> Погодные условия</label>
+                        <label class="checkbox-item" vid="180"><input type="checkbox" checked="" vid="181"> Заправка</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" vid="182">
+                <button class="btn-text" onclick="closeModal('filterModal')" vid="183">Сбросить</button>
+                <button class="btn-primary" onclick="closeModal('filterModal')" vid="184">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <script vid="185">
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+
+    <!-- Modal: Add Downtime Record -->
+    <div class="modal-overlay" id="addModal" style="display: none;" vid="186">
+        <div class="modal" vid="187">
+            <div class="modal-header" vid="188">
+                <h3 vid="189">Добавить запись о простое</h3>
+                <button class="modal-close" onclick="closeModal('addModal')" vid="190">×</button>
+            </div>
+            <div class="modal-body" vid="191">
+                <div class="form-group" vid="192">
+                    <label vid="193">Сотрудник</label>
+                    <select class="form-control" vid="194">
+                        <option vid="195">Выберите сотрудника</option>
+                        <option vid="196">Иванов Алексей</option>
+                        <option vid="197">Смирнов Дмитрий</option>
+                        <option vid="198">Петров Сергей</option>
+                    </select>
+                </div>
+                <div class="form-group" vid="199">
+                    <label vid="200">Причина простоя</label>
+                    <select class="form-control" vid="201">
+                        <option vid="202">Выберите причину</option>
+                        <option vid="203">Поломка гидравлики</option>
+                        <option vid="204">Сильный дождь</option>
+                        <option vid="205">Ожидание топлива</option>
+                        <option vid="206">Поломка жатки</option>
+                        <option vid="207">Замена ремня</option>
+                    </select>
+                </div>
+                <div class="form-row" vid="208">
+                    <div class="form-group" vid="209">
+                        <label vid="210">Начало</label>
+                        <input type="time" class="form-control" value="08:00" vid="211">
+                    </div>
+                    <div class="form-group" vid="212">
+                        <label vid="213">Конец</label>
+                        <input type="time" class="form-control" value="10:00" vid="214">
+                    </div>
+                </div>
+                <div class="form-group" vid="215">
+                    <label vid="216">Комментарий</label>
+                    <textarea class="form-control" rows="2" placeholder="Опишите детали..." vid="217"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" vid="218">
+                <button class="btn-outline" onclick="closeModal('addModal')" vid="219">Отмена</button>
+                <button class="btn-primary" onclick="closeModal('addModal')" vid="220">Сохранить запись</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Record Details -->
+    <div class="modal-overlay" id="detailModal" style="display: none;" vid="221">
+        <div class="modal modal-sm" vid="222">
+            <div class="modal-header" vid="223">
+                <h3 vid="224">Детали записи</h3>
+                <button class="modal-close" onclick="closeModal('detailModal')" vid="225">×</button>
+            </div>
+            <div class="modal-body" vid="226">
+                <div class="detail-row" vid="227">
+                    <span class="detail-label" vid="228">Сотрудник</span>
+                    <span class="detail-value" vid="229">Иванов Алексей</span>
+                </div>
+                <div class="detail-row" vid="230">
+                    <span class="detail-label" vid="231">Причина</span>
+                    <span class="detail-value" vid="232"><span class="status-dot dot-breakdown" vid="233"></span> Поломка гидравлики</span>
+                </div>
+                <div class="detail-row" vid="234">
+                    <span class="detail-label" vid="235">Период</span>
+                    <span class="detail-value" vid="236">08:30 – 11:00</span>
+                </div>
+                <div class="detail-row" vid="237">
+                    <span class="detail-label" vid="238">Длительность</span>
+                    <span class="detail-value duration-highlight" vid="239">2 ч 30 мин</span>
+                </div>
+                <div class="detail-row" vid="240">
+                    <span class="detail-label" vid="241">Техника</span>
+                    <span class="detail-value" vid="242">Трактор John Deere 8R</span>
+                </div>
+                <div class="detail-comment" vid="243">
+                    <span class="detail-label" vid="244">Комментарий</span>
+                    <p vid="245">Требуется замена гидроцилиндра подъема навески. Заказана запчасть.</p>
+                </div>
+            </div>
+            <div class="modal-footer" vid="246">
+                <button class="btn-outline" onclick="closeModal('detailModal')" vid="247">Закрыть</button>
+                <button class="btn-primary" onclick="closeModal('detailModal')" vid="248">Редактировать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Filters -->
+    <div class="modal-overlay" id="filterModal" style="display: none;" vid="249">
+        <div class="modal" vid="250">
+            <div class="modal-header" vid="251">
+                <h3 vid="252">Фильтры</h3>
+                <button class="modal-close" onclick="closeModal('filterModal')" vid="253">×</button>
+            </div>
+            <div class="modal-body" vid="254">
+                <div class="form-group" vid="255">
+                    <label vid="256">Период</label>
+                    <div class="form-row" vid="257">
+                        <input type="date" class="form-control" value="2024-04-15" vid="258">
+                        <span style="color: var(--text-secondary); padding: 8px;" vid="259">—</span>
+                        <input type="date" class="form-control" value="2024-04-21" vid="260">
+                    </div>
+                </div>
+                <div class="form-group" vid="261">
+                    <label vid="262">Сотрудники</label>
+                    <div class="checkbox-list" vid="263">
+                        <label class="checkbox-item" vid="264"><input type="checkbox" checked="" vid="265"> Иванов Алексей</label>
+                        <label class="checkbox-item" vid="266"><input type="checkbox" checked="" vid="267"> Смирнов Дмитрий</label>
+                        <label class="checkbox-item" vid="268"><input type="checkbox" checked="" vid="269"> Кузнецов Иван</label>
+                        <label class="checkbox-item" vid="270"><input type="checkbox" checked="" vid="271"> Попов Сергей</label>
+                        <label class="checkbox-item" vid="272"><input type="checkbox" checked="" vid="273"> Волков Андрей</label>
+                    </div>
+                </div>
+                <div class="form-group" vid="274">
+                    <label vid="275">Причины простоя</label>
+                    <div class="checkbox-list" vid="276">
+                        <label class="checkbox-item" vid="277"><input type="checkbox" checked="" vid="278"> Поломки</label>
+                        <label class="checkbox-item" vid="279"><input type="checkbox" checked="" vid="280"> Погодные условия</label>
+                        <label class="checkbox-item" vid="281"><input type="checkbox" checked="" vid="282"> Заправка</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" vid="283">
+                <button class="btn-text" onclick="closeModal('filterModal')" vid="284">Сбросить</button>
+                <button class="btn-primary" onclick="closeModal('filterModal')" vid="285">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <script vid="286">
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+
+</body></html>

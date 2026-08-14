@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGRO_CTRL — Поля и культуры</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav class="sidebar">
+      <div class="logo type-label">A G R O _ C T R L</div>
+      <ul class="nav-menu">
+        <li><button class="nav-item" data-section="dashboard" type="button">Дашборд</button></li>
+        <li><button class="nav-item active" data-section="fields" type="button">Поля и культуры</button></li>
+        <li><button class="nav-item" data-section="journal" type="button">Журнал работ</button></li>
+        <li><button class="nav-item" data-section="reports" type="button">Отчеты</button></li>
+        <li><button class="nav-item" data-section="settings" type="button">Настройки</button></li>
+      </ul>
+    </nav>
+
+    <main class="main-content">
+      <section class="page-section" data-section="fields">
+        <header class="header-area">
+          <div>
+            <div class="type-label mb-1">Текущий раздел</div>
+            <h1 class="page-title">Мониторинг полей</h1>
+          </div>
+          <button class="type-action" id="add-field-btn" type="button">Добавить поле +</button>
+        </header>
+
+        <section class="fields-toolbar">
+          <div class="filter-group">
+            <span class="type-label mb-1">Фильтр по культурам</span>
+            <div class="chip-group" id="crop-filter">
+              <button class="chip chip-active" data-crop="all" type="button">Все</button>
+              <button class="chip" data-crop="wheat" type="button">Пшеница</button>
+              <button class="chip" data-crop="corn" type="button">Кукуруза</button>
+              <button class="chip" data-crop="soy" type="button">Соя</button>
+              <button class="chip" data-crop="sunflower" type="button">Подсолнечник</button>
+            </div>
+          </div>
+          <div class="filter-group">
+            <span class="type-label mb-1">Поиск по полям</span>
+            <div class="search-input">
+              <input
+                id="field-search"
+                type="search"
+                placeholder="Например: Поле #5 или культура"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="fields-layout">
+          <div class="map-container">
+            <svg
+              class="map-svg"
+              viewBox="0 0 1000 400"
+              preserveAspectRatio="none"
+              aria-label="Схема полей хозяйства"
+            >
+              <path
+                id="poly-field-5"
+                class="field-polygon"
+                data-field-id="field-5"
+                d="M100,50 L300,40 L350,150 L120,160 Z"
+              ></path>
+              <path
+                id="poly-field-12"
+                class="field-polygon"
+                data-field-id="field-12"
+                d="M320,45 L500,60 L520,180 L370,190 Z"
+              ></path>
+              <path
+                id="poly-field-3"
+                class="field-polygon"
+                data-field-id="field-3"
+                d="M530,70 L750,80 L730,250 L550,230 Z"
+              ></path>
+              <path
+                id="poly-field-8"
+                class="field-polygon"
+                data-field-id="field-8"
+                d="M130,180 L380,210 L340,350 L100,320 Z"
+              ></path>
+              <path
+                id="poly-field-21"
+                class="field-polygon"
+                data-field-id="field-21"
+                d="M410,210 L720,270 L680,380 L450,350 Z"
+              ></path>
+            </svg>
+
+            <div class="map-overlay">
+              <div class="type-label mb-1">Легенда культур</div>
+              <div class="legend-item">
+                <div class="color-dot color-wheat"></div>
+                Пшеница озимая
+              </div>
+              <div class="legend-item">
+                <div class="color-dot color-corn"></div>
+                Кукуруза
+              </div>
+              <div class="legend-item">
+                <div class="color-dot color-soy"></div>
+                Соя
+              </div>
+              <div class="legend-item">
+                <div class="color-dot color-sunflower"></div>
+                Подсолнечник
+              </div>
+            </div>
+          </div>
+
+          <div class="fields-panel">
+            <div class="field-grid" id="field-list" aria-label="Список полей"></div>
+
+            <aside class="field-details" id="field-details" aria-live="polite">
+              <div class="type-label mb-1">Выбранное поле</div>
+              <div class="field-details-empty">
+                Выберите поле на схеме или из списка справа, чтобы увидеть детальную информацию
+                и возможные операции.
+              </div>
+            </aside>
+          </div>
+        </section>
+      </section>
+
+      <section class="page-section page-section-muted" data-section="dashboard" hidden>
+        <header class="header-area">
+          <div>
+            <div class="type-label mb-1">Раздел в разработке</div>
+            <h1 class="page-title">Дашборд</h1>
+          </div>
+        </header>
+        <p class="placeholder-text">
+          Здесь позже появится сводный мониторинг по всем модулям: технике, полям, погоде и работе бригад.
+        </p>
+      </section>
+
+      <section class="page-section page-section-muted" data-section="journal" hidden>
+        <header class="header-area">
+          <div>
+            <div class="type-label mb-1">Раздел в разработке</div>
+            <h1 class="page-title">Журнал работ</h1>
+          </div>
+        </header>
+        <p class="placeholder-text">
+          Под этот раздел перенесём твой дизайн журнала с прогресс-кругами, статусами смен и фильтрами.
+        </p>
+      </section>
+
+      <section class="page-section page-section-muted" data-section="reports" hidden>
+        <header class="header-area">
+          <div>
+            <div class="type-label mb-1">Раздел в разработке</div>
+            <h1 class="page-title">Отчёты</h1>
+          </div>
+        </header>
+        <p class="placeholder-text">
+          Здесь появятся тепловые карты, сравнение бригад и выполнение планов из твоей страницы отчётов.
+        </p>
+      </section>
+
+      <section class="page-section page-section-muted" data-section="settings" hidden>
+        <header class="header-area">
+          <div>
+            <div class="type-label mb-1">Раздел в разработке</div>
+            <h1 class="page-title">Настройки</h1>
+          </div>
+        </header>
+        <p class="placeholder-text">
+          В дальнейшем сюда перенесём управление пользователями, интеграциями, уведомлениями и безопасностью.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
+

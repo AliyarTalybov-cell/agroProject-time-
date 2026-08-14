@@ -1,0 +1,337 @@
+<html lang="ru" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Аналитика простоев техники</title>
+    <style vid="5">
+        :root {
+            
+            --bg-body: #f8f9fb;
+            --bg-card: #ffffff;
+            
+            --text-main: #11151f;
+            --text-secondary: #6c7281;
+            
+            --accent-green: #00d26a; 
+            --accent-blue: #3a78ff;  
+            --bg-green-light: #e6f8ed; 
+            --text-green-dark: #00a050; 
+            
+            --border-color: #eaebed; 
+            
+            --radius-card: 12px;
+            --radius-pill: 100px;
+            
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.03);
+            
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 40px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-card);
+            border: 1px solid rgba(0,0,0,0.02); 
+            overflow: hidden; 
+        }
+
+        .card-header {
+            padding: 24px 24px 16px;
+            font-weight: 600;
+            font-size: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            
+            background-color: var(--bg-green-light);
+            color: var(--text-green-dark);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border-bottom: 2px solid var(--accent-green);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px 24px;
+            font-size: 14px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color); 
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        
+        .text-secondary {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .duration-val {
+            font-weight: 500;
+        }
+
+        
+        .reason-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            font-size: 13px;
+            font-weight: 500;
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+        }
+
+        
+        .side-panel {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        
+        .stat-block {
+            text-align: center;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 300;
+            line-height: 1;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .donut-chart {
+            width: 160px;
+            height: 160px;
+        }
+
+        .donut-segment {
+            fill: transparent;
+            stroke-width: 6; 
+        }
+
+        .segment-breakdown { stroke: var(--accent-green); }
+        .segment-rain { stroke: var(--accent-blue); }
+        .segment-fuel { stroke: var(--text-main); } 
+
+        
+        .legend {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .legend-label-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-breakdown { background-color: var(--accent-green); }
+        .dot-rain { background-color: var(--accent-blue); }
+        .dot-fuel { background-color: var(--text-main); }
+
+        .legend-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body vid="6">
+
+<div class="dashboard-container" vid="7">
+    <header class="page-header" vid="8">
+        <h1 vid="9">Аналитика простоев техники</h1>
+    </header>
+
+    <div class="layout-grid" vid="10">
+        
+        <main class="card" vid="11">
+            <div class="table-container" vid="12">
+                <table vid="13">
+                    <thead vid="14">
+                        <tr vid="15">
+                            <th vid="16">Сотрудник</th>
+                            <th vid="17">Причина простоя</th>
+                            <th vid="18">Начало</th>
+                            <th vid="19">Конец</th>
+                            <th vid="20">Длительность</th>
+                        </tr>
+                    </thead>
+                    <tbody vid="21">
+                        <tr vid="22">
+                            <td vid="23">Иванов И.В.</td>
+                            <td vid="24"><span class="reason-badge" vid="25">Поломка</span></td>
+                            <td class="text-secondary" vid="26">08:00</td>
+                            <td class="text-secondary" vid="27">11:30</td>
+                            <td class="duration-val" vid="28">3 ч 30 мин</td>
+                        </tr>
+                        <tr vid="29">
+                            <td vid="30">Смирнов А.П.</td>
+                            <td vid="31"><span class="reason-badge" vid="32">Дождь</span></td>
+                            <td class="text-secondary" vid="33">10:15</td>
+                            <td class="text-secondary" vid="34">14:15</td>
+                            <td class="duration-val" vid="35">4 ч 00 мин</td>
+                        </tr>
+                        <tr vid="36">
+                            <td vid="37">Козлов Д.Н.</td>
+                            <td vid="38"><span class="reason-badge" vid="39">Ожидание топлива</span></td>
+                            <td class="text-secondary" vid="40">13:00</td>
+                            <td class="text-secondary" vid="41">14:30</td>
+                            <td class="duration-val" vid="42">1 ч 30 мин</td>
+                        </tr>
+                        <tr vid="43">
+                            <td vid="44">Петров В.С.</td>
+                            <td vid="45"><span class="reason-badge" vid="46">Поломка</span></td>
+                            <td class="text-secondary" vid="47">09:00</td>
+                            <td class="text-secondary" vid="48">11:00</td>
+                            <td class="duration-val" vid="49">2 ч 00 мин</td>
+                        </tr>
+                        <tr vid="50">
+                            <td vid="51">Морозов Е.А.</td>
+                            <td vid="52"><span class="reason-badge" vid="53">Дождь</span></td>
+                            <td class="text-secondary" vid="54">11:00</td>
+                            <td class="text-secondary" vid="55">13:00</td>
+                            <td class="duration-val" vid="56">2 ч 00 мин</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        
+        <aside class="card side-panel" vid="57">
+            
+            
+            <div class="stat-block" vid="58">
+                <div class="stat-label" vid="59">Всего часов простоя</div>
+                <div class="stat-value" vid="60">13.0</div>
+            </div>
+
+            <div class="chart-container" vid="61">
+                
+                <svg viewBox="0 0 40 40" class="donut-chart" vid="62">
+                    <circle class="donut-segment" cx="20" cy="20" r="15.9155" fill="transparent" stroke="var(--border-color)" stroke-width="6" vid="63"></circle>
+                    
+                    <circle class="donut-segment segment-fuel" cx="20" cy="20" r="15.9155" stroke-dasharray="30 70" stroke-dashoffset="0" vid="64"></circle>
+                    
+                    <circle class="donut-segment segment-rain" cx="20" cy="20" r="15.9155" stroke-dasharray="30 70" stroke-dashoffset="-30" vid="65"></circle>
+                    
+                    <circle class="donut-segment segment-breakdown" cx="20" cy="20" r="15.9155" stroke-dasharray="40 60" stroke-dashoffset="-60" vid="66"></circle>
+                </svg>
+
+                <div class="legend" vid="67">
+                    <div class="legend-item" vid="68">
+                        <div class="legend-label-group" vid="69">
+                            <span class="legend-dot dot-breakdown" vid="70"></span>
+                            <span vid="71">Поломки</span>
+                        </div>
+                        <span class="legend-value" vid="72">40%</span>
+                    </div>
+                    <div class="legend-item" vid="73">
+                        <div class="legend-label-group" vid="74">
+                            <span class="legend-dot dot-rain" vid="75"></span>
+                            <span vid="76">Погодные условия</span>
+                        </div>
+                        <span class="legend-value" vid="77">30%</span>
+                    </div>
+                    <div class="legend-item" vid="78">
+                        <div class="legend-label-group" vid="79">
+                            <span class="legend-dot dot-fuel" vid="80"></span>
+                            <span vid="81">Ожидание топлива</span>
+                        </div>
+                        <span class="legend-value" vid="82">30%</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+
+</body></html>
