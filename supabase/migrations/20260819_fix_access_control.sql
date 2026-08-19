@@ -143,63 +143,26 @@ create policy chat_messages_insert
 -- гранты у anon.
 -- ---------------------------------------------------------------------
 
-do $$
-declare
-  t text;
-  tables text[] := ARRAY[
-    'fields', 'field_photos', 'field_municipalities_refs',
-    'equipment', 'equipment_implements', 'equipment_type_refs',
-    'equipment_condition_refs', 'equipment_photos', 'equipment_documents',
-    'tasks', 'task_files',
-    'calendar_tasks', 'calendar_task_assignees', 'calendar_task_files',
-    'operator_status', 'downtime_reasons', 'work_operations',
-    'land_types', 'land_categories', 'crops', 'land_actual_use_options',
-    'lands', 'land_rights', 'land_right_ownership_forms', 'land_right_types',
-    'land_right_document_types', 'land_right_holder_types', 'land_right_holders',
-    'land_users', 'land_crop_rotations',
-    'land_melioration_types', 'land_melioration_subtypes',
-    'land_melioration_event_types', 'land_melioration_entries',
-    'land_real_estate_objects',
-    'storage_locations', 'storage_batches', 'storage_intakes',
-    'storage_writeoffs', 'storage_fill_statuses',
-    'news_posts'
-  ];
-begin
-  foreach t in array tables loop
-    -- пропускаем таблицы, которых нет в этой базе
-    if to_regclass('public.' || quote_ident(t)) is null then
-      continue;
-    end if;
+-- Главный рычаг — гранты, а не политики: без права на таблицу роль anon
+-- ничего не сделает, какой бы ни была политика. Списком таблицы не
+-- перечисляем: в проекте 81 миграция, и что-нибудь обязательно забудется.
+revoke all on all tables in schema public from anon;
+revoke all on all sequences in schema public from anon;
 
-    execute format('alter table public.%I enable row level security', t);
+-- Чтобы новые таблицы не открывались для anon автоматически.
+alter default privileges in schema public revoke all on tables from anon;
+alter default privileges in schema public revoke all on sequences from anon;
 
-    execute format('drop policy if exists %I on public.%I', t || '_select_all', t);
-    execute format('drop policy if exists %I on public.%I', t || '_insert_all', t);
-    execute format('drop policy if exists %I on public.%I', t || '_update_all', t);
-    execute format('drop policy if exists %I on public.%I', t || '_delete_manager_only', t);
-    execute format('drop policy if exists "Allow all for %s" on public.%I', t, t);
+-- Проверка доступности БД (баннер «сервер не отвечает») выполняется на
+-- странице входа, то есть от имени anon. Раньше она читала таблицу
+-- downtimes — теперь для этого есть функция, не дающая доступа к данным.
+create or replace function public.health_check()
+returns boolean
+language sql
+stable
+as $$ select true $$;
 
-    execute format(
-      'create policy %I on public.%I for select to authenticated using (true)',
-      t || '_select_all', t
-    );
-    execute format(
-      'create policy %I on public.%I for insert to authenticated with check (true)',
-      t || '_insert_all', t
-    );
-    execute format(
-      'create policy %I on public.%I for update to authenticated using (true) with check (true)',
-      t || '_update_all', t
-    );
-    execute format(
-      'create policy %I on public.%I for delete to authenticated using (public.is_manager_role())',
-      t || '_delete_manager_only', t
-    );
-
-    execute format('revoke all on public.%I from anon', t);
-    execute format('grant select, insert, update, delete on public.%I to authenticated', t);
-  end loop;
-end $$;
+grant execute on function public.health_check() to anon, authenticated;
 
 
 -- ---------------------------------------------------------------------
@@ -208,6 +171,26 @@ end $$;
 -- Эти пять политик не вызывали is_manager_role(), а сравнивали
 -- auth.jwt() -> 'user_metadata' напрямую, поэтому пункт 1 их не чинит.
 -- ---------------------------------------------------------------------
+
+-- Новости: читают все вошедшие, пишет только руководитель.
+-- Снимаем открытые политики, которые ставил restrict_delete_to_manager_only.sql,
+-- иначе они объединились бы с manager-политиками через OR.
+alter table public.news_posts enable row level security;
+
+drop policy if exists news_posts_select_all on public.news_posts;
+drop policy if exists news_posts_insert_all on public.news_posts;
+drop policy if exists news_posts_update_all on public.news_posts;
+drop policy if exists news_posts_delete_manager_only on public.news_posts;
+drop policy if exists "Allow all for news_posts" on public.news_posts;
+
+create policy news_posts_select_all
+  on public.news_posts
+  for select
+  to authenticated
+  using (true);
+
+revoke all on public.news_posts from anon;
+grant select, insert, update, delete on public.news_posts to authenticated;
 
 drop policy if exists news_posts_insert_manager on public.news_posts;
 create policy news_posts_insert_manager
@@ -239,13 +222,61 @@ create policy news_files_write_manager
   using (bucket_id = 'news-files' and public.is_manager_role())
   with check (bucket_id = 'news-files' and public.is_manager_role());
 
-drop policy if exists field_municipalities_refs_delete_manager_only
-  on public.field_municipalities_refs;
-create policy field_municipalities_refs_delete_manager_only
-  on public.field_municipalities_refs
-  for delete
-  to authenticated
-  using (public.is_manager_role());
+
+-- ---------------------------------------------------------------------
+-- 6. Сузить до authenticated все оставшиеся политики без предложения TO
+--
+-- Политика без TO создаётся как TO PUBLIC, то есть распространяется и на
+-- anon. Перечислять такие таблицы руками ненадёжно — их создавали десятки
+-- миграций. Поэтому находим их запросом к каталогу и пересоздаём с тем же
+-- именем и той же логикой, добавив только to authenticated.
+--
+-- Идёт последним: политики, созданные выше, уже имеют явное TO и под
+-- выборку не попадут.
+-- ---------------------------------------------------------------------
+
+do $$
+declare
+  r record;
+  cmd text;
+  sql text;
+begin
+  for r in
+    select
+      c.relname as tbl,
+      p.polname as pol,
+      p.polcmd as pcmd,
+      pg_get_expr(p.polqual, p.polrelid) as qual,
+      pg_get_expr(p.polwithcheck, p.polrelid) as wcheck
+    from pg_policy p
+    join pg_class c on c.oid = p.polrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and p.polpermissive          -- ограничивающие политики трогать незачем
+      and 0 = any (p.polroles)     -- 0 = PUBLIC, то есть включая anon
+  loop
+    cmd := case r.pcmd
+             when 'r' then 'select'
+             when 'a' then 'insert'
+             when 'w' then 'update'
+             when 'd' then 'delete'
+             else 'all'
+           end;
+
+    execute format('drop policy %I on public.%I', r.pol, r.tbl);
+
+    sql := format('create policy %I on public.%I for %s to authenticated', r.pol, r.tbl, cmd);
+    if r.qual is not null then
+      sql := sql || format(' using (%s)', r.qual);
+    end if;
+    if r.wcheck is not null then
+      sql := sql || format(' with check (%s)', r.wcheck);
+    end if;
+
+    execute sql;
+    raise notice 'политика % на %: сужена до authenticated', r.pol, r.tbl;
+  end loop;
+end $$;
 
 
 -- ---------------------------------------------------------------------
