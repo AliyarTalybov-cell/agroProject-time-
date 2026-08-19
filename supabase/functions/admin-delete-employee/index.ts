@@ -35,15 +35,23 @@ Deno.serve(async (req) => {
   })
   const { data: userData, error: userErr } = await userClient.auth.getUser(token)
   if (userErr || !userData?.user) return json({ error: 'Unauthorized' }, { status: 401 })
-  const callerRole = (userData.user.user_metadata as { role?: string } | null)?.role
-  if (callerRole !== 'manager') return json({ error: 'Forbidden' }, { status: 403 })
-
-  const id = String(body.id ?? '').trim()
-  if (!id) return json({ error: 'id is required' }, { status: 400 })
 
   const admin = createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
+
+  // Роль читаем из profiles: user_metadata пользователь редактирует сам.
+  const { data: callerProfile } = await admin
+    .from('profiles')
+    .select('role, active')
+    .eq('id', userData.user.id)
+    .maybeSingle()
+  if (callerProfile?.role !== 'manager' || callerProfile?.active === false) {
+    return json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const id = String(body.id ?? '').trim()
+  if (!id) return json({ error: 'id is required' }, { status: 400 })
 
   const { error: delErr } = await admin.auth.admin.deleteUser(id)
   if (delErr) return json({ error: delErr.message }, { status: 400 })

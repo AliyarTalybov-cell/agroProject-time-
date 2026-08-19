@@ -51,8 +51,20 @@ Deno.serve(async (req) => {
   })
   const { data: userData, error: userErr } = await userClient.auth.getUser(token)
   if (userErr || !userData?.user) return json({ error: 'Unauthorized' }, { status: 401 })
-  const callerRole = (userData.user.user_metadata as { role?: string } | null)?.role
-  if (callerRole !== 'manager') return json({ error: 'Forbidden' }, { status: 403 })
+
+  const supabaseAdmin = createClient(url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+
+  // Роль читаем из profiles: user_metadata пользователь редактирует сам.
+  const { data: callerProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('role, active')
+    .eq('id', userData.user.id)
+    .maybeSingle()
+  if (callerProfile?.role !== 'manager' || callerProfile?.active === false) {
+    return json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const fullName = String(body.fullName ?? '').trim()
   const email = String(body.email ?? '').trim().toLowerCase()
@@ -65,10 +77,6 @@ Deno.serve(async (req) => {
   if (fullName.length < 2) return json({ error: 'fullName is required' }, { status: 400 })
   if (!email || !email.includes('@')) return json({ error: 'email is required' }, { status: 400 })
   if (!password || password.length < 6) return json({ error: 'password must be at least 6 chars' }, { status: 400 })
-
-  const supabaseAdmin = createClient(url, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
 
   // Create Auth user (confirmed to allow immediate login)
   const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({

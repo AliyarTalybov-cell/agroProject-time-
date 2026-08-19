@@ -58,8 +58,13 @@ Deno.serve(async (req) => {
     console.error('[admin-update-employee] 401 invalid token', callerErr)
     return json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const callerRole = (callerData.user.user_metadata as { role?: string } | null)?.role
-  if (callerRole !== 'manager') {
+  // Роль читаем из profiles: user_metadata пользователь редактирует сам.
+  const { data: callerProfile } = await admin
+    .from('profiles')
+    .select('role, active')
+    .eq('id', callerData.user.id)
+    .maybeSingle()
+  if (callerProfile?.role !== 'manager' || callerProfile?.active === false) {
     return json({ error: 'Forbidden' }, { status: 403 })
   }
 
