@@ -35,6 +35,9 @@ jobs:
       - name: Проверить типы
         run: npx vue-tsc -b
 
+      - name: Прогнать юнит-тесты
+        run: npm run test:unit
+
       # Сборка идёт без VITE_SUPABASE_*: клиент читает их в рантайме и
       # переживает отсутствие (см. isSupabaseConfigured в src/lib/supabase.ts).
       - name: Собрать прод-бандл

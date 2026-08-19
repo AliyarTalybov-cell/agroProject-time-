@@ -9,8 +9,15 @@ cd frontend && npm install   # зависимости
 npm run dev                  # дев-сервер, порт 5173
 npx vue-tsc -b               # проверка типов
 npm run build                # прод-сборка
-npx playwright test          # тесты
+npm run test:unit            # юнит-тесты (Vitest, окружение jsdom)
+npm run test:e2e             # e2e (Playwright, поднимает дев-сервер сам)
 ```
+
+Юнит-тесты лежат рядом с кодом: `src/**/*.test.ts`, конфиг — `vitest.config.ts`.
+Каталог `tests/` отдан Playwright, Vitest его не подхватывает. E2E ходят в
+живую базу реальной учётной записью, поэтому в CI они на ручном запуске
+(`.github/workflows/playwright.yml`), а на каждый PR идут типы, юнит-тесты и
+сборка (`.github/workflows/ci.yml`).
 
 Конфигурация дев-сервера для агентов — `.claude/launch.json` (имя `frontend-dev`).
 Переменные окружения — `frontend/.env.local`, образец в `frontend/.env.example`.
