@@ -28,26 +28,73 @@ function isUserActive(u: User | null): boolean {
 const profileRole = ref<'worker' | 'manager'>('worker')
 
 /**
- * Перечитывает роль из БД. При недоступной базе роль опускается до `worker`:
- * для проверки прав это безопасное направление отказа, а реальные ограничения
- * всё равно на стороне БД.
+ * Читает роль из БД. Возвращает `null`, если прочитать не удалось: ошибка
+ * запроса, таймаут или отсутствие клиента. Это намеренно отличается от
+ * честно прочитанного `worker` — см. `refreshProfileRole`.
+ */
+async function readProfileRole(): Promise<'worker' | 'manager' | null> {
+  const current = user.value
+  if (!current || !supabase) return null
+  try {
+    const query = supabase.from('profiles').select('role').eq('id', current.id).maybeSingle()
+    const timeout = new Promise<{ data: null; error: unknown }>((resolve) => {
+      setTimeout(() => resolve({ data: null, error: new Error('timeout') }), AUTH_INIT_TIMEOUT_MS)
+    })
+    // `error` разбирается наравне с `data`: раньше его отбрасывали, и любой
+    // временный сбой выглядел как «роль прочитана, там worker».
+    const { data, error } = await Promise.race([query, timeout])
+    if (error) return null
+    return (data as { role?: string } | null)?.role === 'manager' ? 'manager' : 'worker'
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Перечитывает роль из БД.
+ *
+ * Неудачное чтение роль не меняет. Прежняя версия в этом случае ставила
+ * `worker`, и руководитель, у которого протух токен или моргнула сеть,
+ * молча превращался в работника до перезагрузки страницы. Понижать роль
+ * ради безопасности здесь незачем: реальные ограничения стоят на стороне
+ * БД (RLS и гранты из 20260819_fix_access_control.sql), а `profileRole`
+ * управляет только тем, что показать в интерфейсе.
  */
 async function refreshProfileRole(): Promise<void> {
-  const current = user.value
-  if (!current || !supabase) {
+  if (!user.value || !supabase) {
     profileRole.value = 'worker'
     return
   }
-  try {
-    const query = supabase.from('profiles').select('role').eq('id', current.id).maybeSingle()
-    const timeout = new Promise<{ data: null }>((resolve) => {
-      setTimeout(() => resolve({ data: null }), AUTH_INIT_TIMEOUT_MS)
-    })
-    const { data } = await Promise.race([query, timeout])
-    profileRole.value = (data as { role?: string } | null)?.role === 'manager' ? 'manager' : 'worker'
-  } catch {
-    profileRole.value = 'worker'
-  }
+  const role = await readProfileRole()
+  if (role === null) return
+  profileRole.value = role
+}
+
+/**
+ * Откладывает перечитывание роли за пределы текущего колбэка.
+ *
+ * Запрос к базе изнутри `onAuthStateChange` виснет — это описанная в
+ * документации Supabase взаимная блокировка supabase-js: вызов не
+ * возвращается, а следующий запрос тем же клиентом встаёт за ним.
+ * `setTimeout` уводит запрос из колбэка, и блокировки не возникает.
+ */
+function scheduleProfileRoleRefresh(): void {
+  setTimeout(() => {
+    void refreshProfileRole()
+  }, 0)
+}
+
+/** Тот же приём для выхода: колбэк должен оставаться синхронным. */
+function scheduleSignOut(): void {
+  setTimeout(async () => {
+    if (!supabase) return
+    userInitiatedSignOut = true
+    try {
+      await supabase.auth.signOut()
+    } finally {
+      userInitiatedSignOut = false
+    }
+  }, 0)
 }
 
 /** Признак, что текущий logout инициирован самим пользователем (а не сбоем сети/БД). */
@@ -128,7 +175,9 @@ export function useAuth() {
 
   function startAuthListener() {
     if (!supabase) return
-    supabase!.auth.onAuthStateChange(async (event, session) => {
+    // Колбэк намеренно синхронный и без запросов к базе: всё, что ходит
+    // в сеть, откладывается наружу (см. scheduleProfileRoleRefresh).
+    supabase!.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         // Если это НЕ наш logout и локальная сессия ещё на месте — это транзиентный сбой
         // (недоступная БД / неудачный refresh из-за сети). Не выкидываем пользователя.
@@ -144,16 +193,17 @@ export function useAuth() {
       if (!nextUser && user.value) return
       if (nextUser?.id !== user.value?.id) {
         profileCache.value = null
+        // Роль прежнего пользователя не должна достаться следующему.
+        profileRole.value = 'worker'
       }
       if (nextUser && !isUserActive(nextUser)) {
-        userInitiatedSignOut = true
-        try { await supabase!.auth.signOut() } finally { userInitiatedSignOut = false }
         user.value = null
         profileRole.value = 'worker'
+        scheduleSignOut()
         return
       }
       user.value = nextUser
-      await refreshProfileRole()
+      scheduleProfileRoleRefresh()
     })
   }
 
