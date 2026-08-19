@@ -3,7 +3,7 @@ import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import type { ProfileRow } from '@/lib/tasksSupabase'
-import { isSupabaseConfigured, ensureProfileRow, loadProfileById, upsertMyProfile, uploadMyAvatar, removeMyAvatar } from '@/lib/tasksSupabase'
+import { isSupabaseConfigured, loadProfileById, upsertMyProfile, uploadMyAvatar, removeMyAvatar } from '@/lib/tasksSupabase'
 import { deleteMyAccount } from '@/lib/accountSupabase'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { PHOTO_MAX_BYTES, PHOTO_MAX_LABEL } from '@/lib/uploadLimits'
@@ -149,13 +149,9 @@ async function loadProfile() {
   }
   if (isSupabaseConfigured()) {
     try {
-      let p = await loadProfileById(user.id)
-      if (!p) {
-        const fullName = (user.user_metadata?.full_name as string) || ''
-        const role = (user.user_metadata?.role as string) || null
-        await ensureProfileRow(user.id, user.email ?? '', fullName.trim() || null, role)
-        p = await loadProfileById(user.id)
-      }
+      // Строку профиля создаёт триггер sync_profile_from_auth_user при регистрации,
+      // клиенту создавать её не нужно и нельзя (INSERT закрыт грантами).
+      const p = await loadProfileById(user.id)
       if (p) {
         const cacheWithData = cache && cache.id === user.id && profileHasData(cache)
         const dbHasData = profileHasData(p)
@@ -280,9 +276,7 @@ async function confirmSaveProfile() {
     if (isSupabaseConfigured()) {
       await upsertMyProfile(
         auth.user.value.id,
-        profileForm.value.email,
         fullName || null,
-        auth.user.value.user_metadata?.role ?? null,
         {
           phone: profileForm.value.phone || null,
           position: profileForm.value.position || null,

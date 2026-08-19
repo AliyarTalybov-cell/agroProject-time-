@@ -187,87 +187,34 @@ export async function loadProfileById(userId: string): Promise<ProfileRow | null
   throw error
 }
 
-/** Создаёт или обновляет только базовые поля профиля (если в БД ещё нет колонок phone/position). */
-export async function ensureProfileRow(
-  userId: string,
-  email: string,
-  displayName: string | null,
-  role: string | null,
-): Promise<void> {
-  if (!supabase) return
-  const name = displayName?.trim() || null
-  const { error } = await supabase.from('profiles').upsert(
-    {
-      id: userId,
-      email,
-      display_name: name,
-      role,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'id' },
-  )
-  if (error) throw error
-}
-
+/**
+ * Сохраняет редактируемые поля своего профиля.
+ *
+ * `role`, `active` и `email` сюда не входят намеренно: роль назначает только
+ * руководитель через Edge Function admin-update-employee, строку профиля
+ * создаёт триггер sync_profile_from_auth_user, а почта берётся из auth.users.
+ * На стороне БД эти колонки закрыты грантами (20260819_fix_access_control.sql),
+ * поэтому попытка их записать вернёт ошибку прав.
+ */
 export async function upsertMyProfile(
   userId: string,
-  email: string,
   displayName: string | null,
-  role: string | null,
   opts?: { phone?: string | null; position?: string | null; additionalInfo?: string | null },
 ): Promise<void> {
   if (!supabase) throw new Error('Supabase не настроен')
   const name = displayName?.trim() || null
-  const updatedAt = new Date().toISOString()
-  try {
-    if (opts) {
-      const phone = opts.phone != null ? String(opts.phone).trim() || null : null
-      const position = opts.position != null ? String(opts.position).trim() || null : null
-      const additionalInfo = opts.additionalInfo != null ? String(opts.additionalInfo).trim() || null : null
-      const { error } = await supabase.from('profiles').upsert(
-        {
-          id: userId,
-          email,
-          display_name: name,
-          role,
-          phone,
-          position,
-          additional_info: additionalInfo,
-          updated_at: updatedAt,
-        },
-        { onConflict: 'id' },
-      )
-      if (error) throw error
-      return
-    }
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('phone, position, additional_info')
-      .eq('id', userId)
-      .maybeSingle()
-    const { error } = await supabase.from('profiles').upsert(
-      {
-        id: userId,
-        email,
-        display_name: name,
-        role,
-        phone: (existing as { phone?: string | null } | null)?.phone ?? null,
-        position: (existing as { position?: string | null } | null)?.position ?? null,
-        additional_info: (existing as { additional_info?: string | null } | null)?.additional_info ?? null,
-        updated_at: updatedAt,
-      },
-      { onConflict: 'id' },
-    )
-    if (error) throw error
-  } catch (e: unknown) {
-    const err = e as { code?: string; message?: string }
-    const isColumnError = err?.code === '42703' || /column .* does not exist/i.test(err?.message ?? '')
-    if (isColumnError) {
-      await ensureProfileRow(userId, email, name, role)
-      return
-    }
-    throw e
+  const patch: Record<string, string | null> = {
+    display_name: name,
+    updated_at: new Date().toISOString(),
   }
+  if (opts) {
+    patch.phone = opts.phone != null ? String(opts.phone).trim() || null : null
+    patch.position = opts.position != null ? String(opts.position).trim() || null : null
+    patch.additional_info =
+      opts.additionalInfo != null ? String(opts.additionalInfo).trim() || null : null
+  }
+  const { error } = await supabase.from('profiles').update(patch).eq('id', userId)
+  if (error) throw error
 }
 
 const AVATARS_BUCKET = 'avatars'
