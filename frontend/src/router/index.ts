@@ -1,32 +1,37 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import DashboardPage from '@/pages/DashboardPage.vue'
-import FieldDetailsPage from '@/pages/FieldDetailsPage.vue'
-import FieldsPage from '@/pages/FieldsPage.vue'
-import LandsPage from '@/pages/LandsPage.vue'
-import LoginPage from '@/pages/LoginPage.vue'
-import ReportsPage from '@/pages/ReportsPage.vue'
-import TasksPage from '@/pages/TasksPage.vue'
-import TaskManagementPage from '@/pages/TaskManagementPage.vue'
-import MechanicPage from '@/pages/MechanicPage.vue'
-import WeatherPage from '@/pages/WeatherPage.vue'
-import EquipmentPage from '@/pages/EquipmentPage.vue'
-import EquipmentDetailsPage from '@/pages/EquipmentDetailsPage.vue'
-import WarehousesPage from '@/pages/WarehousesPage.vue'
-import WarehouseCellPage from '@/pages/WarehouseCellPage.vue'
-import StorageLocationsPage from '@/pages/StorageLocationsPage.vue'
-import WarehouseBatchRegistryPage from '@/pages/WarehouseBatchRegistryPage.vue'
-import GrainAccountingPage from '@/pages/GrainAccountingPage.vue'
-import ProfilePage from '@/pages/ProfilePage.vue'
-import EmployeesPage from '@/pages/EmployeesPage.vue'
-import ChatPage from '@/pages/ChatPage.vue'
-import PortalRulesPage from '@/pages/PortalRulesPage.vue'
-import NotificationsPage from '@/pages/NotificationsPage.vue'
-import NewsPage from '@/pages/NewsPage.vue'
-import NewsDetailsPage from '@/pages/NewsDetailsPage.vue'
-import NewsEditorPage from '@/pages/NewsEditorPage.vue'
 import { AUTH_INIT_TIMEOUT_MS, getAuthUser, getUserRole, isAuthLoading } from '@/stores/auth'
 import { isSupabaseConfigured } from '@/lib/supabase'
+
+// Страницы подключаются динамическим import(): Vite выносит каждую в
+// отдельный чанк, и при входе на портал не грузятся все 25 разделов сразу.
+// Роутер дожидается загрузки чанка до смены маршрута, поэтому RouterView
+// в App.vue получает уже готовый компонент — Suspense не нужен.
+const DashboardPage = () => import('@/pages/DashboardPage.vue')
+const FieldDetailsPage = () => import('@/pages/FieldDetailsPage.vue')
+const FieldsPage = () => import('@/pages/FieldsPage.vue')
+const LandsPage = () => import('@/pages/LandsPage.vue')
+const LoginPage = () => import('@/pages/LoginPage.vue')
+const ReportsPage = () => import('@/pages/ReportsPage.vue')
+const TasksPage = () => import('@/pages/TasksPage.vue')
+const TaskManagementPage = () => import('@/pages/TaskManagementPage.vue')
+const MechanicPage = () => import('@/pages/MechanicPage.vue')
+const WeatherPage = () => import('@/pages/WeatherPage.vue')
+const EquipmentPage = () => import('@/pages/EquipmentPage.vue')
+const EquipmentDetailsPage = () => import('@/pages/EquipmentDetailsPage.vue')
+const WarehousesPage = () => import('@/pages/WarehousesPage.vue')
+const WarehouseCellPage = () => import('@/pages/WarehouseCellPage.vue')
+const StorageLocationsPage = () => import('@/pages/StorageLocationsPage.vue')
+const WarehouseBatchRegistryPage = () => import('@/pages/WarehouseBatchRegistryPage.vue')
+const GrainAccountingPage = () => import('@/pages/GrainAccountingPage.vue')
+const ProfilePage = () => import('@/pages/ProfilePage.vue')
+const EmployeesPage = () => import('@/pages/EmployeesPage.vue')
+const ChatPage = () => import('@/pages/ChatPage.vue')
+const PortalRulesPage = () => import('@/pages/PortalRulesPage.vue')
+const NotificationsPage = () => import('@/pages/NotificationsPage.vue')
+const NewsPage = () => import('@/pages/NewsPage.vue')
+const NewsDetailsPage = () => import('@/pages/NewsDetailsPage.vue')
+const NewsEditorPage = () => import('@/pages/NewsEditorPage.vue')
 
 export const routes = [
   { path: '/', redirect: '/news' },
@@ -89,3 +94,21 @@ router.beforeEach(async (to) => {
   return true
 })
 
+// После деплоя старые чанки исчезают с сервера, и открытая вкладка получает
+// на переходе ошибку загрузки модуля вместо страницы. Перезагружаем вкладку
+// один раз на нужный адрес: повторной петли не будет, потому что после
+// reload грузится уже свежий index.html со ссылками на новые чанки.
+const CHUNK_RELOAD_KEY = 'agro:chunk-reload'
+
+router.onError((error, to) => {
+  const message = error instanceof Error ? error.message : String(error)
+  const isChunkLoadError = /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(message)
+  if (!isChunkLoadError) return
+  if (sessionStorage.getItem(CHUNK_RELOAD_KEY) === to.fullPath) return
+  sessionStorage.setItem(CHUNK_RELOAD_KEY, to.fullPath)
+  window.location.assign(to.fullPath)
+})
+
+router.afterEach(() => {
+  sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+})

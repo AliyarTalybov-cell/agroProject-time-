@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { jsPDF } from 'jspdf'
-import html2canvas from 'html2canvas'
+import { loadPdfTools } from '@/lib/pdfExport'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import {
@@ -281,6 +280,7 @@ async function exportToPdf(payload: ExportPayload, filename: string) {
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
+    const { html2canvas, jsPDF } = await loadPdfTools()
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
     const imgData = canvas.toDataURL('image/png')
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
