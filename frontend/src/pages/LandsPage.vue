@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import html2canvas from 'html2canvas'
-import { jsPDF } from 'jspdf'
+import { loadPdfTools } from '@/lib/pdfExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
@@ -605,6 +604,7 @@ async function downloadPdfTable(title: string, headers: string[], rows: string[]
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
+    const { html2canvas, jsPDF } = await loadPdfTools()
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
     const imgData = canvas.toDataURL('image/png')
     const pdf = new jsPDF('l', 'mm', 'a4')
@@ -900,6 +900,7 @@ async function exportLandsToPdf() {
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
+    const { html2canvas, jsPDF } = await loadPdfTools()
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
     const imgData = canvas.toDataURL('image/png')
     const pdf = new jsPDF('l', 'mm', 'a4')
@@ -3458,6 +3459,7 @@ async function exportMeliorationTabToPdf() {
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
+    const { html2canvas, jsPDF } = await loadPdfTools()
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
     const imgData = canvas.toDataURL('image/png')
     const pdf = new jsPDF('l', 'mm', 'a4')

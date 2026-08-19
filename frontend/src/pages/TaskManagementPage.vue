@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { jsPDF } from 'jspdf'
-import html2canvas from 'html2canvas'
+import { loadPdfTools } from '@/lib/pdfExport'
 import { useAuth } from '@/stores/auth'
 import CalendarPopover from '@/components/CalendarPopover.vue'
 import {
@@ -1065,6 +1064,7 @@ async function exportToPdf() {
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
+    const { html2canvas, jsPDF } = await loadPdfTools()
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
     document.body.removeChild(el)
     const imgData = canvas.toDataURL('image/png')
