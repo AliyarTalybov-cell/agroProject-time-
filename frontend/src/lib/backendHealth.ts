@@ -29,7 +29,10 @@ export async function pingBackend(timeoutMs = BACKEND_PING_TIMEOUT_MS): Promise<
     }
   }
 
-  const query = supabase.from('downtimes').select('id').limit(1)
+  // Проверка выполняется и на странице входа, то есть от имени anon,
+  // которому таблицы в public закрыты. Функция health_check() отвечает
+  // на пинг, не давая доступа к данным.
+  const query = supabase.rpc('health_check')
   const timeout = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error('Превышено время ожидания ответа сервера')), timeoutMs)
   })
