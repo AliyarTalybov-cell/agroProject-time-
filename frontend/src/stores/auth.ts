@@ -17,6 +17,39 @@ function isUserActive(u: User | null): boolean {
   return u.user_metadata?.active !== false
 }
 
+/**
+ * Роль текущего пользователя из таблицы `profiles` — единственный источник истины.
+ *
+ * Раньше роль брали из `user_metadata`, но это поле владелец аккаунта редактирует
+ * сам вызовом `auth.updateUser`, поэтому доверять ему нельзя. На сервере проверки
+ * переведены на `profiles.role` миграцией 20260819_fix_access_control.sql, здесь —
+ * то же самое, чтобы интерфейс и база считали одинаково.
+ */
+const profileRole = ref<'worker' | 'manager'>('worker')
+
+/**
+ * Перечитывает роль из БД. При недоступной базе роль опускается до `worker`:
+ * для проверки прав это безопасное направление отказа, а реальные ограничения
+ * всё равно на стороне БД.
+ */
+async function refreshProfileRole(): Promise<void> {
+  const current = user.value
+  if (!current || !supabase) {
+    profileRole.value = 'worker'
+    return
+  }
+  try {
+    const query = supabase.from('profiles').select('role').eq('id', current.id).maybeSingle()
+    const timeout = new Promise<{ data: null }>((resolve) => {
+      setTimeout(() => resolve({ data: null }), AUTH_INIT_TIMEOUT_MS)
+    })
+    const { data } = await Promise.race([query, timeout])
+    profileRole.value = (data as { role?: string } | null)?.role === 'manager' ? 'manager' : 'worker'
+  } catch {
+    profileRole.value = 'worker'
+  }
+}
+
 /** Признак, что текущий logout инициирован самим пользователем (а не сбоем сети/БД). */
 let userInitiatedSignOut = false
 
@@ -86,6 +119,9 @@ export function useAuth() {
     } catch {
       /* сеть/БД недоступны — оставляем сохранённого пользователя, если он есть */
     } finally {
+      // Роль должна быть известна до того, как роутер снимет ожидание:
+      // на ней построен гейт managerOnly.
+      await refreshProfileRole()
       loading.value = false
     }
   }
@@ -99,6 +135,7 @@ export function useAuth() {
         if (!userInitiatedSignOut && readPersistedUser()) return
         user.value = null
         profileCache.value = null
+        profileRole.value = 'worker'
         return
       }
       const nextUser = session?.user ?? null
@@ -112,9 +149,11 @@ export function useAuth() {
         userInitiatedSignOut = true
         try { await supabase!.auth.signOut() } finally { userInitiatedSignOut = false }
         user.value = null
+        profileRole.value = 'worker'
         return
       }
       user.value = nextUser
+      await refreshProfileRole()
     })
   }
 
@@ -128,6 +167,7 @@ export function useAuth() {
       throw new Error('Аккаунт отключён. Обратитесь к администратору.')
     }
     user.value = data.user
+    await refreshProfileRole()
     return data
   }
 
@@ -153,6 +193,7 @@ export function useAuth() {
     }
     user.value = null
     profileCache.value = null
+    profileRole.value = 'worker'
     try {
       localStorage.removeItem('agro:profile')
     } catch {
@@ -171,10 +212,7 @@ export function useAuth() {
     if (updateError) throw updateError
   }
 
-  const userRole = computed<'worker' | 'manager'>(() => {
-    const role = user.value?.user_metadata?.role
-    return role === 'manager' ? 'manager' : 'worker'
-  })
+  const userRole = computed<'worker' | 'manager'>(() => profileRole.value)
 
   return {
     user,
@@ -194,6 +232,16 @@ export function useAuth() {
 
 export function getAuthUser(): User | null {
   return user.value
+}
+
+/** Роль текущего пользователя для кода вне компонентов (роутер, проверки прав). */
+export function getUserRole(): 'worker' | 'manager' {
+  return profileRole.value
+}
+
+/** Принудительно перечитать роль — например, после смены роли руководителем. */
+export async function reloadUserRole(): Promise<void> {
+  await refreshProfileRole()
 }
 
 export function isAuthLoading(): boolean {

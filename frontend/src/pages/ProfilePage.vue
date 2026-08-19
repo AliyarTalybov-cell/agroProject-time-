@@ -103,7 +103,7 @@ function applyFormFromLocalStorage(userId: string) {
     if (data.position != null) profileForm.value.position = String(data.position)
     if (data.additionalInfo != null) profileForm.value.additionalInfo = String(data.additionalInfo)
     const fullName = [profileForm.value.firstName, profileForm.value.lastName, profileForm.value.patronymic].filter(Boolean).join(' ')
-    myProfile.value = { display_name: fullName || null, role: auth.user.value?.user_metadata?.role ?? null }
+    myProfile.value = { display_name: fullName || null, role: auth.userRole.value }
     return true
   } catch {
     return false
@@ -166,7 +166,7 @@ async function loadProfile() {
             id: user.id,
             email: profileForm.value.email,
             display_name: [profileForm.value.firstName, profileForm.value.lastName, profileForm.value.patronymic].filter(Boolean).join(' ') || null,
-            role: user.user_metadata?.role ?? null,
+            role: auth.userRole.value,
             phone: profileForm.value.phone || null,
             position: profileForm.value.position || null,
             additional_info: profileForm.value.additionalInfo || null,
@@ -188,7 +188,7 @@ async function loadProfile() {
         id: user.id,
         email: profileForm.value.email,
         display_name: [profileForm.value.firstName, profileForm.value.lastName, profileForm.value.patronymic].filter(Boolean).join(' ') || null,
-        role: user.user_metadata?.role ?? null,
+        role: auth.userRole.value,
         phone: profileForm.value.phone || null,
         position: profileForm.value.position || null,
         additional_info: profileForm.value.additionalInfo || null,
@@ -288,7 +288,7 @@ async function confirmSaveProfile() {
         id: auth.user.value.id,
         email: profileForm.value.email,
         display_name: fullName || null,
-        role: auth.user.value.user_metadata?.role ?? null,
+        role: auth.userRole.value,
         phone: profileForm.value.phone?.trim() || null,
         position: profileForm.value.position?.trim() || null,
         additional_info: profileForm.value.additionalInfo?.trim() || null,

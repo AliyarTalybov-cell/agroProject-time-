@@ -1,17 +1,12 @@
-import { getAuthUser } from '@/stores/auth'
+import { getAuthUser, getUserRole } from '@/stores/auth'
 
 const DELETE_FORBIDDEN_MESSAGE = 'У вас недостаточно прав для удаления.'
 
-function isManagerRole(role: unknown): boolean {
-  return String(role ?? '').toLowerCase() === 'manager'
-}
-
 export function canCurrentUserDelete(): boolean {
-  const user = getAuthUser()
-  if (!user) return false
-  const meta = user.user_metadata ?? {}
-  const appMeta = user.app_metadata ?? {}
-  return isManagerRole(meta.role) || isManagerRole(appMeta.role)
+  // Роль читается из profiles (см. stores/auth.ts): user_metadata и app_metadata
+  // здесь не годятся — первое пользователь редактирует сам.
+  if (!getAuthUser()) return false
+  return getUserRole() === 'manager'
 }
 
 /** Удаление сущностей реестра (поля, техника и т.д.) — только руководитель. */
