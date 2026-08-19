@@ -25,7 +25,7 @@ import NotificationsPage from '@/pages/NotificationsPage.vue'
 import NewsPage from '@/pages/NewsPage.vue'
 import NewsDetailsPage from '@/pages/NewsDetailsPage.vue'
 import NewsEditorPage from '@/pages/NewsEditorPage.vue'
-import { AUTH_INIT_TIMEOUT_MS, getAuthUser, isAuthLoading } from '@/stores/auth'
+import { AUTH_INIT_TIMEOUT_MS, getAuthUser, getUserRole, isAuthLoading } from '@/stores/auth'
 import { isSupabaseConfigured } from '@/lib/supabase'
 
 export const routes = [
@@ -82,8 +82,9 @@ router.beforeEach(async (to) => {
   if (to.meta.public && user && !to.meta.allowWhenAuth) return { name: 'dashboard' }
   if (!to.meta.public && !user) return { name: 'login', query: { redirect: to.fullPath } }
   if (to.meta.managerOnly) {
-    const role = (user?.user_metadata as { role?: string } | undefined)?.role
-    if (role !== 'manager') return { name: 'dashboard' }
+    // Роль берётся из profiles (см. stores/auth.ts), а не из user_metadata:
+    // то поле пользователь редактирует сам.
+    if (getUserRole() !== 'manager') return { name: 'dashboard' }
   }
   return true
 })
