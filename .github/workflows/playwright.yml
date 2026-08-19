@@ -1,0 +1,47 @@
+# E2E-тесты. Пока запускаются только вручную: оба существующих теста
+# логинятся реальной учётной записью в боевую базу, без секретов
+# VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY они падают на каждом PR.
+# Когда появятся тесты, не требующие живой базы, вернуть сюда блок
+# on.push / on.pull_request с branches: [main, master].
+name: Playwright Tests
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Установить браузеры Playwright
+        run: npx playwright install --with-deps
+
+      # Дев-сервер поднимает сам Playwright: webServer в playwright.config.ts.
+      - name: Прогнать тесты
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          # Путь от корня репозитория, а не от frontend.
+          path: frontend/playwright-report/
+          retention-days: 30

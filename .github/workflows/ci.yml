@@ -1,0 +1,41 @@
+# Проверки, которые не требуют живой базы и потому дают честный результат
+# на каждом PR: типы и прод-сборка. E2E вынесены в playwright.yml.
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+# Проект лежит в подкаталоге, все команды выполняются из него.
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  build:
+    name: Типы и сборка
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          # Пути в блоке with отсчитываются от корня репозитория:
+          # defaults.run на шаги uses не действует.
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Проверить типы
+        run: npx vue-tsc -b
+
+      # Сборка идёт без VITE_SUPABASE_*: клиент читает их в рантайме и
+      # переживает отсутствие (см. isSupabaseConfigured в src/lib/supabase.ts).
+      - name: Собрать прод-бандл
+        run: npm run build
