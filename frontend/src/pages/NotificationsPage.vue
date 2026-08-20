@@ -153,7 +153,10 @@ const groupedItems = computed(() => {
 async function refreshUnreadCount() {
   try {
     unreadCount.value = await countMyUnreadNotifications()
-  } catch {
+  } catch (e) {
+    // Счётчик вторичен: сам список уведомлений грузится отдельно и о своих
+    // сбоях сообщает сам.
+    console.error('Счётчик непрочитанных уведомлений', e)
     unreadCount.value = 0
   }
 }

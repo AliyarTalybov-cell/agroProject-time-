@@ -201,6 +201,8 @@ export function matchesChatListSearch(haystack: string, queryRaw: string): boole
     h = haystack.toLowerCase().normalize('NFKC').replace(/\s+/g, ' ')
     query = q.toLowerCase().normalize('NFKC').replace(/\s+/g, ' ').trim()
   } catch {
+    // normalize('NFKC') отсутствует в некоторых старых движках: ищем без
+    // нормализации. Для поиска по чату это чуть менее точно, но рабочe.
     h = haystack.toLowerCase().replace(/\s+/g, ' ')
     query = q.toLowerCase().replace(/\s+/g, ' ').trim()
   }

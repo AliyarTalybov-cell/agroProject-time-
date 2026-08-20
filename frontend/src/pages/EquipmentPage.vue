@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch, nextTick } from 'vue'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { loadPdfTools } from '@/lib/pdfExport'
 import {
   isSupabaseConfigured,
@@ -43,6 +44,8 @@ const PAGE_SIZE = 6
 const IMPLEMENTS_PAGE_SIZE_OPTIONS = [5, 10, 20, 50]
 
 type EquipmentPageTab = 'equipment' | 'implements'
+/** Сообщение о неудавшейся загрузке. Пустая строка — сообщения нет. */
+const loadError = ref('')
 const activeTab = ref<EquipmentPageTab>('equipment')
 const TABS: { id: EquipmentPageTab; label: string }[] = [
   { id: 'equipment', label: 'Техника' },
@@ -121,7 +124,8 @@ async function fetchEquipmentPage() {
       list.value = retry.rows
       equipmentTotal.value = retry.total
     }
-  } catch {
+  } catch (e) {
+    loadError.value = formatSupabaseError(e) || 'Не удалось загрузить список техники'
     list.value = []
     equipmentTotal.value = 0
   } finally {
@@ -149,7 +153,8 @@ async function fetchList() {
     equipmentTotal.value = pageRes.total
     profiles.value = profileRows
     implementOptions.value = implementRows
-  } catch {
+  } catch (e) {
+    loadError.value = formatSupabaseError(e) || 'Не удалось загрузить список техники'
     list.value = []
     equipmentTotal.value = 0
     profiles.value = []
@@ -181,7 +186,9 @@ async function fetchEquipmentRefs() {
     ])
     equipmentTypeRefs.value = types
     equipmentConditionRefs.value = conditions
-  } catch {
+  } catch (e) {
+    // Справочники нужны формам, а не самой таблице: страницу не закрываем.
+    console.error('Справочники техники', e)
     equipmentTypeRefs.value = []
     equipmentConditionRefs.value = []
   }
@@ -205,7 +212,8 @@ async function fetchImplementsPage() {
     implementsTotal.value = total
     const maxPage = Math.max(1, Math.ceil(total / implementsPageSize.value))
     if (implementsPage.value > maxPage) implementsPage.value = maxPage
-  } catch {
+  } catch (e) {
+    loadError.value = formatSupabaseError(e) || 'Не удалось загрузить список орудий'
     implementsList.value = []
     implementsTotal.value = 0
   } finally {
@@ -622,14 +630,18 @@ async function exportToPdf() {
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank', 'noopener,noreferrer')
     setTimeout(() => URL.revokeObjectURL(url), 60000)
-  } catch {
+  } catch (e) {
+    // Раньше по нажатию «Выгрузить в PDF» при сбое не происходило вообще
+    // ничего: ни файла, ни объяснения.
     document.body.removeChild(el)
+    loadError.value = formatSupabaseError(e) || 'Не удалось сформировать PDF'
   }
 }
 </script>
 
 <template>
   <section class="equipment-page page-enter-item">
+    <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
     <nav class="equipment-tabs" aria-label="Разделы">
       <button
         v-for="tab in TABS"
@@ -1152,6 +1164,17 @@ async function exportToPdf() {
 </template>
 
 <style scoped>
+/* Сообщение о неудавшейся загрузке или действии.
+   Оформление то же, что у ошибок в ChatPage и LandsPage. */
+.page-load-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--danger-red) 12%, transparent);
+  color: var(--danger-red);
+}
+
 .equipment-page {
   padding: 0;
   width: 100%;

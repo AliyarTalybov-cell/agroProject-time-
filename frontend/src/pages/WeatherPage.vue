@@ -67,6 +67,8 @@ async function copyPickedCoords() {
       document.execCommand('copy')
       document.body.removeChild(ta)
     } catch {
+      // Ни Clipboard API, ни execCommand не сработали — копирование в этом
+      // браузере недоступно. Отметку «скопировано» не показываем.
       return
     }
   }
@@ -461,7 +463,9 @@ async function loadFieldsData() {
     const [fieldRows, cropRows] = await Promise.all([loadFields(), loadCrops()])
     fields.value = fieldRows
     crops.value = cropRows
-  } catch {
+  } catch (e) {
+    // Поля и культуры нужны выпадающим спискам, а не самому прогнозу.
+    console.error('Справочники полей и культур', e)
     fields.value = []
     crops.value = []
   }

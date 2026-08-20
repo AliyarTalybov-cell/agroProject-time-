@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import {
   getEquipmentById,
@@ -341,7 +342,10 @@ async function refreshHistory() {
     const page = await loadOperationsByEquipmentFromSupabase(id, onlyMine, userId, historyPage.value, historyPageSize.value)
     history.value = page.rows
     historyTotal.value = page.total
-  } catch {
+  } catch (e) {
+    // История — то, ради чего открыли вкладку. Пустой список без объяснения
+    // читается как «операций не было», а это неправда.
+    error.value = formatSupabaseError(e) || 'Не удалось загрузить историю операций'
     history.value = []
     historyTotal.value = 0
   } finally {

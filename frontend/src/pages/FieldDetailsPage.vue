@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
   getFieldById,
   loadFieldPhotos,
@@ -417,7 +418,10 @@ async function refreshHistory() {
     const page = await loadOperationsByFieldFromSupabase(props.id, onlyMine, userId, historyPage.value, historyPageSize.value)
     history.value = page.rows
     historyTotal.value = page.total
-  } catch {
+  } catch (e) {
+    // См. EquipmentDetailsPage: пустая история без объяснения читается как
+    // «операций не было».
+    error.value = formatSupabaseError(e) || 'Не удалось загрузить историю операций'
     history.value = []
     historyTotal.value = 0
   } finally {

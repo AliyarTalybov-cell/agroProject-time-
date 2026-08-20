@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick, watch } from 'vue'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { loadPdfTools } from '@/lib/pdfExport'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -107,6 +108,8 @@ type PolygonGeoJson = {
 const router = useRouter()
 const route = useRoute()
 
+/** Сообщение о неудавшейся загрузке. Пустая строка — сообщения нет. */
+const loadError = ref('')
 const fields = ref<Field[]>([])
 const fieldsLoading = ref(false)
 const fieldsError = ref<string | null>(null)
@@ -632,8 +635,11 @@ async function exportFieldsToPdf() {
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank', 'noopener,noreferrer')
     setTimeout(() => URL.revokeObjectURL(url), 60000)
-  } catch {
+  } catch (e) {
+    // Раньше по нажатию «Выгрузить в PDF» при сбое не происходило вообще
+    // ничего: ни файла, ни объяснения.
     document.body.removeChild(el)
+    loadError.value = formatSupabaseError(e) || 'Не удалось сформировать PDF'
   }
 }
 
@@ -1630,6 +1636,7 @@ onMounted(async () => {
 
 <template>
   <section class="fields-page">
+    <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
     <div class="fields-page-inner">
       <header class="fields-header page-enter-item">
         <div class="fields-header-text">
@@ -2421,6 +2428,17 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Сообщение о неудавшейся загрузке или действии.
+   Оформление то же, что у ошибок в ChatPage и LandsPage. */
+.page-load-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--danger-red) 12%, transparent);
+  color: var(--danger-red);
+}
+
 /* ——— Макет по design-1adafb22 (Управление полями) ——— */
 .fields-page {
   padding: 0;

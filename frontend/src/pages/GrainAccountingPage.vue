@@ -352,7 +352,10 @@ async function loadWarehouses() {
     warehouses.value = locations
       .map((x) => ({ id: x.id, name: x.name }))
       .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
-  } catch {
+  } catch (e) {
+    // Список складов нужен фильтрам, а не самой таблице партий: страницу
+    // не закрываем, но сбой фиксируем.
+    console.error('Список складов', e)
     warehouses.value = []
   }
 }
