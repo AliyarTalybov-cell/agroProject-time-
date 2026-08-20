@@ -2357,8 +2357,10 @@ async function loadEquipmentRefsSafe() {
     ])
     equipmentTypeRefs.value = types
     equipmentConditionRefs.value = conditions
-  } catch {
-    // Не даем справочникам техники ломать загрузку раздела "Земли"
+  } catch (err) {
+    // Справочники техники не должны ломать раздел «Земли»: показываем пустые
+    // списки, но сбой больше не исчезает бесследно.
+    console.error('Справочники техники', err)
     equipmentTypeRefs.value = []
     equipmentConditionRefs.value = []
   }
@@ -2371,7 +2373,8 @@ async function loadFieldMunicipalityRefsSafe() {
   }
   try {
     fieldMunicipalityRefs.value = await loadFieldMunicipalitiesRefs()
-  } catch {
+  } catch (err) {
+    console.error('Справочник муниципалитетов', err)
     fieldMunicipalityRefs.value = []
   }
 }
@@ -2383,7 +2386,8 @@ async function loadCropRotationTypeRefsSafe() {
   }
   try {
     cropRotationTypeRefs.value = await loadLandCropRotationTypes()
-  } catch {
+  } catch (err) {
+    console.error('Справочник типов севооборота', err)
     cropRotationTypeRefs.value = []
   }
 }
@@ -2404,7 +2408,8 @@ async function loadStorageRefsSafe() {
     storageLocationTypeRefs.value = types
     storageLocationStatusRefs.value = statuses
     storageFillStatusRefs.value = fills
-  } catch {
+  } catch (err) {
+    console.error('Справочники мест хранения', err)
     storageLocationTypeRefs.value = []
     storageLocationStatusRefs.value = []
     storageFillStatusRefs.value = []

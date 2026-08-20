@@ -172,7 +172,10 @@ async function refreshHeaderUnreadCounters() {
   await refreshChatTotalUnread()
   try {
     notificationsUnread.value = await countMyUnreadNotifications()
-  } catch {
+  } catch (e) {
+    // Счётчик в шапке вторичен: место для сообщения тут негде, но сбой
+    // должен быть виден хотя бы в консоли.
+    console.error('Счётчик непрочитанных уведомлений', e)
     notificationsUnread.value = 0
   }
 }

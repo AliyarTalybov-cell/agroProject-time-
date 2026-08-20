@@ -106,6 +106,8 @@ function applyFormFromLocalStorage(userId: string) {
     myProfile.value = { display_name: fullName || null, role: auth.userRole.value }
     return true
   } catch {
+    // Черновик формы в localStorage испорчен — просто не подставляем его,
+    // форма заполнится данными из профиля.
     return false
   }
 }

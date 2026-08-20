@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { useAuth } from '@/stores/auth'
 import {
   loadCalendarTasks,
@@ -65,6 +66,8 @@ const auth = useAuth()
 const isManager = computed(() => auth.userRole.value === 'manager')
 
 /** Для руководителя: чей календарь показывать (uuid). Пустая строка → свой. */
+/** Сообщение о неудавшейся загрузке. Пустая строка — сообщения нет. */
+const loadError = ref('')
 const managerCalendarUserId = ref('')
 
 const effectiveCalendarUserId = computed(() => {
@@ -1296,7 +1299,9 @@ async function loadFilesForVisibleTasks() {
         try {
           const files = await loadTaskFiles(taskId)
           next[taskId] = files
-        } catch {
+        } catch (e) {
+          // Вложения одной задачи не должны ронять загрузку календаря целиком.
+          console.error('Файлы задачи', e)
           next[taskId] = []
         }
       }),
@@ -1325,7 +1330,8 @@ async function loadAssigneesForVisibleTasks() {
           acc[row.user_id] = row.status
           return acc
         }, {})
-      } catch {
+      } catch (e) {
+        console.error('Исполнители задачи', e)
         next[taskId] = []
         nextStatus[taskId] = {}
       }
@@ -1444,7 +1450,8 @@ async function loadTasksFromDb() {
   try {
     const rows = await loadCalendarTasks(uid)
     tasks.value = rows.map(rowToTask)
-  } catch {
+  } catch (e) {
+    loadError.value = formatSupabaseError(e) || 'Не удалось загрузить задачи календаря'
     tasks.value = []
   } finally {
     tasksLoading.value = false
@@ -1455,7 +1462,8 @@ async function loadProfilesOnce() {
   if (!isSupabaseConfigured()) return
   try {
     profiles.value = await loadProfiles()
-  } catch {
+  } catch (e) {
+    console.error('Список сотрудников', e)
     profiles.value = []
   }
 }
@@ -1598,7 +1606,8 @@ async function openEditTaskModal(task: CalendarTask) {
         }, {}),
       }
       taskFiles.value = await loadTaskFiles(task.id)
-    } catch {
+    } catch (e) {
+      console.error('Исполнители и файлы выбранной задачи', e)
       taskAssignees.value = []
       taskAssigneeStatusByTaskId.value = {
         ...taskAssigneeStatusByTaskId.value,
@@ -1896,6 +1905,7 @@ async function confirmDeleteTask() {
 
 <template>
   <section class="calendar-page">
+    <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
     <header class="calendar-header page-enter-item">
       <div class="calendar-header-text">
         <div class="type-label">Календарь</div>
@@ -2888,6 +2898,17 @@ async function confirmDeleteTask() {
 </template>
 
 <style scoped>
+/* Сообщение о неудавшейся загрузке или действии.
+   Оформление то же, что у ошибок в ChatPage и LandsPage. */
+.page-load-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--danger-red) 12%, transparent);
+  color: var(--danger-red);
+}
+
 /* Палитра по дизайну: agro #3d5c40 */
 .calendar-page {
   --agro: #3d5c40;

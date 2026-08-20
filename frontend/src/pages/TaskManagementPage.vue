@@ -294,7 +294,8 @@ async function loadData() {
       tasks.value = tasksWithAssignees(page.rows, profileList, participantsMap)
       serverTotal.value = page.total
     }
-  } catch {
+  } catch (e) {
+    boardError.value = formatSupabaseError(e) || 'Не удалось загрузить задачи'
     tasks.value = []
     serverTotal.value = 0
   } finally {
@@ -706,7 +707,8 @@ async function loadMetaForTask(taskId: string) {
     taskComments.value = comments
     taskEvents.value = events
     taskFiles.value = files
-  } catch {
+  } catch (e) {
+    taskModalError.value = formatSupabaseError(e) || 'Не удалось загрузить переписку и файлы задачи'
     taskComments.value = []
     taskEvents.value = []
     taskFiles.value = []
@@ -1103,8 +1105,9 @@ async function exportToPdf() {
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank', 'noopener,noreferrer')
     setTimeout(() => URL.revokeObjectURL(url), 60000)
-  } catch {
+  } catch (e) {
     document.body.removeChild(el)
+    boardError.value = formatSupabaseError(e) || 'Не удалось сформировать PDF'
   }
 }
 

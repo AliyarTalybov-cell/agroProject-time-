@@ -254,7 +254,10 @@ async function loadGroupMembers() {
   groupMembersLoading.value = true
   try {
     groupMembers.value = await fetchGroupThreadMembersDisplay(tid, myId.value || null)
-  } catch {
+  } catch (e) {
+    // Состав команды вспомогателен: переписку он не закрывает, поэтому
+    // ошибку не выносим в шапку, но и не теряем.
+    console.error('Состав команды', e)
     groupMembers.value = []
   } finally {
     groupMembersLoading.value = false
@@ -717,7 +720,8 @@ watch(dmSearch, (q) => {
       const list = q.trim() ? await searchEmployees(q.trim(), 40, null) : await loadEmployees(40, null)
       const me = myId.value
       dmResults.value = me ? list.filter((e) => e.id !== me) : list
-    } catch {
+    } catch (e) {
+      console.error('Поиск сотрудников для диалога', e)
       dmResults.value = []
     } finally {
       dmLoading.value = false
@@ -762,7 +766,8 @@ async function openGroupModal() {
     const list = await loadEmployees(80, null)
     const me = myId.value
     groupEmployees.value = me ? list.filter((e) => e.id !== me) : list
-  } catch {
+  } catch (e) {
+    console.error('Список сотрудников для команды', e)
     groupEmployees.value = []
   }
 }

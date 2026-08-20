@@ -40,6 +40,8 @@ export function loadEvents(): StoredDowntime[] {
     const parsed = JSON.parse(raw) as StoredDowntime[]
     return Array.isArray(parsed) ? parsed : []
   } catch {
+    // Повреждённый localStorage: считаем, что записей нет. Сообщать не о чем —
+    // данные пользователь не терял, они и не сохранились.
     return []
   }
 }
@@ -57,6 +59,7 @@ export function loadActive(): ActiveDowntime | null {
     const parsed = JSON.parse(raw) as ActiveDowntime
     return parsed && parsed.startISO ? parsed : null
   } catch {
+    // То же самое: испорченная запись равнозначна её отсутствию.
     return null
   }
 }

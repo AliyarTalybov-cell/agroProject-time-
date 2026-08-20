@@ -58,6 +58,7 @@ export function loadOperations(): StoredOperation[] {
     const parsed = JSON.parse(raw) as StoredOperation[]
     return Array.isArray(parsed) ? parsed : []
   } catch {
+    // Повреждённый localStorage равнозначен пустому списку операций.
     return []
   }
 }
@@ -81,6 +82,7 @@ export function loadActiveOperation(): ActiveOperation | null {
     const parsed = JSON.parse(raw) as ActiveOperation
     return parsed?.startISO ? parsed : null
   } catch {
+    // Испорченная запись об активной операции равнозначна её отсутствию.
     return null
   }
 }

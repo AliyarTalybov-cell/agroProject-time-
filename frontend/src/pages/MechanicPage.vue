@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, onActivated, watch } from 'vue'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { useRouter } from 'vue-router'
 import type { ActiveDowntime, DowntimeCategory } from '@/lib/downtimeStorage'
 import { appendEvent, loadActive, saveActive, loadEvents as loadDowntimeEvents } from '@/lib/downtimeStorage'
@@ -45,6 +46,8 @@ const employeeDisplayName = computed(() => {
   return (u.email ?? (u.user_metadata?.full_name as string) ?? 'Пользователь').trim() || 'Пользователь'
 })
 
+/** Сообщение о неудавшейся загрузке. Пустая строка — сообщения нет. */
+const loadError = ref('')
 const timerTick = ref(0)
 let timerInterval: ReturnType<typeof setInterval> | null = null
 
@@ -646,10 +649,13 @@ async function toggleCalendarTaskCompleted(taskId: string) {
   await new Promise((resolve) => setTimeout(resolve, 260))
   try {
     await updateCalendarTask(taskId, { completed_at: nextCompletedAt })
-  } catch {
+  } catch (e) {
+    // Откат был и раньше, но молча: галочка сама снималась обратно, и это
+    // выглядело как сбой интерфейса, а не как отказ сервера.
     calendarTasksToday.value = calendarTasksToday.value.map((t, i) =>
       i === idx ? { ...t, completedAt: prev.completedAt } : t,
     )
+    loadError.value = formatSupabaseError(e) || 'Не удалось сохранить отметку о задаче'
   } finally {
     calendarTaskSavingIds.value = calendarTaskSavingIds.value.filter((id) => id !== taskId)
   }
@@ -1190,7 +1196,9 @@ async function openIssueDispatcherPicker() {
   if (!issuePositions.value.length) {
     try {
       issuePositions.value = await loadPositions()
-    } catch {
+    } catch (e) {
+      // Список должностей подсказывает адресата, но не мешает отправить заявку.
+      console.error('Справочник должностей', e)
       issuePositions.value = []
     }
   }
@@ -1325,6 +1333,7 @@ function addField() {
 
 <template>
   <section class="mechanic-page">
+    <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
     <div class="mechanic-shell">
       <main class="mechanic-main">
         <section class="operator-hero page-enter-item" style="--enter-delay: 60ms">
@@ -2125,6 +2134,17 @@ function addField() {
 </template>
 
 <style scoped>
+/* Сообщение о неудавшейся загрузке или действии.
+   Оформление то же, что у ошибок в ChatPage и LandsPage. */
+.page-load-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--danger-red) 12%, transparent);
+  color: var(--danger-red);
+}
+
 .mechanic-page {
   min-height: 100dvh;
   display: flex;

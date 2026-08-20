@@ -155,7 +155,8 @@ async function loadStorageRefs() {
     storageStatuses.value = statuses
     storageFillStatuses.value = fills
     crops.value = cropRows
-  } catch {
+  } catch (e) {
+    console.error('Справочники мест хранения', e)
     storageTypes.value = []
     storageStatuses.value = []
     storageFillStatuses.value = []

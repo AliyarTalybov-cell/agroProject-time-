@@ -26,6 +26,7 @@ function supportsWebp(): boolean {
     const c = document.createElement('canvas')
     return c.toDataURL('image/webp').startsWith('data:image/webp')
   } catch {
+    // Проба webp не удалась — значит формат не поддерживается, берём jpeg.
     return false
   }
 }
@@ -103,6 +104,8 @@ export async function compressImageFile(file: File, opts: CompressImageOptions =
     const baseName = file.name.replace(/\.[^.]+$/, '') || 'avatar'
     return new File([blob], `${baseName}.${ext}`, { type: outType, lastModified: Date.now() })
   } catch {
+    // Сжатие необязательно: если перекодировка не удалась, загружаем оригинал.
+    // Пользователю сообщать не о чем, файл всё равно уйдёт на сервер.
     return file
   } finally {
     src?.close()
