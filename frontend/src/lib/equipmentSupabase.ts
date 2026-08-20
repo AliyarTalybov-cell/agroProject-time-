@@ -462,6 +462,17 @@ export async function addEquipmentPhoto(
   return row as EquipmentPhotoRow
 }
 
+/**
+ * PostgREST отдаёт код 42703, когда колонки нет в схеме. Ровно этот случай и
+ * должен был покрывать catch ниже. Остальные ошибки — сеть, RLS — означают,
+ * что путь к файлу неизвестен; удалять запись в такой ситуации нельзя, иначе
+ * файл останется в хранилище навсегда и без единой ссылки на него.
+ */
+function isMissingColumnError(err: unknown): boolean {
+  if (err == null || typeof err !== 'object') return false
+  return (err as { code?: unknown }).code === '42703'
+}
+
 export async function deleteEquipmentPhoto(photoId: string): Promise<void> {
   if (!supabase) throw new Error('Supabase не настроен')
   assertCanDelete()
@@ -476,7 +487,8 @@ export async function deleteEquipmentPhoto(photoId: string): Promise<void> {
       .maybeSingle()
     if (fetchError) throw fetchError
     filePath = (row as { file_path?: string | null } | null)?.file_path ?? null
-  } catch {
+  } catch (err) {
+    if (!isMissingColumnError(err)) throw err
     filePath = null
   }
 
@@ -545,7 +557,8 @@ export async function deleteEquipmentDocument(documentId: string): Promise<void>
       .maybeSingle()
     if (fetchError) throw fetchError
     filePath = (row as { file_path?: string | null } | null)?.file_path ?? null
-  } catch {
+  } catch (err) {
+    if (!isMissingColumnError(err)) throw err
     filePath = null
   }
 

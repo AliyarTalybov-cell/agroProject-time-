@@ -30,6 +30,7 @@ import { loadFields as loadFieldsApi } from '@/lib/fieldsSupabase'
 import { loadWorkOperations, type WorkOperationRow } from '@/lib/reasonsAndOperations'
 import type { Task as TaskType, ProfileRow, TaskCommentRow, TaskEventRow, TaskFileRow } from '@/lib/tasksSupabase'
 import { avatarColorByPosition } from '@/lib/avatarColors'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
@@ -75,6 +76,13 @@ const listSortDirection = ref<SortDirection>('desc')
 const showCreateModal = ref(false)
 const editingTaskId = ref<string | null>(null)
 const successModalOpen = ref(false)
+/**
+ * Сообщения о неудавшихся действиях. Показываются там, куда пользователь
+ * в этот момент смотрит: смена статуса — на доске, удаление и комментарий —
+ * в карточке задачи. Оформление то же, что у ошибок в ChatPage.
+ */
+const boardError = ref('')
+const taskModalError = ref('')
 const selectedTaskId = ref<string | null>(null)
 const tasksLoading = ref(true)
 const tasks = ref<Task[]>([])
@@ -879,6 +887,7 @@ async function openTask(id: string) {
 }
 function closeTask() {
   selectedTaskId.value = null
+  taskModalError.value = ''
   taskComments.value = []
   taskEvents.value = []
   taskFiles.value = []
@@ -922,6 +931,7 @@ async function removeTaskFileRow(fileRow: TaskFileRow) {
 }
 
 async function updateTaskStatus(taskId: string, newStatus: Status) {
+  boardError.value = ''
   const t = tasks.value.find((x) => x.id === taskId)
   const prevStatus = t?.status
   if (t) t.status = newStatus
@@ -934,8 +944,11 @@ async function updateTaskStatus(taskId: string, newStatus: Status) {
         eventType: 'status_changed',
         payload: { from: prevStatus, to: newStatus },
       })
-    } catch {
+    } catch (err) {
+      // Откат был и раньше, но молча: карточка возвращалась на место,
+      // и это выглядело как промах мышью, а не как отказ сервера.
       if (t && prevStatus !== undefined) t.status = prevStatus
+      boardError.value = formatSupabaseError(err) || 'Не удалось изменить статус задачи'
     }
   }
 }
@@ -947,6 +960,7 @@ async function submitComment() {
   const text = newCommentMessage.value.trim()
   if (!text) return
   if (isSendingComment.value) return
+  taskModalError.value = ''
   isSendingComment.value = true
   try {
     const comment = await addTaskComment(task.id, user.id, text)
@@ -958,8 +972,8 @@ async function submitComment() {
       eventType: 'comment_added',
       payload: { preview: text.slice(0, 140) },
     })
-  } catch {
-    // ignore for now
+  } catch (err) {
+    taskModalError.value = formatSupabaseError(err) || 'Не удалось отправить комментарий'
   } finally {
     isSendingComment.value = false
   }
@@ -969,12 +983,16 @@ async function deleteTask() {
   if (!selectedTaskId.value || !selectedTask.value) return
   if (!canDeleteSelectedTask.value) return
   if (!confirm('Удалить эту задачу?')) return
+  taskModalError.value = ''
   if (isSupabaseConfigured()) {
     try {
       await deleteTaskApi(selectedTaskId.value, selectedTask.value.createdBy?.id ?? null)
       await loadData()
-    } catch {
-      tasks.value = tasks.value.filter((t) => t.id !== selectedTaskId.value)
+    } catch (err) {
+      // Раньше задача исчезала из списка и при неудачном удалении: человек
+      // считал её удалённой, а после перезагрузки она возвращалась.
+      taskModalError.value = formatSupabaseError(err) || 'Не удалось удалить задачу'
+      return
     }
   } else {
     tasks.value = tasks.value.filter((t) => t.id !== selectedTaskId.value)
@@ -1105,6 +1123,7 @@ function statusClass(s: Status) {
 
 <template>
   <section class="task-management-page page-enter-item">
+    <p v-if="boardError" class="tm-error" role="alert">{{ boardError }}</p>
     <header class="task-header">
       <div class="task-header-left">
         <div class="task-filter-row">
@@ -1612,6 +1631,7 @@ function statusClass(s: Status) {
             </div>
             <ModalCloseButton @click="closeTask" />
           </div>
+          <p v-if="taskModalError" class="tm-error tm-error--modal" role="alert">{{ taskModalError }}</p>
           <div class="task-detail-layout">
             <div v-if="isMetaInitialLoading" class="task-detail-loading-overlay" aria-hidden="true">
               <UiLoadingBar size="md" />
@@ -1904,6 +1924,20 @@ function statusClass(s: Status) {
 </template>
 
 <style scoped>
+/* Сообщение о неудавшемся действии. Цвет и подложка как у ошибок в ChatPage. */
+.tm-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--danger-red) 12%, transparent);
+  color: var(--danger-red);
+}
+
+.tm-error--modal {
+  margin: 0 24px 12px;
+}
+
 .task-management-page {
   display: flex;
   flex-direction: column;
