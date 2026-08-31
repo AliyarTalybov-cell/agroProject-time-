@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { loadPdfTools } from '@/lib/pdfExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
+import LandCropRotationModal from '@/components/lands/LandCropRotationModal.vue'
 import LandsConfirmModal from '@/components/lands/LandsConfirmModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
@@ -5350,103 +5351,17 @@ onMounted(() => void reloadAll())
         </div>
       </div>
 
-      <div v-if="cropRotationModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Добавление записи севооборота" @click.self="closeCropRotationModal">
-        <div class="lands-modal lands-modal--compact lands-modal--success">
-          <div class="lands-modal-head">
-            <h2>Добавить запись севооборота</h2>
-            <ModalCloseButton @click="closeCropRotationModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>№ ПОЛЯ ЕФИС ЗСН</span>
-                <select v-model="cropRotationForm.fieldId">
-                  <option value="">— Выберите поле —</option>
-                  <option v-for="field in assignedFields" :key="field.id" :value="field.id">
-                    №{{ field.number }} — {{ field.name }}
-                  </option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span>Площадь, га</span>
-                <input :value="cropRotationForm.areaForCropsHa ?? ''" type="number" disabled />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Сезон *</span>
-                <input v-model.trim="cropRotationForm.season" type="text" placeholder="Например: 2026" />
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип севооборота *
-                  <RefFieldHelp
-                    text="Нет нужного типа севооборота? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'crop-rotation-refs' } }"
-                    link-label="Справочники севооборота"
-                  />
-                </span>
-                <select v-model="cropRotationForm.rotationType">
-                  <option value="">— Выберите тип —</option>
-                  <option v-for="type in cropRotationTypeOptions" :key="type" :value="type">{{ type }}</option>
-                </select>
-              </label>
-            </div>
-            <label class="lands-field">
-              <span class="lands-label-with-help">
-                Сельскохозяйственная культура *
-                <RefFieldHelp
-                  text="Нет нужной культуры? Добавьте ее в"
-                  :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
-                  link-label="Справочники СХ культур"
-                />
-              </span>
-              <select v-model="cropRotationForm.cropKey">
-                <option value="">— Выберите культуру —</option>
-                <option v-for="crop in crops" :key="crop.id" :value="crop.key">{{ crop.label }}</option>
-              </select>
-            </label>
-            <label class="lands-field">
-              <span>Наименование семян (посадочный материал)</span>
-              <textarea v-model.trim="cropRotationForm.seedMaterialName" rows="2" />
-            </label>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Площадь для выращивания сельхозкультур, га *</span>
-                <input v-model.number="cropRotationForm.areaForCropsHa" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь с улучшенными характеристиками, га</span>
-                <input v-model.number="cropRotationForm.areaWithImprovedProductsHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Площадь для органической продукции, га</span>
-                <input v-model.number="cropRotationForm.areaForOrganicHa" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь для селекции и семеноводства, га</span>
-                <input v-model.number="cropRotationForm.areaForSelectionSeedHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <label class="lands-field">
-              <span>Сведения о производимой продукции</span>
-              <textarea v-model.trim="cropRotationForm.producedProductsInfo" rows="3" />
-            </label>
-            <label class="lands-field">
-              <span>Масса произведенной сельхозкультуры, т</span>
-              <input v-model.number="cropRotationForm.producedCropMassTons" type="number" min="0" step="0.01" />
-            </label>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" @click="closeCropRotationModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="!cropRotationForm.fieldId || !cropRotationForm.season || !cropRotationForm.rotationType || !cropRotationForm.cropKey || saving" @click="saveCropRotation">
-              {{ editingCropRotationId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandCropRotationModal
+        :open="cropRotationModalOpen"
+        :form="cropRotationForm"
+        :assigned-fields="assignedFields"
+        :crop-rotation-type-options="cropRotationTypeOptions"
+        :crops="crops"
+        :editing-id="editingCropRotationId"
+        :saving="saving"
+        @save="saveCropRotation"
+        @close="closeCropRotationModal"
+      />
 
       <div v-if="rightModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Право владения" @click.self="closeRightModal">
         <div class="lands-modal">

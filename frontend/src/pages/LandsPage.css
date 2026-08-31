@@ -246,16 +246,6 @@
 }
 .land-list-item { width:100%; text-align:left; border:1px solid var(--border-color); border-radius:10px; background:#fff; padding:8px 10px; cursor:pointer; margin-bottom:8px; }
 .land-list-item.is-active { border-color:color-mix(in srgb, var(--accent-green) 48%, var(--border-color)); background:color-mix(in srgb, var(--accent-green) 12%, #fff); }
-.lands-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-.lands-form-grid--passport { margin-bottom:10px; }
-.lands-field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-.lands-field--inline-end { justify-content:flex-end; }
-.lands-field > span { font-size:.85rem; font-weight:600; }
-.lands-label-with-help {
-  display: inline-flex;
-  align-items: center;
-}
-.lands-field input, .lands-field textarea, .lands-field select { border:1px solid var(--border-color); border-radius:10px; padding:9px 11px; font-size:.93rem; background:#fff; color:var(--text-primary); }
 .lands-yesno-toggle {
   display: inline-flex;
   gap: 8px;
@@ -290,7 +280,6 @@
 .lands-section-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
 .lands-melioration-head { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-bottom:10px; }
 .lands-melioration-empty { text-align:center; padding:18px 12px; }
-.lands-form-grid--mel { align-items: end; }
 .lands-tabs--melioration {
   gap: 0;
   overflow-x: auto;

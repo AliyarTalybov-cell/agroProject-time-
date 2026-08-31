@@ -91,3 +91,31 @@
 [data-theme='dark'] .lands-btn--danger {
   background: var(--bg-panel);
 }
+
+/* Поля формы внутри окон. Перенесено из LandsPage.css; страница получает их
+   отсюда же. */
+.lands-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.lands-form-grid--passport { margin-bottom:10px; }
+.lands-field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+.lands-field--inline-end { justify-content:flex-end; }
+.lands-field > span { font-size:.85rem; font-weight:600; }
+.lands-label-with-help {
+  display: inline-flex;
+  align-items: center;
+}
+.lands-field input, .lands-field textarea, .lands-field select { border:1px solid var(--border-color); border-radius:10px; padding:9px 11px; font-size:.93rem; background:#fff; color:var(--text-primary); }
+.lands-form-grid--mel { align-items: end; }
+
+/* Тёмный фон полей и одноколоночная сетка на узком экране на странице заданы
+   в общих перечислениях LandsPage.css, которые вынесенных компонентов уже не
+   касаются. Здесь те же объявления повторены для окон. */
+[data-theme='dark'] .lands-field input,
+[data-theme='dark'] .lands-field textarea,
+[data-theme='dark'] .lands-field select {
+  background: var(--bg-panel);
+}
+@media (max-width: 760px) {
+  .lands-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
