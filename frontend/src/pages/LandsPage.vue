@@ -1,14 +1,29 @@
 <script setup lang="ts">
+// Общие стили раздела земель — те же, что у вынесенных окон и вкладок.
+import '@/components/lands/landsShared.css'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loadPdfTools } from '@/lib/pdfExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
+import LandCropRotationModal from '@/components/lands/LandCropRotationModal.vue'
+import LandCropRotationTab from '@/components/lands/LandCropRotationTab.vue'
+import LandFieldsTab from '@/components/lands/LandFieldsTab.vue'
+import LandRealEstateTab from '@/components/lands/LandRealEstateTab.vue'
+import LandRightsTab from '@/components/lands/LandRightsTab.vue'
+import LandUsersTab from '@/components/lands/LandUsersTab.vue'
+import LandRightModal from '@/components/lands/LandRightModal.vue'
+import LandUserModal from '@/components/lands/LandUserModal.vue'
+import LandMeliorationModal from '@/components/lands/LandMeliorationModal.vue'
+import LandRealEstateModal from '@/components/lands/LandRealEstateModal.vue'
+import LandsConfirmModal from '@/components/lands/LandsConfirmModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import YandexMap from '@/components/YandexMap.vue'
 import type { MapFieldMarker } from '@/components/YandexMap.vue'
 import { resolveYandexAddressCandidates, resolveYandexAddressLine } from '@/lib/yandexGeocode'
+import { downloadDelimited, escapeHtml } from '@/lib/tableExport'
+import { type LatLon, fromPolygonGeoJson, polygonCenter, toPolygonGeoJson } from '@/lib/geoContour'
 import {
   addCropByLabel,
   addLandActualUseOption as addLandActualUseOptionApi,
@@ -147,9 +162,6 @@ import {
   type EquipmentTypeRefRow,
   type EquipmentConditionRefRow,
 } from '@/lib/equipmentSupabase'
-
-type LatLon = [number, number]
-type PolygonGeoJson = { type: 'Polygon'; coordinates: number[][][] }
 
 type LandForm = {
   number: number
@@ -448,7 +460,7 @@ const userForm = ref({
 
 const selectedLand = computed(() => lands.value.find((x) => x.id === selectedLandId.value) ?? null)
 const landTypeLabelMap = computed(() => new Map(landTypes.value.map((t) => [t.id, t.name])))
-const selectedLandPolygonPoints = computed<LatLon[]>(() => fromPolygonGeoJson(selectedLand.value?.contour_geojson ?? null))
+const selectedLandPolygonPoints = computed<LatLon[]>(() => fromPolygonGeoJson(selectedLand.value?.contour_geojson ?? null, { requireType: false }))
 const detailsMapLat = computed(() => selectedLand.value?.center_lat ?? mapLat.value)
 const detailsMapLon = computed(() => selectedLand.value?.center_lon ?? mapLon.value)
 const landEfisNumbersMap = computed(() => {
@@ -470,9 +482,9 @@ const assignedFields = computed(() => fields.value.filter((f) => f.land_id === s
 const unassignedFields = computed(() => fields.value.filter((f) => !f.land_id || f.land_id !== selectedLandId.value))
 const assignedFieldMapMarkers = computed<MapFieldMarker[]>(() => assignedFields.value
   .reduce<MapFieldMarker[]>((markers, f) => {
-    const polygonPoints = fromPolygonGeoJson(f.contour_geojson as Record<string, unknown> | null)
+    const polygonPoints = fromPolygonGeoJson(f.contour_geojson as Record<string, unknown> | null, { requireType: false })
     if (polygonPoints.length >= 3) {
-      const center = polygonCenterFromPoints(polygonPoints)
+      const center = polygonCenter(polygonPoints)
       markers.push({
         id: f.id,
         lat: center?.lat ?? detailsMapLat.value,
@@ -539,18 +551,6 @@ const MELIORATION_KIND_MAP: Record<(typeof MELIORATION_TABS)[number]['id'], stri
   forest: 'forest',
   events: 'events',
 }
-const XLS_SEP = '\t'
-
-function escapeXlsCell(val: string): string {
-  const s = String(val ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""')
-  return s.includes(XLS_SEP) || s.includes('"') || s.includes('\r') ? `"${s}"` : s
-}
-
-function escapeHtml(s: string): string {
-  const div = document.createElement('div')
-  div.textContent = s
-  return div.innerHTML
-}
 
 function formatLandArea(area: number | null): string {
   const n = Number(area ?? 0)
@@ -574,15 +574,7 @@ function exportCellValue(value: unknown): string {
 
 function downloadCsv(headers: string[], rows: string[][], fileName: string) {
   if (!rows.length) return
-  const line = (arr: string[]) => arr.map(escapeXlsCell).join(XLS_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = fileName
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadDelimited(headers, rows, fileName)
 }
 
 async function downloadPdfTable(title: string, headers: string[], rows: string[][], fileName: string, width = 1100) {
@@ -855,15 +847,7 @@ function exportLandsToExcel() {
     formatLandArea(land.area),
     land.permitted_use_docs || 'Нет данных',
   ]))
-  const line = (arr: string[]) => arr.map(escapeXlsCell).join(XLS_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `реестр_земель_${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadDelimited(headers, rows, `реестр_земель_${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 async function exportLandsToPdf() {
@@ -1194,7 +1178,7 @@ function setFormFromLand(land: LandRow | null) {
   }
   const center = getLandContourCenter(land.contour_geojson)
   mapGeometryMode.value = land.geometry_mode ?? 'polygon'
-  mapContourDraftPoints.value = fromPolygonGeoJson(land.contour_geojson)
+  mapContourDraftPoints.value = fromPolygonGeoJson(land.contour_geojson, { requireType: false })
   if (center) {
     mapLat.value = center.lat
     mapLon.value = center.lon
@@ -1251,16 +1235,6 @@ function fieldCropPillClass(cropKey: string | null): string {
 function formatRotationMetric(value: number | null | undefined, fractionDigits = 2): string {
   if (value == null || Number.isNaN(Number(value))) return '—'
   return Number(value).toFixed(fractionDigits)
-}
-
-function isImageUrl(url: string): boolean {
-  return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url)
-}
-
-function fileLabelFromUrl(url: string): string {
-  const noQuery = url.split('?')[0] ?? url
-  const parts = noQuery.split('/')
-  return parts.at(-1) || url
 }
 
 function realEstateFieldLabel(fieldId: string | null): string {
@@ -1388,40 +1362,6 @@ function getLandContourCenter(contour: Record<string, unknown> | null): { lat: n
   const lon = points.reduce((sum, p) => sum + p[0], 0) / points.length
   const lat = points.reduce((sum, p) => sum + p[1], 0) / points.length
   return { lat, lon }
-}
-
-function polygonCenterFromPoints(points: LatLon[]): { lat: number; lon: number } | null {
-  if (!points.length) return null
-  const lat = points.reduce((sum, p) => sum + p[0], 0) / points.length
-  const lon = points.reduce((sum, p) => sum + p[1], 0) / points.length
-  return { lat, lon }
-}
-
-function toPolygonGeoJson(points: LatLon[]): PolygonGeoJson | null {
-  if (points.length < 3) return null
-  const ring = points.map((p) => [p[1], p[0]])
-  const first = ring[0]
-  const last = ring[ring.length - 1]
-  if (!first || !last) return null
-  const closed = first[0] === last[0] && first[1] === last[1]
-    ? ring
-    : [...ring, [first[0], first[1]]]
-  return { type: 'Polygon', coordinates: [closed] }
-}
-
-function fromPolygonGeoJson(contour: Record<string, unknown> | null): LatLon[] {
-  const coordinates = (contour as { coordinates?: unknown })?.coordinates
-  if (!Array.isArray(coordinates) || !Array.isArray(coordinates[0])) return []
-  const ring = coordinates[0] as unknown[]
-  const points = ring
-    .map((p) => (Array.isArray(p) && p.length >= 2 ? [Number(p[1]), Number(p[0])] as LatLon : null))
-    .filter((p): p is LatLon => Boolean(p && Number.isFinite(p[0]) && Number.isFinite(p[1])))
-  if (points.length > 1) {
-    const first = points[0]
-    const last = points[points.length - 1]
-    if (first && last && first[0] === last[0] && first[1] === last[1]) return points.slice(0, -1)
-  }
-  return points
 }
 
 function tryFillRegionFromAddress(address: string) {
@@ -2462,6 +2402,12 @@ async function removeFieldMunicipalityReference(id: string) {
   }
 }
 
+/**
+ * Выборка точек контура для обратного геокодирования. Намеренно своя: здесь
+ * берутся первые шесть точек подряд, а общая `contourSamplePoints` из
+ * `@/lib/geoContour` раскладывает пять точек равномерно по кольцу. Какое
+ * поведение верное — вопрос к разделу земель, поэтому оставлено как было.
+ */
 function contourSamplePoints(points: LatLon[], center: { lat: number; lon: number } | null): Array<{ lat: number; lon: number }> {
   const sample: Array<{ lat: number; lon: number }> = []
   if (center) sample.push({ lat: center.lat, lon: center.lon })
@@ -3491,15 +3437,7 @@ async function exportMeliorationTabToPdf() {
 function exportMeliorationTabToExcel() {
   const { headers, rows } = meliorationExportData()
   if (!rows.length) return
-  const line = (arr: string[]) => arr.map(escapeXlsCell).join(XLS_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `мелиорация_${meliorationTab.value}_${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadDelimited(headers, rows, `мелиорация_${meliorationTab.value}_${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 async function removeRealEstate(id: string) {
@@ -3817,15 +3755,15 @@ onMounted(() => void reloadAll())
             <h2>Реестр земель</h2>
             <div class="lands-table-tools">
               <input v-model.trim="landsSearch" class="lands-search" type="text" placeholder="Поиск по адресу или кадастровому номеру..." />
-              <div class="task-export-btns">
+              <div class="lands-export-btns">
                 <button
                   type="button"
-                  class="task-btn-export action_has has_saved"
+                  class="lands-export-btn action_has has_saved"
                   :disabled="!lands.length"
                   title="Экспорт в PDF"
                   @click="exportLandsToPdf"
                 >
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
                     <path d="M14 2v6h6" data-path="line-top" />
                     <path d="M12 18v-6" data-path="line-bottom" />
@@ -3835,12 +3773,12 @@ onMounted(() => void reloadAll())
                 </button>
                 <button
                   type="button"
-                  class="task-btn-export action_has has_saved"
+                  class="lands-export-btn action_has has_saved"
                   :disabled="!lands.length"
                   title="Экспорт в Excel"
                   @click="exportLandsToExcel"
                 >
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
                     <path d="M14 2v6h6" data-path="line-top" />
                     <path d="M8 13h2" data-path="line-bottom" />
@@ -3958,9 +3896,9 @@ onMounted(() => void reloadAll())
             </button>
           </div>
           <div class="lands-melioration-head">
-            <div class="task-export-btns">
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="lands-export-btns">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M12 18v-6" />
@@ -3968,8 +3906,8 @@ onMounted(() => void reloadAll())
                 </svg>
                 PDF
               </button>
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M8 13h2" />
@@ -4776,9 +4714,9 @@ onMounted(() => void reloadAll())
         <template v-if="selectedLand && activeTab === 'info'">
           <div class="lands-section-head">
             <h2>Сведения об участке</h2>
-            <div class="task-export-btns">
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в PDF" @click="exportLandInfoToPdf">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="lands-export-btns">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в PDF" @click="exportLandInfoToPdf">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M12 18v-6" />
@@ -4786,8 +4724,8 @@ onMounted(() => void reloadAll())
                 </svg>
                 PDF
               </button>
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в Excel" @click="exportLandInfoToExcel">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в Excel" @click="exportLandInfoToExcel">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M8 13h2" />
@@ -4898,365 +4836,69 @@ onMounted(() => void reloadAll())
         </template>
 
         <template v-else-if="selectedLand && activeTab === 'fields'">
-          <div class="lands-section-head">
-            <h2>Поля земли</h2>
-            <div class="task-export-btns">
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landFieldsExportRows.length" title="Экспорт в PDF" @click="exportLandFieldsToPdf">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M12 18v-6" />
-                  <path d="M9 15h6" />
-                </svg>
-                PDF
-              </button>
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landFieldsExportRows.length" title="Экспорт в Excel" @click="exportLandFieldsToExcel">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M8 13h2" />
-                  <path d="M8 17h2" />
-                  <path d="M14 13h2" />
-                  <path d="M14 17h2" />
-                </svg>
-                Excel
-              </button>
-            </div>
-          </div>
-          <div v-if="assignedFields.length" class="lands-table-wrap">
-            <table class="lands-table lands-fields-table">
-              <thead>
-                <tr>
-                  <th>Название</th>
-                  <th>№ ПОЛЯ ЕФИС ЗСН</th>
-                  <th>Площадь, га</th>
-                  <th>Культура</th>
-                  <th>Тип земли</th>
-                  <th>Муниципальное образование</th>
-                  <th>Регион</th>
-                  <th>Описание</th>
-                  <th>Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="field in assignedFields" :key="field.id" class="lands-list-row" @click="goToFieldDetails(field.id)">
-                  <td>
-                    <div class="lands-field-cell-title lands-list-title-main">Поле №{{ field.number }} {{ field.name }}</div>
-                    <div class="lands-field-cell-subtitle">{{ field.cadastral_number ? `Кад. №: ${field.cadastral_number}` : 'Нет кад. номера' }}</div>
-                  </td>
-                  <td>{{ (field as any).efis_zsn_number || '—' }}</td>
-                  <td>{{ Number(field.area || 0).toFixed(2) }}</td>
-                  <td>
-                    <span :class="fieldCropPillClass(field.crop_key)">
-                      {{ fieldCropLabel(field.crop_key) }}
-                    </span>
-                  </td>
-                  <td>{{ field.land_type || '—' }}</td>
-                  <td>{{ field.municipality || '—' }}</td>
-                  <td>{{ field.region || '—' }}</td>
-                  <td class="lands-field-description">{{ field.location_description || '—' }}</td>
-                  <td @click.stop>
-                    <div class="lands-item-actions">
-                      <button type="button" class="lands-action-btn" aria-label="Открыть поле" title="Открыть поле" @click="goToFieldDetails(field.id)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
-                      </button>
-                      <button v-if="landInlineEditOpen" type="button" class="lands-action-btn lands-action-btn--danger" aria-label="Отвязать поле" title="Отвязать поле" @click="unlinkField(field.id)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p v-else class="lands-muted">К этой земле пока не привязаны поля.</p>
+          <LandFieldsTab
+            :items="assignedFields"
+            :export-rows="landFieldsExportRows"
+            :inline-edit-open="landInlineEditOpen"
+            :crop-label="fieldCropLabel"
+            :crop-pill-class="fieldCropPillClass"
+            @export-pdf="exportLandFieldsToPdf"
+            @export-excel="exportLandFieldsToExcel"
+            @open-field="goToFieldDetails"
+            @unlink="unlinkField"
+          />
         </template>
 
         <template v-else-if="selectedLand && activeTab === 'rights'">
-          <div class="lands-section-head">
-            <h2>Права владения</h2>
-            <div class="lands-section-actions">
-              <div class="task-export-btns">
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRightsExportRows.length" title="Экспорт в PDF" @click="exportLandRightsToPdf">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6" />
-                    <path d="M12 18v-6" />
-                    <path d="M9 15h6" />
-                  </svg>
-                  PDF
-                </button>
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRightsExportRows.length" title="Экспорт в Excel" @click="exportLandRightsToExcel">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6" />
-                    <path d="M8 13h2" />
-                    <path d="M8 17h2" />
-                    <path d="M14 13h2" />
-                    <path d="M14 17h2" />
-                  </svg>
-                  Excel
-                </button>
-              </div>
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openRightModal">
-                Добавить
-              </button>
-            </div>
-          </div>
-          <div v-if="landRights.length" class="lands-list-plain">
-            <div v-for="right in landRights" :key="right.id" class="lands-list-plain-item lands-list-plain-item--stack">
-              <div class="lands-right-card-main">
-                <div class="lands-right-metric-row">
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Наименование</span>
-                    <span class="lands-right-metric-value lands-right-metric-value--nowrap">{{ right.holder_name || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">ИНН</span>
-                    <span class="lands-right-metric-value">{{ right.holder_inn || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">КПП</span>
-                    <span class="lands-right-metric-value">{{ right.holder_kpp || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">ОГРН</span>
-                    <span class="lands-right-metric-value">{{ right.holder_ogrn || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Кадастровый номер</span>
-                    <span class="lands-right-metric-value lands-right-metric-value--nowrap">{{ right.cadastral_number || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Форма собственности</span>
-                    <span class="lands-right-metric-value lands-right-metric-value--nowrap">{{ right.ownership_form || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Вид права</span>
-                    <span class="lands-right-metric-value lands-right-metric-value--nowrap">{{ right.right_type || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Начало</span>
-                    <span class="lands-right-metric-value">{{ right.starts_at || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Окончание</span>
-                    <span class="lands-right-metric-value">{{ right.ends_at || '—' }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="lands-item-actions">
-                <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openRightEditModal(right)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                </button>
-                <UiDeleteButton size="sm" @click="removeLandRight(right.id)" />
-              </div>
-            </div>
-          </div>
-          <p v-else class="lands-muted">Права владения пока не заполнены.</p>
+          <LandRightsTab
+            :items="landRights"
+            :export-rows="landRightsExportRows"
+            @export-pdf="exportLandRightsToPdf"
+            @export-excel="exportLandRightsToExcel"
+            @create="openRightModal"
+            @edit="openRightEditModal"
+            @remove="removeLandRight"
+          />
         </template>
 
         <template v-else-if="selectedLand && activeTab === 'users'">
-          <h2>Землепользователи</h2>
-          <div class="lands-actions lands-actions--crop">
-            <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openUserModal">
-              Добавить
-            </button>
-          </div>
-          <div v-if="landUsers.length" class="lands-list-plain">
-            <div v-for="user in landUsers" :key="user.id" class="lands-list-plain-item lands-list-plain-item--stack">
-              <div class="lands-right-card-main">
-                <div class="lands-right-metric-row">
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Наименование</span>
-                    <span class="lands-right-metric-value">{{ user.holder_name || user.organization_name || user.person_name || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">ИНН</span>
-                    <span class="lands-right-metric-value">{{ user.holder_inn || user.inn || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">КПП</span>
-                    <span class="lands-right-metric-value">{{ user.holder_kpp || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">ОГРН</span>
-                    <span class="lands-right-metric-value">{{ user.holder_ogrn || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Вид права</span>
-                    <span class="lands-right-metric-value">{{ user.right_type || user.basis || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Тип документа</span>
-                    <span class="lands-right-metric-value">{{ user.document_type || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Начало</span>
-                    <span class="lands-right-metric-value">{{ user.starts_at || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Окончание</span>
-                    <span class="lands-right-metric-value">{{ user.ends_at || '—' }}</span>
-                  </div>
-                  <div class="lands-right-metric">
-                    <span class="lands-right-metric-label">Площадь использования, га</span>
-                    <span class="lands-right-metric-value">{{ formatRotationMetric(user.usage_area_ha) }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="lands-item-actions">
-                <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openUserEditModal(user)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                </button>
-                <UiDeleteButton size="sm" @click="removeLandUser(user.id)" />
-              </div>
-            </div>
-          </div>
-          <p v-else class="lands-muted">Землепользователи пока не заполнены.</p>
+          <LandUsersTab
+            :items="landUsers"
+            :format-metric="formatRotationMetric"
+            @create="openUserModal"
+            @edit="openUserEditModal"
+            @remove="removeLandUser"
+          />
         </template>
 
         <template v-else-if="selectedLand && activeTab === 'crop-rotation'">
-          <div class="lands-section-head">
-            <h2>Севооборот</h2>
-            <div class="lands-section-actions">
-              <div class="task-export-btns">
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landCropRotationExportRows.length" title="Экспорт в PDF" @click="exportLandCropRotationToPdf">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6" />
-                    <path d="M12 18v-6" />
-                    <path d="M9 15h6" />
-                  </svg>
-                  PDF
-                </button>
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landCropRotationExportRows.length" title="Экспорт в Excel" @click="exportLandCropRotationToExcel">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6" />
-                    <path d="M8 13h2" />
-                    <path d="M8 17h2" />
-                    <path d="M14 13h2" />
-                    <path d="M14 17h2" />
-                  </svg>
-                  Excel
-                </button>
-              </div>
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openCropRotationModal">
-                Добавить
-              </button>
-            </div>
-          </div>
-          <div v-if="landCropRotations.length" class="lands-list-plain">
-            <div v-for="rotation in landCropRotations" :key="rotation.id" class="lands-list-plain-item lands-list-plain-item--stack">
-              <div class="lands-crop-rotation-card-main">
-                <div class="lands-crop-rotation-metric-row">
-                  <div class="lands-crop-rotation-metric">
-                    <span class="lands-crop-rotation-metric-label">№ ПОЛЯ ЕФИС ЗСН</span>
-                    <span class="lands-crop-rotation-metric-value lands-crop-rotation-metric-value--nowrap">{{ realEstateFieldLabel(rotation.field_id) }}</span>
-                  </div>
-                  <div class="lands-crop-rotation-metric">
-                    <span class="lands-crop-rotation-metric-label">Сезон</span>
-                    <span class="lands-crop-rotation-metric-value">{{ rotation.season || '—' }}</span>
-                  </div>
-                  <div class="lands-crop-rotation-metric">
-                    <span class="lands-crop-rotation-metric-label">Тип</span>
-                    <span class="lands-crop-rotation-metric-value">{{ rotation.rotation_type || '—' }}</span>
-                  </div>
-                  <div class="lands-crop-rotation-metric">
-                    <span class="lands-crop-rotation-metric-label">Культура</span>
-                    <span class="lands-crop-rotation-metric-value">{{ cropLabelMap.get(rotation.crop_key || '') || '—' }}</span>
-                  </div>
-                  <div class="lands-crop-rotation-metric">
-                    <span class="lands-crop-rotation-metric-label">Площадь, га</span>
-                    <span class="lands-crop-rotation-metric-value">{{ formatRotationMetric(cropRotationFieldMap.get(rotation.field_id)?.area) }}</span>
-                  </div>
-                  <div class="lands-crop-rotation-metric">
-                    <span class="lands-crop-rotation-metric-label">Площадь для выращивания сельхозкультур, га *</span>
-                    <span class="lands-crop-rotation-metric-value">{{ formatRotationMetric(rotation.area_for_crops_ha) }}</span>
-                  </div>
-                  <div class="lands-crop-rotation-metric">
-                    <span class="lands-crop-rotation-metric-label">Масса произведенной сельхозкультуры, т</span>
-                    <span class="lands-crop-rotation-metric-value">{{ formatRotationMetric(rotation.produced_crop_mass_tons) }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="lands-item-actions">
-                <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openCropRotationEditModal(rotation)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                </button>
-                <UiDeleteButton size="sm" @click="requestDeleteCropRotation(rotation.id)" />
-              </div>
-            </div>
-          </div>
+          <LandCropRotationTab
+            :items="landCropRotations"
+            :export-rows="landCropRotationExportRows"
+            :crop-label-map="cropLabelMap"
+            :field-map="cropRotationFieldMap"
+            :format-metric="formatRotationMetric"
+            :field-label="realEstateFieldLabel"
+            @export-pdf="exportLandCropRotationToPdf"
+            @export-excel="exportLandCropRotationToExcel"
+            @create="openCropRotationModal"
+            @edit="openCropRotationEditModal"
+            @remove="requestDeleteCropRotation"
+          />
         </template>
 
         <template v-else-if="selectedLand && activeTab === 'real-estate'">
-          <div class="lands-section-head">
-            <h2>Объекты недвижимости</h2>
-            <div class="lands-section-actions">
-              <div class="task-export-btns">
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRealEstateExportRows.length" title="Экспорт в PDF" @click="exportLandRealEstateToPdf">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6" />
-                    <path d="M12 18v-6" />
-                    <path d="M9 15h6" />
-                  </svg>
-                  PDF
-                </button>
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRealEstateExportRows.length" title="Экспорт в Excel" @click="exportLandRealEstateToExcel">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6" />
-                    <path d="M8 13h2" />
-                    <path d="M8 17h2" />
-                    <path d="M14 13h2" />
-                    <path d="M14 17h2" />
-                  </svg>
-                  Excel
-                </button>
-              </div>
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openRealEstateModal">
-                Добавить
-              </button>
-            </div>
-          </div>
-          <div v-if="landRealEstateObjects.length" class="lands-list-plain">
-            <div v-for="obj in landRealEstateObjects" :key="obj.id" class="lands-list-plain-item lands-list-plain-item--stack">
-              <div class="lands-re-card-main">
-                <div class="lands-re-metric-row">
-                  <div class="lands-re-metric">
-                    <span class="lands-re-metric-label">№ ПОЛЯ ЕФИС ЗСН</span>
-                    <span class="lands-re-metric-value lands-re-metric-value--nowrap">{{ realEstateFieldLabel(obj.field_id) }}</span>
-                  </div>
-                  <div class="lands-re-metric">
-                    <span class="lands-re-metric-label">Кадастровый номер *</span>
-                    <span class="lands-re-metric-value lands-re-metric-value--nowrap">{{ obj.cadastral_number || '—' }}</span>
-                  </div>
-                  <div class="lands-re-metric">
-                    <span class="lands-re-metric-label">Наименование</span>
-                    <span class="lands-re-metric-value lands-re-metric-value--nowrap">{{ obj.name?.trim() || '—' }}</span>
-                  </div>
-                  <div class="lands-re-metric">
-                    <span class="lands-re-metric-label">Адрес</span>
-                    <span class="lands-re-metric-value lands-re-metric-value--nowrap">{{ obj.address?.trim() || '—' }}</span>
-                  </div>
-                  <div class="lands-re-metric">
-                    <span class="lands-re-metric-label">Площадь, кв.м.</span>
-                    <span class="lands-re-metric-value">{{ formatRotationMetric(obj.area_sqm) }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="lands-item-actions">
-                <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openRealEstateEditModal(obj)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                </button>
-                <UiDeleteButton size="sm" @click="requestDeleteRealEstate(obj.id)" />
-              </div>
-            </div>
-          </div>
-          <p v-else class="lands-muted">Объекты недвижимости пока не добавлены.</p>
+          <LandRealEstateTab
+            :items="landRealEstateObjects"
+            :export-rows="landRealEstateExportRows"
+            :format-metric="formatRotationMetric"
+            :field-label="realEstateFieldLabel"
+            @export-pdf="exportLandRealEstateToPdf"
+            @export-excel="exportLandRealEstateToExcel"
+            @create="openRealEstateModal"
+            @edit="openRealEstateEditModal"
+            @remove="requestDeleteRealEstate"
+          />
         </template>
         <p v-else class="lands-muted">Участок не найден или не выбран.</p>
       </section>
@@ -5414,780 +5056,122 @@ onMounted(() => void reloadAll())
         </div>
       </div>
 
-      <div v-if="cropRotationModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Добавление записи севооборота" @click.self="closeCropRotationModal">
-        <div class="lands-modal lands-modal--compact lands-modal--success">
-          <div class="lands-modal-head">
-            <h2>Добавить запись севооборота</h2>
-            <ModalCloseButton @click="closeCropRotationModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>№ ПОЛЯ ЕФИС ЗСН</span>
-                <select v-model="cropRotationForm.fieldId">
-                  <option value="">— Выберите поле —</option>
-                  <option v-for="field in assignedFields" :key="field.id" :value="field.id">
-                    №{{ field.number }} — {{ field.name }}
-                  </option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span>Площадь, га</span>
-                <input :value="cropRotationForm.areaForCropsHa ?? ''" type="number" disabled />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Сезон *</span>
-                <input v-model.trim="cropRotationForm.season" type="text" placeholder="Например: 2026" />
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип севооборота *
-                  <RefFieldHelp
-                    text="Нет нужного типа севооборота? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'crop-rotation-refs' } }"
-                    link-label="Справочники севооборота"
-                  />
-                </span>
-                <select v-model="cropRotationForm.rotationType">
-                  <option value="">— Выберите тип —</option>
-                  <option v-for="type in cropRotationTypeOptions" :key="type" :value="type">{{ type }}</option>
-                </select>
-              </label>
-            </div>
-            <label class="lands-field">
-              <span class="lands-label-with-help">
-                Сельскохозяйственная культура *
-                <RefFieldHelp
-                  text="Нет нужной культуры? Добавьте ее в"
-                  :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
-                  link-label="Справочники СХ культур"
-                />
-              </span>
-              <select v-model="cropRotationForm.cropKey">
-                <option value="">— Выберите культуру —</option>
-                <option v-for="crop in crops" :key="crop.id" :value="crop.key">{{ crop.label }}</option>
-              </select>
-            </label>
-            <label class="lands-field">
-              <span>Наименование семян (посадочный материал)</span>
-              <textarea v-model.trim="cropRotationForm.seedMaterialName" rows="2" />
-            </label>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Площадь для выращивания сельхозкультур, га *</span>
-                <input v-model.number="cropRotationForm.areaForCropsHa" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь с улучшенными характеристиками, га</span>
-                <input v-model.number="cropRotationForm.areaWithImprovedProductsHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Площадь для органической продукции, га</span>
-                <input v-model.number="cropRotationForm.areaForOrganicHa" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь для селекции и семеноводства, га</span>
-                <input v-model.number="cropRotationForm.areaForSelectionSeedHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <label class="lands-field">
-              <span>Сведения о производимой продукции</span>
-              <textarea v-model.trim="cropRotationForm.producedProductsInfo" rows="3" />
-            </label>
-            <label class="lands-field">
-              <span>Масса произведенной сельхозкультуры, т</span>
-              <input v-model.number="cropRotationForm.producedCropMassTons" type="number" min="0" step="0.01" />
-            </label>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" @click="closeCropRotationModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="!cropRotationForm.fieldId || !cropRotationForm.season || !cropRotationForm.rotationType || !cropRotationForm.cropKey || saving" @click="saveCropRotation">
-              {{ editingCropRotationId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandCropRotationModal
+        :open="cropRotationModalOpen"
+        :form="cropRotationForm"
+        :assigned-fields="assignedFields"
+        :crop-rotation-type-options="cropRotationTypeOptions"
+        :crops="crops"
+        :editing-id="editingCropRotationId"
+        :saving="saving"
+        @save="saveCropRotation"
+        @close="closeCropRotationModal"
+      />
 
-      <div v-if="rightModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Право владения" @click.self="closeRightModal">
-        <div class="lands-modal">
-          <div class="lands-modal-head">
-            <h2>{{ editingRightId ? 'Редактировать право владения' : 'Добавить право владения' }}</h2>
-            <ModalCloseButton :disabled="saving || rightFileUploading" @click="closeRightModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-owner-mode-section">
-              <div class="lands-owner-mode-label">Правообладатель</div>
-              <div class="lands-owner-mode-toggle" role="group" aria-label="Режим ввода правообладателя">
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': rightForm.holderMode === 'reference' }" @click="rightForm.holderMode = 'reference'">
-                  Выбрать из справочника
-                </button>
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': rightForm.holderMode === 'manual' }" @click="rightForm.holderMode = 'manual'">
-                  Ввести вручную
-                </button>
-              </div>
-            </div>
-            <div v-if="rightForm.holderMode === 'reference'" class="lands-form-grid">
-              <label class="lands-field">
-                <span>Правообладатель из справочника</span>
-                <select v-model="rightForm.holderRefId">
-                  <option value="">— Выберите правообладателя —</option>
-                  <option v-for="holder in landRightHolders" :key="holder.id" :value="holder.id">
-                    {{ holder.name }} · ИНН: {{ holder.inn || '—' }}
-                  </option>
-                </select>
-              </label>
-              <div />
-            </div>
+      <LandRightModal
+        :open="rightModalOpen"
+        :form="rightForm"
+        :holders="landRightHolders"
+        :holder-types="landRightHolderTypes"
+        :ownership-forms="landRightOwnershipForms"
+        :right-types="landRightTypes"
+        :document-types="landRightDocumentTypes"
+        :supporting-links="rightSupportingLinks"
+        :uploading="rightFileUploading"
+        :saving="saving"
+        :editing-id="editingRightId"
+        @save="saveLandRight"
+        @close="closeRightModal"
+        @upload="uploadRightSupportingFile"
+        @remove-file="requestRemoveRightSupportingFile"
+      />
 
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Наименование *</span>
-                <input v-model.trim="rightForm.holderName" type="text" placeholder="СПК «Урожайный»" />
-              </label>
-              <label class="lands-field">
-                <span>Вид правообладания</span>
-                <select v-model="rightForm.holderTypeId" :disabled="rightForm.holderMode === 'reference'">
-                  <option value="">—</option>
-                  <option v-for="row in landRightHolderTypes" :key="row.id" :value="row.id">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>ИНН *</span>
-                <input v-model.trim="rightForm.holderInn" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>КПП</span>
-                <input v-model.trim="rightForm.holderKpp" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>ОГРН *</span>
-                <input v-model.trim="rightForm.holderOgrn" type="text" />
-              </label>
-              <div />
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Кадастровый номер *</span>
-                <input v-model.trim="rightForm.cadastralNumber" type="text" />
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Форма собственности *
-                  <RefFieldHelp
-                    text="Нет нужной формы собственности? Добавьте ее в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="rightForm.ownershipForm">
-                  <option value="">— Выберите форму собственности —</option>
-                  <option v-for="row in landRightOwnershipForms" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Вид права *
-                  <RefFieldHelp
-                    text="Нет нужного вида права? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="rightForm.rightType">
-                  <option value="">— Выберите вид права —</option>
-                  <option v-for="row in landRightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип подтверждающего документа *
-                  <RefFieldHelp
-                    text="Нет нужного типа документа? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="rightForm.documentType">
-                  <option value="">— Выберите тип документа —</option>
-                  <option v-for="row in landRightDocumentTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Подтверждающие документы *</span>
-                <div class="lands-docs-compact-box">
-                  <div class="lands-docs-compact-head">
-                    <span class="lands-docs-compact-state" :class="{ 'is-filled': rightSupportingLinks.length > 0 }">
-                      {{ rightSupportingLinks.length ? `Приложено файлов: ${rightSupportingLinks.length}` : 'Файлы не приложены' }}
-                    </span>
-                  </div>
-                  <div v-if="rightSupportingLinks.length" class="lands-docs-preview-grid lands-docs-preview-grid--compact">
-                    <div v-for="link in rightSupportingLinks" :key="link" class="lands-docs-preview-card-wrap">
-                      <a
-                        :href="link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="lands-docs-preview-card"
-                      >
-                        <div class="lands-docs-preview-thumb-wrap">
-                          <img v-if="isImageUrl(link)" class="lands-docs-preview-thumb" :src="link" :alt="fileLabelFromUrl(link)" loading="lazy" />
-                          <svg v-else class="lands-docs-preview-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
-                          </svg>
-                        </div>
-                        <span class="lands-docs-preview-name">{{ fileLabelFromUrl(link) }}</span>
-                      </a>
-                      <button type="button" class="lands-docs-remove-btn" title="Удалить файл" aria-label="Удалить файл" :disabled="rightFileUploading || saving" @click="requestRemoveRightSupportingFile(link)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </label>
-              <label class="lands-field">
-                <span>Загрузить документ/фото</span>
-                <label class="lands-file-upload">
-                  <span class="lands-file-upload-btn">{{ rightFileUploading ? 'Загрузка...' : 'Выбрать файл' }}</span>
-                  <span class="lands-file-upload-hint">PDF, JPG, PNG, DOC, DOCX, ZIP</span>
-                  <input class="lands-file-upload-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" :disabled="rightFileUploading || saving" @change="uploadRightSupportingFile" />
-                </label>
-                <span class="lands-muted">{{ rightFileUploading ? 'Файл загружается...' : 'После загрузки появится мини-превью.' }}</span>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Документ (наименование)</span>
-                <input v-model.trim="rightForm.documentName" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Номер документа</span>
-                <input v-model.trim="rightForm.documentNumber" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Дата документа</span>
-                <input v-model="rightForm.documentDate" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Примечание</span>
-                <input v-model.trim="rightForm.notes" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Начало владения *</span>
-                <input v-model="rightForm.startsAt" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Окончание *</span>
-                <input v-model="rightForm.endsAt" type="date" />
-              </label>
-            </div>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || rightFileUploading" @click="closeRightModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving || rightFileUploading" @click="saveLandRight">
-              {{ saving ? 'Сохранение...' : editingRightId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandRealEstateModal
+        :open="realEstateModalOpen"
+        :form="realEstateForm"
+        :assigned-fields="assignedFields"
+        :editing-id="editingRealEstateId"
+        :saving="saving"
+        @save="saveRealEstate"
+        @close="closeRealEstateModal"
+      />
 
-      <div v-if="realEstateModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Объект недвижимости" @click.self="closeRealEstateModal">
-        <div class="lands-modal">
-          <div class="lands-modal-head">
-            <h2>{{ editingRealEstateId ? 'Редактировать объект недвижимости' : 'Добавить объект недвижимости' }}</h2>
-            <ModalCloseButton @click="closeRealEstateModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>№ ПОЛЯ ЕФИС ЗСН</span>
-                <select v-model="realEstateForm.fieldId">
-                  <option value="">—</option>
-                  <option v-for="field in assignedFields" :key="field.id" :value="field.id">
-                    №{{ field.number }} — {{ field.name }}
-                  </option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span>Кадастровый номер *</span>
-                <input v-model.trim="realEstateForm.cadastralNumber" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Наименование</span>
-                <input v-model.trim="realEstateForm.name" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Описание местоположения</span>
-                <input v-model.trim="realEstateForm.locationDescription" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Площадь, кв.м.</span>
-                <input v-model.number="realEstateForm.areaSqm" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Вид разрешенного использования</span>
-                <input v-model.trim="realEstateForm.permittedUse" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Назначение</span>
-                <input v-model.trim="realEstateForm.purpose" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Адрес</span>
-                <input v-model.trim="realEstateForm.address" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Глубина, м</span>
-                <input v-model.number="realEstateForm.depthM" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Высота, м</span>
-                <input v-model.number="realEstateForm.heightM" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Протяженность, м</span>
-                <input v-model.number="realEstateForm.lengthM" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Объем, м³</span>
-                <input v-model.number="realEstateForm.volumeM3" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Глубина залегания, м</span>
-                <input v-model.number="realEstateForm.burialDepthM" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>План застройки</span>
-                <input v-model.trim="realEstateForm.developmentPlan" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Этажность</span>
-                <input v-model.trim="realEstateForm.floors" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Подземная этажность</span>
-                <input v-model.trim="realEstateForm.undergroundFloors" type="text" />
-              </label>
-            </div>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" @click="closeRealEstateModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="!realEstateForm.cadastralNumber.trim() || saving" @click="saveRealEstate">
-              {{ editingRealEstateId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandUserModal
+        :open="userModalOpen"
+        :form="userForm"
+        :holders="landRightHolders"
+        :right-types="landRightTypes"
+        :document-types="landRightDocumentTypes"
+        :supporting-links="userSupportingLinks"
+        :uploading="userFileUploading"
+        :saving="saving"
+        :editing-id="editingUserId"
+        @save="saveLandUser"
+        @close="closeUserModal"
+        @upload="uploadUserSupportingFile"
+        @remove-file="requestRemoveUserSupportingFile"
+      />
 
-      <div v-if="userModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Землепользователь" @click.self="closeUserModal">
-        <div class="lands-modal">
-          <div class="lands-modal-head">
-            <h2>{{ editingUserId ? 'Редактировать землепользователя' : 'Добавить землепользователя' }}</h2>
-            <ModalCloseButton :disabled="saving || userFileUploading" @click="closeUserModal" />
-          </div>
-          <div class="lands-modal-body">
-            <label class="lands-field">
-              <span class="lands-label-with-help">
-                Правообладатель *
-                <RefFieldHelp
-                  text="Нет нужного правообладателя? Добавьте его в"
-                  :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                  link-label="Справочники прав"
-                />
-              </span>
-              <div class="lands-owner-mode">
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': userForm.holderMode === 'reference' }" @click="userForm.holderMode = 'reference'">
-                  Выбрать из справочника
-                </button>
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': userForm.holderMode === 'manual' }" @click="userForm.holderMode = 'manual'">
-                  Ввести вручную
-                </button>
-              </div>
-            </label>
-            <div v-if="userForm.holderMode === 'reference'" class="lands-form-grid">
-              <label class="lands-field">
-                <span>Справочник правообладателей</span>
-                <select v-model="userForm.holderRefId">
-                  <option value="">—</option>
-                  <option v-for="holder in landRightHolders" :key="holder.id" :value="holder.id">
-                    {{ holder.name }}
-                  </option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Наименование *</span>
-                <input v-model.trim="userForm.holderName" type="text" placeholder="СПК «Урожайный»" />
-              </label>
-              <label class="lands-field">
-                <span>ИНН *</span>
-                <input v-model.trim="userForm.holderInn" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>КПП</span>
-                <input v-model.trim="userForm.holderKpp" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>ОГРН *</span>
-                <input v-model.trim="userForm.holderOgrn" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Вид права *
-                  <RefFieldHelp
-                    text="Нет нужного вида права? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="userForm.rightType">
-                  <option value="">—</option>
-                  <option v-for="row in landRightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип подтверждающего документа *
-                  <RefFieldHelp
-                    text="Нет нужного типа документа? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="userForm.documentType">
-                  <option value="">—</option>
-                  <option v-for="row in landRightDocumentTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <label class="lands-field">
-              <span>Подтверждающие документы *</span>
-              <div class="lands-docs-compact-box">
-                <div class="lands-docs-compact-head">
-                  <span class="lands-docs-compact-state" :class="{ 'is-filled': userSupportingLinks.length > 0 }">
-                    {{ userSupportingLinks.length ? `Приложено файлов: ${userSupportingLinks.length}` : 'Файлы не приложены' }}
-                  </span>
-                </div>
-                <div v-if="userSupportingLinks.length" class="lands-docs-preview-grid lands-docs-preview-grid--compact">
-                  <div v-for="link in userSupportingLinks" :key="link" class="lands-docs-preview-card-wrap">
-                    <a
-                      :href="link"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="lands-docs-preview-card"
-                    >
-                      <div class="lands-docs-preview-thumb-wrap">
-                        <img v-if="isImageUrl(link)" class="lands-docs-preview-thumb" :src="link" :alt="fileLabelFromUrl(link)" loading="lazy" />
-                        <svg v-else class="lands-docs-preview-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
-                        </svg>
-                      </div>
-                      <span class="lands-docs-preview-name">{{ fileLabelFromUrl(link) }}</span>
-                    </a>
-                    <button type="button" class="lands-docs-remove-btn" title="Удалить файл" aria-label="Удалить файл" :disabled="userFileUploading || saving" @click="requestRemoveUserSupportingFile(link)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </label>
-            <label class="lands-field">
-              <span>Загрузить документ/фото</span>
-              <label class="lands-file-upload">
-                <span class="lands-file-upload-btn">{{ userFileUploading ? 'Загрузка...' : 'Выбрать файл' }}</span>
-                <span class="lands-file-upload-hint">PDF, JPG, PNG, DOC, DOCX, ZIP</span>
-                <input class="lands-file-upload-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" :disabled="userFileUploading || saving" @change="uploadUserSupportingFile" />
-              </label>
-              <span class="lands-muted">{{ userFileUploading ? 'Файл загружается...' : 'После загрузки появится мини-превью.' }}</span>
-            </label>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Начало *</span>
-                <input v-model="userForm.startsAt" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Окончание *</span>
-                <input v-model="userForm.endsAt" type="date" />
-              </label>
-            </div>
-            <label class="lands-field">
-              <span>Площадь использования поля, га *</span>
-              <input v-model.number="userForm.usageAreaHa" type="number" min="0" step="0.01" placeholder="7.49" />
-            </label>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || userFileUploading" @click="closeUserModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving || userFileUploading" @click="saveLandUser">
-              {{ saving ? 'Сохранение...' : editingUserId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandsConfirmModal
+        :open="userFileDeleteConfirmOpen"
+        dialog-label="Удаление файла"
+        title="Удалить файл?"
+        text="Ссылка на файл будет удалена из формы землепользователя."
+        confirm-label="Удалить"
+        :busy="saving || userFileUploading"
+        @confirm="confirmRemoveUserSupportingFile"
+        @close="closeUserFileDeleteConfirm"
+      />
 
-      <div
-        v-if="userFileDeleteConfirmOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Удаление файла"
-        @click.self="closeUserFileDeleteConfirm"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Удалить файл?</h2>
-            <ModalCloseButton :disabled="saving || userFileUploading" @click="closeUserFileDeleteConfirm" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">Ссылка на файл будет удалена из формы землепользователя.</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || userFileUploading" @click="closeUserFileDeleteConfirm">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--danger" :disabled="saving || userFileUploading" @click="confirmRemoveUserSupportingFile">
-              Удалить
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandMeliorationModal
+        :open="meliorationModalOpen"
+        :form="meliorationForm"
+        :tab="meliorationTab"
+        :field-options="meliorationFieldOptions"
+        :field-label="meliorationFieldLabel"
+        :types="landMeliorationTypes"
+        :subtypes="landMeliorationSubtypes"
+        :event-types="landMeliorationEventTypes"
+        :saving="saving"
+        @save="saveMeliorationEntry"
+        @close="closeMeliorationModal"
+      />
 
-      <div v-if="meliorationModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Мелиорация" @click.self="closeMeliorationModal">
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Добавить запись мелиорации</h2>
-            <ModalCloseButton :disabled="saving" @click="closeMeliorationModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>№ ПОЛЯ ЕФИС ЗСН</span>
-                <select v-model="meliorationForm.fieldId">
-                  <option value="">—</option>
-                  <option v-for="field in meliorationFieldOptions" :key="field.id" :value="field.id">
-                    {{ meliorationFieldLabel(field.id) }}
-                  </option>
-                </select>
-              </label>
-              <label v-if="meliorationTab === 'systems'" class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип мелиорации
-                  <RefFieldHelp
-                    text="Нет нужного типа мелиорации? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
-                    link-label="Справочники мелиорации"
-                  />
-                </span>
-                <select v-model="meliorationForm.meliorationType">
-                  <option value="">—</option>
-                  <option v-for="row in landMeliorationTypes" :key="row.id" :value="row.name">
-                    {{ row.name }}
-                  </option>
-                </select>
-              </label>
-              <label v-else-if="meliorationTab === 'forest'" class="lands-field">
-                <span>Год создания</span>
-                <input v-model.number="meliorationForm.forestYearCreated" type="number" min="1900" step="1" />
-              </label>
-              <label v-else class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип мероприятия
-                  <RefFieldHelp
-                    text="Нет нужного типа мероприятия? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
-                    link-label="Типы мероприятий"
-                  />
-                </span>
-                <select v-model="meliorationForm.eventType">
-                  <option value="">—</option>
-                  <option v-for="row in landMeliorationEventTypes" :key="row.id" :value="row.name">
-                    {{ row.name }}
-                  </option>
-                </select>
-              </label>
-            </div>
-            <div v-if="meliorationTab === 'systems'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Вид мелиорации
-                  <RefFieldHelp
-                    text="Нет нужного вида мелиорации? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
-                    link-label="Справочники мелиорации"
-                  />
-                </span>
-                <select v-model="meliorationForm.meliorationSubtype">
-                  <option value="">—</option>
-                  <option v-for="row in landMeliorationSubtypes" :key="row.id" :value="row.name">
-                    {{ row.name }}
-                  </option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span>Кадастровый номер земельного участка</span>
-                <input v-model.trim="meliorationForm.cadastralNumber" type="text" />
-              </label>
-            </div>
-            <div v-if="meliorationTab === 'systems'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span>Дата ввода в эксплуатацию</span>
-                <input v-model="meliorationForm.commissionedAt" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь орошаемых (осушаемых) земель, га</span>
-                <input v-model.number="meliorationForm.areaHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <label v-if="meliorationTab === 'systems'" class="lands-field">
-              <span>Описание мелиоративной системы и местоположения</span>
-              <input v-model.trim="meliorationForm.descriptionLocation" type="text" />
-            </label>
+      <LandsConfirmModal
+        :open="deleteConfirmOpen"
+        dialog-label="Подтверждение удаления"
+        :title="deleteConfirmTitle"
+        :text="deleteConfirmText"
+        :confirm-label="saving || refsLoading ? 'Удаление...' : 'Удалить'"
+        :busy="saving || refsLoading"
+        @confirm="confirmDeleteTarget"
+        @close="closeDeleteConfirm"
+      />
 
-            <div v-if="meliorationTab === 'forest'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span>Площадь МЗЛН, га</span>
-                <input v-model.number="meliorationForm.areaHa" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Кадастровый номер земельного участка</span>
-                <input v-model.trim="meliorationForm.cadastralNumber" type="text" />
-              </label>
-            </div>
-            <label v-if="meliorationTab === 'forest'" class="lands-field">
-              <span>Количественные, качественные характеристики</span>
-              <input v-model.trim="meliorationForm.forestCharacteristics" type="text" />
-            </label>
-            <label v-if="meliorationTab === 'forest'" class="lands-field">
-              <span>Информация о реконструкции насаждений</span>
-              <input v-model.trim="meliorationForm.reconstructionInfo" type="text" />
-            </label>
-
-            <div v-if="meliorationTab === 'events'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span>Дата проведения</span>
-                <input v-model="meliorationForm.eventDate" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь земельного участка, га</span>
-                <input v-model.number="meliorationForm.areaHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <label v-if="meliorationTab === 'events'" class="lands-field">
-              <span>Согласование проектов мелиорации</span>
-              <input v-model.trim="meliorationForm.projectApproval" type="text" />
-            </label>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving" @click="closeMeliorationModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving || !meliorationForm.fieldId" @click="saveMeliorationEntry">
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        v-if="deleteConfirmOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Подтверждение удаления"
-        @click.self="closeDeleteConfirm"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>{{ deleteConfirmTitle }}</h2>
-            <ModalCloseButton :disabled="saving || refsLoading" @click="closeDeleteConfirm" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">{{ deleteConfirmText }}</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || refsLoading" @click="closeDeleteConfirm">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--danger" :disabled="saving || refsLoading" @click="confirmDeleteTarget">
-              {{ saving || refsLoading ? 'Удаление...' : 'Удалить' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        v-if="rightFileDeleteConfirmOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Удаление файла"
-        @click.self="closeRightFileDeleteConfirm"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Удалить файл?</h2>
-            <ModalCloseButton :disabled="saving || rightFileUploading" @click="closeRightFileDeleteConfirm" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">Файл будет удален из списка подтверждающих документов.</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || rightFileUploading" @click="closeRightFileDeleteConfirm">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--danger" :disabled="saving || rightFileUploading" @click="confirmRemoveRightSupportingFile">
-              Удалить
-            </button>
-          </div>
-        </div>
-      </div>
-      <div
-        v-if="successModalOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Успешно"
-        @click.self="closeSuccessModal"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Готово</h2>
-            <ModalCloseButton @click="closeSuccessModal" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">{{ successModalText }}</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn lands-btn--save" @click="closeSuccessModal">Закрыть</button>
-          </div>
-        </div>
-      </div>
+      <LandsConfirmModal
+        :open="rightFileDeleteConfirmOpen"
+        dialog-label="Удаление файла"
+        title="Удалить файл?"
+        text="Файл будет удален из списка подтверждающих документов."
+        confirm-label="Удалить"
+        :busy="saving || rightFileUploading"
+        @confirm="confirmRemoveRightSupportingFile"
+        @close="closeRightFileDeleteConfirm"
+      />
+      <LandsConfirmModal
+        :open="successModalOpen"
+        dialog-label="Успешно"
+        title="Готово"
+        :text="successModalText"
+        confirm-label="Закрыть"
+        confirm-variant="save"
+        :cancellable="false"
+        @confirm="closeSuccessModal"
+        @close="closeSuccessModal"
+      />
     </teleport>
   </section>
 </template>
 
 <style scoped src="./LandsPage.css"></style>
+<!-- Общие стили окон раздела: без scoped, их же используют вынесенные компоненты модалок. -->

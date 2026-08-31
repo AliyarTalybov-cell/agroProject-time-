@@ -40,12 +40,7 @@ const emit = defineEmits<{
 
 <style scoped>
 .backend-modal-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: var(--space-lg);
   background: var(--modal-backdrop, rgba(15, 23, 42, 0.55));
   backdrop-filter: blur(2px);
