@@ -9,6 +9,9 @@
  * Разбирать его на два десятка пропсов с обратными событиями значило бы
  * переписать форму, а не вынести её.
  */
+// Общие стили раздела: подключаются импортом, а не <style src>, — так файл
+// попадает в сборку одной копией, а не отдельной на каждый компонент.
+import './landsShared.css'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import type { CropRotationFieldOption, CropRotationForm } from '@/components/lands/types'
@@ -145,5 +148,3 @@ function canSave(): boolean {
   </div>
 </template>
 
-<!-- Без scoped: те же правила нужны и странице, и остальным окнам раздела. -->
-<style src="./landsModal.css"></style>

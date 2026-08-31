@@ -10,6 +10,9 @@
  * файла (`upload`) и о просьбе удалить ссылку (`remove-file`), а загрузку в
  * хранилище и подтверждение удаления по-прежнему ведёт LandsPage.
  */
+// Общие стили раздела: подключаются импортом, а не <style src>, — так файл
+// попадает в сборку одной копией, а не отдельной на каждый компонент.
+import './landsShared.css'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import type { LandUserForm } from '@/components/lands/types'
 import { fileLabelFromUrl, isImageUrl } from '@/lib/fileLinks'
@@ -190,5 +193,3 @@ defineEmits<{
 </div>
 </template>
 
-<!-- Без scoped: те же правила нужны и странице, и остальным окнам раздела. -->
-<style src="./landsModal.css"></style>

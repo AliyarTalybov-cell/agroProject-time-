@@ -6,6 +6,9 @@
  *
  * Форма передаётся объектом и правится на месте, как и в окне севооборота.
  */
+// Общие стили раздела: подключаются импортом, а не <style src>, — так файл
+// попадает в сборку одной копией, а не отдельной на каждый компонент.
+import './landsShared.css'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import type { CropRotationFieldOption, RealEstateForm } from '@/components/lands/types'
 
@@ -129,5 +132,3 @@ defineEmits<{
 </div>
 </template>
 
-<!-- Без scoped: те же правила нужны и странице, и остальным окнам раздела. -->
-<style src="./landsModal.css"></style>

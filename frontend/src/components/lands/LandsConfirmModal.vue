@@ -9,6 +9,9 @@
  * Разметка перенесена без изменений, поэтому у окна остались классы с
  * префиксом lands-: стили к ним приходят из landsModal.css.
  */
+// Общие стили раздела: подключаются импортом, а не <style src>, — так файл
+// попадает в сборку одной копией, а не отдельной на каждый компонент.
+import './landsShared.css'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 
 withDefaults(
@@ -67,5 +70,3 @@ defineEmits<{
   </div>
 </template>
 
-<!-- Без scoped: те же правила нужны и странице, и остальным окнам раздела. -->
-<style src="./landsModal.css"></style>

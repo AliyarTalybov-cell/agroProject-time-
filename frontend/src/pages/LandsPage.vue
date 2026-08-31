@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// Общие стили раздела земель — те же, что у вынесенных окон и вкладок.
+import '@/components/lands/landsShared.css'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loadPdfTools } from '@/lib/pdfExport'
@@ -5464,4 +5466,3 @@ onMounted(() => void reloadAll())
 
 <style scoped src="./LandsPage.css"></style>
 <!-- Общие стили окон раздела: без scoped, их же используют вынесенные компоненты модалок. -->
-<style src="../components/lands/landsModal.css"></style>

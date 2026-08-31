@@ -8,6 +8,9 @@
  * страница, поэтому `fieldLabel` передаётся функцией — так же, как это
  * работало внутри страницы.
  */
+// Общие стили раздела: подключаются импортом, а не <style src>, — так файл
+// попадает в сборку одной копией, а не отдельной на каждый компонент.
+import './landsShared.css'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import type { MeliorationForm, MeliorationTab } from '@/components/lands/types'
 import type { FieldRow } from '@/lib/fieldsSupabase'
@@ -168,5 +171,3 @@ defineEmits<{
 </div>
 </template>
 
-<!-- Без scoped: те же правила нужны и странице, и остальным окнам раздела. -->
-<style src="./landsModal.css"></style>
