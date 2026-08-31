@@ -5,6 +5,8 @@ import { loadPdfTools } from '@/lib/pdfExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import LandCropRotationModal from '@/components/lands/LandCropRotationModal.vue'
+import LandMeliorationModal from '@/components/lands/LandMeliorationModal.vue'
+import LandRealEstateModal from '@/components/lands/LandRealEstateModal.vue'
 import LandsConfirmModal from '@/components/lands/LandsConfirmModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
@@ -5556,107 +5558,15 @@ onMounted(() => void reloadAll())
         </div>
       </div>
 
-      <div v-if="realEstateModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Объект недвижимости" @click.self="closeRealEstateModal">
-        <div class="lands-modal">
-          <div class="lands-modal-head">
-            <h2>{{ editingRealEstateId ? 'Редактировать объект недвижимости' : 'Добавить объект недвижимости' }}</h2>
-            <ModalCloseButton @click="closeRealEstateModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>№ ПОЛЯ ЕФИС ЗСН</span>
-                <select v-model="realEstateForm.fieldId">
-                  <option value="">—</option>
-                  <option v-for="field in assignedFields" :key="field.id" :value="field.id">
-                    №{{ field.number }} — {{ field.name }}
-                  </option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span>Кадастровый номер *</span>
-                <input v-model.trim="realEstateForm.cadastralNumber" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Наименование</span>
-                <input v-model.trim="realEstateForm.name" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Описание местоположения</span>
-                <input v-model.trim="realEstateForm.locationDescription" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Площадь, кв.м.</span>
-                <input v-model.number="realEstateForm.areaSqm" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Вид разрешенного использования</span>
-                <input v-model.trim="realEstateForm.permittedUse" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Назначение</span>
-                <input v-model.trim="realEstateForm.purpose" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Адрес</span>
-                <input v-model.trim="realEstateForm.address" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Глубина, м</span>
-                <input v-model.number="realEstateForm.depthM" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Высота, м</span>
-                <input v-model.number="realEstateForm.heightM" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Протяженность, м</span>
-                <input v-model.number="realEstateForm.lengthM" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Объем, м³</span>
-                <input v-model.number="realEstateForm.volumeM3" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Глубина залегания, м</span>
-                <input v-model.number="realEstateForm.burialDepthM" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>План застройки</span>
-                <input v-model.trim="realEstateForm.developmentPlan" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Этажность</span>
-                <input v-model.trim="realEstateForm.floors" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Подземная этажность</span>
-                <input v-model.trim="realEstateForm.undergroundFloors" type="text" />
-              </label>
-            </div>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" @click="closeRealEstateModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="!realEstateForm.cadastralNumber.trim() || saving" @click="saveRealEstate">
-              {{ editingRealEstateId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandRealEstateModal
+        :open="realEstateModalOpen"
+        :form="realEstateForm"
+        :assigned-fields="assignedFields"
+        :editing-id="editingRealEstateId"
+        :saving="saving"
+        @save="saveRealEstate"
+        @close="closeRealEstateModal"
+      />
 
       <div v-if="userModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Землепользователь" @click.self="closeUserModal">
         <div class="lands-modal">
@@ -5819,139 +5729,19 @@ onMounted(() => void reloadAll())
         @close="closeUserFileDeleteConfirm"
       />
 
-      <div v-if="meliorationModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Мелиорация" @click.self="closeMeliorationModal">
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Добавить запись мелиорации</h2>
-            <ModalCloseButton :disabled="saving" @click="closeMeliorationModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>№ ПОЛЯ ЕФИС ЗСН</span>
-                <select v-model="meliorationForm.fieldId">
-                  <option value="">—</option>
-                  <option v-for="field in meliorationFieldOptions" :key="field.id" :value="field.id">
-                    {{ meliorationFieldLabel(field.id) }}
-                  </option>
-                </select>
-              </label>
-              <label v-if="meliorationTab === 'systems'" class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип мелиорации
-                  <RefFieldHelp
-                    text="Нет нужного типа мелиорации? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
-                    link-label="Справочники мелиорации"
-                  />
-                </span>
-                <select v-model="meliorationForm.meliorationType">
-                  <option value="">—</option>
-                  <option v-for="row in landMeliorationTypes" :key="row.id" :value="row.name">
-                    {{ row.name }}
-                  </option>
-                </select>
-              </label>
-              <label v-else-if="meliorationTab === 'forest'" class="lands-field">
-                <span>Год создания</span>
-                <input v-model.number="meliorationForm.forestYearCreated" type="number" min="1900" step="1" />
-              </label>
-              <label v-else class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип мероприятия
-                  <RefFieldHelp
-                    text="Нет нужного типа мероприятия? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
-                    link-label="Типы мероприятий"
-                  />
-                </span>
-                <select v-model="meliorationForm.eventType">
-                  <option value="">—</option>
-                  <option v-for="row in landMeliorationEventTypes" :key="row.id" :value="row.name">
-                    {{ row.name }}
-                  </option>
-                </select>
-              </label>
-            </div>
-            <div v-if="meliorationTab === 'systems'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Вид мелиорации
-                  <RefFieldHelp
-                    text="Нет нужного вида мелиорации? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
-                    link-label="Справочники мелиорации"
-                  />
-                </span>
-                <select v-model="meliorationForm.meliorationSubtype">
-                  <option value="">—</option>
-                  <option v-for="row in landMeliorationSubtypes" :key="row.id" :value="row.name">
-                    {{ row.name }}
-                  </option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span>Кадастровый номер земельного участка</span>
-                <input v-model.trim="meliorationForm.cadastralNumber" type="text" />
-              </label>
-            </div>
-            <div v-if="meliorationTab === 'systems'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span>Дата ввода в эксплуатацию</span>
-                <input v-model="meliorationForm.commissionedAt" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь орошаемых (осушаемых) земель, га</span>
-                <input v-model.number="meliorationForm.areaHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <label v-if="meliorationTab === 'systems'" class="lands-field">
-              <span>Описание мелиоративной системы и местоположения</span>
-              <input v-model.trim="meliorationForm.descriptionLocation" type="text" />
-            </label>
-
-            <div v-if="meliorationTab === 'forest'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span>Площадь МЗЛН, га</span>
-                <input v-model.number="meliorationForm.areaHa" type="number" min="0" step="0.01" />
-              </label>
-              <label class="lands-field">
-                <span>Кадастровый номер земельного участка</span>
-                <input v-model.trim="meliorationForm.cadastralNumber" type="text" />
-              </label>
-            </div>
-            <label v-if="meliorationTab === 'forest'" class="lands-field">
-              <span>Количественные, качественные характеристики</span>
-              <input v-model.trim="meliorationForm.forestCharacteristics" type="text" />
-            </label>
-            <label v-if="meliorationTab === 'forest'" class="lands-field">
-              <span>Информация о реконструкции насаждений</span>
-              <input v-model.trim="meliorationForm.reconstructionInfo" type="text" />
-            </label>
-
-            <div v-if="meliorationTab === 'events'" class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field">
-                <span>Дата проведения</span>
-                <input v-model="meliorationForm.eventDate" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Площадь земельного участка, га</span>
-                <input v-model.number="meliorationForm.areaHa" type="number" min="0" step="0.01" />
-              </label>
-            </div>
-            <label v-if="meliorationTab === 'events'" class="lands-field">
-              <span>Согласование проектов мелиорации</span>
-              <input v-model.trim="meliorationForm.projectApproval" type="text" />
-            </label>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving" @click="closeMeliorationModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving || !meliorationForm.fieldId" @click="saveMeliorationEntry">
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandMeliorationModal
+        :open="meliorationModalOpen"
+        :form="meliorationForm"
+        :tab="meliorationTab"
+        :field-options="meliorationFieldOptions"
+        :field-label="meliorationFieldLabel"
+        :types="landMeliorationTypes"
+        :subtypes="landMeliorationSubtypes"
+        :event-types="landMeliorationEventTypes"
+        :saving="saving"
+        @save="saveMeliorationEntry"
+        @close="closeMeliorationModal"
+      />
 
       <LandsConfirmModal
         :open="deleteConfirmOpen"
