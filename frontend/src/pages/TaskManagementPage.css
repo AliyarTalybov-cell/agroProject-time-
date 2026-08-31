@@ -769,13 +769,7 @@
 
 .task-modal-backdrop,
 .tm-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--modal-backdrop);
   backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 1000;
   padding: var(--space-md);
   animation: taskFadeIn 0.2s ease;

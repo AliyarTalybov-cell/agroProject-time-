@@ -1384,12 +1384,7 @@ onBeforeUnmount(() => {
 }
 .is-row-muted { opacity: 0.6; }
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 1200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 20px;
   background: rgba(15, 23, 42, 0.46);
 }

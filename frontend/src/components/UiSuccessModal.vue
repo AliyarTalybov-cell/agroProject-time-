@@ -37,14 +37,8 @@ function close() {
 
 <style scoped>
 .ui-success-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 20px;
-  background: var(--modal-backdrop);
   animation: uiSuccessBackdropIn 0.2s ease-out;
 }
 

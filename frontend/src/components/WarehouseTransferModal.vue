@@ -423,14 +423,8 @@ function formatMass(n: number): string {
 
 <style scoped>
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 24px;
-  background: var(--modal-backdrop);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }

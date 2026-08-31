@@ -4,6 +4,7 @@ import App from './App.vue'
 import { router } from './router'
 import { useAuth } from './stores/auth'
 import './styles/global.css'
+import './styles/modal.css'
 
 // Применить сохранённую тему до рендера
 const saved = localStorage.getItem('agro:theme')

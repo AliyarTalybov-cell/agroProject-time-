@@ -1691,12 +1691,6 @@
 }
 
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--modal-backdrop);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 2200;
   padding: 14px;
 }
@@ -1787,14 +1781,8 @@
 }
 /* Модальное окно подтверждения удаления (как в ProfilePage) */
 .fields-confirm-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: var(--space-lg);
-  background: var(--modal-backdrop);
 }
 .fields-confirm-modal {
   background: var(--bg-panel);

@@ -1335,14 +1335,8 @@ async function confirmDeleteAccount() {
 
 /* Модальное окно подтверждения сохранения профиля */
 .profile-confirm-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: var(--space-lg);
-  background: var(--modal-backdrop);
 }
 
 .profile-confirm-modal {

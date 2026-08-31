@@ -2101,12 +2101,6 @@
 }
 
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--modal-backdrop);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 120;
   animation: mechanicFadeIn 0.2s ease;
 }

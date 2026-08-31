@@ -984,13 +984,7 @@
   }
 }
 .lands-modal-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 2200;
-  background: var(--modal-backdrop);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 14px;
   animation: landsModalFadeIn 0.2s ease;
 }
