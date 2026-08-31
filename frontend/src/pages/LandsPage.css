@@ -1,72 +1,16 @@
-/* Здесь остаётся только то, что нельзя делать глобальным: классы .task-* и
-   .fields-* — общие идиомы кнопок выгрузки и пагинации, у каждой страницы
-   своя копия правил. Сделать их глобальными отсюда значило бы подменить их
-   на «Полях», «Складах», «Задачах» и ещё нескольких страницах.
+/* Здесь остаётся только то, что нельзя делать глобальным: классы .fields-* —
+   общая идиома пагинации реестра, у каждой страницы своя копия правил.
+   Сделать их глобальными отсюда значило бы подменить пагинацию на «Полях»,
+   «Складах» и ещё нескольких страницах.
+
+   Кнопки выгрузки раньше тоже были здесь под именами .task-*; они
+   переименованы в .lands-export-* и переехали в landsShared.css — имя стало
+   уникальным для раздела, и правила больше ни с чем не пересекаются.
 
    Всё остальное — правила с префиксом lands-/land-, уникальные для раздела —
    переехало в components/lands/landsShared.css без scoped, чтобы доставаться
    и вынесенным компонентам вкладок и окон. */
 
-.task-export-btns {
-  display: flex;
-  gap: 8px;
-}
-.task-header-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-.task-btn-export {
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
-  color: var(--text-secondary);
-  font-size: .875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-.task-btn-export:hover:not(:disabled) {
-  background: var(--sidebar-hover-bg);
-  color: var(--text-primary);
-}
-.task-btn-export.action_has {
-  --color: 220 9% 46%;
-  --color-has: 146 33% 30%;
-}
-[data-theme='dark'] .task-btn-export.action_has {
-  --color: 215 14% 55%;
-  --color-has: 97 55% 52%;
-}
-.task-btn-export.has_saved:hover:not(:disabled) {
-  border-color: hsl(var(--color-has));
-}
-.task-btn-export.has_saved:hover:not(:disabled) svg {
-  color: hsl(var(--color-has));
-}
-.task-btn-export.has_saved svg {
-  overflow: visible;
-  transform-origin: center;
-  transition: transform 0.22s ease;
-}
-.task-btn-export.has_saved:hover:not(:disabled) svg {
-  animation: task-export-file-hover 0.65s ease;
-}
-@keyframes task-export-file-hover {
-  0% { transform: translateY(0) scale(1) rotate(0deg); }
-  35% { transform: translateY(-2px) scale(1.11) rotate(-8deg); }
-  70% { transform: translateY(-1px) scale(1.06) rotate(6deg); }
-  100% { transform: translateY(0) scale(1) rotate(0deg); }
-}
-.task-btn-export:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 /* Пагинация реестра — как на «Полях» / «Складах» */
 .fields-pagination {
   display: flex;

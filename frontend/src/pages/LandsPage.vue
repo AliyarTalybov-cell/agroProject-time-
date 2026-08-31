@@ -3750,15 +3750,15 @@ onMounted(() => void reloadAll())
             <h2>Реестр земель</h2>
             <div class="lands-table-tools">
               <input v-model.trim="landsSearch" class="lands-search" type="text" placeholder="Поиск по адресу или кадастровому номеру..." />
-              <div class="task-export-btns">
+              <div class="lands-export-btns">
                 <button
                   type="button"
-                  class="task-btn-export action_has has_saved"
+                  class="lands-export-btn action_has has_saved"
                   :disabled="!lands.length"
                   title="Экспорт в PDF"
                   @click="exportLandsToPdf"
                 >
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
                     <path d="M14 2v6h6" data-path="line-top" />
                     <path d="M12 18v-6" data-path="line-bottom" />
@@ -3768,12 +3768,12 @@ onMounted(() => void reloadAll())
                 </button>
                 <button
                   type="button"
-                  class="task-btn-export action_has has_saved"
+                  class="lands-export-btn action_has has_saved"
                   :disabled="!lands.length"
                   title="Экспорт в Excel"
                   @click="exportLandsToExcel"
                 >
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
                     <path d="M14 2v6h6" data-path="line-top" />
                     <path d="M8 13h2" data-path="line-bottom" />
@@ -3891,9 +3891,9 @@ onMounted(() => void reloadAll())
             </button>
           </div>
           <div class="lands-melioration-head">
-            <div class="task-export-btns">
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="lands-export-btns">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M12 18v-6" />
@@ -3901,8 +3901,8 @@ onMounted(() => void reloadAll())
                 </svg>
                 PDF
               </button>
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M8 13h2" />
@@ -4709,9 +4709,9 @@ onMounted(() => void reloadAll())
         <template v-if="selectedLand && activeTab === 'info'">
           <div class="lands-section-head">
             <h2>Сведения об участке</h2>
-            <div class="task-export-btns">
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в PDF" @click="exportLandInfoToPdf">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="lands-export-btns">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в PDF" @click="exportLandInfoToPdf">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M12 18v-6" />
@@ -4719,8 +4719,8 @@ onMounted(() => void reloadAll())
                 </svg>
                 PDF
               </button>
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в Excel" @click="exportLandInfoToExcel">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в Excel" @click="exportLandInfoToExcel">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M8 13h2" />
@@ -4833,9 +4833,9 @@ onMounted(() => void reloadAll())
         <template v-else-if="selectedLand && activeTab === 'fields'">
           <div class="lands-section-head">
             <h2>Поля земли</h2>
-            <div class="task-export-btns">
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landFieldsExportRows.length" title="Экспорт в PDF" @click="exportLandFieldsToPdf">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="lands-export-btns">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landFieldsExportRows.length" title="Экспорт в PDF" @click="exportLandFieldsToPdf">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M12 18v-6" />
@@ -4843,8 +4843,8 @@ onMounted(() => void reloadAll())
                 </svg>
                 PDF
               </button>
-              <button type="button" class="task-btn-export action_has has_saved" :disabled="!landFieldsExportRows.length" title="Экспорт в Excel" @click="exportLandFieldsToExcel">
-                <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landFieldsExportRows.length" title="Экспорт в Excel" @click="exportLandFieldsToExcel">
+                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path d="M14 2v6h6" />
                   <path d="M8 13h2" />
@@ -4909,9 +4909,9 @@ onMounted(() => void reloadAll())
           <div class="lands-section-head">
             <h2>Права владения</h2>
             <div class="lands-section-actions">
-              <div class="task-export-btns">
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRightsExportRows.length" title="Экспорт в PDF" @click="exportLandRightsToPdf">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="lands-export-btns">
+                <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landRightsExportRows.length" title="Экспорт в PDF" @click="exportLandRightsToPdf">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <path d="M14 2v6h6" />
                     <path d="M12 18v-6" />
@@ -4919,8 +4919,8 @@ onMounted(() => void reloadAll())
                   </svg>
                   PDF
                 </button>
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRightsExportRows.length" title="Экспорт в Excel" @click="exportLandRightsToExcel">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landRightsExportRows.length" title="Экспорт в Excel" @click="exportLandRightsToExcel">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <path d="M14 2v6h6" />
                     <path d="M8 13h2" />
@@ -5053,9 +5053,9 @@ onMounted(() => void reloadAll())
           <div class="lands-section-head">
             <h2>Севооборот</h2>
             <div class="lands-section-actions">
-              <div class="task-export-btns">
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landCropRotationExportRows.length" title="Экспорт в PDF" @click="exportLandCropRotationToPdf">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="lands-export-btns">
+                <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landCropRotationExportRows.length" title="Экспорт в PDF" @click="exportLandCropRotationToPdf">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <path d="M14 2v6h6" />
                     <path d="M12 18v-6" />
@@ -5063,8 +5063,8 @@ onMounted(() => void reloadAll())
                   </svg>
                   PDF
                 </button>
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landCropRotationExportRows.length" title="Экспорт в Excel" @click="exportLandCropRotationToExcel">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landCropRotationExportRows.length" title="Экспорт в Excel" @click="exportLandCropRotationToExcel">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <path d="M14 2v6h6" />
                     <path d="M8 13h2" />
@@ -5128,9 +5128,9 @@ onMounted(() => void reloadAll())
           <div class="lands-section-head">
             <h2>Объекты недвижимости</h2>
             <div class="lands-section-actions">
-              <div class="task-export-btns">
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRealEstateExportRows.length" title="Экспорт в PDF" @click="exportLandRealEstateToPdf">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="lands-export-btns">
+                <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landRealEstateExportRows.length" title="Экспорт в PDF" @click="exportLandRealEstateToPdf">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <path d="M14 2v6h6" />
                     <path d="M12 18v-6" />
@@ -5138,8 +5138,8 @@ onMounted(() => void reloadAll())
                   </svg>
                   PDF
                 </button>
-                <button type="button" class="task-btn-export action_has has_saved" :disabled="!landRealEstateExportRows.length" title="Экспорт в Excel" @click="exportLandRealEstateToExcel">
-                  <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landRealEstateExportRows.length" title="Экспорт в Excel" @click="exportLandRealEstateToExcel">
+                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <path d="M14 2v6h6" />
                     <path d="M8 13h2" />

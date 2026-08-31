@@ -7,7 +7,7 @@
  *
  * Так можно, потому что все имена здесь начинаются с lands-/land- и вне
  * раздела земель не встречаются: проверено по всем страницам и компонентам.
- * Классы .task-* и .fields-* остались в LandsPage.css под scoped именно
+ * Классы .fields-* (пагинация) остались в LandsPage.css под scoped именно
  * потому, что они общие и у других страниц свои копии.
  *
  * Порядок правил сохранён исходный.
@@ -105,10 +105,10 @@
 .lands-table-top { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
 .lands-table-tools { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap; width:100%; }
 .lands-table-tools .lands-search { flex: 0 1 620px; width: min(620px, 100%); min-width: 260px; max-width: 620px; margin: 0; }
-.lands-table-tools .task-export-btns { flex: 0 0 auto; margin-left: auto; align-items: center; }
+.lands-table-tools .lands-export-btns { flex: 0 0 auto; margin-left: auto; align-items: center; }
 @media (max-width: 980px) {
   .lands-table-tools { flex-wrap: wrap; }
-  .lands-table-tools .task-export-btns { margin-left: 0; }
+  .lands-table-tools .lands-export-btns { margin-left: 0; }
 }
 .lands-table-wrap { overflow:auto; border:1px solid var(--border-color); border-radius:12px; }
 .lands-table { width:100%; border-collapse:collapse; min-width:920px; font-size:.875rem; }
@@ -1009,4 +1009,72 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+/* ——— Кнопки выгрузки раздела ———
+   Раньше эти правила назывались .task-export-btns / .task-btn-export /
+   .task-header-icon — имена, у которых своя копия есть ещё в шести страницах.
+   Здесь они переименованы в lands-*: имя стало уникальным для раздела, и
+   правила можно держать общими, не подменяя ничего на других страницах.
+   Тела правил не менялись. */
+
+.lands-export-btns {
+  display: flex;
+  gap: 8px;
+}
+.lands-export-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.lands-export-btn {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  font-size: .875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.lands-export-btn:hover:not(:disabled) {
+  background: var(--sidebar-hover-bg);
+  color: var(--text-primary);
+}
+.lands-export-btn.action_has {
+  --color: 220 9% 46%;
+  --color-has: 146 33% 30%;
+}
+[data-theme='dark'] .lands-export-btn.action_has {
+  --color: 215 14% 55%;
+  --color-has: 97 55% 52%;
+}
+.lands-export-btn.has_saved:hover:not(:disabled) {
+  border-color: hsl(var(--color-has));
+}
+.lands-export-btn.has_saved:hover:not(:disabled) svg {
+  color: hsl(var(--color-has));
+}
+.lands-export-btn.has_saved svg {
+  overflow: visible;
+  transform-origin: center;
+  transition: transform 0.22s ease;
+}
+.lands-export-btn.has_saved:hover:not(:disabled) svg {
+  animation: lands-export-file-hover 0.65s ease;
+}
+@keyframes lands-export-file-hover {
+  0% { transform: translateY(0) scale(1) rotate(0deg); }
+  35% { transform: translateY(-2px) scale(1.11) rotate(-8deg); }
+  70% { transform: translateY(-1px) scale(1.06) rotate(6deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+.lands-export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
