@@ -16,6 +16,7 @@ import {
 } from '@/lib/weatherApi'
 import { parseLatLonFromGeolocationString } from '@/lib/yandexGeocode'
 import { RUSSIAN_CITIES } from '@/lib/cities'
+import { type LatLon, fromPolygonGeoJson } from '@/lib/geoContour'
 import { useWeatherCity } from '@/composables/useWeatherCity'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import YandexMap from '@/components/YandexMap.vue'
@@ -34,22 +35,6 @@ const pickedCoords = ref<{ lat: number; lon: number } | null>(null)
 const pickedCoordsCopied = ref(false)
 let pickedCoordsCopiedTimer: ReturnType<typeof setTimeout> | null = null
 let longLoadingHintTimer: ReturnType<typeof setTimeout> | null = null
-type LatLon = [number, number]
-
-function fromPolygonGeoJson(geojson: Record<string, unknown> | null | undefined): LatLon[] {
-  if (!geojson || geojson.type !== 'Polygon' || !Array.isArray((geojson as { coordinates?: unknown }).coordinates)) return []
-  const ring = ((geojson as { coordinates: unknown[] }).coordinates[0] as unknown[]) || []
-  const points = ring
-    .map((p) => (Array.isArray(p) && p.length >= 2 ? [Number(p[1]), Number(p[0])] as LatLon : null))
-    .filter((p): p is LatLon => Boolean(p && Number.isFinite(p[0]) && Number.isFinite(p[1])))
-  if (points.length >= 2) {
-    const first = points[0]
-    const last = points[points.length - 1]
-    if (first[0] === last[0] && first[1] === last[1]) points.pop()
-  }
-  return points
-}
-
 async function copyPickedCoords() {
   const p = pickedCoords.value
   if (!p) return

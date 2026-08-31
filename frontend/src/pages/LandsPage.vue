@@ -10,6 +10,7 @@ import YandexMap from '@/components/YandexMap.vue'
 import type { MapFieldMarker } from '@/components/YandexMap.vue'
 import { resolveYandexAddressCandidates, resolveYandexAddressLine } from '@/lib/yandexGeocode'
 import { downloadDelimited, escapeHtml } from '@/lib/tableExport'
+import { type LatLon, fromPolygonGeoJson, polygonCenter, toPolygonGeoJson } from '@/lib/geoContour'
 import {
   addCropByLabel,
   addLandActualUseOption as addLandActualUseOptionApi,
@@ -148,9 +149,6 @@ import {
   type EquipmentTypeRefRow,
   type EquipmentConditionRefRow,
 } from '@/lib/equipmentSupabase'
-
-type LatLon = [number, number]
-type PolygonGeoJson = { type: 'Polygon'; coordinates: number[][][] }
 
 type LandForm = {
   number: number
@@ -449,7 +447,7 @@ const userForm = ref({
 
 const selectedLand = computed(() => lands.value.find((x) => x.id === selectedLandId.value) ?? null)
 const landTypeLabelMap = computed(() => new Map(landTypes.value.map((t) => [t.id, t.name])))
-const selectedLandPolygonPoints = computed<LatLon[]>(() => fromPolygonGeoJson(selectedLand.value?.contour_geojson ?? null))
+const selectedLandPolygonPoints = computed<LatLon[]>(() => fromPolygonGeoJson(selectedLand.value?.contour_geojson ?? null, { requireType: false }))
 const detailsMapLat = computed(() => selectedLand.value?.center_lat ?? mapLat.value)
 const detailsMapLon = computed(() => selectedLand.value?.center_lon ?? mapLon.value)
 const landEfisNumbersMap = computed(() => {
@@ -471,9 +469,9 @@ const assignedFields = computed(() => fields.value.filter((f) => f.land_id === s
 const unassignedFields = computed(() => fields.value.filter((f) => !f.land_id || f.land_id !== selectedLandId.value))
 const assignedFieldMapMarkers = computed<MapFieldMarker[]>(() => assignedFields.value
   .reduce<MapFieldMarker[]>((markers, f) => {
-    const polygonPoints = fromPolygonGeoJson(f.contour_geojson as Record<string, unknown> | null)
+    const polygonPoints = fromPolygonGeoJson(f.contour_geojson as Record<string, unknown> | null, { requireType: false })
     if (polygonPoints.length >= 3) {
-      const center = polygonCenterFromPoints(polygonPoints)
+      const center = polygonCenter(polygonPoints)
       markers.push({
         id: f.id,
         lat: center?.lat ?? detailsMapLat.value,
@@ -1167,7 +1165,7 @@ function setFormFromLand(land: LandRow | null) {
   }
   const center = getLandContourCenter(land.contour_geojson)
   mapGeometryMode.value = land.geometry_mode ?? 'polygon'
-  mapContourDraftPoints.value = fromPolygonGeoJson(land.contour_geojson)
+  mapContourDraftPoints.value = fromPolygonGeoJson(land.contour_geojson, { requireType: false })
   if (center) {
     mapLat.value = center.lat
     mapLon.value = center.lon
@@ -1361,40 +1359,6 @@ function getLandContourCenter(contour: Record<string, unknown> | null): { lat: n
   const lon = points.reduce((sum, p) => sum + p[0], 0) / points.length
   const lat = points.reduce((sum, p) => sum + p[1], 0) / points.length
   return { lat, lon }
-}
-
-function polygonCenterFromPoints(points: LatLon[]): { lat: number; lon: number } | null {
-  if (!points.length) return null
-  const lat = points.reduce((sum, p) => sum + p[0], 0) / points.length
-  const lon = points.reduce((sum, p) => sum + p[1], 0) / points.length
-  return { lat, lon }
-}
-
-function toPolygonGeoJson(points: LatLon[]): PolygonGeoJson | null {
-  if (points.length < 3) return null
-  const ring = points.map((p) => [p[1], p[0]])
-  const first = ring[0]
-  const last = ring[ring.length - 1]
-  if (!first || !last) return null
-  const closed = first[0] === last[0] && first[1] === last[1]
-    ? ring
-    : [...ring, [first[0], first[1]]]
-  return { type: 'Polygon', coordinates: [closed] }
-}
-
-function fromPolygonGeoJson(contour: Record<string, unknown> | null): LatLon[] {
-  const coordinates = (contour as { coordinates?: unknown })?.coordinates
-  if (!Array.isArray(coordinates) || !Array.isArray(coordinates[0])) return []
-  const ring = coordinates[0] as unknown[]
-  const points = ring
-    .map((p) => (Array.isArray(p) && p.length >= 2 ? [Number(p[1]), Number(p[0])] as LatLon : null))
-    .filter((p): p is LatLon => Boolean(p && Number.isFinite(p[0]) && Number.isFinite(p[1])))
-  if (points.length > 1) {
-    const first = points[0]
-    const last = points[points.length - 1]
-    if (first && last && first[0] === last[0] && first[1] === last[1]) return points.slice(0, -1)
-  }
-  return points
 }
 
 function tryFillRegionFromAddress(address: string) {
@@ -2435,6 +2399,12 @@ async function removeFieldMunicipalityReference(id: string) {
   }
 }
 
+/**
+ * Выборка точек контура для обратного геокодирования. Намеренно своя: здесь
+ * берутся первые шесть точек подряд, а общая `contourSamplePoints` из
+ * `@/lib/geoContour` раскладывает пять точек равномерно по кольцу. Какое
+ * поведение верное — вопрос к разделу земель, поэтому оставлено как было.
+ */
 function contourSamplePoints(points: LatLon[], center: { lat: number; lon: number } | null): Array<{ lat: number; lon: number }> {
   const sample: Array<{ lat: number; lon: number }> = []
   if (center) sample.push({ lat: center.lat, lon: center.lon })

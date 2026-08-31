@@ -44,6 +44,7 @@ import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import YandexMap from '@/components/YandexMap.vue'
 import { resolveYandexAddressLine, resolveYandexAddressCandidates } from '@/lib/yandexGeocode'
 import { downloadDelimited, escapeHtml, openPdfInNewTab, renderTablePdfFitPage } from '@/lib/tableExport'
+import { type LatLon, type PolygonGeoJson, contourSamplePoints, fromPolygonGeoJson, toPolygonGeoJson } from '@/lib/geoContour'
 
 type CropKey = 'all' | 'wheat' | 'corn' | 'soy' | 'sunflower' | 'none' | 'meadow'
 
@@ -96,13 +97,6 @@ type Field = {
   soilType: string
   moisture: string
   lastOperation: string
-}
-
-type LatLon = [number, number]
-
-type PolygonGeoJson = {
-  type: 'Polygon'
-  coordinates: number[][][]
 }
 
 const router = useRouter()
@@ -665,30 +659,6 @@ const fieldMapCenter = computed(() => {
   return { lat: parts[0], lon: parts[1] }
 })
 
-function toPolygonGeoJson(points: LatLon[]): PolygonGeoJson | null {
-  if (!Array.isArray(points) || points.length < 3) return null
-  const ring = points.map(([lat, lon]) => [lon, lat])
-  const [firstLon, firstLat] = ring[0]!
-  const [lastLon, lastLat] = ring[ring.length - 1]!
-  if (firstLon !== lastLon || firstLat !== lastLat) ring.push([firstLon, firstLat])
-  return { type: 'Polygon', coordinates: [ring] }
-}
-
-function fromPolygonGeoJson(geojson: PolygonGeoJson | Record<string, unknown> | null | undefined): LatLon[] {
-  if (!geojson || geojson.type !== 'Polygon' || !Array.isArray(geojson.coordinates)) return []
-  const ring = geojson.coordinates[0]
-  if (!Array.isArray(ring)) return []
-  const points = ring
-    .map((p) => (Array.isArray(p) && p.length >= 2 ? [Number(p[1]), Number(p[0])] as LatLon : null))
-    .filter((p): p is LatLon => Boolean(p && Number.isFinite(p[0]) && Number.isFinite(p[1])))
-  if (points.length >= 2) {
-    const first = points[0]
-    const last = points[points.length - 1]
-    if (first[0] === last[0] && first[1] === last[1]) points.pop()
-  }
-  return points
-}
-
 function getPolygonCenterLatLon(geojson: PolygonGeoJson | Record<string, unknown> | null | undefined): { lat: number; lon: number } | null {
   const points = fromPolygonGeoJson(geojson)
   if (!points.length) return null
@@ -1006,27 +976,6 @@ function applyAddressCandidates(candidates: string[]) {
     tryFillFieldRegionFromAddress(list[0]!)
     tryFillMunicipalityFromAddress(list[0]!)
   }
-}
-
-function contourSamplePoints(points: LatLon[], center: { lat: number; lon: number } | null): Array<{ lat: number; lon: number }> {
-  const src = points.filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[1]))
-  if (!src.length && !center) return []
-  const out: Array<{ lat: number; lon: number }> = []
-  if (center) out.push({ lat: center.lat, lon: center.lon })
-  if (src.length) {
-    const idx = new Set<number>([
-      0,
-      Math.floor(src.length * 0.25),
-      Math.floor(src.length * 0.5),
-      Math.floor(src.length * 0.75),
-      src.length - 1,
-    ])
-    for (const i of idx) {
-      const p = src[Math.max(0, Math.min(i, src.length - 1))]!
-      out.push({ lat: p[0], lon: p[1] })
-    }
-  }
-  return out
 }
 
 let contourAddressRequestId = 0

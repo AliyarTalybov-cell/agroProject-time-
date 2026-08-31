@@ -25,6 +25,7 @@ import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import YandexMap from '@/components/YandexMap.vue'
 import { resolveYandexAddressLine, resolveYandexAddressCandidates, parseLatLonFromGeolocationString } from '@/lib/yandexGeocode'
+import { type LatLon, contourSamplePoints, fromPolygonGeoJson, polygonCenter, toPolygonGeoJson } from '@/lib/geoContour'
 
 const props = defineProps<{ id: string }>()
 
@@ -83,60 +84,6 @@ const historyPageSize = ref(5)
 const historyTotal = ref(0)
 
 const isManager = computed(() => auth.userRole.value === 'manager')
-
-type LatLon = [number, number]
-type PolygonGeoJson = { type: 'Polygon'; coordinates: number[][][] }
-
-function fromPolygonGeoJson(geojson: Record<string, unknown> | null | undefined): LatLon[] {
-  if (!geojson || geojson.type !== 'Polygon' || !Array.isArray((geojson as { coordinates?: unknown }).coordinates)) return []
-  const ring = ((geojson as { coordinates: unknown[] }).coordinates[0] as unknown[]) || []
-  const points = ring
-    .map((p) => (Array.isArray(p) && p.length >= 2 ? [Number(p[1]), Number(p[0])] as LatLon : null))
-    .filter((p): p is LatLon => Boolean(p && Number.isFinite(p[0]) && Number.isFinite(p[1])))
-  if (points.length >= 2) {
-    const first = points[0]
-    const last = points[points.length - 1]
-    if (first[0] === last[0] && first[1] === last[1]) points.pop()
-  }
-  return points
-}
-
-function toPolygonGeoJson(points: LatLon[]): PolygonGeoJson | null {
-  if (!Array.isArray(points) || points.length < 3) return null
-  const ring = points.map(([lat, lon]) => [lon, lat])
-  const [fLon, fLat] = ring[0]!
-  const [lLon, lLat] = ring[ring.length - 1]!
-  if (fLon !== lLon || fLat !== lLat) ring.push([fLon, fLat])
-  return { type: 'Polygon', coordinates: [ring] }
-}
-
-function polygonCenter(points: LatLon[]): { lat: number; lon: number } | null {
-  if (!points.length) return null
-  const lat = points.reduce((s, p) => s + p[0], 0) / points.length
-  const lon = points.reduce((s, p) => s + p[1], 0) / points.length
-  return { lat, lon }
-}
-
-function contourSamplePoints(points: LatLon[], center: { lat: number; lon: number } | null): Array<{ lat: number; lon: number }> {
-  const src = points.filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[1]))
-  if (!src.length && !center) return []
-  const out: Array<{ lat: number; lon: number }> = []
-  if (center) out.push({ lat: center.lat, lon: center.lon })
-  if (src.length) {
-    const idx = new Set<number>([
-      0,
-      Math.floor(src.length * 0.25),
-      Math.floor(src.length * 0.5),
-      Math.floor(src.length * 0.75),
-      src.length - 1,
-    ])
-    for (const i of idx) {
-      const p = src[Math.max(0, Math.min(i, src.length - 1))]!
-      out.push({ lat: p[0], lon: p[1] })
-    }
-  }
-  return out
-}
 
 function applyEditAddressCandidates(candidates: string[]) {
   const list = [...new Set(candidates.map((x) => x.trim()).filter(Boolean))]

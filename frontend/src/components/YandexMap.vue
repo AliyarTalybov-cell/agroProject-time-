@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { type LatLon, polygonCenter } from '@/lib/geoContour'
 
 export type MapFieldMarker = {
   id: string
@@ -16,8 +17,6 @@ export type MapFieldMarker = {
 }
 
 type GeometryMode = 'point' | 'polygon'
-type LatLon = [number, number]
-
 const props = withDefaults(
   defineProps<{
     lat?: number
@@ -167,13 +166,6 @@ function areaHaFromPolygon(points: LatLon[]): number {
     area += x1 * y2 - x2 * y1
   }
   return Math.abs(area) / 2 / 10000
-}
-
-function polygonCenter(points: LatLon[]): { lat: number; lon: number } | null {
-  if (!points.length) return null
-  const lat = points.reduce((s, p) => s + p[0], 0) / points.length
-  const lon = points.reduce((s, p) => s + p[1], 0) / points.length
-  return { lat, lon }
 }
 
 function emitPolygonChange() {
