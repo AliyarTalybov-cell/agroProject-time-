@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { loadPdfTools } from '@/lib/pdfExport'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import { isSupabaseConfigured } from '@/lib/supabase'
@@ -17,6 +16,7 @@ import {
 import { loadStorageLocations } from '@/lib/storageLocationsSupabase'
 import { loadStorageIntakes, storageIntakeCropLabel, storageIntakeFieldLabel, type StorageIntakeRow } from '@/lib/storageIntakesSupabase'
 import { loadCrops, type CropRow } from '@/lib/landTypesAndCrops'
+import { buildDelimitedContent, downloadBlob, downloadXls, escapeHtml, renderTablePdfFitPage } from '@/lib/tableExport'
 
 const router = useRouter()
 const loading = ref(false)
@@ -188,28 +188,6 @@ async function exportSingleBatch(row: StorageBatchRow, format: 'excel' | 'csv' |
   }
 }
 
-function escapeHtml(value: unknown): string {
-  const div = document.createElement('div')
-  div.textContent = String(value ?? '')
-  return div.innerHTML
-}
-
-function escapeDelimitedCell(value: unknown, sep: string): string {
-  const s = String(value ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""')
-  return s.includes(sep) || s.includes('"') || s.includes('\r') ? `"${s}"` : s
-}
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-  URL.revokeObjectURL(url)
-}
-
 const EXPORT_HEADERS = ['№', 'Номер партии', 'Культура', 'Масса (т)', 'Статус', 'Место хранения', 'Назначение', 'Дата формирования']
 
 function batchToExportCells(row: StorageBatchRow, index: number): string[] {
@@ -240,20 +218,13 @@ async function loadAllFilteredBatches(): Promise<StorageBatchRow[]> {
 }
 
 function exportRowsToCsv(allRows: StorageBatchRow[], filename: string) {
-  const sep = ';'
-  const line = (arr: string[]) => arr.map((v) => escapeDelimitedCell(v, sep)).join(sep)
-  const body = allRows.map((r, i) => line(batchToExportCells(r, i)))
-  const csv = '\uFEFF' + [line(EXPORT_HEADERS), ...body].join('\r\n')
+  const rows = allRows.map((r, i) => batchToExportCells(r, i))
+  const csv = buildDelimitedContent(EXPORT_HEADERS, rows, ';')
   downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), filename)
 }
 
 function exportRowsToExcel(allRows: StorageBatchRow[], filename: string) {
-  const headerCells = EXPORT_HEADERS.map((h) => `<th>${escapeHtml(h)}</th>`).join('')
-  const bodyRows = allRows
-    .map((r, i) => `<tr>${batchToExportCells(r, i).map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`)
-    .join('')
-  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1"><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table></body></html>`
-  downloadBlob(new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' }), filename)
+  downloadXls(EXPORT_HEADERS, allRows.map((r, i) => batchToExportCells(r, i)), filename)
 }
 
 async function exportRowsToPdf(allRows: StorageBatchRow[], filename: string, title: string) {
@@ -274,22 +245,7 @@ async function exportRowsToPdf(allRows: StorageBatchRow[], filename: string, tit
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
-    const { html2canvas, jsPDF } = await loadPdfTools()
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
-    const imgData = canvas.toDataURL('image/png')
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-    const pageW = doc.internal.pageSize.getWidth()
-    const pageH = doc.internal.pageSize.getHeight()
-    const margin = 10
-    const maxW = pageW - margin * 2
-    const maxH = pageH - margin * 2
-    let w = maxW
-    let h = (canvas.height / canvas.width) * w
-    if (h > maxH) {
-      h = maxH
-      w = (canvas.width / canvas.height) * h
-    }
-    doc.addImage(imgData, 'PNG', margin, margin, w, h)
+    const doc = await renderTablePdfFitPage(el)
     doc.save(filename)
   } finally {
     el.remove()

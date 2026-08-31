@@ -9,6 +9,7 @@ import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import YandexMap from '@/components/YandexMap.vue'
 import type { MapFieldMarker } from '@/components/YandexMap.vue'
 import { resolveYandexAddressCandidates, resolveYandexAddressLine } from '@/lib/yandexGeocode'
+import { downloadDelimited, escapeHtml } from '@/lib/tableExport'
 import {
   addCropByLabel,
   addLandActualUseOption as addLandActualUseOptionApi,
@@ -539,18 +540,6 @@ const MELIORATION_KIND_MAP: Record<(typeof MELIORATION_TABS)[number]['id'], stri
   forest: 'forest',
   events: 'events',
 }
-const XLS_SEP = '\t'
-
-function escapeXlsCell(val: string): string {
-  const s = String(val ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""')
-  return s.includes(XLS_SEP) || s.includes('"') || s.includes('\r') ? `"${s}"` : s
-}
-
-function escapeHtml(s: string): string {
-  const div = document.createElement('div')
-  div.textContent = s
-  return div.innerHTML
-}
 
 function formatLandArea(area: number | null): string {
   const n = Number(area ?? 0)
@@ -574,15 +563,7 @@ function exportCellValue(value: unknown): string {
 
 function downloadCsv(headers: string[], rows: string[][], fileName: string) {
   if (!rows.length) return
-  const line = (arr: string[]) => arr.map(escapeXlsCell).join(XLS_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = fileName
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadDelimited(headers, rows, fileName)
 }
 
 async function downloadPdfTable(title: string, headers: string[], rows: string[][], fileName: string, width = 1100) {
@@ -855,15 +836,7 @@ function exportLandsToExcel() {
     formatLandArea(land.area),
     land.permitted_use_docs || 'Нет данных',
   ]))
-  const line = (arr: string[]) => arr.map(escapeXlsCell).join(XLS_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `реестр_земель_${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadDelimited(headers, rows, `реестр_земель_${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 async function exportLandsToPdf() {
@@ -3491,15 +3464,7 @@ async function exportMeliorationTabToPdf() {
 function exportMeliorationTabToExcel() {
   const { headers, rows } = meliorationExportData()
   if (!rows.length) return
-  const line = (arr: string[]) => arr.map(escapeXlsCell).join(XLS_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `мелиорация_${meliorationTab.value}_${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadDelimited(headers, rows, `мелиорация_${meliorationTab.value}_${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 async function removeRealEstate(id: string) {

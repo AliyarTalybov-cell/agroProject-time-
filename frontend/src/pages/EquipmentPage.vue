@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
-import { loadPdfTools } from '@/lib/pdfExport'
 import {
   isSupabaseConfigured,
   loadEquipmentPage,
@@ -22,6 +21,7 @@ import {
   type EquipmentConditionRefRow,
 } from '@/lib/equipmentSupabase'
 import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
+import { downloadDelimited, escapeHtml, openPdfInNewTab, renderTablePdfFitPage } from '@/lib/tableExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiTrashIcon from '@/components/UiTrashIcon.vue'
@@ -531,12 +531,6 @@ function goToImplementsPage(page: number) {
   implementsPage.value = Math.max(1, Math.min(page, implementsTotalPages.value))
 }
 
-const CSV_SEP = '\t'
-
-function escapeCsvCell(val: string): string {
-  const s = String(val ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""')
-  return s.includes(CSV_SEP) || s.includes('"') || s.includes('\r') ? `"${s}"` : s
-}
 
 function exportToExcel() {
   const list = filteredList.value
@@ -557,21 +551,7 @@ function exportToExcel() {
     responsibleLabel(r.responsible_id),
     conditionLabel(r.condition),
   ])
-  const line = (arr: (string | number)[]) => arr.map((v) => escapeCsvCell(String(v))).join(CSV_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `список_техники_${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-function escapeHtml(s: string): string {
-  const div = document.createElement('div')
-  div.textContent = s
-  return div.innerHTML
+  downloadDelimited(headers, rows, `список_техники_${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 async function exportToPdf() {
@@ -609,27 +589,9 @@ async function exportToPdf() {
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
-    const { html2canvas, jsPDF } = await loadPdfTools()
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
+    const doc = await renderTablePdfFitPage(el)
     document.body.removeChild(el)
-    const imgData = canvas.toDataURL('image/png')
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-    const pageW = doc.internal.pageSize.getWidth()
-    const pageH = doc.internal.pageSize.getHeight()
-    const margin = 10
-    const maxW = pageW - margin * 2
-    const maxH = pageH - margin * 2
-    let w = maxW
-    let h = (canvas.height / canvas.width) * w
-    if (h > maxH) {
-      h = maxH
-      w = (canvas.width / canvas.height) * h
-    }
-    doc.addImage(imgData, 'PNG', margin, margin, w, h)
-    const blob = doc.output('blob')
-    const url = URL.createObjectURL(blob)
-    window.open(url, '_blank', 'noopener,noreferrer')
-    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    openPdfInNewTab(doc)
   } catch (e) {
     // Раньше по нажатию «Выгрузить в PDF» при сбое не происходило вообще
     // ничего: ни файла, ни объяснения.

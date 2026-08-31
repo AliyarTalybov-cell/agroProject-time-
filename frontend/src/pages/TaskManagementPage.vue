@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { loadPdfTools } from '@/lib/pdfExport'
 import { useAuth } from '@/stores/auth'
 import CalendarPopover from '@/components/CalendarPopover.vue'
 import {
@@ -31,6 +30,7 @@ import { loadWorkOperations, type WorkOperationRow } from '@/lib/reasonsAndOpera
 import type { Task as TaskType, ProfileRow, TaskCommentRow, TaskEventRow, TaskFileRow } from '@/lib/tasksSupabase'
 import { avatarColorByPosition } from '@/lib/avatarColors'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
+import { downloadDelimited, escapeHtml, openPdfInNewTab, renderTablePdfFitPage } from '@/lib/tableExport'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
@@ -1009,12 +1009,6 @@ function priorityLabel(p: Priority): string {
   return { high: 'Высокий', medium: 'Средний', low: 'Низкий' }[p]
 }
 
-const CSV_SEP = '\t'
-
-function escapeCsvCell(val: string): string {
-  const s = String(val ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""')
-  return s.includes(CSV_SEP) || s.includes('"') || s.includes('\r') ? `"${s}"` : s
-}
 
 function exportToExcel() {
   const list = sortedFilteredTasks.value
@@ -1031,21 +1025,7 @@ function exportToExcel() {
     t.workType ?? '',
     (t.description ?? '').replace(/\r?\n/g, ' '),
   ])
-  const line = (arr: string[]) => arr.map(escapeCsvCell).join(CSV_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `задачи_${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-function escapeHtml(s: string): string {
-  const div = document.createElement('div')
-  div.textContent = s
-  return div.innerHTML
+  downloadDelimited(headers, rows, `задачи_${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 async function exportToPdf() {
@@ -1084,27 +1064,9 @@ async function exportToPdf() {
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
-    const { html2canvas, jsPDF } = await loadPdfTools()
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
+    const doc = await renderTablePdfFitPage(el)
     document.body.removeChild(el)
-    const imgData = canvas.toDataURL('image/png')
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-    const pageW = doc.internal.pageSize.getWidth()
-    const pageH = doc.internal.pageSize.getHeight()
-    const margin = 10
-    const maxW = pageW - margin * 2
-    const maxH = pageH - margin * 2
-    let w = maxW
-    let h = (canvas.height / canvas.width) * w
-    if (h > maxH) {
-      h = maxH
-      w = (canvas.width / canvas.height) * h
-    }
-    doc.addImage(imgData, 'PNG', margin, margin, w, h)
-    const blob = doc.output('blob')
-    const url = URL.createObjectURL(blob)
-    window.open(url, '_blank', 'noopener,noreferrer')
-    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    openPdfInNewTab(doc)
   } catch (e) {
     document.body.removeChild(el)
     boardError.value = formatSupabaseError(e) || 'Не удалось сформировать PDF'

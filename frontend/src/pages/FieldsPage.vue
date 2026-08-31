@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
-import { loadPdfTools } from '@/lib/pdfExport'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import {
@@ -44,6 +43,7 @@ import UiSuccessModal from '@/components/UiSuccessModal.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import YandexMap from '@/components/YandexMap.vue'
 import { resolveYandexAddressLine, resolveYandexAddressCandidates } from '@/lib/yandexGeocode'
+import { downloadDelimited, escapeHtml, openPdfInNewTab, renderTablePdfFitPage } from '@/lib/tableExport'
 
 type CropKey = 'all' | 'wheat' | 'corn' | 'soy' | 'sunflower' | 'none' | 'meadow'
 
@@ -516,12 +516,6 @@ function openJournal() {
   router.push('/tasks')
 }
 
-const CSV_SEP = '\t'
-
-function escapeCsvCell(val: string): string {
-  const s = String(val ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""')
-  return s.includes(CSV_SEP) || s.includes('"') || s.includes('\r') ? `"${s}"` : s
-}
 
 function exportFieldsToExcel() {
   const list = sortedFilteredFields.value
@@ -552,21 +546,7 @@ function exportFieldsToExcel() {
     f.region || '',
     f.responsiblePerson || 'Не назначен',
   ])
-  const line = (arr: (string | number)[]) => arr.map((v) => escapeCsvCell(String(v))).join(CSV_SEP)
-  const csv = '\uFEFF' + [line(headers), ...rows.map((r) => line(r))].join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `список_полей_${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-function escapeHtml(s: string): string {
-  const div = document.createElement('div')
-  div.textContent = s
-  return div.innerHTML
+  downloadDelimited(headers, rows, `список_полей_${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 async function exportFieldsToPdf() {
@@ -614,27 +594,9 @@ async function exportFieldsToPdf() {
   const el = wrap.firstElementChild as HTMLElement
   document.body.appendChild(el)
   try {
-    const { html2canvas, jsPDF } = await loadPdfTools()
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false })
+    const doc = await renderTablePdfFitPage(el)
     document.body.removeChild(el)
-    const imgData = canvas.toDataURL('image/png')
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-    const pageW = doc.internal.pageSize.getWidth()
-    const pageH = doc.internal.pageSize.getHeight()
-    const margin = 10
-    const maxW = pageW - margin * 2
-    const maxH = pageH - margin * 2
-    let w = maxW
-    let h = (canvas.height / canvas.width) * w
-    if (h > maxH) {
-      h = maxH
-      w = (canvas.width / canvas.height) * h
-    }
-    doc.addImage(imgData, 'PNG', margin, margin, w, h)
-    const blob = doc.output('blob')
-    const url = URL.createObjectURL(blob)
-    window.open(url, '_blank', 'noopener,noreferrer')
-    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    openPdfInNewTab(doc)
   } catch (e) {
     // Раньше по нажатию «Выгрузить в PDF» при сбое не происходило вообще
     // ничего: ни файла, ни объяснения.
