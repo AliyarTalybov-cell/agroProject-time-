@@ -5,6 +5,8 @@ import { loadPdfTools } from '@/lib/pdfExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import LandCropRotationModal from '@/components/lands/LandCropRotationModal.vue'
+import LandRightModal from '@/components/lands/LandRightModal.vue'
+import LandUserModal from '@/components/lands/LandUserModal.vue'
 import LandMeliorationModal from '@/components/lands/LandMeliorationModal.vue'
 import LandRealEstateModal from '@/components/lands/LandRealEstateModal.vue'
 import LandsConfirmModal from '@/components/lands/LandsConfirmModal.vue'
@@ -1226,16 +1228,6 @@ function fieldCropPillClass(cropKey: string | null): string {
 function formatRotationMetric(value: number | null | undefined, fractionDigits = 2): string {
   if (value == null || Number.isNaN(Number(value))) return '—'
   return Number(value).toFixed(fractionDigits)
-}
-
-function isImageUrl(url: string): boolean {
-  return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url)
-}
-
-function fileLabelFromUrl(url: string): string {
-  const noQuery = url.split('?')[0] ?? url
-  const parts = noQuery.split('/')
-  return parts.at(-1) || url
 }
 
 function realEstateFieldLabel(fieldId: string | null): string {
@@ -5365,198 +5357,23 @@ onMounted(() => void reloadAll())
         @close="closeCropRotationModal"
       />
 
-      <div v-if="rightModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Право владения" @click.self="closeRightModal">
-        <div class="lands-modal">
-          <div class="lands-modal-head">
-            <h2>{{ editingRightId ? 'Редактировать право владения' : 'Добавить право владения' }}</h2>
-            <ModalCloseButton :disabled="saving || rightFileUploading" @click="closeRightModal" />
-          </div>
-          <div class="lands-modal-body">
-            <div class="lands-owner-mode-section">
-              <div class="lands-owner-mode-label">Правообладатель</div>
-              <div class="lands-owner-mode-toggle" role="group" aria-label="Режим ввода правообладателя">
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': rightForm.holderMode === 'reference' }" @click="rightForm.holderMode = 'reference'">
-                  Выбрать из справочника
-                </button>
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': rightForm.holderMode === 'manual' }" @click="rightForm.holderMode = 'manual'">
-                  Ввести вручную
-                </button>
-              </div>
-            </div>
-            <div v-if="rightForm.holderMode === 'reference'" class="lands-form-grid">
-              <label class="lands-field">
-                <span>Правообладатель из справочника</span>
-                <select v-model="rightForm.holderRefId">
-                  <option value="">— Выберите правообладателя —</option>
-                  <option v-for="holder in landRightHolders" :key="holder.id" :value="holder.id">
-                    {{ holder.name }} · ИНН: {{ holder.inn || '—' }}
-                  </option>
-                </select>
-              </label>
-              <div />
-            </div>
-
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Наименование *</span>
-                <input v-model.trim="rightForm.holderName" type="text" placeholder="СПК «Урожайный»" />
-              </label>
-              <label class="lands-field">
-                <span>Вид правообладания</span>
-                <select v-model="rightForm.holderTypeId" :disabled="rightForm.holderMode === 'reference'">
-                  <option value="">—</option>
-                  <option v-for="row in landRightHolderTypes" :key="row.id" :value="row.id">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>ИНН *</span>
-                <input v-model.trim="rightForm.holderInn" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>КПП</span>
-                <input v-model.trim="rightForm.holderKpp" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>ОГРН *</span>
-                <input v-model.trim="rightForm.holderOgrn" type="text" />
-              </label>
-              <div />
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Кадастровый номер *</span>
-                <input v-model.trim="rightForm.cadastralNumber" type="text" />
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Форма собственности *
-                  <RefFieldHelp
-                    text="Нет нужной формы собственности? Добавьте ее в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="rightForm.ownershipForm">
-                  <option value="">— Выберите форму собственности —</option>
-                  <option v-for="row in landRightOwnershipForms" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Вид права *
-                  <RefFieldHelp
-                    text="Нет нужного вида права? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="rightForm.rightType">
-                  <option value="">— Выберите вид права —</option>
-                  <option v-for="row in landRightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип подтверждающего документа *
-                  <RefFieldHelp
-                    text="Нет нужного типа документа? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="rightForm.documentType">
-                  <option value="">— Выберите тип документа —</option>
-                  <option v-for="row in landRightDocumentTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Подтверждающие документы *</span>
-                <div class="lands-docs-compact-box">
-                  <div class="lands-docs-compact-head">
-                    <span class="lands-docs-compact-state" :class="{ 'is-filled': rightSupportingLinks.length > 0 }">
-                      {{ rightSupportingLinks.length ? `Приложено файлов: ${rightSupportingLinks.length}` : 'Файлы не приложены' }}
-                    </span>
-                  </div>
-                  <div v-if="rightSupportingLinks.length" class="lands-docs-preview-grid lands-docs-preview-grid--compact">
-                    <div v-for="link in rightSupportingLinks" :key="link" class="lands-docs-preview-card-wrap">
-                      <a
-                        :href="link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="lands-docs-preview-card"
-                      >
-                        <div class="lands-docs-preview-thumb-wrap">
-                          <img v-if="isImageUrl(link)" class="lands-docs-preview-thumb" :src="link" :alt="fileLabelFromUrl(link)" loading="lazy" />
-                          <svg v-else class="lands-docs-preview-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
-                          </svg>
-                        </div>
-                        <span class="lands-docs-preview-name">{{ fileLabelFromUrl(link) }}</span>
-                      </a>
-                      <button type="button" class="lands-docs-remove-btn" title="Удалить файл" aria-label="Удалить файл" :disabled="rightFileUploading || saving" @click="requestRemoveRightSupportingFile(link)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </label>
-              <label class="lands-field">
-                <span>Загрузить документ/фото</span>
-                <label class="lands-file-upload">
-                  <span class="lands-file-upload-btn">{{ rightFileUploading ? 'Загрузка...' : 'Выбрать файл' }}</span>
-                  <span class="lands-file-upload-hint">PDF, JPG, PNG, DOC, DOCX, ZIP</span>
-                  <input class="lands-file-upload-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" :disabled="rightFileUploading || saving" @change="uploadRightSupportingFile" />
-                </label>
-                <span class="lands-muted">{{ rightFileUploading ? 'Файл загружается...' : 'После загрузки появится мини-превью.' }}</span>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Документ (наименование)</span>
-                <input v-model.trim="rightForm.documentName" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>Номер документа</span>
-                <input v-model.trim="rightForm.documentNumber" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Дата документа</span>
-                <input v-model="rightForm.documentDate" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Примечание</span>
-                <input v-model.trim="rightForm.notes" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Начало владения *</span>
-                <input v-model="rightForm.startsAt" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Окончание *</span>
-                <input v-model="rightForm.endsAt" type="date" />
-              </label>
-            </div>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || rightFileUploading" @click="closeRightModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving || rightFileUploading" @click="saveLandRight">
-              {{ saving ? 'Сохранение...' : editingRightId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandRightModal
+        :open="rightModalOpen"
+        :form="rightForm"
+        :holders="landRightHolders"
+        :holder-types="landRightHolderTypes"
+        :ownership-forms="landRightOwnershipForms"
+        :right-types="landRightTypes"
+        :document-types="landRightDocumentTypes"
+        :supporting-links="rightSupportingLinks"
+        :uploading="rightFileUploading"
+        :saving="saving"
+        :editing-id="editingRightId"
+        @save="saveLandRight"
+        @close="closeRightModal"
+        @upload="uploadRightSupportingFile"
+        @remove-file="requestRemoveRightSupportingFile"
+      />
 
       <LandRealEstateModal
         :open="realEstateModalOpen"
@@ -5568,155 +5385,21 @@ onMounted(() => void reloadAll())
         @close="closeRealEstateModal"
       />
 
-      <div v-if="userModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Землепользователь" @click.self="closeUserModal">
-        <div class="lands-modal">
-          <div class="lands-modal-head">
-            <h2>{{ editingUserId ? 'Редактировать землепользователя' : 'Добавить землепользователя' }}</h2>
-            <ModalCloseButton :disabled="saving || userFileUploading" @click="closeUserModal" />
-          </div>
-          <div class="lands-modal-body">
-            <label class="lands-field">
-              <span class="lands-label-with-help">
-                Правообладатель *
-                <RefFieldHelp
-                  text="Нет нужного правообладателя? Добавьте его в"
-                  :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                  link-label="Справочники прав"
-                />
-              </span>
-              <div class="lands-owner-mode">
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': userForm.holderMode === 'reference' }" @click="userForm.holderMode = 'reference'">
-                  Выбрать из справочника
-                </button>
-                <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': userForm.holderMode === 'manual' }" @click="userForm.holderMode = 'manual'">
-                  Ввести вручную
-                </button>
-              </div>
-            </label>
-            <div v-if="userForm.holderMode === 'reference'" class="lands-form-grid">
-              <label class="lands-field">
-                <span>Справочник правообладателей</span>
-                <select v-model="userForm.holderRefId">
-                  <option value="">—</option>
-                  <option v-for="holder in landRightHolders" :key="holder.id" :value="holder.id">
-                    {{ holder.name }}
-                  </option>
-                </select>
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Наименование *</span>
-                <input v-model.trim="userForm.holderName" type="text" placeholder="СПК «Урожайный»" />
-              </label>
-              <label class="lands-field">
-                <span>ИНН *</span>
-                <input v-model.trim="userForm.holderInn" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>КПП</span>
-                <input v-model.trim="userForm.holderKpp" type="text" />
-              </label>
-              <label class="lands-field">
-                <span>ОГРН *</span>
-                <input v-model.trim="userForm.holderOgrn" type="text" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Вид права *
-                  <RefFieldHelp
-                    text="Нет нужного вида права? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="userForm.rightType">
-                  <option value="">—</option>
-                  <option v-for="row in landRightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-              <label class="lands-field">
-                <span class="lands-label-with-help">
-                  Тип подтверждающего документа *
-                  <RefFieldHelp
-                    text="Нет нужного типа документа? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                    link-label="Справочники прав"
-                  />
-                </span>
-                <select v-model="userForm.documentType">
-                  <option value="">—</option>
-                  <option v-for="row in landRightDocumentTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
-              </label>
-            </div>
-            <label class="lands-field">
-              <span>Подтверждающие документы *</span>
-              <div class="lands-docs-compact-box">
-                <div class="lands-docs-compact-head">
-                  <span class="lands-docs-compact-state" :class="{ 'is-filled': userSupportingLinks.length > 0 }">
-                    {{ userSupportingLinks.length ? `Приложено файлов: ${userSupportingLinks.length}` : 'Файлы не приложены' }}
-                  </span>
-                </div>
-                <div v-if="userSupportingLinks.length" class="lands-docs-preview-grid lands-docs-preview-grid--compact">
-                  <div v-for="link in userSupportingLinks" :key="link" class="lands-docs-preview-card-wrap">
-                    <a
-                      :href="link"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="lands-docs-preview-card"
-                    >
-                      <div class="lands-docs-preview-thumb-wrap">
-                        <img v-if="isImageUrl(link)" class="lands-docs-preview-thumb" :src="link" :alt="fileLabelFromUrl(link)" loading="lazy" />
-                        <svg v-else class="lands-docs-preview-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
-                        </svg>
-                      </div>
-                      <span class="lands-docs-preview-name">{{ fileLabelFromUrl(link) }}</span>
-                    </a>
-                    <button type="button" class="lands-docs-remove-btn" title="Удалить файл" aria-label="Удалить файл" :disabled="userFileUploading || saving" @click="requestRemoveUserSupportingFile(link)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </label>
-            <label class="lands-field">
-              <span>Загрузить документ/фото</span>
-              <label class="lands-file-upload">
-                <span class="lands-file-upload-btn">{{ userFileUploading ? 'Загрузка...' : 'Выбрать файл' }}</span>
-                <span class="lands-file-upload-hint">PDF, JPG, PNG, DOC, DOCX, ZIP</span>
-                <input class="lands-file-upload-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" :disabled="userFileUploading || saving" @change="uploadUserSupportingFile" />
-              </label>
-              <span class="lands-muted">{{ userFileUploading ? 'Файл загружается...' : 'После загрузки появится мини-превью.' }}</span>
-            </label>
-            <div class="lands-form-grid">
-              <label class="lands-field">
-                <span>Начало *</span>
-                <input v-model="userForm.startsAt" type="date" />
-              </label>
-              <label class="lands-field">
-                <span>Окончание *</span>
-                <input v-model="userForm.endsAt" type="date" />
-              </label>
-            </div>
-            <label class="lands-field">
-              <span>Площадь использования поля, га *</span>
-              <input v-model.number="userForm.usageAreaHa" type="number" min="0" step="0.01" placeholder="7.49" />
-            </label>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || userFileUploading" @click="closeUserModal">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving || userFileUploading" @click="saveLandUser">
-              {{ saving ? 'Сохранение...' : editingUserId ? 'Сохранить' : 'Добавить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandUserModal
+        :open="userModalOpen"
+        :form="userForm"
+        :holders="landRightHolders"
+        :right-types="landRightTypes"
+        :document-types="landRightDocumentTypes"
+        :supporting-links="userSupportingLinks"
+        :uploading="userFileUploading"
+        :saving="saving"
+        :editing-id="editingUserId"
+        @save="saveLandUser"
+        @close="closeUserModal"
+        @upload="uploadUserSupportingFile"
+        @remove-file="requestRemoveUserSupportingFile"
+      />
 
       <LandsConfirmModal
         :open="userFileDeleteConfirmOpen"

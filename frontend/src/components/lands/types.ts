@@ -63,3 +63,41 @@ export type MeliorationForm = {
 
 /** Вкладка раздела мелиорации: от неё зависит набор полей в окне. */
 export type MeliorationTab = 'systems' | 'forest' | 'events'
+
+/** Поля формы землепользователя — набор из `userForm` на LandsPage. */
+export type LandUserForm = {
+  holderMode: 'manual' | 'reference'
+  holderRefId: string
+  holderName: string
+  holderInn: string
+  holderKpp: string
+  holderOgrn: string
+  rightType: string
+  documentType: string
+  supportingDocuments: string
+  startsAt: string
+  endsAt: string
+  usageAreaHa: number | null
+}
+
+/** Поля формы права владения — набор из `rightForm` на LandsPage. */
+export type LandRightForm = {
+  holderMode: 'manual' | 'reference'
+  holderRefId: string
+  holderTypeId: string
+  ownershipForm: string
+  rightType: string
+  holderName: string
+  holderInn: string
+  holderKpp: string
+  holderOgrn: string
+  cadastralNumber: string
+  documentType: string
+  supportingDocuments: string
+  documentName: string
+  documentNumber: string
+  documentDate: string
+  startsAt: string
+  endsAt: string
+  notes: string
+}

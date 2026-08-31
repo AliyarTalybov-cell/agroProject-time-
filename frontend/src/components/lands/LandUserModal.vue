@@ -1,0 +1,194 @@
+<script setup lang="ts">
+/**
+ * Окно землепользователя — того, кто пользуется участком по договору.
+ *
+ * Разметка перенесена из LandsPage дословно, классы с префиксом lands-
+ * сохранены: стили к ним приходят из landsModal.css. Форма передаётся
+ * объектом и правится на месте, как в остальных окнах раздела.
+ *
+ * Работа с файлами остаётся на странице: компонент только сообщает о выборе
+ * файла (`upload`) и о просьбе удалить ссылку (`remove-file`), а загрузку в
+ * хранилище и подтверждение удаления по-прежнему ведёт LandsPage.
+ */
+import ModalCloseButton from '@/components/ModalCloseButton.vue'
+import type { LandUserForm } from '@/components/lands/types'
+import { fileLabelFromUrl, isImageUrl } from '@/lib/fileLinks'
+import type { LandRightHolderRow, LandRightRefRow } from '@/lib/landsSupabase'
+
+defineProps<{
+  open: boolean
+  form: LandUserForm
+  holders: LandRightHolderRow[]
+  rightTypes: LandRightRefRow[]
+  documentTypes: LandRightRefRow[]
+  /** Ссылки на приложенные файлы — считаются на странице из поля формы. */
+  supportingLinks: string[]
+  /** Идёт загрузка файла: блокирует форму вместе с saving. */
+  uploading: boolean
+  saving: boolean
+  /** Идентификатор правимой записи: от него зависят заголовок и подпись кнопки. */
+  editingId: string | null
+}>()
+
+defineEmits<{
+  (e: 'save'): void
+  (e: 'close'): void
+  (e: 'upload', event: Event): void
+  (e: 'remove-file', link: string): void
+}>()
+</script>
+
+<template>
+<div v-if="open" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Землепользователь" @click.self="$emit('close')">
+  <div class="lands-modal">
+    <div class="lands-modal-head">
+      <h2>{{ editingId ? 'Редактировать землепользователя' : 'Добавить землепользователя' }}</h2>
+      <ModalCloseButton :disabled="saving || uploading" @click="$emit('close')" />
+    </div>
+    <div class="lands-modal-body">
+      <label class="lands-field">
+        <span class="lands-label-with-help">
+          Правообладатель *
+          <RefFieldHelp
+            text="Нет нужного правообладателя? Добавьте его в"
+            :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
+            link-label="Справочники прав"
+          />
+        </span>
+        <div class="lands-owner-mode">
+          <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'reference' }" @click="form.holderMode = 'reference'">
+            Выбрать из справочника
+          </button>
+          <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'manual' }" @click="form.holderMode = 'manual'">
+            Ввести вручную
+          </button>
+        </div>
+      </label>
+      <div v-if="form.holderMode === 'reference'" class="lands-form-grid">
+        <label class="lands-field">
+          <span>Справочник правообладателей</span>
+          <select v-model="form.holderRefId">
+            <option value="">—</option>
+            <option v-for="holder in holders" :key="holder.id" :value="holder.id">
+              {{ holder.name }}
+            </option>
+          </select>
+        </label>
+      </div>
+      <div class="lands-form-grid">
+        <label class="lands-field">
+          <span>Наименование *</span>
+          <input v-model.trim="form.holderName" type="text" placeholder="СПК «Урожайный»" />
+        </label>
+        <label class="lands-field">
+          <span>ИНН *</span>
+          <input v-model.trim="form.holderInn" type="text" />
+        </label>
+      </div>
+      <div class="lands-form-grid">
+        <label class="lands-field">
+          <span>КПП</span>
+          <input v-model.trim="form.holderKpp" type="text" />
+        </label>
+        <label class="lands-field">
+          <span>ОГРН *</span>
+          <input v-model.trim="form.holderOgrn" type="text" />
+        </label>
+      </div>
+      <div class="lands-form-grid">
+        <label class="lands-field">
+          <span class="lands-label-with-help">
+            Вид права *
+            <RefFieldHelp
+              text="Нет нужного вида права? Добавьте его в"
+              :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
+              link-label="Справочники прав"
+            />
+          </span>
+          <select v-model="form.rightType">
+            <option value="">—</option>
+            <option v-for="row in rightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
+          </select>
+        </label>
+        <label class="lands-field">
+          <span class="lands-label-with-help">
+            Тип подтверждающего документа *
+            <RefFieldHelp
+              text="Нет нужного типа документа? Добавьте его в"
+              :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
+              link-label="Справочники прав"
+            />
+          </span>
+          <select v-model="form.documentType">
+            <option value="">—</option>
+            <option v-for="row in documentTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
+          </select>
+        </label>
+      </div>
+      <label class="lands-field">
+        <span>Подтверждающие документы *</span>
+        <div class="lands-docs-compact-box">
+          <div class="lands-docs-compact-head">
+            <span class="lands-docs-compact-state" :class="{ 'is-filled': supportingLinks.length > 0 }">
+              {{ supportingLinks.length ? `Приложено файлов: ${supportingLinks.length}` : 'Файлы не приложены' }}
+            </span>
+          </div>
+          <div v-if="supportingLinks.length" class="lands-docs-preview-grid lands-docs-preview-grid--compact">
+            <div v-for="link in supportingLinks" :key="link" class="lands-docs-preview-card-wrap">
+              <a
+                :href="link"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="lands-docs-preview-card"
+              >
+                <div class="lands-docs-preview-thumb-wrap">
+                  <img v-if="isImageUrl(link)" class="lands-docs-preview-thumb" :src="link" :alt="fileLabelFromUrl(link)" loading="lazy" />
+                  <svg v-else class="lands-docs-preview-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+                  </svg>
+                </div>
+                <span class="lands-docs-preview-name">{{ fileLabelFromUrl(link) }}</span>
+              </a>
+              <button type="button" class="lands-docs-remove-btn" title="Удалить файл" aria-label="Удалить файл" :disabled="uploading || saving" @click="$emit('remove-file', link)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </label>
+      <label class="lands-field">
+        <span>Загрузить документ/фото</span>
+        <label class="lands-file-upload">
+          <span class="lands-file-upload-btn">{{ uploading ? 'Загрузка...' : 'Выбрать файл' }}</span>
+          <span class="lands-file-upload-hint">PDF, JPG, PNG, DOC, DOCX, ZIP</span>
+          <input class="lands-file-upload-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" :disabled="uploading || saving" @change="$emit('upload', $event)" />
+        </label>
+        <span class="lands-muted">{{ uploading ? 'Файл загружается...' : 'После загрузки появится мини-превью.' }}</span>
+      </label>
+      <div class="lands-form-grid">
+        <label class="lands-field">
+          <span>Начало *</span>
+          <input v-model="form.startsAt" type="date" />
+        </label>
+        <label class="lands-field">
+          <span>Окончание *</span>
+          <input v-model="form.endsAt" type="date" />
+        </label>
+      </div>
+      <label class="lands-field">
+        <span>Площадь использования поля, га *</span>
+        <input v-model.number="form.usageAreaHa" type="number" min="0" step="0.01" placeholder="7.49" />
+      </label>
+    </div>
+    <div class="lands-modal-actions">
+      <button type="button" class="lands-btn" :disabled="saving || uploading" @click="$emit('close')">Отмена</button>
+      <button type="button" class="lands-btn lands-btn--save" :disabled="saving || uploading" @click="$emit('save')">
+        {{ saving ? 'Сохранение...' : editingId ? 'Сохранить' : 'Добавить' }}
+      </button>
+    </div>
+  </div>
+</div>
+</template>
+
+<!-- Без scoped: те же правила нужны и странице, и остальным окнам раздела. -->
+<style src="./landsModal.css"></style>
