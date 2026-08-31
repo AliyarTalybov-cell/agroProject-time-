@@ -1,0 +1,93 @@
+/* Оформление модальных окон раздела земель.
+ *
+ * Правила лежали в LandsPage.css, который подключён как scoped, поэтому
+ * достаются только элементам самой страницы. Как только модалка переезжает в
+ * отдельный компонент, её внутренности перестают попадать под область
+ * видимости страницы и остаются без стилей. Поэтому файл подключается без
+ * scoped — и страницей, и компонентами модалок.
+ *
+ * Текст правил перенесён из LandsPage.css без изменений. Добавлено только
+ * тёмное правило для .lands-btn--danger: на странице оно приходило из общего
+ * перечисления селекторов, которое вынесенных компонентов уже не касается.
+ */
+
+.lands-btn {
+  height:38px;
+  border-radius:10px;
+  border:1px solid transparent;
+  padding:0 12px;
+  cursor:pointer;
+  font-weight:600;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.lands-btn:not(.lands-btn--save):not(.lands-btn--danger) {
+  border-color: var(--border-color);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+.lands-btn:not(.lands-btn--save):not(.lands-btn--danger):hover {
+  border-color: var(--accent-green);
+  background: var(--bg-panel-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent-green) 12%, transparent);
+}
+.lands-btn--save { background:var(--accent-green); color:#fff; }
+.lands-btn--danger { background:#fff; border-color:#fca5a5; color:#b42318; }
+.lands-btn--save:hover { background:var(--accent-green-hover); }
+
+.lands-modal-backdrop {
+  z-index: 2200;
+  padding: 14px;
+  animation: landsModalFadeIn 0.2s ease;
+}
+.lands-modal { width:min(1100px, 96vw); max-height:92vh; overflow:hidden; border-radius:16px; border:1px solid var(--border-color); background:#fff; display:flex; flex-direction:column; }
+.lands-modal--compact { width:min(560px, 96vw); }
+.lands-modal--success { animation: lands-success-pop .24s ease; }
+.lands-modal-head { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border-color); }
+.lands-modal-head h2 { margin:0; font-size:1.05rem; }
+/* .lands-modal-close styles are now in global.css */
+.lands-modal-body { padding:12px; overflow:auto; }
+.lands-modal-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; padding:10px 12px; border-top:1px solid var(--border-color); }
+.lands-confirm-text { margin: 0; color: var(--text-secondary); font-size: .95rem; line-height: 1.45; }
+@keyframes landsModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes lands-success-pop {
+  0% { transform: translateY(8px) scale(.985); opacity: .72; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+[data-theme='dark'] .lands-modal {
+  background: var(--bg-elevated);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-card);
+}
+[data-theme='dark'] .lands-modal-head,
+[data-theme='dark'] .lands-modal-actions {
+  border-color: var(--border-color);
+}
+[data-theme='dark'] .lands-modal .lands-field input,
+[data-theme='dark'] .lands-modal .lands-field textarea,
+[data-theme='dark'] .lands-modal .lands-field select {
+  background: var(--lands-input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+[data-theme='dark'] .lands-modal .lands-field input:focus,
+[data-theme='dark'] .lands-modal .lands-field textarea:focus,
+[data-theme='dark'] .lands-modal .lands-field select:focus {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 1px var(--focus-ring);
+}
+[data-theme='dark'] .lands-modal .lands-field span {
+  color: var(--text-secondary);
+}
+[data-theme='dark'] .lands-modal .lands-field input::placeholder,
+[data-theme='dark'] .lands-modal .lands-field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme='dark'] .lands-btn--danger {
+  background: var(--bg-panel);
+}

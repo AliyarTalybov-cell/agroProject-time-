@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { loadPdfTools } from '@/lib/pdfExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
+import LandsConfirmModal from '@/components/lands/LandsConfirmModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import YandexMap from '@/components/YandexMap.vue'
@@ -5892,30 +5893,16 @@ onMounted(() => void reloadAll())
         </div>
       </div>
 
-      <div
-        v-if="userFileDeleteConfirmOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Удаление файла"
-        @click.self="closeUserFileDeleteConfirm"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Удалить файл?</h2>
-            <ModalCloseButton :disabled="saving || userFileUploading" @click="closeUserFileDeleteConfirm" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">Ссылка на файл будет удалена из формы землепользователя.</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || userFileUploading" @click="closeUserFileDeleteConfirm">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--danger" :disabled="saving || userFileUploading" @click="confirmRemoveUserSupportingFile">
-              Удалить
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandsConfirmModal
+        :open="userFileDeleteConfirmOpen"
+        dialog-label="Удаление файла"
+        title="Удалить файл?"
+        text="Ссылка на файл будет удалена из формы землепользователя."
+        confirm-label="Удалить"
+        :busy="saving || userFileUploading"
+        @confirm="confirmRemoveUserSupportingFile"
+        @close="closeUserFileDeleteConfirm"
+      />
 
       <div v-if="meliorationModalOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Мелиорация" @click.self="closeMeliorationModal">
         <div class="lands-modal lands-modal--compact">
@@ -6051,78 +6038,42 @@ onMounted(() => void reloadAll())
         </div>
       </div>
 
-      <div
-        v-if="deleteConfirmOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Подтверждение удаления"
-        @click.self="closeDeleteConfirm"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>{{ deleteConfirmTitle }}</h2>
-            <ModalCloseButton :disabled="saving || refsLoading" @click="closeDeleteConfirm" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">{{ deleteConfirmText }}</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || refsLoading" @click="closeDeleteConfirm">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--danger" :disabled="saving || refsLoading" @click="confirmDeleteTarget">
-              {{ saving || refsLoading ? 'Удаление...' : 'Удалить' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LandsConfirmModal
+        :open="deleteConfirmOpen"
+        dialog-label="Подтверждение удаления"
+        :title="deleteConfirmTitle"
+        :text="deleteConfirmText"
+        :confirm-label="saving || refsLoading ? 'Удаление...' : 'Удалить'"
+        :busy="saving || refsLoading"
+        @confirm="confirmDeleteTarget"
+        @close="closeDeleteConfirm"
+      />
 
-      <div
-        v-if="rightFileDeleteConfirmOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Удаление файла"
-        @click.self="closeRightFileDeleteConfirm"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Удалить файл?</h2>
-            <ModalCloseButton :disabled="saving || rightFileUploading" @click="closeRightFileDeleteConfirm" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">Файл будет удален из списка подтверждающих документов.</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving || rightFileUploading" @click="closeRightFileDeleteConfirm">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--danger" :disabled="saving || rightFileUploading" @click="confirmRemoveRightSupportingFile">
-              Удалить
-            </button>
-          </div>
-        </div>
-      </div>
-      <div
-        v-if="successModalOpen"
-        class="lands-modal-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Успешно"
-        @click.self="closeSuccessModal"
-      >
-        <div class="lands-modal lands-modal--compact">
-          <div class="lands-modal-head">
-            <h2>Готово</h2>
-            <ModalCloseButton @click="closeSuccessModal" />
-          </div>
-          <div class="lands-modal-body">
-            <p class="lands-confirm-text">{{ successModalText }}</p>
-          </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn lands-btn--save" @click="closeSuccessModal">Закрыть</button>
-          </div>
-        </div>
-      </div>
+      <LandsConfirmModal
+        :open="rightFileDeleteConfirmOpen"
+        dialog-label="Удаление файла"
+        title="Удалить файл?"
+        text="Файл будет удален из списка подтверждающих документов."
+        confirm-label="Удалить"
+        :busy="saving || rightFileUploading"
+        @confirm="confirmRemoveRightSupportingFile"
+        @close="closeRightFileDeleteConfirm"
+      />
+      <LandsConfirmModal
+        :open="successModalOpen"
+        dialog-label="Успешно"
+        title="Готово"
+        :text="successModalText"
+        confirm-label="Закрыть"
+        confirm-variant="save"
+        :cancellable="false"
+        @confirm="closeSuccessModal"
+        @close="closeSuccessModal"
+      />
     </teleport>
   </section>
 </template>
 
 <style scoped src="./LandsPage.css"></style>
+<!-- Общие стили окон раздела: без scoped, их же используют вынесенные компоненты модалок. -->
+<style src="../components/lands/landsModal.css"></style>
