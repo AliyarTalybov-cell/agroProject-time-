@@ -23,6 +23,7 @@ const h = vi.hoisted(() => {
     from: vi.fn(() => ({ select: () => ({ eq: () => ({ maybeSingle }) }) })),
     signOut: vi.fn(async () => ({ error: null })),
     getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
+    signInWithPassword: vi.fn(),
   }
 })
 
@@ -36,6 +37,7 @@ vi.mock('@/lib/supabase', () => ({
       },
       signOut: h.signOut,
       getSession: h.getSession,
+      signInWithPassword: h.signInWithPassword,
     },
   },
   isSupabaseConfigured: () => true,
@@ -140,5 +142,61 @@ describe('обновление роли по событиям авторизац
 
     expect(mod.getUserRole()).toBe('worker')
     expect(mod.getAuthUser()).toBeNull()
+  })
+})
+
+/**
+ * Отключённый сотрудник раньше отсекался только по `user_metadata.active`,
+ * которое он правит сам. Теперь флаг читается из `profiles`, а заблокированную
+ * учётную запись Auth не пускает на вход.
+ */
+describe('отключённый сотрудник', () => {
+  it('выбрасывается из сессии, если в profiles active = false', async () => {
+    const mod = await freshAuth()
+    h.signOut.mockClear()
+    // Метаданные говорят «активен» — именно их можно подделать.
+    h.maybeSingle.mockResolvedValue({ data: { role: 'manager', active: false }, error: null })
+    h.listeners[0]('SIGNED_IN', { user: { id: 'u-3', user_metadata: { active: true } } })
+    // Чтение профиля и отложенный выход (scheduleSignOut) идут через setTimeout.
+    await vi.runOnlyPendingTimersAsync()
+    await vi.runOnlyPendingTimersAsync()
+
+    expect(mod.getAuthUser()).toBeNull()
+    expect(mod.getUserRole()).toBe('worker')
+    expect(h.signOut).toHaveBeenCalled()
+  })
+
+  it('остаётся в сессии, если профиль прочитать не удалось', async () => {
+    const mod = await freshAuth()
+    const user = { id: 'u-4', user_metadata: {} }
+    h.maybeSingle.mockResolvedValue({ data: null, error: { message: 'network' } })
+    h.listeners[0]('SIGNED_IN', { user })
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mod.getAuthUser()).toEqual(user)
+  })
+
+  it('при входе заблокированной учётки показывает понятное сообщение', async () => {
+    const mod = await freshAuth()
+    h.signInWithPassword.mockResolvedValue({
+      data: { user: null, session: null },
+      error: { code: 'user_banned', message: 'User is banned' },
+    })
+
+    await expect(mod.useAuth().login('a@b.ru', 'x')).rejects.toThrow(mod.ACCOUNT_DISABLED_MESSAGE)
+  })
+
+  it('не пускает при входе, если в profiles active = false', async () => {
+    const mod = await freshAuth()
+    h.signOut.mockClear()
+    h.signInWithPassword.mockResolvedValue({
+      data: { user: { id: 'u-5', user_metadata: { active: true } }, session: {} },
+      error: null,
+    })
+    h.maybeSingle.mockResolvedValue({ data: { role: 'worker', active: false }, error: null })
+
+    await expect(mod.useAuth().login('a@b.ru', 'x')).rejects.toThrow(mod.ACCOUNT_DISABLED_MESSAGE)
+    expect(mod.getAuthUser()).toBeNull()
+    expect(h.signOut).toHaveBeenCalled()
   })
 })
