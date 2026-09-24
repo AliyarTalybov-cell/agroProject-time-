@@ -24,7 +24,9 @@ npm run test:e2e             # e2e (Playwright, поднимает дев-сер
 
 ## Боевая база
 
-Проект работает **только** с self-hosted Supabase на `agro-project.duckdns.org`.
+Проект работает **только** с self-hosted Supabase на `7207239-sp280358.twc1.net`
+(сервер Timeweb, `/opt/supabase`). До 24.09.2026 адрес был `agro-project.duckdns.org`,
+он отключён; ссылки на файлы в базе переписаны миграцией `20260924_replace_duckdns_urls.sql`.
 Облачные проекты, которые показывает `supabase projects list`, в работе не
 участвуют — миграции и проверки политик относятся к self-hosted инстансу.
 
