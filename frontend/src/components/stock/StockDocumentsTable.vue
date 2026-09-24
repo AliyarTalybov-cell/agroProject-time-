@@ -135,7 +135,7 @@ function toggle(id: string) {
   <div>
     <p v-if="!documents.length" class="ui-muted" style="margin: 8px 0">{{ emptyText ?? 'Операций пока нет.' }}</p>
     <div v-else class="ui-table-wrap">
-      <table class="ui-table stock-docs">
+      <table class="ui-table stock-docs" v-card-table>
         <thead>
           <tr>
             <th>Дата</th>

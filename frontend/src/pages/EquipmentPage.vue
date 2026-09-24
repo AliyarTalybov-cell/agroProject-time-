@@ -869,7 +869,7 @@ async function exportToPdf() {
         <UiLoadingBar />
       </div>
       <div v-else class="table-wrapper table-wrapper--swipe">
-        <table class="equipment-table equipment-table--main" aria-label="Список техники">
+        <table class="equipment-table equipment-table--main" aria-label="Список техники" v-card-table>
           <thead>
             <tr>
               <th>Марка / Модель</th>
@@ -1036,7 +1036,7 @@ async function exportToPdf() {
         <UiLoadingBar />
       </div>
       <div v-else class="table-wrapper">
-        <table class="equipment-table" aria-label="Список орудий">
+        <table class="equipment-table" aria-label="Список орудий" v-card-table>
           <thead>
             <tr>
               <th>Название</th>
@@ -1867,6 +1867,21 @@ async function exportToPdf() {
 }
 
 @media (max-width: 600px) {
+  /* На телефоне сначала список техники, форма добавления — под ним:
+     иначе список уезжает на несколько экранов вниз. */
+  .equipment-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .equipment-list-card {
+    order: 1;
+  }
+
+  .equipment-form-card {
+    order: 2;
+  }
+
   .equipment-page {
     padding: 0 var(--space-md);
     padding-bottom: var(--space-lg);

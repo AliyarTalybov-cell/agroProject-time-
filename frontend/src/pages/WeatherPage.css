@@ -2569,7 +2569,10 @@
   }
 }
 
-@media (max-width: 1280px) {
+/* Три колонки героя — только на широких экранах: правило ниже по файлу, чем
+   одноколоночное для ≤1024px, и без нижней границы перебивало его на телефоне —
+   температура уезжала за правый край. */
+@media (min-width: 1025px) and (max-width: 1280px) {
   .weather-page :deep(.weather-hero-inner) {
     grid-template-columns: minmax(150px, 0.85fr) minmax(220px, 1fr) minmax(200px, 0.95fr);
     gap: 14px;
@@ -2578,6 +2581,9 @@
   .weather-page :deep(.weather-hero-temp-block) {
     margin-right: 6px;
   }
+}
+
+@media (max-width: 1280px) {
 
   .weather-page :deep(.weather-recommendation-inline p) {
     font-size: 0.88rem;

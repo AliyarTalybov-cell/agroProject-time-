@@ -147,7 +147,7 @@ function onIntakeDone() {
             <option v-for="[id, name] in locationOptions" :key="id" :value="id">{{ name }}</option>
           </select>
           <select v-model="purposeFilter" class="ui-filter-select" aria-label="Назначение">
-            <option value="">Любое назначение</option>
+            <option value="">Все назначения</option>
             <option v-for="p in purposes" :key="p.id" :value="p.id">{{ p.label }}</option>
           </select>
         </div>
@@ -161,7 +161,7 @@ function onIntakeDone() {
         </div>
         <template v-else>
           <div class="ui-table-wrap">
-            <table class="ui-table batches-table">
+            <table class="ui-table batches-table" v-card-table>
               <thead>
                 <tr>
                   <th>Партия</th>

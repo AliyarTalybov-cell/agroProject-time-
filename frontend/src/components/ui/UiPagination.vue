@@ -225,4 +225,46 @@ function onSizeChange(e: Event) {
     justify-content: space-between;
   }
 }
+
+/* Телефон: номера страниц и «На странице» — одной строкой под счётчиком. */
+@media (max-width: 640px) {
+  .fields-pagination {
+    gap: 8px;
+    padding: 12px 4px 0;
+  }
+
+  .fields-pagination-right {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .fields-pagination-nav {
+    gap: 2px;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .fields-page-btn,
+  .fields-page-btn--edge {
+    min-width: 34px;
+    width: auto;
+    height: 34px;
+    padding: 0 6px;
+  }
+
+  .fields-page-ellipsis {
+    padding: 0 4px;
+  }
+
+  .fields-pagination-size {
+    flex-shrink: 0;
+    gap: 6px;
+  }
+
+  .fields-pagination-select {
+    height: 34px;
+    min-width: 64px;
+    padding: 0 24px 0 8px;
+  }
+}
 </style>

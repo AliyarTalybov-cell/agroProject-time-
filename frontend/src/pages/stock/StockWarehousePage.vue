@@ -197,7 +197,7 @@ function openBatch(batchId: string) {
               <button type="button" class="ui-soft-btn" @click="dialog = { kind: 'cell', cell: null }">+ Ячейка</button>
             </div>
             <div class="ui-table-wrap">
-              <table class="ui-table wh-cells">
+              <table class="ui-table wh-cells" v-card-table>
                 <thead>
                   <tr>
                     <th>Ячейка</th>

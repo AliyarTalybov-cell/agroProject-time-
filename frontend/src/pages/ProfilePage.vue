@@ -467,7 +467,7 @@ async function confirmDeleteAccount() {
   <div class="profile-page-wrapper">
   <section class="profile-page page-enter-item">
     <header class="profile-header">
-      <h1 class="profile-page-title">Настройки профиля</h1>
+      <!-- Заголовок страницы уже в шапке приложения (new-pages-ui-ux.mdc) -->
       <p class="profile-page-subtitle">Управляйте своими личными данными и настройками учетной записи.</p>
     </header>
 
@@ -1386,6 +1386,12 @@ async function confirmDeleteAccount() {
 
   .profile-user-card {
     padding: var(--space-lg);
+  }
+
+  .profile-avatar {
+    max-width: 112px;
+    font-size: 2rem;
+    margin-bottom: 12px;
   }
 
   .profile-form-area {

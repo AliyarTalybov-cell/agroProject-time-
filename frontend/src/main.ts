@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 
 import App from './App.vue'
+import { vCardTable } from './directives/cardTable'
 import { router } from './router'
 import { useAuth } from './stores/auth'
 import './styles/global.css'
@@ -18,5 +19,6 @@ auth.startAuthListener()
 
 // Монтируем сразу: при недоступной БД getSession() может долго висеть
 const app = createApp(App).use(router)
+app.directive('card-table', vCardTable)
 app.mount('#app')
 void auth.init()

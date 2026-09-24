@@ -2533,10 +2533,21 @@
     width: 100%;
   }
 
+  /* Телефон: вкладки и даты — во всю ширину, два фильтра — рядом */
   .task-filter-row {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: stretch;
     gap: var(--space-sm);
+  }
+
+  .task-filter-row > .task-filter-tabs,
+  .task-filter-row > .task-filter-dates {
+    grid-column: 1 / -1;
+  }
+
+  .task-filter-row > .task-filter-pill--select:only-of-type {
+    grid-column: 1 / -1;
   }
 
   .task-filter-tabs {
@@ -2562,6 +2573,10 @@
     min-width: 0;
     width: 100%;
     flex: 1;
+    border-radius: 10px;
+    border-color: var(--toolbar-form-surface-border);
+    background: var(--toolbar-form-surface);
+    color: var(--text-primary);
   }
 
   .task-header-actions {
@@ -2572,6 +2587,27 @@
   .task-search-wrap {
     width: 100%;
     min-width: 0;
+    flex: none;
+    height: 40px;
+    border-radius: 10px;
+    border-color: var(--toolbar-form-surface-border);
+    background: var(--toolbar-form-surface);
+  }
+
+  .task-search-input {
+    width: 100%;
+  }
+
+  /* «С [дата] По [дата]» в одну строку, «Применить» — под ними во всю ширину */
+  .task-filter-dates {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .task-filter-dates > .task-filter-apply-dates {
+    grid-column: 1 / -1;
+    justify-content: center;
   }
 
   .task-export-btns {
@@ -2843,13 +2879,6 @@
     gap: 8px;
   }
 
-  .task-filter-tabs {
-    grid-template-columns: 1fr;
-  }
-
-  .task-export-btns {
-    grid-template-columns: 1fr;
-  }
 
   .task-loading {
     min-height: 200px;

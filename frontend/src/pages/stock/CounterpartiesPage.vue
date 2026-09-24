@@ -101,7 +101,7 @@ async function confirmDelete() {
         </div>
         <template v-else>
           <div class="ui-table-wrap">
-            <table class="ui-table cp-table">
+            <table class="ui-table cp-table" v-card-table>
               <thead>
                 <tr><th>Название</th><th>Роль</th><th>ИНН / КПП</th><th>Контакт</th><th></th></tr>
               </thead>

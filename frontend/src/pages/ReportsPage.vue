@@ -967,16 +967,16 @@ onUnmounted(() => {
   <section class="dash-page">
     <header class="dash-header page-enter-item">
       <div>
-        <h1 class="dash-title">Аналитика: Дашборд руководителя</h1>
-        <p v-if="auth.user && isManager" class="dash-sub">Данные из задач, операций и техники (Supabase)</p>
+        <!-- Заголовок страницы уже в шапке приложения (new-pages-ui-ux.mdc) -->
+        <p v-if="auth.user && isManager" class="dash-sub">Задачи, операции и техника за выбранный период</p>
         <p v-else-if="auth.user" class="dash-sub">Ваши задачи и статус (ограниченный вид)</p>
       </div>
     </header>
 
-    <div v-if="supabaseStatus !== 'idle'" class="supabase-strip page-enter-item">
-      <template v-if="supabaseStatus === 'checking'">Проверка базы…</template>
-      <template v-else-if="supabaseStatus === 'ok'">База данных подключена</template>
-      <template v-else-if="supabaseStatus === 'error'">
+    <!-- Полоса видна только при сбое связи: «база подключена» — служебная
+         информация, пользователю она ничего не говорит. -->
+    <div v-if="supabaseStatus === 'error'" class="supabase-strip page-enter-item">
+      <template v-if="supabaseStatus === 'error'">
         Ошибка: {{ supabaseError }}
         <button type="button" class="dash-link-btn" @click="checkSupabase">Повторить</button>
       </template>
@@ -1080,8 +1080,7 @@ onUnmounted(() => {
 
     <section class="dash-live page-enter-item" style="--enter-delay: 120ms">
       <h2 class="dash-section-title">
-        <span class="dash-section-icon" aria-hidden="true">👥</span>
-        Статус работы сотрудников (Live)
+        Статус работы сотрудников
       </h2>
       <p v-if="!isSupabaseConfigured()" class="dash-muted">Подключите Supabase, чтобы видеть статусы с экрана оператора.</p>
       <div v-else-if="loading" class="dash-live-loading">
@@ -1223,7 +1222,7 @@ onUnmounted(() => {
           <RouterLink to="/fields" class="dash-panel-link">Все поля</RouterLink>
         </div>
         <div class="dash-table-wrap">
-          <table class="dash-table">
+          <table class="dash-table" v-card-table>
             <thead>
               <tr>
                 <th>Поле / объект</th>
@@ -1473,7 +1472,7 @@ onUnmounted(() => {
               role="region"
               :aria-labelledby="'dash-ops-head-' + gi"
             >
-              <table class="dash-ops-detail-table">
+              <table class="dash-ops-detail-table" v-card-table>
                 <thead>
                   <tr>
                     <th>Поле</th>

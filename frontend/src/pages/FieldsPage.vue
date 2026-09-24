@@ -1608,7 +1608,7 @@ onMounted(async () => {
           <UiLoadingBar />
         </div>
         <div class="fields-table-wrap">
-          <table class="fields-table" aria-label="Список полей">
+          <table class="fields-table" aria-label="Список полей" v-card-table>
             <thead>
               <tr>
                 <th scope="col" class="fields-th-name" :aria-sort="fieldsAriaSort('name')">
@@ -1840,7 +1840,7 @@ onMounted(async () => {
               <button type="button" class="refs-btn" :disabled="refsLoading || !newReasonLabel.trim()" @click="addReason">Добавить</button>
             </div>
             <div class="refs-table-wrap">
-              <table class="refs-table">
+              <table class="refs-table" v-card-table>
                 <thead>
                   <tr>
                     <th>Название</th>
@@ -1909,7 +1909,7 @@ onMounted(async () => {
               <button type="button" class="refs-btn" :disabled="refsLoading || !newOperationName.trim()" @click="addOperation">Добавить</button>
             </div>
             <div class="refs-table-wrap">
-              <table class="refs-table">
+              <table class="refs-table" v-card-table>
                 <thead>
                   <tr>
                     <th>Название</th>

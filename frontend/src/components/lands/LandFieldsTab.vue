@@ -60,7 +60,7 @@ defineEmits<{
           </div>
         </div>
         <div v-if="items.length" class="lands-table-wrap">
-          <table class="lands-table lands-fields-table">
+          <table class="lands-table lands-fields-table" v-card-table>
             <thead>
               <tr>
                 <th>Название</th>

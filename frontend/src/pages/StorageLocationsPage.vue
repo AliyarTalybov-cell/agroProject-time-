@@ -381,7 +381,7 @@ function onPageSizeChange(size: number) {
       </div>
 
       <div v-else-if="pagedPlaces.length" class="fields-table-wrap">
-        <table class="fields-table storage-table" aria-label="Список мест хранения">
+        <table class="fields-table storage-table" aria-label="Список мест хранения" v-card-table>
           <thead>
             <tr>
               <th>Название</th>

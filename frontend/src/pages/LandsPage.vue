@@ -3802,7 +3802,7 @@ onMounted(() => void reloadAll())
             </div>
           </div>
           <div class="lands-table-wrap">
-            <table class="lands-table">
+            <table class="lands-table" v-card-table>
               <thead>
                 <tr>
                   <th>Кадастровый номер</th>
@@ -3931,7 +3931,7 @@ onMounted(() => void reloadAll())
             <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openMeliorationModal">Добавить</button>
           </div>
           <div class="lands-table-wrap lands-table-wrap--melioration">
-            <table class="lands-table">
+            <table class="lands-table" v-card-table>
               <thead>
                 <tr v-if="meliorationTab === 'systems'">
                   <th>№ ПОЛЯ ЕФИС ЗСН</th>
