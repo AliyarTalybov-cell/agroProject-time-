@@ -33,7 +33,7 @@ begin
   select id into v_cell_a from public.storage_cells where storage_location_id = v_loc and kind = 'main';
   if v_cell_a is null then raise exception 'FAIL: у нового склада нет ячейки «Основная»'; end if;
   update public.storage_cells set capacity_tons = 100 where id = v_cell_a;
-  insert into public.storage_cells (storage_location_id, name, kind, capacity_tons) values (v_loc, 'Силос 2', 'silo', 100)
+  insert into public.storage_cells (storage_location_id, name, kind, capacity_tons) values (v_loc, 'Силос 2', 'cell', 100)
   returning id into v_cell_b;
   raise notice 'OK новый склад получил ячейку «Основная»';
 

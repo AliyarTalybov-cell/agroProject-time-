@@ -506,6 +506,13 @@
   line-height: 1.3;
 }
 
+.ui-form-label--with-help {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .ui-form-input,
 .ui-form-select,
 .ui-form-textarea {

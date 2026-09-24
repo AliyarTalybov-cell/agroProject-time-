@@ -4,16 +4,16 @@ import {
   loadFieldOptions,
   loadGrainCrops,
   loadPlacements,
+  loadSimpleRef,
   loadStockBatches,
   loadWarehousesOverview,
-  loadWriteoffReasons,
   type BatchPlacement,
   type Counterparty,
   type FieldOption,
   type GrainCrop,
+  type SimpleRefRow,
   type StockBatch,
   type WarehouseOverview,
-  type WriteoffReason,
 } from '@/lib/stockLedger'
 
 /**
@@ -28,7 +28,9 @@ export function useStockRefs() {
   const fields = ref<FieldOption[]>([])
   const warehouses = ref<WarehouseOverview[]>([])
   const counterparties = ref<Counterparty[]>([])
-  const reasons = ref<WriteoffReason[]>([])
+  const reasons = ref<SimpleRefRow[]>([])
+  const purposes = ref<SimpleRefRow[]>([])
+  const targets = ref<SimpleRefRow[]>([])
   const batches = ref<StockBatch[]>([])
   const placements = ref<BatchPlacement[]>([])
 
@@ -36,19 +38,23 @@ export function useStockRefs() {
     loading.value = true
     error.value = null
     try {
-      const [c, f, w, cp, r, b] = await Promise.all([
+      const [c, f, w, cp, r, b, pu, tg] = await Promise.all([
         loadGrainCrops(),
         loadFieldOptions(),
         loadWarehousesOverview(),
         loadCounterparties(),
-        loadWriteoffReasons(),
+        loadSimpleRef('stock_writeoff_reasons', true),
         loadStockBatches(),
+        loadSimpleRef('stock_batch_purposes', true),
+        loadSimpleRef('stock_consumption_targets', true),
       ])
       crops.value = c
       fields.value = f
       warehouses.value = w
       counterparties.value = cp.filter((x) => x.active)
       reasons.value = r
+      purposes.value = pu
+      targets.value = tg
       batches.value = b.batches
       placements.value = b.placements
     } catch (e) {
@@ -110,6 +116,8 @@ export function useStockRefs() {
     warehouses,
     counterparties,
     reasons,
+    purposes,
+    targets,
     batches,
     placements,
     cellOptions,

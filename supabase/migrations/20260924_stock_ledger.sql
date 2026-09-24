@@ -49,12 +49,20 @@ comment on column public.crops.is_grain is
 -- 1. Ячейки склада
 -- ---------------------------------------------------------------------
 
+-- Типы ячеек берутся из общего справочника «Типы мест хранения»: дополняем
+-- его видами ячеек, которых там ещё нет.
+insert into public.storage_location_types (name, sort_order)
+select v.name, v.sort_order
+from (values ('Бункер', 50), ('Секция', 60), ('Площадка', 70)) as v(name, sort_order)
+where not exists (select 1 from public.storage_location_types t where lower(t.name) = lower(v.name));
+
 create table if not exists public.storage_cells (
   id uuid primary key default gen_random_uuid(),
   storage_location_id uuid not null references public.storage_locations(id) on delete cascade,
   name text not null check (length(btrim(name)) > 0),
-  kind text not null default 'section'
-    check (kind in ('main', 'silo', 'bunker', 'section', 'floor', 'pile')),
+  -- main — ячейка «Основная», которая есть у каждого склада; остальные — cell.
+  kind text not null default 'cell' check (kind in ('main', 'cell')),
+  location_type_id uuid references public.storage_location_types(id) on delete restrict,
   capacity_tons numeric(14, 3) check (capacity_tons is null or capacity_tons > 0),
   sort_order integer not null default 0,
   active boolean not null default true,
@@ -64,7 +72,7 @@ create table if not exists public.storage_cells (
 );
 
 comment on table public.storage_cells is
-  'Ячейки склада: силос, бункер, секция, площадка, бурт. У каждого склада есть ячейка «Основная».';
+  'Ячейки склада. Тип — из справочника storage_location_types (силос, бункер, секция…). У каждого склада есть ячейка «Основная».';
 
 create index if not exists storage_cells_location_idx on public.storage_cells (storage_location_id);
 
@@ -156,6 +164,38 @@ insert into public.stock_writeoff_reasons (name, sort_order) values
 on conflict (name) do nothing;
 
 
+-- Справочники: назначение партии и направления расхода. Ключ — текст, как у
+-- crops: встроенные значения имеют понятные ключи, новые получают uuid.
+create table if not exists public.stock_batch_purposes (
+  key text primary key default gen_random_uuid()::text,
+  label text not null unique check (length(btrim(label)) > 0),
+  sort_order integer not null default 100,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+insert into public.stock_batch_purposes (key, label, sort_order) values
+  ('food', 'Продовольственное', 10),
+  ('feed', 'Фуражное', 20),
+  ('seed', 'Семенное', 30),
+  ('processing', 'На переработку', 40),
+  ('export', 'На экспорт', 50)
+on conflict (key) do nothing;
+
+create table if not exists public.stock_consumption_targets (
+  key text primary key default gen_random_uuid()::text,
+  label text not null unique check (length(btrim(label)) > 0),
+  sort_order integer not null default 100,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+insert into public.stock_consumption_targets (key, label, sort_order) values
+  ('feed', 'На корм', 10),
+  ('processing', 'На переработку', 20)
+on conflict (key) do nothing;
+
+
 -- ---------------------------------------------------------------------
 -- 3. Партии
 -- ---------------------------------------------------------------------
@@ -172,7 +212,7 @@ create table if not exists public.stock_batches (
   origin text not null default 'field' check (origin in ('field', 'purchase', 'opening')),
   field_id uuid references public.fields(id) on delete set null,
   supplier_id uuid references public.counterparties(id) on delete set null,
-  purpose text not null default 'food' check (purpose in ('food', 'feed', 'seed', 'processing', 'export')),
+  purpose text not null default 'food' references public.stock_batch_purposes(key) on update cascade on delete restrict,
   quality jsonb not null default '{}'::jsonb,
   fgis_batch_number text,
   comment text,
@@ -208,7 +248,7 @@ create table if not exists public.stock_documents (
   contract_id uuid references public.counterparty_contracts(id) on delete restrict,
   field_id uuid references public.fields(id) on delete set null,
   writeoff_reason_id uuid references public.stock_writeoff_reasons(id) on delete restrict,
-  consumption_target text check (consumption_target is null or consumption_target in ('processing', 'feed')),
+  consumption_target text references public.stock_consumption_targets(key) on update cascade on delete restrict,
   vehicle_plate text,
   driver_name text,
   waybill_number text,
@@ -767,6 +807,7 @@ declare
 begin
   foreach t in array array[
     'storage_cells', 'counterparties', 'counterparty_contracts', 'stock_writeoff_reasons',
+    'stock_batch_purposes', 'stock_consumption_targets',
     'stock_batches', 'stock_documents', 'stock_movements', 'stock_reservations'
   ] loop
     execute format('alter table public.%I enable row level security', t);
@@ -779,12 +820,16 @@ end $$;
 revoke all on public.stock_balances, public.stock_batch_totals, public.stock_cell_totals from anon;
 grant select on public.stock_balances, public.stock_batch_totals, public.stock_cell_totals to authenticated;
 
--- Справочники ведут все сотрудники, удаляет руководитель.
+-- Справочники ведут все сотрудники, удаляет руководитель (и только то, на что
+-- нет ссылок — это держат внешние ключи).
 do $$
 declare
   t text;
 begin
-  foreach t in array array['storage_cells', 'counterparties', 'counterparty_contracts', 'stock_writeoff_reasons', 'stock_reservations'] loop
+  foreach t in array array[
+    'storage_cells', 'counterparties', 'counterparty_contracts', 'stock_writeoff_reasons',
+    'stock_batch_purposes', 'stock_consumption_targets', 'stock_reservations'
+  ] loop
     execute format('drop policy if exists %I on public.%I', t || '_insert', t);
     execute format('create policy %I on public.%I for insert to authenticated with check (true)', t || '_insert', t);
     execute format('drop policy if exists %I on public.%I', t || '_update', t);
@@ -905,8 +950,10 @@ begin
       select id into v_cell from public.storage_cells
        where storage_location_id = r.storage_location_id and kind = 'main';
     else
-      insert into public.storage_cells (storage_location_id, name, kind, sort_order)
-      select r.storage_location_id, cr.label, 'section', cr.sort_order + 1
+      insert into public.storage_cells (storage_location_id, name, kind, location_type_id, sort_order)
+      select r.storage_location_id, cr.label, 'cell',
+             (select t.id from public.storage_location_types t where lower(t.name) = 'секция' limit 1),
+             cr.sort_order + 1
       from public.crops cr where cr.key = r.crop_key
       on conflict (storage_location_id, name) do nothing;
       select c.id into v_cell from public.storage_cells c join public.crops cr on cr.label = c.name

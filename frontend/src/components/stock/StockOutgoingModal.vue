@@ -6,6 +6,7 @@
 import { computed, onMounted, ref } from 'vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
   fieldOptionLabel,
@@ -44,7 +45,7 @@ const form = ref({
   counterpartyId: '',
   fieldId: '',
   reasonId: '',
-  target: 'feed' as 'feed' | 'processing',
+  target: '',
   pricePerTon: '',
   buyerNet: '',
   vehiclePlate: '',
@@ -64,6 +65,7 @@ const sources = computed(() =>
 onMounted(async () => {
   await refs.reload()
   if (sources.value.length === 1) lines.value[0].source = sources.value[0].key
+  if (!form.value.target) form.value.target = refs.targets.value[0]?.id ?? ''
 })
 
 function sourceOf(line: Line) {
@@ -94,6 +96,7 @@ const canSave = computed(() => {
   if (props.type === 'sale') return Boolean(form.value.counterpartyId)
   if (props.type === 'seeding') return Boolean(form.value.fieldId)
   if (props.type === 'writeoff') return Boolean(form.value.reasonId)
+  if (props.type === 'consumption') return Boolean(form.value.target)
   return true
 })
 
@@ -147,7 +150,9 @@ async function save() {
         <input v-model="form.docDate" type="datetime-local" class="ui-form-input" />
       </div>
       <div v-if="type === 'sale'" class="ui-form-field">
-        <label class="ui-form-label">Покупатель *</label>
+        <label class="ui-form-label ui-form-label--with-help">Покупатель *
+          <RefFieldHelp text="Нет покупателя? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
+        </label>
         <select v-model="form.counterpartyId" class="ui-form-select">
           <option value="" disabled>{{ refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»' }}</option>
           <option v-for="c in refs.buyers.value" :key="c.id" :value="c.id">{{ c.name }}{{ c.inn ? ` · ИНН ${c.inn}` : '' }}</option>
@@ -161,17 +166,20 @@ async function save() {
         </select>
       </div>
       <div v-else-if="type === 'consumption'" class="ui-form-field">
-        <label class="ui-form-label">Куда *</label>
+        <label class="ui-form-label ui-form-label--with-help">Куда *
+          <RefFieldHelp text="Нужно другое направление? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-consumption-targets' } }" link-label="Справочники хранения" />
+        </label>
         <select v-model="form.target" class="ui-form-select">
-          <option value="feed">На корм</option>
-          <option value="processing">На переработку</option>
+          <option v-for="t in refs.targets.value" :key="t.id" :value="t.id">{{ t.label }}</option>
         </select>
       </div>
       <div v-else class="ui-form-field">
-        <label class="ui-form-label">Причина *</label>
+        <label class="ui-form-label ui-form-label--with-help">Причина *
+          <RefFieldHelp text="Нет нужной причины? Добавьте её в" :to="{ path: '/lands', query: { tab: 'storage-writeoff-reasons' } }" link-label="Справочники хранения" />
+        </label>
         <select v-model="form.reasonId" class="ui-form-select">
           <option value="" disabled>Выберите причину</option>
-          <option v-for="r in refs.reasons.value" :key="r.id" :value="r.id">{{ r.name }}</option>
+          <option v-for="r in refs.reasons.value" :key="r.id" :value="r.id">{{ r.label }}</option>
         </select>
       </div>
     </div>

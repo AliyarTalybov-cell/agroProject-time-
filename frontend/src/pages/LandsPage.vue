@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Общие стили раздела земель — те же, что у вынесенных окон и вкладок.
 import '@/components/lands/landsShared.css'
+import LandsStockRefList from '@/components/lands/LandsStockRefList.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loadPdfTools } from '@/lib/pdfExport'
@@ -268,7 +269,7 @@ const equipmentTypeRefs = ref<EquipmentTypeRefRow[]>([])
 const equipmentConditionRefs = ref<EquipmentConditionRefRow[]>([])
 const fieldMunicipalityRefs = ref<FieldMunicipalityRefRow[]>([])
 const cropRotationTypeRefs = ref<LandCropRotationTypeRefRow[]>([])
-const storageRefsTab = ref<'types' | 'statuses' | 'fill-statuses'>('types')
+const storageRefsTab = ref<'types' | 'statuses' | 'writeoff-reasons' | 'consumption-targets' | 'purposes'>('types')
 const storageLocationTypeRefs = ref<StorageLocationTypeRow[]>([])
 const storageLocationStatusRefs = ref<StorageLocationStatusRow[]>([])
 const storageFillStatusRefs = ref<StorageFillStatusRow[]>([])
@@ -363,7 +364,7 @@ let landsSearchRequestId = 0
 let addressCandidatesRequestId = 0
 const route = useRoute()
 const router = useRouter()
-const ROOT_TAB_QUERY_MAP = new Set(['registry', 'melioration', 'land-refs', 'land-types', 'land-categories', 'land-usage', 'rights-refs', 'crops-refs', 'melioration-refs', 'equipment-refs', 'field-refs', 'crop-rotation-refs', 'storage-refs', 'storage-types', 'storage-statuses', 'storage-fill-statuses'])
+const ROOT_TAB_QUERY_MAP = new Set(['registry', 'melioration', 'land-refs', 'land-types', 'land-categories', 'land-usage', 'rights-refs', 'crops-refs', 'melioration-refs', 'equipment-refs', 'field-refs', 'crop-rotation-refs', 'storage-refs', 'storage-types', 'storage-statuses', 'storage-fill-statuses', 'storage-writeoff-reasons', 'storage-consumption-targets', 'storage-purposes'])
 const routeLandId = computed(() => String(route.params.id || ''))
 const isDetailsMode = computed(() => Boolean(routeLandId.value))
 const landsListSubtitle = computed(() => (
@@ -3531,10 +3532,19 @@ watch(() => String(route.query.tab || ''), (tab) => {
     landRefsTab.value = tab
     return
   }
-  if (tab === 'storage-types' || tab === 'storage-statuses' || tab === 'storage-fill-statuses') {
+  if (
+    tab === 'storage-types' || tab === 'storage-statuses' || tab === 'storage-fill-statuses' ||
+    tab === 'storage-writeoff-reasons' || tab === 'storage-consumption-targets' || tab === 'storage-purposes'
+  ) {
     landsRootTab.value = 'storage-refs'
+    // «Статус заполнения» больше не ведётся вручную — считается по остатку склада;
+    // старые ссылки на него ведут к типам.
     storageRefsTab.value =
-      tab === 'storage-types' ? 'types' : tab === 'storage-statuses' ? 'statuses' : 'fill-statuses'
+      tab === 'storage-statuses' ? 'statuses'
+      : tab === 'storage-writeoff-reasons' ? 'writeoff-reasons'
+      : tab === 'storage-consumption-targets' ? 'consumption-targets'
+      : tab === 'storage-purposes' ? 'purposes'
+      : 'types'
     return
   }
   landsRootTab.value = tab as typeof landsRootTab.value
@@ -4345,8 +4355,14 @@ onMounted(() => void reloadAll())
             <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'statuses' }" @click="storageRefsTab = 'statuses'">
               Статусы мест хранения
             </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'fill-statuses' }" @click="storageRefsTab = 'fill-statuses'">
-              Статус заполнения
+            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'writeoff-reasons' }" @click="storageRefsTab = 'writeoff-reasons'">
+              Причины списания
+            </button>
+            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'consumption-targets' }" @click="storageRefsTab = 'consumption-targets'">
+              Направления расхода
+            </button>
+            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'purposes' }" @click="storageRefsTab = 'purposes'">
+              Назначение партий
             </button>
           </div>
           <div v-if="storageRefsTab === 'types'" class="lands-ref-block">
@@ -4396,28 +4412,27 @@ onMounted(() => void reloadAll())
               <p v-if="!storageLocationStatusRefs.length" class="lands-muted">Пока нет статусов мест хранения.</p>
             </div>
           </div>
-          <div v-else class="lands-ref-block">
-            <h2>Статус заполнения</h2>
-            <p class="lands-muted lands-ref-hint">Используется для учёта партии зерна в месте хранения (пусто / наполняется / сформировано). Можно добавить свои варианты.</p>
-            <div class="lands-ref-add-row">
-              <input v-model="newStorageFillStatusName" class="lands-search" type="text" placeholder="Например: На отгрузке" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageFillStatusName.trim()" @click="addStorageFillStatusRef">
-                Добавить
-              </button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in storageFillStatusRefs" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageFillStatusRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                  </button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteStorageFillStatus(row.id)" />
-                </div>
-              </div>
-              <p v-if="!storageFillStatusRefs.length" class="lands-muted">Пока нет статусов заполнения.</p>
-            </div>
-          </div>
+          <LandsStockRefList
+            v-else-if="storageRefsTab === 'writeoff-reasons'"
+            table="stock_writeoff_reasons"
+            title="Причины списания"
+            hint="Выбираются при списании зерна со склада: порча, недостача, вредители…"
+            placeholder="Например: Самосогревание"
+          />
+          <LandsStockRefList
+            v-else-if="storageRefsTab === 'consumption-targets'"
+            table="stock_consumption_targets"
+            title="Направления расхода"
+            hint="Куда уходит зерно при расходе на собственные нужды: на корм, на переработку, в свой цех…"
+            placeholder="Например: На комбикорм"
+          />
+          <LandsStockRefList
+            v-else-if="storageRefsTab === 'purposes'"
+            table="stock_batch_purposes"
+            title="Назначение партий"
+            hint="Для чего партия: продовольственное, фуражное, семенное зерно, на экспорт…"
+            placeholder="Например: Под договор"
+          />
         </template>
         <template v-else>
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>

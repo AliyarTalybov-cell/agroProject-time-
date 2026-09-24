@@ -21,7 +21,6 @@ import {
   loadStockBatches,
   loadStockDocumentsFor,
   loadWarehousesOverview,
-  storageCellKindLabel,
   type BatchPlacement,
   type CellWithStock,
   type StockBatch,
@@ -213,7 +212,7 @@ function openBatch(batchId: string) {
                   <tr v-for="c in warehouse.cells" :key="c.id">
                     <td>
                       <span class="ui-strong">{{ c.name }}</span>
-                      <div class="ui-muted ui-small">{{ storageCellKindLabel(c.kind) }}</div>
+                      <div v-if="c.typeName" class="ui-muted ui-small">{{ c.typeName }}</div>
                     </td>
                     <td>{{ c.cropLabel ?? '—' }}</td>
                     <td>

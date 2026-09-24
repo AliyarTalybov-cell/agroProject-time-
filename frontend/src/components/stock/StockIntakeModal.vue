@@ -7,16 +7,15 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
-  STOCK_PURPOSES,
   computeCreditedWeight,
   fieldOptionLabel,
   formatRub,
   formatTons,
   parseDecimalInput,
   postIntake,
-  stockPurposeLabel,
   type StockPurpose,
 } from '@/lib/stockLedger'
 import { localInputToIso, nowLocalInput, useStockRefs } from '@/composables/useStockRefs'
@@ -236,7 +235,9 @@ function num(v: number | null | undefined, digits = 2): string {
     <template v-else>
       <div class="ui-form-row ui-form-row--two">
         <div class="ui-form-field">
-          <label class="ui-form-label">Культура *</label>
+          <label class="ui-form-label ui-form-label--with-help">Культура *
+            <RefFieldHelp text="Нет нужной культуры? Добавьте её в" :to="{ path: '/lands', query: { tab: 'crops-refs' } }" link-label="Справочники СХ культур" />
+          </label>
           <select v-model="form.cropKey" class="ui-form-select">
             <option value="" disabled>Выберите культуру</option>
             <option v-for="c in refs.crops.value" :key="c.key" :value="c.key">{{ c.label }}</option>
@@ -250,7 +251,9 @@ function num(v: number | null | undefined, digits = 2): string {
           </select>
         </div>
         <div v-else class="ui-form-field">
-          <label class="ui-form-label">Поставщик *</label>
+          <label class="ui-form-label ui-form-label--with-help">Поставщик *
+            <RefFieldHelp text="Нет поставщика? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
+          </label>
           <select v-model="form.supplierId" class="ui-form-select">
             <option value="" disabled>{{ refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»' }}</option>
             <option v-for="s in refs.suppliers.value" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -267,9 +270,11 @@ function num(v: number | null | undefined, digits = 2): string {
           <input v-model.trim="form.harvestYear" inputmode="numeric" class="ui-form-input" />
         </div>
         <div class="ui-form-field">
-          <label class="ui-form-label">Назначение</label>
+          <label class="ui-form-label ui-form-label--with-help">Назначение
+            <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
+          </label>
           <select v-model="form.purpose" class="ui-form-select">
-            <option v-for="p in STOCK_PURPOSES" :key="p" :value="p">{{ stockPurposeLabel(p) }}</option>
+            <option v-for="p in refs.purposes.value" :key="p.id" :value="p.id">{{ p.label }}</option>
           </select>
         </div>
       </div>

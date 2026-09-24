@@ -11,6 +11,7 @@ import { computed, ref } from 'vue'
 import { useAuth } from '@/stores/auth'
 import StockCancelModal from './StockCancelModal.vue'
 import {
+  consumptionTargetLabel,
   formatRub,
   formatTons,
   stockDocTypeLabel,
@@ -64,7 +65,7 @@ function party(d: StockDocument): string {
   if (d.counterpartyName) return d.counterpartyName
   if (d.fieldName) return d.fieldName
   if (d.reasonName) return d.reasonName
-  if (d.consumption_target) return d.consumption_target === 'feed' ? 'На корм' : 'На переработку'
+  if (d.consumption_target) return d.consumptionTargetName ?? consumptionTargetLabel(d.consumption_target)
   if (d.doc_type === 'transfer') {
     const from = d.movements.find((m) => m.delta_tons < 0)
     const to = d.movements.find((m) => m.delta_tons > 0)

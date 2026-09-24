@@ -1,30 +1,43 @@
 <script setup lang="ts">
-/** Ячейка склада: силос, бункер, секция, площадка, бурт. */
-import { computed, ref } from 'vue'
+/** Ячейка склада. Тип — из справочника «Типы мест хранения» (силос, бункер, секция…). */
+import { computed, onMounted, ref } from 'vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
-  STORAGE_CELL_KINDS,
+  loadLocationTypes,
   parseDecimalInput,
   saveStorageCell,
-  storageCellKindLabel,
   type CellWithStock,
-  type StorageCellKind,
+  type LocationTypeOption,
 } from '@/lib/stockLedger'
 
 const props = defineProps<{ locationId: string; cell?: CellWithStock | null }>()
 const emit = defineEmits<{ close: []; done: [] }>()
 
+const isMain = computed(() => props.cell?.kind === 'main')
+const types = ref<LocationTypeOption[]>([])
 const form = ref({
   name: props.cell?.name ?? '',
-  kind: (props.cell?.kind ?? 'silo') as StorageCellKind,
+  typeId: props.cell?.location_type_id ?? '',
   capacity: props.cell?.capacity_tons != null ? String(props.cell.capacity_tons).replace('.', ',') : '',
 })
 const saving = ref(false)
 const error = ref<string | null>(null)
 const capacity = computed(() => parseDecimalInput(form.value.capacity))
-const canSave = computed(() => form.value.name.trim().length > 0 && (capacity.value == null || capacity.value > 0))
+const canSave = computed(
+  () => form.value.name.trim().length > 0 && (isMain.value || Boolean(form.value.typeId)) && (capacity.value == null || capacity.value > 0),
+)
+
+onMounted(async () => {
+  try {
+    types.value = await loadLocationTypes()
+    if (!form.value.typeId && !isMain.value) form.value.typeId = types.value.find((t) => t.name === 'Силос')?.id ?? types.value[0]?.id ?? ''
+  } catch (e) {
+    error.value = formatSupabaseError(e)
+  }
+})
 
 async function save() {
   if (!canSave.value) return
@@ -33,7 +46,7 @@ async function save() {
   try {
     await saveStorageCell(props.cell?.id ?? null, props.locationId, {
       name: form.value.name,
-      kind: props.cell?.kind === 'main' ? 'main' : form.value.kind,
+      location_type_id: isMain.value ? null : form.value.typeId || null,
       capacity_tons: capacity.value,
     })
     emit('done')
@@ -54,11 +67,14 @@ async function save() {
         <input v-model.trim="form.name" class="ui-form-input" placeholder="Например: Силос 3" />
       </div>
       <div class="ui-form-field">
-        <label class="ui-form-label">Тип</label>
-        <select v-model="form.kind" class="ui-form-select" :disabled="cell?.kind === 'main'">
-          <option v-if="cell?.kind === 'main'" value="main">Основная</option>
-          <option v-for="k in STORAGE_CELL_KINDS" :key="k" :value="k">{{ storageCellKindLabel(k) }}</option>
+        <label class="ui-form-label ui-form-label--with-help">Тип *
+          <RefFieldHelp text="Нет нужного типа? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-types' } }" link-label="Справочники хранения" />
+        </label>
+        <select v-if="!isMain" v-model="form.typeId" class="ui-form-select">
+          <option value="" disabled>Выберите тип</option>
+          <option v-for="t in types" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
+        <input v-else class="ui-form-input" value="Основная" readonly tabindex="-1" />
       </div>
     </div>
     <div class="ui-form-field">

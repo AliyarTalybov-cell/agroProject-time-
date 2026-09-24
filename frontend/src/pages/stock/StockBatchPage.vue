@@ -5,21 +5,22 @@ import { useRouter } from 'vue-router'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import StockDocumentsTable from '@/components/stock/StockDocumentsTable.vue'
 import StockTransferModal from '@/components/stock/StockTransferModal.vue'
 import StockOutgoingModal from '@/components/stock/StockOutgoingModal.vue'
 import StockProcessingModal from '@/components/stock/StockProcessingModal.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
-  STOCK_PURPOSES,
   formatTons,
+  loadSimpleRef,
   loadStockBatch,
   loadStockDocumentsFor,
   parseDecimalInput,
   stockOriginLabel,
-  stockPurposeLabel,
   updateStockBatch,
   type BatchPlacement,
+  type SimpleRefRow,
   type StockBatch,
   type StockDocument,
   type StockOutgoingType,
@@ -34,6 +35,7 @@ const error = ref<string | null>(null)
 const batch = ref<StockBatch | null>(null)
 const placements = ref<BatchPlacement[]>([])
 const documents = ref<StockDocument[]>([])
+const purposes = ref<SimpleRefRow[]>([])
 
 type Dialog = { kind: 'transfer' } | { kind: 'processing' } | { kind: 'outgoing'; type: StockOutgoingType } | { kind: 'edit' }
 const dialog = ref<Dialog | null>(null)
@@ -41,7 +43,12 @@ const dialog = ref<Dialog | null>(null)
 async function load() {
   error.value = null
   try {
-    const [b, docs] = await Promise.all([loadStockBatch(props.id), loadStockDocumentsFor({ batchId: props.id })])
+    const [b, docs, pu] = await Promise.all([
+      loadStockBatch(props.id),
+      loadStockDocumentsFor({ batchId: props.id }),
+      loadSimpleRef('stock_batch_purposes'),
+    ])
+    purposes.value = pu
     batch.value = b?.batch ?? null
     placements.value = b?.placements ?? []
     documents.value = docs
@@ -179,7 +186,7 @@ async function saveEdit() {
             </div>
             <div class="ui-stat">
               <span class="ui-stat-label">Назначение</span>
-              <span class="ui-stat-value batch-small-value">{{ stockPurposeLabel(batch.purpose) }}</span>
+              <span class="ui-stat-value batch-small-value">{{ batch.purposeLabel }}</span>
             </div>
             <div class="ui-stat">
               <span class="ui-stat-label">Сорт</span>
@@ -249,9 +256,11 @@ async function saveEdit() {
               <input v-model.trim="edit.harvestYear" inputmode="numeric" class="ui-form-input" />
             </div>
             <div class="ui-form-field">
-              <label class="ui-form-label">Назначение</label>
+              <label class="ui-form-label ui-form-label--with-help">Назначение
+                <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
+              </label>
               <select v-model="edit.purpose" class="ui-form-select">
-                <option v-for="p in STOCK_PURPOSES" :key="p" :value="p">{{ stockPurposeLabel(p) }}</option>
+                <option v-for="p in purposes" :key="p.id" :value="p.id" :disabled="!p.active && p.id !== edit.purpose">{{ p.label }}</option>
               </select>
             </div>
           </div>

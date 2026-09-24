@@ -10,12 +10,12 @@ import UiPagination from '@/components/ui/UiPagination.vue'
 import StockIntakeModal from '@/components/stock/StockIntakeModal.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
-  STOCK_PURPOSES,
   formatTons,
+  loadSimpleRef,
   loadStockBatches,
   stockOriginLabel,
-  stockPurposeLabel,
   type BatchPlacement,
+  type SimpleRefRow,
   type StockBatch,
 } from '@/lib/stockLedger'
 
@@ -25,6 +25,7 @@ const error = ref<string | null>(null)
 const batches = ref<StockBatch[]>([])
 const placements = ref<BatchPlacement[]>([])
 const intakeOpen = ref(false)
+const purposes = ref<SimpleRefRow[]>([])
 
 const search = ref('')
 const cropFilter = ref('')
@@ -37,7 +38,8 @@ const pageSize = ref(20)
 async function load() {
   error.value = null
   try {
-    const r = await loadStockBatches()
+    const [r, pu] = await Promise.all([loadStockBatches(), loadSimpleRef('stock_batch_purposes')])
+    purposes.value = pu
     batches.value = r.batches
     placements.value = r.placements
   } catch (e) {
@@ -146,7 +148,7 @@ function onIntakeDone() {
           </select>
           <select v-model="purposeFilter" class="ui-filter-select" aria-label="Назначение">
             <option value="">Любое назначение</option>
-            <option v-for="p in STOCK_PURPOSES" :key="p" :value="p">{{ stockPurposeLabel(p) }}</option>
+            <option v-for="p in purposes" :key="p.id" :value="p.id">{{ p.label }}</option>
           </select>
         </div>
 
@@ -183,7 +185,7 @@ function onIntakeDone() {
                   </td>
                   <td>{{ b.cropLabel }}</td>
                   <td>{{ sourceLabel(b) }}</td>
-                  <td>{{ stockPurposeLabel(b.purpose) }}</td>
+                  <td>{{ b.purposeLabel }}</td>
                   <td class="batches-where">{{ whereLabel(b) }}</td>
                   <td class="ui-num ui-strong">
                     <span v-if="b.tons > 0">{{ formatTons(b.tons) }}</span>

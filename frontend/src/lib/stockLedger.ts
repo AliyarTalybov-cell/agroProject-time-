@@ -26,9 +26,10 @@ export type StockDocType =
   | 'storno'
 
 export type StockOutgoingType = 'sale' | 'seeding' | 'consumption' | 'writeoff'
-export type StockPurpose = 'food' | 'feed' | 'seed' | 'processing' | 'export'
+/** Ключ из справочника stock_batch_purposes. */
+export type StockPurpose = string
 export type StockBatchOrigin = 'field' | 'purchase' | 'opening'
-export type StorageCellKind = 'main' | 'silo' | 'bunker' | 'section' | 'floor' | 'pile'
+export type StorageCellKind = 'main' | 'cell'
 export type CounterpartyKind = 'buyer' | 'supplier' | 'both'
 
 const DOC_TYPE_LABELS: Record<StockDocType, string> = {
@@ -44,7 +45,8 @@ const DOC_TYPE_LABELS: Record<StockDocType, string> = {
   storno: 'Сторно',
 }
 
-const PURPOSE_LABELS: Record<StockPurpose, string> = {
+/** Встроенные назначения — на случай, если справочник ещё не загружен. */
+const PURPOSE_LABELS: Record<string, string> = {
   food: 'Продовольственное',
   feed: 'Фуражное',
   seed: 'Семенное',
@@ -58,36 +60,34 @@ const ORIGIN_LABELS: Record<StockBatchOrigin, string> = {
   opening: 'Перенесена из прежнего учёта',
 }
 
-const CELL_KIND_LABELS: Record<StorageCellKind, string> = {
-  main: 'Основная',
-  silo: 'Силос',
-  bunker: 'Бункер',
-  section: 'Секция',
-  floor: 'Площадка',
-  pile: 'Бурт',
-}
-
 const COUNTERPARTY_KIND_LABELS: Record<CounterpartyKind, string> = {
   buyer: 'Покупатель',
   supplier: 'Поставщик',
   both: 'Покупатель и поставщик',
 }
 
-export const STOCK_PURPOSES = Object.keys(PURPOSE_LABELS) as StockPurpose[]
-export const STORAGE_CELL_KINDS = (Object.keys(CELL_KIND_LABELS) as StorageCellKind[]).filter((k) => k !== 'main')
 export const COUNTERPARTY_KINDS = Object.keys(COUNTERPARTY_KIND_LABELS) as CounterpartyKind[]
 
 export function stockDocTypeLabel(t: string): string {
   return DOC_TYPE_LABELS[t as StockDocType] ?? t
 }
+/** Подписи из справочников; заполняются при загрузке справочников. */
+const refLabels = {
+  purposes: new Map<string, string>(Object.entries(PURPOSE_LABELS)),
+  targets: new Map<string, string>([
+    ['feed', 'На корм'],
+    ['processing', 'На переработку'],
+  ]),
+}
+
 export function stockPurposeLabel(p: string): string {
-  return PURPOSE_LABELS[p as StockPurpose] ?? p
+  return refLabels.purposes.get(p) ?? p
+}
+export function consumptionTargetLabel(t: string): string {
+  return refLabels.targets.get(t) ?? t
 }
 export function stockOriginLabel(o: string): string {
   return ORIGIN_LABELS[o as StockBatchOrigin] ?? o
-}
-export function storageCellKindLabel(k: string): string {
-  return CELL_KIND_LABELS[k as StorageCellKind] ?? k
 }
 export function counterpartyKindLabel(k: string): string {
   return COUNTERPARTY_KIND_LABELS[k as CounterpartyKind] ?? k
@@ -176,6 +176,9 @@ export type StorageCell = {
   storage_location_id: string
   name: string
   kind: StorageCellKind
+  location_type_id: string | null
+  /** Тип ячейки из справочника «Типы мест хранения»; у «Основной» — пусто. */
+  typeName: string | null
   capacity_tons: number | null
   sort_order: number
   active: boolean
@@ -218,6 +221,7 @@ export type StockBatch = {
   supplier_id: string | null
   supplierName: string | null
   purpose: StockPurpose
+  purposeLabel: string
   quality: Record<string, unknown>
   fgis_batch_number: string | null
   comment: string | null
@@ -248,6 +252,7 @@ export type StockDocument = {
   fieldName: string | null
   reasonName: string | null
   consumption_target: string | null
+  consumptionTargetName: string | null
   vehicle_plate: string | null
   driver_name: string | null
   waybill_number: string | null
@@ -292,6 +297,9 @@ export type Counterparty = {
 }
 
 export type WriteoffReason = { id: string; name: string }
+/** Строка простого справочника: причины списания, назначения, направления расхода. */
+export type SimpleRefRow = { id: string; label: string; sort_order: number; active: boolean }
+export type SimpleRefTable = 'stock_writeoff_reasons' | 'stock_batch_purposes' | 'stock_consumption_targets'
 export type GrainCrop = { key: string; label: string; base_moisture_percent: number }
 export type FieldOption = { id: string; name: string; number: string | null }
 
@@ -324,6 +332,55 @@ export function fieldOptionLabel(f: { name: string; number: string | null }): st
   return f.number ? `${f.number} — ${f.name}` : f.name
 }
 
+/** Простой справочник: id/key, подпись, порядок. У причин списания колонка — name. */
+export async function loadSimpleRef(table: SimpleRefTable, onlyActive = false): Promise<SimpleRefRow[]> {
+  const idCol = table === 'stock_writeoff_reasons' ? 'id' : 'key'
+  const labelCol = table === 'stock_writeoff_reasons' ? 'name' : 'label'
+  let req = db().from(table).select(`${idCol}, ${labelCol}, sort_order, active`).order('sort_order').order(labelCol)
+  if (onlyActive) req = req.eq('active', true)
+  const { data, error } = await req
+  if (error) throw error
+  const rows = ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    id: String(r[idCol]),
+    label: String(r[labelCol]),
+    sort_order: Number(r.sort_order ?? 100),
+    active: r.active !== false,
+  }))
+  if (table === 'stock_batch_purposes') for (const r of rows) refLabels.purposes.set(r.id, r.label)
+  if (table === 'stock_consumption_targets') for (const r of rows) refLabels.targets.set(r.id, r.label)
+  return rows
+}
+
+export async function saveSimpleRef(table: SimpleRefTable, id: string | null, label: string): Promise<void> {
+  const labelCol = table === 'stock_writeoff_reasons' ? 'name' : 'label'
+  const idCol = table === 'stock_writeoff_reasons' ? 'id' : 'key'
+  const clean = label.trim()
+  const { error } = id
+    ? await db().from(table).update({ [labelCol]: clean }).eq(idCol, id)
+    : await db().from(table).insert({ [labelCol]: clean })
+  if (error) throw error
+}
+
+export async function setSimpleRefActive(table: SimpleRefTable, id: string, active: boolean): Promise<void> {
+  const idCol = table === 'stock_writeoff_reasons' ? 'id' : 'key'
+  const { error } = await db().from(table).update({ active }).eq(idCol, id)
+  if (error) throw error
+}
+
+export async function deleteSimpleRef(table: SimpleRefTable, id: string): Promise<void> {
+  const idCol = table === 'stock_writeoff_reasons' ? 'id' : 'key'
+  const { error } = await db().from(table).delete().eq(idCol, id)
+  if (error) throw error
+}
+
+export type LocationTypeOption = { id: string; name: string }
+
+export async function loadLocationTypes(): Promise<LocationTypeOption[]> {
+  const { data, error } = await db().from('storage_location_types').select('id, name').order('sort_order')
+  if (error) throw error
+  return (data ?? []) as LocationTypeOption[]
+}
+
 export async function loadWriteoffReasons(): Promise<WriteoffReason[]> {
   const { data, error } = await db().from('stock_writeoff_reasons').select('id, name').eq('active', true).order('sort_order')
   if (error) throw error
@@ -340,7 +397,7 @@ export async function loadWarehousesOverview(locationId?: string): Promise<Wareh
     .order('sort_order')
     .order('created_at')
   if (locationId) locReq = locReq.eq('id', locationId)
-  let cellReq = db().from('storage_cells').select('*').order('sort_order').order('name')
+  let cellReq = db().from('storage_cells').select('*, storage_location_types ( name )').order('sort_order').order('name')
   if (locationId) cellReq = cellReq.eq('storage_location_id', locationId)
 
   const [locRes, cellRes, totalsRes, cropsRes, lastRes] = await Promise.all([
@@ -371,11 +428,13 @@ export async function loadWarehousesOverview(locationId?: string): Promise<Wareh
   }
 
   const cellsByLocation = new Map<string, CellWithStock[]>()
-  for (const c of (cellRes.data ?? []) as StorageCell[]) {
+  for (const raw of (cellRes.data ?? []) as Array<StorageCell & { storage_location_types: One<{ name: string }> }>) {
+    const { storage_location_types: typeRow, ...c } = raw
     const t = totals.get(c.id)
     const cropKey = t?.crop_key ?? null
     const cell: CellWithStock = {
       ...c,
+      typeName: c.kind === 'main' ? 'Основная' : one(typeRow)?.name ?? null,
       capacity_tons: c.capacity_tons == null ? null : Number(c.capacity_tons),
       tons: Number(t?.tons ?? 0),
       cropKey,
@@ -419,10 +478,11 @@ export async function loadWarehousesOverview(locationId?: string): Promise<Wareh
 }
 
 const BATCH_SELECT =
-  'id, code, crop_key, variety, harvest_year, origin, field_id, supplier_id, purpose, quality, fgis_batch_number, comment, created_at, crops ( label ), fields ( name, number ), counterparties ( name )'
+  'id, code, crop_key, variety, harvest_year, origin, field_id, supplier_id, purpose, quality, fgis_batch_number, comment, created_at, crops ( label ), fields ( name, number ), counterparties ( name ), stock_batch_purposes ( label )'
 
-type BatchRow = Omit<StockBatch, 'cropLabel' | 'fieldName' | 'supplierName' | 'tons' | 'reservedTons' | 'firstInAt' | 'lastMovementAt'> & {
+type BatchRow = Omit<StockBatch, 'cropLabel' | 'purposeLabel' | 'fieldName' | 'supplierName' | 'tons' | 'reservedTons' | 'firstInAt' | 'lastMovementAt'> & {
   crops: One<{ label: string }>
+  stock_batch_purposes: One<{ label: string }>
   fields: One<{ name: string; number: string | null }>
   counterparties: One<{ name: string }>
 }
@@ -445,6 +505,7 @@ function mapBatch(
     supplier_id: b.supplier_id,
     supplierName: one(b.counterparties)?.name ?? null,
     purpose: b.purpose,
+    purposeLabel: one(b.stock_batch_purposes)?.label ?? stockPurposeLabel(b.purpose),
     quality: (b.quality ?? {}) as Record<string, unknown>,
     fgis_batch_number: b.fgis_batch_number,
     comment: b.comment,
@@ -518,7 +579,7 @@ export async function loadPlacements(filter: { batchId?: string; locationId?: st
 const DOCUMENT_SELECT = `id, doc_type, number, doc_date, status, consumption_target, vehicle_plate, driver_name,
   waybill_number, sdiz_number, act_number, price_per_ton, amount, weights, quality, comment, cancel_reason,
   cancels_document_id, created_at, created_by,
-  counterparties ( name ), fields ( name, number ), stock_writeoff_reasons ( name ),
+  counterparties ( name ), fields ( name, number ), stock_writeoff_reasons ( name ), stock_consumption_targets ( label ),
   stock_movements ( id, batch_id, cell_id, delta_tons,
     stock_batches ( code, crops ( label ) ),
     storage_cells ( name, storage_location_id, storage_locations ( name ) ) )`
@@ -547,6 +608,7 @@ type DocumentRow = {
   counterparties: One<{ name: string }>
   fields: One<{ name: string; number: string | null }>
   stock_writeoff_reasons: One<{ name: string }>
+  stock_consumption_targets: One<{ label: string }>
   stock_movements: Array<{
     id: number
     batch_id: string
@@ -569,6 +631,7 @@ function mapDocument(d: DocumentRow, people: Map<string, string>): StockDocument
     fieldName: field ? fieldOptionLabel(field) : null,
     reasonName: one(d.stock_writeoff_reasons)?.name ?? null,
     consumption_target: d.consumption_target,
+    consumptionTargetName: one(d.stock_consumption_targets)?.label ?? null,
     vehicle_plate: d.vehicle_plate,
     driver_name: d.driver_name,
     waybill_number: d.waybill_number,
@@ -708,12 +771,12 @@ export async function deleteCounterparty(id: string): Promise<void> {
   if (error) throw error
 }
 
-export type CellInput = { name: string; kind: StorageCellKind; capacity_tons: number | null }
+export type CellInput = { name: string; location_type_id: string | null; capacity_tons: number | null }
 
 export async function saveStorageCell(id: string | null, locationId: string, input: CellInput): Promise<void> {
   const row = {
     name: input.name.trim(),
-    kind: input.kind,
+    location_type_id: input.location_type_id,
     capacity_tons: input.capacity_tons,
     updated_at: new Date().toISOString(),
   }
@@ -750,7 +813,7 @@ export type DocumentHeader = {
   contract_id?: string | null
   field_id?: string | null
   writeoff_reason_id?: string | null
-  consumption_target?: 'processing' | 'feed' | null
+  consumption_target?: string | null
   vehicle_plate?: string | null
   driver_name?: string | null
   waybill_number?: string | null

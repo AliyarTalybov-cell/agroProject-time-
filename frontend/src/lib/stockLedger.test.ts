@@ -9,7 +9,6 @@ import {
   parseDecimalInput,
   stockDocTypeLabel,
   stockPurposeLabel,
-  storageCellKindLabel,
 } from './stockLedger'
 
 /**
@@ -94,7 +93,6 @@ describe('подписи', () => {
     expect(stockDocTypeLabel('opening')).toBe('Ввод остатков')
     expect(stockDocTypeLabel('xxx')).toBe('xxx')
     expect(stockPurposeLabel('export')).toBe('На экспорт')
-    expect(storageCellKindLabel('silo')).toBe('Силос')
   })
 
   it('приход — только приёмка и ввод остатков', () => {
