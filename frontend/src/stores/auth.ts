@@ -11,11 +11,8 @@ const loading = ref(true)
 /** Кэш профиля текущего пользователя (ФИО, телефон, должность и т.д.), чтобы не сбрасывать форму при переходах */
 const profileCache = ref<ProfileRow | null>(null)
 
-function isUserActive(u: User | null): boolean {
-  if (!u) return false
-  // By default user is active unless explicitly disabled.
-  return u.user_metadata?.active !== false
-}
+/** Сообщение для отключённого сотрудника — и при входе, и при выбросе из сессии. */
+export const ACCOUNT_DISABLED_MESSAGE = 'Аккаунт отключён. Обратитесь к администратору.'
 
 /**
  * Роль текущего пользователя из таблицы `profiles` — единственный источник истины.
@@ -27,16 +24,28 @@ function isUserActive(u: User | null): boolean {
  */
 const profileRole = ref<'worker' | 'manager'>('worker')
 
+/** Разные версии GoTrue сообщают о блокировке кодом или только текстом. */
+function isBannedError(error: { code?: string; message?: string }): boolean {
+  return error.code === 'user_banned' || /banned/i.test(error.message ?? '')
+}
+
+type ProfileAccess = { role: 'worker' | 'manager'; active: boolean }
+
 /**
- * Читает роль из БД. Возвращает `null`, если прочитать не удалось: ошибка
- * запроса, таймаут или отсутствие клиента. Это намеренно отличается от
- * честно прочитанного `worker` — см. `refreshProfileRole`.
+ * Читает из БД роль и флаг `active`. Возвращает `null`, если прочитать не
+ * удалось: ошибка запроса, таймаут или отсутствие клиента. Это намеренно
+ * отличается от честно прочитанного `worker` — см. `refreshProfileRole`.
+ *
+ * `active` берётся из `profiles`, а не из `user_metadata`: метаданные
+ * пользователь правит сам, и отключённый сотрудник мог вернуть себе вход.
+ * Сам вход закрывает база — миграция 20260923_block_deactivated_users.sql
+ * блокирует учётную запись в Auth, здесь интерфейс лишь не пускает дальше.
  */
-async function readProfileRole(): Promise<'worker' | 'manager' | null> {
+async function readProfileAccess(): Promise<ProfileAccess | null> {
   const current = user.value
   if (!current || !supabase) return null
   try {
-    const query = supabase.from('profiles').select('role').eq('id', current.id).maybeSingle()
+    const query = supabase.from('profiles').select('role, active').eq('id', current.id).maybeSingle()
     const timeout = new Promise<{ data: null; error: unknown }>((resolve) => {
       setTimeout(() => resolve({ data: null, error: new Error('timeout') }), AUTH_INIT_TIMEOUT_MS)
     })
@@ -44,7 +53,8 @@ async function readProfileRole(): Promise<'worker' | 'manager' | null> {
     // временный сбой выглядел как «роль прочитана, там worker».
     const { data, error } = await Promise.race([query, timeout])
     if (error) return null
-    return (data as { role?: string } | null)?.role === 'manager' ? 'manager' : 'worker'
+    const row = data as { role?: string; active?: boolean } | null
+    return { role: row?.role === 'manager' ? 'manager' : 'worker', active: row?.active !== false }
   } catch {
     return null
   }
@@ -65,9 +75,16 @@ async function refreshProfileRole(): Promise<void> {
     profileRole.value = 'worker'
     return
   }
-  const role = await readProfileRole()
-  if (role === null) return
-  profileRole.value = role
+  const access = await readProfileAccess()
+  if (access === null) return
+  if (!access.active) {
+    user.value = null
+    profileCache.value = null
+    profileRole.value = 'worker'
+    scheduleSignOut()
+    return
+  }
+  profileRole.value = access.role
 }
 
 /**
@@ -134,7 +151,7 @@ export function useAuth() {
     // Сохранённый пользователь из localStorage: показываем сразу, чтобы при недоступной
     // БД недавнего пользователя не выкидывало на экран входа.
     const persistedUser = readPersistedUser()
-    if (persistedUser && isUserActive(persistedUser)) {
+    if (persistedUser) {
       user.value = persistedUser
     }
     try {
@@ -151,13 +168,7 @@ export function useAuth() {
       if (result.kind === 'session') {
         const nextUser = result.session?.user ?? null
         if (nextUser) {
-          if (!isUserActive(nextUser)) {
-            userInitiatedSignOut = true
-            try { await supabase!.auth.signOut() } finally { userInitiatedSignOut = false }
-            user.value = null
-          } else {
-            user.value = nextUser
-          }
+          user.value = nextUser
         } else if (!result.error && !persistedUser) {
           // Сессии действительно нет (и локально тоже) — пользователь не вошёл.
           user.value = null
@@ -198,12 +209,6 @@ export function useAuth() {
         // Роль прежнего пользователя не должна достаться следующему.
         profileRole.value = 'worker'
       }
-      if (nextUser && !isUserActive(nextUser)) {
-        user.value = null
-        profileRole.value = 'worker'
-        scheduleSignOut()
-        return
-      }
       user.value = nextUser
       scheduleProfileRoleRefresh()
     })
@@ -212,14 +217,17 @@ export function useAuth() {
   async function login(email: string, password: string) {
     if (!supabase) throw new Error('Supabase не настроен')
     const { data, error } = await supabase!.auth.signInWithPassword({ email, password })
-    if (error) throw error
-    if (data.user && !isUserActive(data.user)) {
-      await supabase!.auth.signOut()
-      user.value = null
-      throw new Error('Аккаунт отключён. Обратитесь к администратору.')
-    }
+    // Заблокированную учётную запись Auth не пускает сам и отвечает кодом user_banned.
+    if (error) throw isBannedError(error) ? new Error(ACCOUNT_DISABLED_MESSAGE) : error
     user.value = data.user
-    await refreshProfileRole()
+    const access = await readProfileAccess()
+    if (access && !access.active) {
+      userInitiatedSignOut = true
+      try { await supabase!.auth.signOut() } finally { userInitiatedSignOut = false }
+      user.value = null
+      throw new Error(ACCOUNT_DISABLED_MESSAGE)
+    }
+    if (access) profileRole.value = access.role
     return data
   }
 
