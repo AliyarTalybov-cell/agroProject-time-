@@ -64,7 +64,15 @@ npm run test:e2e             # e2e (Playwright, поднимает дев-сер
 - `ui-navigation-consistency.mdc`, `modal-close-button.mdc`, `new-pages-ui-ux.mdc`, `table-row-hover-animation.mdc`, `toolbar-form-surface-consistency.mdc` — при работе с интерфейсом
 - `critical-errors-security-analyzer.mdc`, `vue-vite-supabase-critical-audit.mdc` — при ревью и аудите
 
-### 4. Проверять результат самому, а не просить пользователя
+### 4. Интерфейс — из общих компонентов
+
+Окна, подтверждения, кнопки форм и пагинация — компоненты из
+`frontend/src/components/ui/` (`UiModal`, `UiConfirmModal`, `UiButton`,
+`UiPagination`, описание в README там же). Не копировать их разметку и стили в
+страницу заново. Если нужного компонента нет — сначала вынести его туда из
+эталона, потом использовать.
+
+### 5. Проверять результат самому, а не просить пользователя
 
 Если изменение видно в браузере — поднять дев-сервер и проверить: консоль на
 ошибки, страницу на рендер, поведение на клик. Утверждать «работает» только
