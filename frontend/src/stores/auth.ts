@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import type { User } from '@supabase/supabase-js'
 import type { ProfileRow } from '@/lib/tasksSupabase'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured, supabaseStorageKey } from '@/lib/supabase'
 
 /** Максимальное ожидание getSession при старте — чтобы UI не зависал при недоступной БД */
 export const AUTH_INIT_TIMEOUT_MS = 5000
@@ -101,16 +101,18 @@ function scheduleSignOut(): void {
 let userInitiatedSignOut = false
 
 /**
- * Читает сохранённую сессию Supabase напрямую из localStorage (ключ `sb-<ref>-auth-token`).
+ * Читает сохранённую сессию Supabase напрямую из localStorage.
  * Нужна, чтобы при недоступной БД не выкидывать недавнего пользователя из кабинета.
+ *
+ * Читается только ключ текущего клиента. Раньше подходил любой `sb-*-auth-token`,
+ * и после смены адреса бэкенда интерфейс показывал пользователя вошедшим по
+ * сессии от старого адреса, а запросы уходили без токена — данные не грузились.
  */
 function readPersistedUser(): User | null {
+  if (!supabaseStorageKey) return null
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) continue
-      const raw = localStorage.getItem(key)
-      if (!raw) continue
+    const raw = localStorage.getItem(supabaseStorageKey)
+    if (raw) {
       const parsed = JSON.parse(raw) as { currentSession?: { user?: User }; user?: User } | null
       const sessionUser = parsed?.currentSession?.user ?? parsed?.user ?? null
       if (sessionUser) return sessionUser as User

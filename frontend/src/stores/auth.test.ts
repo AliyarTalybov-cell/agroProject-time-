@@ -39,6 +39,7 @@ vi.mock('@/lib/supabase', () => ({
     },
   },
   isSupabaseConfigured: () => true,
+  supabaseStorageKey: 'sb-current-auth-token',
 }))
 
 const MANAGER = { id: 'u-1', user_metadata: {} }
@@ -140,5 +141,27 @@ describe('обновление роли по событиям авторизац
 
     expect(mod.getUserRole()).toBe('worker')
     expect(mod.getAuthUser()).toBeNull()
+  })
+})
+
+describe('сохранённая сессия', () => {
+  afterEach(() => localStorage.clear())
+
+  it('не подхватывает сессию от прежнего адреса бэкенда', async () => {
+    localStorage.setItem('sb-old-host-auth-token', JSON.stringify({ user: { id: 'u-old' } }))
+    const mod = await freshAuth()
+    vi.useRealTimers()
+    await mod.useAuth().init()
+
+    expect(mod.getAuthUser()).toBeNull()
+  })
+
+  it('подхватывает сессию текущего адреса', async () => {
+    localStorage.setItem('sb-current-auth-token', JSON.stringify({ user: { id: 'u-cur' } }))
+    const mod = await freshAuth()
+    vi.useRealTimers()
+    await mod.useAuth().init()
+
+    expect(mod.getAuthUser()?.id).toBe('u-cur')
   })
 })
