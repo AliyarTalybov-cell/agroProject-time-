@@ -1,161 +1,86 @@
 <script setup lang="ts">
+/**
+ * Склады — карточки. Масса, культуры и заполненность считаются по складскому
+ * журналу (lib/stockLedger), статус заполнения — по остатку, а не вручную.
+ * Разметка и стили карточек прежние.
+ */
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
-import WarehouseTransferModal from '@/components/WarehouseTransferModal.vue'
+import UiPagination from '@/components/ui/UiPagination.vue'
+import StockIntakeModal from '@/components/stock/StockIntakeModal.vue'
+import StockTransferModal from '@/components/stock/StockTransferModal.vue'
 import { isSupabaseConfigured } from '@/lib/supabase'
-import { loadStorageLocationsPage, storageLocationCropLabel, storageLocationFillStatusCode, storageLocationFillStatusName, storageLocationMarksInactive, storageLocationTypeName, type StorageLocationRow } from '@/lib/storageLocationsSupabase'
-import { loadStorageFillStatuses, type StorageFillStatusRow } from '@/lib/storageRefsSupabase'
-import { loadCrops, type CropRow } from '@/lib/landTypesAndCrops'
-import { loadStorageLocationSummaries, type StorageLocationSummary } from '@/lib/storageTransfersSupabase'
-import {
-  fillBatchStateFromCode,
-  placeholderWarehouseMetrics,
-  type BatchFillState,
-  type WarehouseCardMetrics,
-} from '@/lib/warehouseCardMetrics'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
+import { loadWarehousesOverview, stockDocTypeLabel, type WarehouseOverview } from '@/lib/stockLedger'
 
-type StatusFilter = 'all' | string
+/** Заполнен — от 95% вместимости. */
+const FULL_SHARE = 0.95
+
+type FillState = 'empty' | 'filling' | 'formed'
+const FILL_LABELS: Record<FillState, string> = { empty: 'Пусто', filling: 'Есть зерно', formed: 'Заполнен' }
 
 const loading = ref(false)
 const error = ref<string | null>(null)
 const router = useRouter()
 const search = ref('')
-let searchTimer: ReturnType<typeof setTimeout> | null = null
-
-const statusFilter = ref<StatusFilter>('all')
-/** all | __none__ (нет crop_key) | ключ из справочника crops */
+const statusFilter = ref<'all' | FillState>('all')
 const cropFilter = ref<'all' | '__none__' | string>('all')
-
-const fillStatusOptions = ref<StorageFillStatusRow[]>([])
-const cropOptions = ref<CropRow[]>([])
-
 const page = ref(1)
 const pageSize = ref(8)
-const placesTotal = ref(0)
+const warehouses = ref<WarehouseOverview[]>([])
 
-const places = ref<StorageLocationRow[]>([])
-const summaries = ref<Record<string, StorageLocationSummary>>({})
-
-const transferModalOpen = ref(false)
-const transferFromId = ref<string | null>(null)
+type Dialog = { kind: 'intake' | 'transfer'; locationId: string }
+const dialog = ref<Dialog | null>(null)
 
 async function reloadPlaces() {
   if (!isSupabaseConfigured()) {
-    places.value = []
-    fillStatusOptions.value = []
-    cropOptions.value = []
+    warehouses.value = []
     return
   }
   loading.value = true
   error.value = null
   try {
-    const [pageRes, fills, crops] = await Promise.all([
-      loadStorageLocationsPage({
-        search: search.value,
-        fillStatusId: statusFilter.value,
-        cropKey: cropFilter.value,
-        page: page.value,
-        pageSize: pageSize.value,
-      }),
-      loadStorageFillStatuses(),
-      loadCrops(),
-    ])
-    const rows = pageRes.rows
-    places.value = rows
-    placesTotal.value = pageRes.total
-    fillStatusOptions.value = fills
-    cropOptions.value = crops
-    summaries.value = rows.length ? await loadStorageLocationSummaries(rows) : {}
-    if (page.value > totalPages.value) {
-      page.value = totalPages.value
-      const retry = await loadStorageLocationsPage({
-        search: search.value,
-        fillStatusId: statusFilter.value,
-        cropKey: cropFilter.value,
-        page: page.value,
-        pageSize: pageSize.value,
-      })
-      places.value = retry.rows
-      placesTotal.value = retry.total
-      summaries.value = retry.rows.length ? await loadStorageLocationSummaries(retry.rows) : {}
-    }
+    warehouses.value = await loadWarehousesOverview()
   } catch (e) {
-    error.value = e instanceof Error && e.message ? e.message : 'Не удалось загрузить места хранения'
+    error.value = formatSupabaseError(e)
   } finally {
     loading.value = false
   }
 }
 
-function metricsForPlace(place: StorageLocationRow): WarehouseCardMetrics {
-  const summary = summaries.value[place.id]
-  const code = storageLocationFillStatusCode(place)
-  const cropFromPlace = storageLocationCropLabel(place)
-  if (summary) {
-    const cropLabel =
-      summary.cropLabel ||
-      (cropFromPlace !== '—' ? cropFromPlace : null) ||
-      (summary.cropKey ? summary.cropKey : null)
-    return {
-      fillState: fillBatchStateFromCode(code),
-      occupancyPercent: summary.occupancyPercent,
-      totalMassTons: summary.totalMassTons,
-      availableForTransferTons: summary.availableMassTons,
-      reservedTons: summary.reservedTons,
-      spoiledTons: summary.spoiledTons,
-      cropLabel,
-      lastOperationAt: summary.lastOperationAt,
-      lastOperationLabel: summary.lastOperationLabel,
-    }
-  }
-  const base = placeholderWarehouseMetrics()
-  return {
-    ...base,
-    fillState: fillBatchStateFromCode(code),
-    cropLabel: cropFromPlace !== '—' ? cropFromPlace : null,
-    availableForTransferTons: 0,
-    reservedTons: Number(place.reserved_tons || 0),
-    spoiledTons: Number(place.spoiled_tons || 0),
-  }
+function fillState(w: WarehouseOverview): FillState {
+  if (w.tons <= 0) return 'empty'
+  if (w.capacityTons && w.tons >= w.capacityTons * FULL_SHARE) return 'formed'
+  return 'filling'
 }
 
-/** Подпись номинальной вместимости из справочника (если задана). */
-function nominalCapacityLabel(place: StorageLocationRow): string | null {
-  const raw = place.capacity_tons
-  if (raw == null || !Number.isFinite(Number(raw))) return null
-  const n = Number(raw)
-  if (n <= 0) return null
-  return `${n.toLocaleString('ru-RU', { maximumFractionDigits: 3 })} т`
+function occupancyPercent(w: WarehouseOverview): number {
+  return w.capacityTons ? Math.round((w.tons / w.capacityTons) * 100) : 0
 }
 
-const rowsWithMetrics = computed(() =>
-  places.value.map((place) => ({
-    place,
-    metrics: metricsForPlace(place),
-    nominalLabel: nominalCapacityLabel(place),
-  })),
+const cropOptions = computed(() =>
+  Array.from(new Map(warehouses.value.flatMap((w) => w.crops.map((c) => [c.key, c.label] as const)))).sort((a, b) =>
+    a[1].localeCompare(b[1], 'ru'),
+  ),
 )
 
-const filteredRows = computed(() => rowsWithMetrics.value)
-
-const totalFiltered = computed(() => placesTotal.value)
-const totalPages = computed(() => Math.max(1, Math.ceil(totalFiltered.value / pageSize.value)))
-const pageStart = computed(() => (totalFiltered.value ? (page.value - 1) * pageSize.value + 1 : 0))
-const pageEnd = computed(() => Math.min(page.value * pageSize.value, totalFiltered.value))
-
-const pagedRows = computed(() => rowsWithMetrics.value)
-
-const pageNumbers = computed(() => {
-  if (totalPages.value <= 7) return Array.from({ length: totalPages.value }, (_, i) => i + 1)
-  const pages: (number | 'ellipsis')[] = [1]
-  if (page.value > 4) pages.push('ellipsis')
-  for (let p = Math.max(2, page.value - 1); p <= Math.min(totalPages.value - 1, page.value + 1); p += 1) pages.push(p)
-  if (page.value < totalPages.value - 3) pages.push('ellipsis')
-  pages.push(totalPages.value)
-  return pages
+const filteredRows = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  return warehouses.value.filter((w) => {
+    if (q && !`${w.name} ${w.address}`.toLowerCase().includes(q)) return false
+    if (statusFilter.value !== 'all' && fillState(w) !== statusFilter.value) return false
+    if (cropFilter.value === '__none__' && w.crops.length) return false
+    if (cropFilter.value !== 'all' && cropFilter.value !== '__none__' && !w.crops.some((c) => c.key === cropFilter.value)) return false
+    return true
+  })
 })
 
-function fillStateClass(state: BatchFillState): string {
+const pagedRows = computed(() => filteredRows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value))
+
+watch([search, statusFilter, cropFilter, pageSize], () => (page.value = 1))
+
+function fillStateClass(state: FillState): string {
   if (state === 'empty') return 'warehouse-card-status--empty'
   if (state === 'filling') return 'warehouse-card-status--filling'
   return 'warehouse-card-status--formed'
@@ -166,15 +91,15 @@ function formatMassTons(tons: number): string {
   return `${n.toLocaleString('ru-RU')} т`
 }
 
-function formatLastOperation(metrics: WarehouseCardMetrics): string {
-  if (!metrics.lastOperationAt) return '—'
-  const d = new Date(metrics.lastOperationAt)
+function formatLastOperation(w: WarehouseOverview): string {
+  if (!w.lastDocument) return '—'
+  const d = new Date(w.lastDocument.date)
   if (Number.isNaN(d.getTime())) return '—'
-  const datePart = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
-  const label = metrics.lastOperationLabel || 'Операция'
-  if (label.startsWith('Приёмка')) return `Приёмка ${datePart}`
-  if (label.startsWith('Перемещение')) return `Перемещ. ${datePart}`
-  return `${label} ${datePart}`
+  return `${stockDocTypeLabel(w.lastDocument.type)} ${d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}`
+}
+
+function cropsLabel(w: WarehouseOverview): string {
+  return w.crops.map((c) => `${c.label} ${formatMassTons(c.tons)}`).join(', ') || 'Нет'
 }
 
 function typeIconPath(type: string): string {
@@ -189,57 +114,16 @@ function typeIconPath(type: string): string {
   return 'M3 20h18M5 20V8l7-4 7 4v12'
 }
 
-function setPage(next: number) {
-  const clamped = Math.min(totalPages.value, Math.max(1, next))
-  if (clamped === page.value) return
-  page.value = clamped
-  void reloadPlaces()
-}
-
-function onPageSizeChange() {
-  page.value = 1
-  void reloadPlaces()
-}
-
 function openStorageCell(id: string) {
   void router.push({ name: 'warehouse-cell', params: { id } })
 }
 
-function openGrainIntake(id: string) {
-  void router.push({ name: 'warehouse-cell', params: { id }, query: { intake: '1' } })
-}
-
-function openTransferModal(fromId?: string) {
-  transferFromId.value = fromId ?? null
-  transferModalOpen.value = true
-}
-
-function closeTransferModal() {
-  transferModalOpen.value = false
-  transferFromId.value = null
-}
-
-function onTransferSuccess() {
+function onDialogDone() {
+  dialog.value = null
   void reloadPlaces()
 }
 
 onMounted(() => {
-  void reloadPlaces()
-})
-
-watch(search, () => {
-  page.value = 1
-  if (searchTimer) clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => void reloadPlaces(), 300)
-})
-
-watch(statusFilter, () => {
-  page.value = 1
-  void reloadPlaces()
-})
-
-watch(cropFilter, () => {
-  page.value = 1
   void reloadPlaces()
 })
 </script>
@@ -250,7 +134,7 @@ watch(cropFilter, () => {
       <header class="fields-header page-enter-item">
         <div class="fields-header-text">
           <p class="fields-subtitle">
-            Карточки привязаны к справочнику «Места хранения». Масса и заполненность обновляются по поступлениям, партиям и перемещениям.
+            Масса, культуры и заполненность — по складскому журналу. Нажмите на карточку, чтобы открыть ячейки склада и операции.
           </p>
         </div>
         <RouterLink class="fields-add-btn" to="/warehouses/storage-locations?create=1">
@@ -276,15 +160,17 @@ watch(cropFilter, () => {
               <span class="warehouse-filter-text">Статус заполнения</span>
               <select v-model="statusFilter" class="warehouse-filter-select">
                 <option value="all">Все статусы</option>
-                <option v-for="s in fillStatusOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
+                <option value="empty">Пусто</option>
+                <option value="filling">Есть зерно</option>
+                <option value="formed">Заполнен</option>
               </select>
             </label>
             <label class="warehouse-filter-label">
               <span class="warehouse-filter-text">Культура</span>
               <select v-model="cropFilter" class="warehouse-filter-select">
                 <option value="all">Все культуры</option>
-                <option value="__none__">Без культуры</option>
-                <option v-for="c in cropOptions" :key="c.id" :value="c.key">{{ c.label }}</option>
+                <option value="__none__">Пустые</option>
+                <option v-for="[key, label] in cropOptions" :key="key" :value="key">{{ label }}</option>
               </select>
             </label>
           </div>
@@ -299,7 +185,7 @@ watch(cropFilter, () => {
           <UiLoadingBar />
         </div>
 
-        <div v-else-if="!places.length" class="warehouse-empty">
+        <div v-else-if="!warehouses.length" class="warehouse-empty">
           <p class="warehouse-empty-title">Нет мест хранения</p>
           <p class="warehouse-empty-text">Добавьте место в справочнике — кнопка выше откроет форму создания.</p>
           <RouterLink class="fields-add-btn" to="/warehouses/storage-locations?create=1">
@@ -315,124 +201,77 @@ watch(cropFilter, () => {
 
         <div v-else class="warehouse-grid">
           <article
-            v-for="{ place, metrics, nominalLabel } in pagedRows"
-            :key="place.id"
+            v-for="w in pagedRows"
+            :key="w.id"
             class="warehouse-card"
-            :class="{ 'warehouse-card--inactive': storageLocationMarksInactive(place) }"
+            :class="{ 'warehouse-card--inactive': w.inactive }"
           >
             <div
               class="warehouse-card-main"
               role="button"
               tabindex="0"
-              @click="openStorageCell(place.id)"
-              @keydown.enter.prevent="openStorageCell(place.id)"
-              @keydown.space.prevent="openStorageCell(place.id)"
+              @click="openStorageCell(w.id)"
+              @keydown.enter.prevent="openStorageCell(w.id)"
+              @keydown.space.prevent="openStorageCell(w.id)"
             >
             <div class="warehouse-card-top">
               <div class="warehouse-card-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path :d="typeIconPath(storageLocationTypeName(place))" />
+                  <path :d="typeIconPath(w.typeName)" />
                 </svg>
               </div>
-              <span class="warehouse-card-status" :class="fillStateClass(metrics.fillState)">
-                {{ storageLocationFillStatusName(place) }}
+              <span class="warehouse-card-status" :class="fillStateClass(fillState(w))">
+                {{ FILL_LABELS[fillState(w)] }}
               </span>
             </div>
-            <h2 class="warehouse-card-title">{{ place.name }}</h2>
-            <p class="warehouse-card-desc" :title="`${storageLocationTypeName(place)} · ${place.address}`">
-              {{ storageLocationTypeName(place) }} · {{ place.address }}
+            <h2 class="warehouse-card-title">{{ w.name }}</h2>
+            <p class="warehouse-card-desc" :title="`${w.typeName} · ${w.address}`">
+              {{ w.typeName }} · {{ w.address }}
             </p>
-            <p v-if="nominalLabel" class="warehouse-card-nominal">Вместимость (номинал): {{ nominalLabel }}</p>
+            <p v-if="w.capacityTons" class="warehouse-card-nominal">Вместимость: {{ formatMassTons(w.capacityTons) }} · ячеек: {{ w.cells.length }}</p>
             <div class="warehouse-card-progress-block">
-              <div class="warehouse-card-progress-label">Заполненность: {{ metrics.occupancyPercent }}%</div>
-              <div class="warehouse-card-progress-track" role="progressbar" :aria-valuenow="metrics.occupancyPercent" aria-valuemin="0" aria-valuemax="100">
-                <div class="warehouse-card-progress-fill" :style="{ width: `${Math.min(100, Math.max(0, metrics.occupancyPercent))}%` }" />
+              <div class="warehouse-card-progress-label">Заполненность: {{ occupancyPercent(w) }}%</div>
+              <div class="warehouse-card-progress-track" role="progressbar" :aria-valuenow="occupancyPercent(w)" aria-valuemin="0" aria-valuemax="100">
+                <div class="warehouse-card-progress-fill" :style="{ width: `${Math.min(100, Math.max(0, occupancyPercent(w)))}%` }" />
               </div>
             </div>
             <div class="warehouse-card-footer">
               <div class="warehouse-card-metric">
                 <span class="warehouse-card-metric-label">Общая масса</span>
-                <span class="warehouse-card-metric-value">{{ formatMassTons(metrics.totalMassTons) }}</span>
-                <p class="warehouse-card-transfer-available">
-                  Доступно для перемещения: {{ formatMassTons(metrics.availableForTransferTons) }}
-                </p>
-                <p
-                  v-if="metrics.reservedTons > 0 || metrics.spoiledTons > 0"
-                  class="warehouse-card-mass-holds"
-                >
-                  <template v-if="metrics.reservedTons > 0">резерв {{ formatMassTons(metrics.reservedTons) }}</template>
-                  <template v-if="metrics.reservedTons > 0 && metrics.spoiledTons > 0"> · </template>
-                  <template v-if="metrics.spoiledTons > 0">брак {{ formatMassTons(metrics.spoiledTons) }}</template>
-                </p>
-                <span class="warehouse-card-crop">{{ metrics.cropLabel || 'Нет' }}</span>
+                <span class="warehouse-card-metric-value">{{ formatMassTons(w.tons) }}</span>
+                <span class="warehouse-card-crop">{{ cropsLabel(w) }}</span>
               </div>
               <div class="warehouse-card-metric warehouse-card-metric--right">
                 <span class="warehouse-card-metric-label">Последняя операция</span>
-                <span class="warehouse-card-metric-value warehouse-card-metric-value--date">{{ formatLastOperation(metrics) }}</span>
+                <span class="warehouse-card-metric-value warehouse-card-metric-value--date">{{ formatLastOperation(w) }}</span>
               </div>
             </div>
             </div>
             <div class="warehouse-card-actions">
-              <button type="button" class="warehouse-card-btn warehouse-card-btn--move" @click.stop="openTransferModal(place.id)">
+              <button type="button" class="warehouse-card-btn warehouse-card-btn--move" :disabled="w.tons <= 0" @click.stop="dialog = { kind: 'transfer', locationId: w.id }">
                 Перемещение
               </button>
-              <button type="button" class="warehouse-card-btn warehouse-card-btn--intake" @click.stop="openGrainIntake(place.id)">
+              <button type="button" class="warehouse-card-btn warehouse-card-btn--intake" @click.stop="dialog = { kind: 'intake', locationId: w.id }">
                 Приёмка зерна
               </button>
             </div>
           </article>
         </div>
 
-        <footer v-if="!loading && places.length && filteredRows.length" class="fields-pagination">
-          <p class="fields-pagination-info">
-            Показано
-            <span class="fields-pagination-num">{{ pageStart }}</span>
-            –
-            <span class="fields-pagination-num">{{ pageEnd }}</span>
-            из
-            <span class="fields-pagination-num">{{ totalFiltered }}</span>
-          </p>
-          <div class="fields-pagination-right">
-            <nav class="fields-pagination-nav" aria-label="Пагинация">
-              <button type="button" class="fields-page-btn fields-page-btn--edge" :disabled="page <= 1" aria-label="Предыдущая страница" @click="setPage(page - 1)">
-                &lt;
-              </button>
-              <template v-for="(p, i) in pageNumbers" :key="p === 'ellipsis' ? `wh-e-${i}` : p">
-                <button
-                  v-if="p !== 'ellipsis'"
-                  type="button"
-                  class="fields-page-btn"
-                  :class="{ 'fields-page-btn--active': p === page }"
-                  @click="setPage(p as number)"
-                >
-                  {{ p }}
-                </button>
-                <span v-else class="fields-page-ellipsis">…</span>
-              </template>
-              <button type="button" class="fields-page-btn fields-page-btn--edge" :disabled="page >= totalPages" aria-label="Следующая страница" @click="setPage(page + 1)">
-                &gt;
-              </button>
-            </nav>
-            <label class="fields-pagination-size">
-              <span class="fields-pagination-size-label">На странице</span>
-              <select v-model.number="pageSize" class="fields-pagination-select" @change="onPageSizeChange">
-                <option :value="4">4</option>
-                <option :value="8">8</option>
-                <option :value="12">12</option>
-              </select>
-            </label>
-          </div>
-        </footer>
+        <UiPagination
+          v-if="!loading && filteredRows.length"
+          v-model:page="page"
+          v-model:page-size="pageSize"
+          :total="filteredRows.length"
+          :page-size-options="[4, 8, 12]"
+        />
       </section>
     </div>
 
-    <WarehouseTransferModal
-      :open="transferModalOpen"
-      :places="places"
-      :initial-from-id="transferFromId"
-      @close="closeTransferModal"
-      @success="onTransferSuccess"
-    />
+    <teleport to="body">
+      <StockIntakeModal v-if="dialog?.kind === 'intake'" :location-id="dialog.locationId" @close="dialog = null" @done="onDialogDone" />
+      <StockTransferModal v-if="dialog?.kind === 'transfer'" :location-id="dialog.locationId" @close="dialog = null" @done="onDialogDone" />
+    </teleport>
   </section>
 </template>
 

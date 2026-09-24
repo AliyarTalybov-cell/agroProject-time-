@@ -14,14 +14,13 @@ import {
   deleteStorageLocation,
   loadStorageLocationsPage,
   updateStorageLocation,
-  storageLocationCropLabel,
-  storageLocationFillStatusName,
   storageLocationMarksInactive,
   storageLocationStatusName,
   storageLocationTypeName,
   type StorageLocationRow,
 } from '@/lib/storageLocationsSupabase'
 import { loadCrops, type CropRow } from '@/lib/landTypesAndCrops'
+import { formatTons, loadWarehousesOverview, type WarehouseOverview } from '@/lib/stockLedger'
 import {
   loadStorageLocationTypes,
   loadStorageLocationStatuses,
@@ -155,6 +154,16 @@ async function loadStorageRefs() {
   }
 }
 
+/**
+ * Масса и культуры — по складскому журналу, а не ручные поля мест хранения:
+ * ручные «Статус заполнения» и «Культура» расходились с тем, что реально лежит.
+ */
+const stockByPlace = ref<Record<string, WarehouseOverview>>({})
+
+function stockCropsLabel(placeId: string): string {
+  return stockByPlace.value[placeId]?.crops.map((c) => c.label).join(', ') || '—'
+}
+
 async function reloadStorageLocations() {
   if (!isSupabaseConfigured()) {
     storagePlaces.value = []
@@ -163,7 +172,11 @@ async function reloadStorageLocations() {
   loading.value = true
   error.value = null
   try {
-    const res = await loadStorageLocationsPage({ search: search.value, page: page.value, pageSize: pageSize.value })
+    const [res, overview] = await Promise.all([
+      loadStorageLocationsPage({ search: search.value, page: page.value, pageSize: pageSize.value }),
+      loadWarehousesOverview(),
+    ])
+    stockByPlace.value = Object.fromEntries(overview.map((w) => [w.id, w]))
     storagePlaces.value = res.rows
     storageTotal.value = res.total
     if (page.value > totalPages.value) {
@@ -376,8 +389,8 @@ function onPageSizeChange(size: number) {
               <th>Адрес</th>
               <th>Вместимость</th>
               <th>Код ФГИС Зерно</th>
-              <th>Заполнение</th>
-              <th>Культура</th>
+              <th>Лежит</th>
+              <th>Культуры</th>
               <th>Статус места</th>
               <th>Действия</th>
             </tr>
@@ -395,8 +408,8 @@ function onPageSizeChange(size: number) {
               <td><span class="storage-cell-ellipsis storage-address-text" :title="place.address">{{ place.address }}</span></td>
               <td class="storage-capacity">{{ formatCapacityCell(place.capacity_tons) }}</td>
               <td class="storage-code"><span class="storage-cell-ellipsis storage-code-text" :title="place.fgis_grain_code || '—'">{{ place.fgis_grain_code || '—' }}</span></td>
-              <td class="storage-fill-status">{{ storageLocationFillStatusName(place) }}</td>
-              <td class="storage-crop"><span class="storage-cell-ellipsis" :title="storageLocationCropLabel(place)">{{ storageLocationCropLabel(place) }}</span></td>
+              <td class="storage-capacity">{{ stockByPlace[place.id] ? formatTons(stockByPlace[place.id].tons) : '—' }}</td>
+              <td class="storage-crop"><span class="storage-cell-ellipsis" :title="stockCropsLabel(place.id)">{{ stockCropsLabel(place.id) }}</span></td>
               <td>
                 <span class="storage-status" :class="{ 'storage-status--off': storageLocationMarksInactive(place) }">
                   {{ storageLocationStatusName(place) }}
@@ -468,30 +481,6 @@ function onPageSizeChange(size: number) {
             <select v-model="form.statusId" class="task-form-select" required>
               <option v-if="!storageStatuses.length" value="" disabled>Сначала добавьте статусы в справочниках</option>
               <option v-for="s in storageStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="task-form-row task-form-row--design">
-          <div class="task-form-field">
-            <label class="task-form-label task-form-label--with-help">Статус заполнения *
-              <RefFieldHelp text="Нужен другой вариант? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-fill-statuses' } }" link-label="Справочники хранения" />
-            </label>
-            <select v-model="form.fillStatusId" class="task-form-select" required>
-              <option v-if="!storageFillStatuses.length" value="" disabled>Сначала добавьте статусы в справочниках</option>
-              <option v-for="s in storageFillStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="task-form-row task-form-row--design">
-          <div class="task-form-field">
-            <label class="task-form-label task-form-label--with-help">Культура (необязательно)
-              <RefFieldHelp text="Справочник ведётся в" :to="{ path: '/lands', query: { tab: 'crops-refs' } }" link-label="Справочники СХ культур" />
-            </label>
-            <select v-model="form.cropKey" class="task-form-select">
-              <option value="">Не указано</option>
-              <option v-for="c in crops" :key="c.id" :value="c.key">{{ c.label }}</option>
             </select>
           </div>
         </div>

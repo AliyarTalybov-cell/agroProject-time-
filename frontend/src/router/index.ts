@@ -20,10 +20,12 @@ const WeatherPage = () => import('@/pages/WeatherPage.vue')
 const EquipmentPage = () => import('@/pages/EquipmentPage.vue')
 const EquipmentDetailsPage = () => import('@/pages/EquipmentDetailsPage.vue')
 const WarehousesPage = () => import('@/pages/WarehousesPage.vue')
-const WarehouseCellPage = () => import('@/pages/WarehouseCellPage.vue')
+const StockWarehousePage = () => import('@/pages/stock/StockWarehousePage.vue')
 const StorageLocationsPage = () => import('@/pages/StorageLocationsPage.vue')
-const WarehouseBatchRegistryPage = () => import('@/pages/WarehouseBatchRegistryPage.vue')
-const GrainAccountingPage = () => import('@/pages/GrainAccountingPage.vue')
+const StockBatchesPage = () => import('@/pages/stock/StockBatchesPage.vue')
+const StockBatchPage = () => import('@/pages/stock/StockBatchPage.vue')
+const StockJournalPage = () => import('@/pages/stock/StockJournalPage.vue')
+const CounterpartiesPage = () => import('@/pages/stock/CounterpartiesPage.vue')
 const ProfilePage = () => import('@/pages/ProfilePage.vue')
 const EmployeesPage = () => import('@/pages/EmployeesPage.vue')
 const ChatPage = () => import('@/pages/ChatPage.vue')
@@ -46,10 +48,13 @@ export const routes = [
   { path: '/warehouses', name: 'warehouses', component: WarehousesPage, meta: { title: 'Склады' } },
   { path: '/warehouses/storage-locations', name: 'storage-locations', component: StorageLocationsPage, meta: { title: 'Места хранения' } },
   { path: '/warehouses/batches', redirect: '/grain/batches' },
-  { path: '/warehouses/:id', name: 'warehouse-cell', component: WarehouseCellPage, props: true, meta: { title: 'Карточка склада' } },
+  { path: '/warehouses/:id', name: 'warehouse-cell', component: StockWarehousePage, props: true, meta: { title: 'Карточка склада' } },
   { path: '/grain', redirect: '/grain/batches' },
-  { path: '/grain/batches', name: 'grain-batches', component: WarehouseBatchRegistryPage, meta: { title: 'Реестр партий' } },
-  { path: '/grain/current', name: 'grain-current', component: GrainAccountingPage, meta: { title: 'Текущие партии' } },
+  { path: '/grain/batches', name: 'grain-batches', component: StockBatchesPage, meta: { title: 'Партии' } },
+  { path: '/grain/batches/:id', name: 'grain-batch', component: StockBatchPage, props: true, meta: { title: 'Партия' } },
+  { path: '/grain/journal', name: 'grain-journal', component: StockJournalPage, meta: { title: 'Журнал операций' } },
+  { path: '/grain/counterparties', name: 'grain-counterparties', component: CounterpartiesPage, meta: { title: 'Контрагенты' } },
+  { path: '/grain/current', redirect: '/grain/journal' },
   { path: '/grain-batches', redirect: '/grain/batches' },
   { path: '/grain-transfers', redirect: '/warehouses' },
   { path: '/grain-writeoffs', redirect: '/warehouses' },

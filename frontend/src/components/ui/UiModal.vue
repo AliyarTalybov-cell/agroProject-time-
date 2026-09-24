@@ -16,7 +16,7 @@ import ModalCloseButton from '@/components/ModalCloseButton.vue'
 const props = withDefaults(
   defineProps<{
     title: string
-    /** Максимальная ширина окна, px. 560 — форма, 460 — подтверждение. */
+    /** Ширина окна, px (на узком экране — во всю ширину минус поля). 560 — форма, 460 — подтверждение. */
     maxWidth?: number
     /** Блокирует закрытие (крестик, подложка, Esc) — например, во время сохранения. */
     closeDisabled?: boolean
@@ -40,7 +40,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
 <template>
   <div class="modal-backdrop" role="dialog" aria-modal="true" :aria-label="title" @click.self="requestClose">
-    <div class="modal" :style="{ maxWidth: `${maxWidth}px` }">
+    <div class="modal" :style="{ width: `min(calc(100vw - 48px), ${maxWidth}px)` }">
       <div class="modal-header">
         <h2 class="modal-title">{{ title }}</h2>
         <ModalCloseButton :disabled="closeDisabled" @click="requestClose" />
@@ -62,7 +62,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 
 .modal {
-  width: min(calc(100vw - 48px), 620px);
   max-height: 90vh;
   overflow-y: auto;
   background: #fff;

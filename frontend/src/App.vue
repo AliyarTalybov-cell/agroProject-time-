@@ -84,8 +84,11 @@ const warehousesNavActive = computed(
 const grainBatchesNavActive = computed(
   () => route.path.startsWith('/grain/batches'),
 )
-const grainCurrentNavActive = computed(
-  () => route.path.startsWith('/grain/current'),
+const grainJournalNavActive = computed(
+  () => route.path.startsWith('/grain/journal'),
+)
+const grainCounterpartiesNavActive = computed(
+  () => route.path.startsWith('/grain/counterparties'),
 )
 const landsSectionActive = computed(
   () => landsNavActive.value || fieldsNavActive.value || meliorationNavActive.value,
@@ -426,11 +429,11 @@ watch(
                         <path d="M7 8h10M7 12h10M7 16h6" />
                       </svg>
                     </span>
-                    Реестр партий
+                    Партии
                   </RouterLink>
                 </li>
                 <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainCurrentNavActive }" to="/grain/current">
+                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainJournalNavActive }" to="/grain/journal">
                     <span class="nav-item-icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2 2 7l10 5 10-5-10-5Z" />
@@ -438,7 +441,19 @@ watch(
                         <path d="m2 12 10 5 10-5" />
                       </svg>
                     </span>
-                    Текущие партии
+                    Журнал операций
+                  </RouterLink>
+                </li>
+                <li>
+                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainCounterpartiesNavActive }" to="/grain/counterparties">
+                    <span class="nav-item-icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    </span>
+                    Контрагенты
                   </RouterLink>
                 </li>
               </ul>

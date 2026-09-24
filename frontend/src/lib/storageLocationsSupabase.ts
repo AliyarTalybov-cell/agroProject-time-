@@ -213,31 +213,3 @@ export async function deleteStorageLocation(id: string): Promise<void> {
   const { error } = await supabase.from(STORAGE_LOCATIONS_TABLE).delete().eq('id', id)
   if (error) throw error
 }
-
-/** Код статуса заполнения по фактическим поступлениям (жёсткая логика UI/ФГИС). */
-export function resolveStorageFillStatusCodeFromIntakes(intakes: ReadonlyArray<{ batch_id: string | null }>): 'empty' | 'filling' | 'formed' {
-  if (!intakes.length) return 'empty'
-  if (intakes.some((x) => x.batch_id == null)) return 'filling'
-  return 'formed'
-}
-
-/**
- * Синхронизирует `fill_status_id` места хранения с поступлениями:
- * 0 поступлений → пусто; есть неоформленные → наполняется; все оформлены → сформировано.
- */
-export async function syncStorageLocationFillStatusFromIntakes(
-  locationId: string,
-  intakes: ReadonlyArray<{ batch_id: string | null }>,
-): Promise<void> {
-  if (!supabase || !locationId) return
-  const code = resolveStorageFillStatusCodeFromIntakes(intakes)
-  const { data: statusRow, error: statusError } = await supabase.from('storage_fill_statuses').select('id').eq('code', code).maybeSingle()
-  if (statusError) throw statusError
-  if (!statusRow?.id) return
-  const nowIso = new Date().toISOString()
-  const { error } = await supabase
-    .from(STORAGE_LOCATIONS_TABLE)
-    .update({ fill_status_id: statusRow.id, updated_at: nowIso })
-    .eq('id', locationId)
-  if (error) throw error
-}
