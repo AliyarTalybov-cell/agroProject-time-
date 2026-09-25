@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AboutServicePage from '@/pages/AboutServicePage.vue'
@@ -19,36 +20,26 @@ function goAboutTab() {
 
 <template>
   <div class="dashboard-page page-enter-item">
-    <div class="dashboard-tabs" role="tablist" aria-label="Вкладки раздела «Обзор»">
-      <button
-        type="button"
-        role="tab"
+    <Tabs :model-value="(!isAboutTab) ? 't0' : (isAboutTab) ? 't1' : ''">
+      <TabsList aria-label="Вкладки раздела «Обзор»">
+        <TabsTrigger value="t0"
         :id="'dashboard-tab-overview'"
-        :aria-selected="!isAboutTab"
-        :tabindex="!isAboutTab ? 0 : -1"
-        class="dashboard-tab"
-        :class="{ 'dashboard-tab--active': !isAboutTab }"
-        @click="goOverviewTab"
-      >
+       
+        @click="goOverviewTab">
         Обзор
-      </button>
-      <button
-        type="button"
-        role="tab"
+      </TabsTrigger>
+        <TabsTrigger value="t1"
         :id="'dashboard-tab-about'"
-        :aria-selected="isAboutTab"
-        :tabindex="isAboutTab ? 0 : -1"
-        class="dashboard-tab dashboard-tab--about-pulse"
-        :class="{ 'dashboard-tab--active': isAboutTab }"
-        @click="goAboutTab"
-      >
+       
+        @click="goAboutTab">
         <span class="dashboard-tab-pulse-line" aria-hidden="true" />
         <span class="dashboard-tab-pulse-line" aria-hidden="true" />
         <span class="dashboard-tab-pulse-line" aria-hidden="true" />
         <span class="dashboard-tab-pulse-line" aria-hidden="true" />
         <span class="dashboard-tab-pulse-label">О сервисе</span>
-      </button>
-    </div>
+      </TabsTrigger>
+      </TabsList>
+    </Tabs>
 
     <section
       v-show="!isAboutTab"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
@@ -610,18 +611,17 @@ async function exportToPdf() {
 <template>
   <section class="equipment-page page-enter-item">
     <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
-    <nav class="equipment-tabs" aria-label="Разделы">
-      <button
+    <Tabs :model-value="activeTab">
+      <TabsList aria-label="Разделы">
+        <TabsTrigger :value="tab.id"
         v-for="tab in TABS"
         :key="tab.id"
-        type="button"
-        class="equipment-tab"
-        :class="{ 'equipment-tab--active': activeTab === tab.id }"
-        @click="activeTab = tab.id"
-      >
+       
+        @click="activeTab = tab.id">
         {{ tab.label }}
-      </button>
-    </nav>
+      </TabsTrigger>
+      </TabsList>
+    </Tabs>
 
     <!-- Новая единица техники -->
     <div ref="equipmentFormCardRef" v-show="activeTab === 'equipment'" class="equipment-form-card card-rounded">

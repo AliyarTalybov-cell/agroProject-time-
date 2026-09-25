@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
@@ -1573,18 +1574,17 @@ onMounted(async () => {
         </Button>
       </header>
 
-      <nav class="fields-tabs page-enter-item" aria-label="Разделы">
-        <button
+      <Tabs :model-value="activeTab">
+        <TabsList aria-label="Разделы">
+          <TabsTrigger :value="tab.id"
           v-for="tab in TABS"
           :key="tab.id"
-          type="button"
-          class="fields-tab"
-          :class="{ 'fields-tab--active': activeTab === tab.id }"
-          @click="activeTab = tab.id"
-        >
+         
+          @click="activeTab = tab.id">
           {{ tab.label }}
-        </button>
-      </nav>
+        </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <div v-show="activeTab === 'fields'" class="fields-tab-panel">
       <div class="fields-card">

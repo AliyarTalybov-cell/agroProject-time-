@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
@@ -1100,18 +1101,17 @@ function statusClass(s: Status) {
     <header class="task-header">
       <div class="task-header-left">
         <div class="task-filter-row">
-          <div class="task-filter-tabs">
-            <button
+          <Tabs :model-value="activeFilter">
+            <TabsList>
+              <TabsTrigger :value="f.key"
               v-for="f in filters"
               :key="f.key"
-              type="button"
-              class="task-filter-tab"
-              :class="{ 'task-filter-tab--active': activeFilter === f.key }"
-              @click="activeFilter = f.key"
-            >
+             
+              @click="activeFilter = f.key">
               {{ f.label }}
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <UiSelect v-model="filterEmployeeId" :options="[{ value: '', label: 'Все сотрудники' }, { value: TASK_ASSIGNEE_FILTER_UNASSIGNED, label: 'Без исполнителя' }, ...(assignees).map((a) => ({ value: a.id, label: String(a.name) }))]" v-if="isManager" class="task-filter-pill task-filter-pill--select" title="Сотрудник" :disabled="!assignees.length" />
           <UiSelect v-model="filterStatus" :options="[{ value: '', label: 'Все статусы' }, ...(statusColumns).map((col) => ({ value: col.key, label: String(col.title) }))]" class="task-filter-pill task-filter-pill--select" title="Статус" />
           <div class="task-filter-dates">

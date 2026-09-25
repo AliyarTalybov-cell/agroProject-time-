@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Button } from '@/components/ui/shadcn/button'
 import { ChevronLeftIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 /**
@@ -186,12 +187,14 @@ function openBatch(batchId: string) {
         <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>
 
         <section class="ui-card">
-          <div class="ui-tabs">
-            <button type="button" class="ui-tab" :class="{ 'is-active': tab === 'cells' }" @click="tab = 'cells'">Ячейки и партии</button>
-            <button type="button" class="ui-tab" :class="{ 'is-active': tab === 'journal' }" @click="tab = 'journal'">
+          <Tabs :model-value="tab">
+            <TabsList>
+              <TabsTrigger value="cells" @click="tab = 'cells'">Ячейки и партии</TabsTrigger>
+              <TabsTrigger value="journal" @click="tab = 'journal'">
               Журнал · {{ documents.length }}
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           <div v-if="tab === 'cells'" class="wh-panel">
             <div class="ui-toolbar wh-panel-toolbar">

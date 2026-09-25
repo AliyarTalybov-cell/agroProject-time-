@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
@@ -559,11 +560,13 @@ async function confirmDeleteAccount() {
 
       <!-- Правая колонка: форма -->
       <div class="profile-form-area card-rounded">
-        <div class="profile-tabs">
-          <button type="button" class="profile-tab" :class="{ 'profile-tab--active': activeTab === 'personal' }" @click="activeTab = 'personal'">Личные данные</button>
-          <button type="button" class="profile-tab" :class="{ 'profile-tab--active': activeTab === 'security' }" @click="activeTab = 'security'">Безопасность</button>
-          <button type="button" class="profile-tab" :class="{ 'profile-tab--active': activeTab === 'notifications' }" @click="activeTab = 'notifications'">Уведомления</button>
-        </div>
+        <Tabs :model-value="activeTab">
+          <TabsList>
+            <TabsTrigger value="personal" @click="activeTab = 'personal'">Личные данные</TabsTrigger>
+            <TabsTrigger value="security" @click="activeTab = 'security'">Безопасность</TabsTrigger>
+            <TabsTrigger value="notifications" @click="activeTab = 'notifications'">Уведомления</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <div v-show="activeTab === 'personal'" class="profile-tab-panel">
           <h2 class="profile-form-section-title">Основная информация</h2>

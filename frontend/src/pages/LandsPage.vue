@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
@@ -3877,18 +3878,17 @@ onMounted(() => void reloadAll())
         </template>
 
         <template v-else-if="landsRootTab === 'melioration'">
-          <div class="lands-tabs lands-tabs--sub lands-tabs--melioration">
-            <button
+          <Tabs :model-value="meliorationTab">
+            <TabsList>
+              <TabsTrigger :value="tab.id"
               v-for="tab in MELIORATION_TABS"
               :key="tab.id"
-              type="button"
-              class="lands-tab-btn"
-              :class="{ 'is-active': meliorationTab === tab.id }"
-              @click="meliorationTab = tab.id"
-            >
+             
+              @click="meliorationTab = tab.id">
               {{ tab.label }}
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div class="lands-melioration-head">
             <div class="lands-export-btns">
               <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
@@ -4023,17 +4023,19 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'land-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-tabs lands-tabs--sub">
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': landRefsTab === 'land-types' }" @click="landRefsTab = 'land-types'">
+          <Tabs :model-value="landRefsTab">
+            <TabsList>
+              <TabsTrigger value="land-types" @click="landRefsTab = 'land-types'">
               Типы земли
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': landRefsTab === 'land-categories' }" @click="landRefsTab = 'land-categories'">
+            </TabsTrigger>
+              <TabsTrigger value="land-categories" @click="landRefsTab = 'land-categories'">
               Категории земли
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': landRefsTab === 'land-usage' }" @click="landRefsTab = 'land-usage'">
+            </TabsTrigger>
+              <TabsTrigger value="land-usage" @click="landRefsTab = 'land-usage'">
               Использование участка
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div v-if="landRefsTab === 'land-types'" class="lands-ref-block">
             <h2>Типы земли</h2>
             <div class="lands-ref-add-row">
@@ -4124,17 +4126,19 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'melioration-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-tabs lands-tabs--sub">
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': meliorationRefsTab === 'types' }" @click="meliorationRefsTab = 'types'">
+          <Tabs :model-value="meliorationRefsTab">
+            <TabsList>
+              <TabsTrigger value="types" @click="meliorationRefsTab = 'types'">
               Типы мелиорации
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': meliorationRefsTab === 'subtypes' }" @click="meliorationRefsTab = 'subtypes'">
+            </TabsTrigger>
+              <TabsTrigger value="subtypes" @click="meliorationRefsTab = 'subtypes'">
               Виды мелиорации
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': meliorationRefsTab === 'event-types' }" @click="meliorationRefsTab = 'event-types'">
+            </TabsTrigger>
+              <TabsTrigger value="event-types" @click="meliorationRefsTab = 'event-types'">
               Типы мероприятий
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div v-if="meliorationRefsTab === 'types'" class="lands-ref-block">
             <h2>Типы мелиорации</h2>
             <div class="lands-ref-add-row">
@@ -4201,14 +4205,16 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'equipment-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-tabs lands-tabs--sub">
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': equipmentRefsTab === 'types' }" @click="equipmentRefsTab = 'types'">
+          <Tabs :model-value="equipmentRefsTab">
+            <TabsList>
+              <TabsTrigger value="types" @click="equipmentRefsTab = 'types'">
               Тип техники
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': equipmentRefsTab === 'conditions' }" @click="equipmentRefsTab = 'conditions'">
+            </TabsTrigger>
+              <TabsTrigger value="conditions" @click="equipmentRefsTab = 'conditions'">
               Состояние техники
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div v-if="equipmentRefsTab === 'types'" class="lands-ref-block">
             <h2>Тип техники</h2>
             <div class="lands-ref-add-row">
@@ -4254,11 +4260,13 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'field-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-tabs lands-tabs--sub">
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': fieldRefsTab === 'municipalities' }" @click="fieldRefsTab = 'municipalities'">
+          <Tabs :model-value="fieldRefsTab">
+            <TabsList>
+              <TabsTrigger value="municipalities" @click="fieldRefsTab = 'municipalities'">
               Муниципальные образования
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div class="lands-ref-block">
             <h2>Муниципальные образования</h2>
             <div class="lands-ref-add-row">
@@ -4283,11 +4291,13 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'crop-rotation-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-tabs lands-tabs--sub">
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': cropRotationRefsTab === 'types' }" @click="cropRotationRefsTab = 'types'">
+          <Tabs :model-value="cropRotationRefsTab">
+            <TabsList>
+              <TabsTrigger value="types" @click="cropRotationRefsTab = 'types'">
               Типы севооборота
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div class="lands-ref-block">
             <h2>Типы севооборота</h2>
             <div class="lands-ref-add-row">
@@ -4312,23 +4322,25 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'storage-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-tabs lands-tabs--sub">
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'types' }" @click="storageRefsTab = 'types'">
+          <Tabs :model-value="storageRefsTab">
+            <TabsList>
+              <TabsTrigger value="types" @click="storageRefsTab = 'types'">
               Типы мест хранения
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'statuses' }" @click="storageRefsTab = 'statuses'">
+            </TabsTrigger>
+              <TabsTrigger value="statuses" @click="storageRefsTab = 'statuses'">
               Статусы мест хранения
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'writeoff-reasons' }" @click="storageRefsTab = 'writeoff-reasons'">
+            </TabsTrigger>
+              <TabsTrigger value="writeoff-reasons" @click="storageRefsTab = 'writeoff-reasons'">
               Причины списания
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'consumption-targets' }" @click="storageRefsTab = 'consumption-targets'">
+            </TabsTrigger>
+              <TabsTrigger value="consumption-targets" @click="storageRefsTab = 'consumption-targets'">
               Направления расхода
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': storageRefsTab === 'purposes' }" @click="storageRefsTab = 'purposes'">
+            </TabsTrigger>
+              <TabsTrigger value="purposes" @click="storageRefsTab = 'purposes'">
               Назначение партий
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div v-if="storageRefsTab === 'types'" class="lands-ref-block">
             <h2>Типы мест хранения</h2>
             <div class="lands-ref-add-row">
@@ -4400,23 +4412,25 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else>
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-tabs lands-tabs--sub">
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': rightsRefsTab === 'ownership-forms' }" @click="rightsRefsTab = 'ownership-forms'">
+          <Tabs :model-value="rightsRefsTab">
+            <TabsList>
+              <TabsTrigger value="ownership-forms" @click="rightsRefsTab = 'ownership-forms'">
               Формы собственности
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': rightsRefsTab === 'right-types' }" @click="rightsRefsTab = 'right-types'">
+            </TabsTrigger>
+              <TabsTrigger value="right-types" @click="rightsRefsTab = 'right-types'">
               Виды прав
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': rightsRefsTab === 'document-types' }" @click="rightsRefsTab = 'document-types'">
+            </TabsTrigger>
+              <TabsTrigger value="document-types" @click="rightsRefsTab = 'document-types'">
               Типы подтверждающих документов
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': rightsRefsTab === 'holder-types' }" @click="rightsRefsTab = 'holder-types'">
+            </TabsTrigger>
+              <TabsTrigger value="holder-types" @click="rightsRefsTab = 'holder-types'">
               Виды правообладания
-            </button>
-            <button type="button" class="lands-tab-btn" :class="{ 'is-active': rightsRefsTab === 'holders' }" @click="rightsRefsTab = 'holders'">
+            </TabsTrigger>
+              <TabsTrigger value="holders" @click="rightsRefsTab = 'holders'">
               Правообладатели
-            </button>
-          </div>
+            </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           <div v-if="rightsRefsTab === 'ownership-forms'" class="lands-ref-block">
             <h2>Формы собственности</h2>
@@ -4655,26 +4669,28 @@ onMounted(() => void reloadAll())
           </div>
         </template>
 
-        <div class="lands-tabs">
-          <button type="button" class="lands-tab-btn" :class="{ 'is-active': activeTab === 'info' }" @click="activeTab = 'info'">
+        <Tabs :model-value="activeTab">
+          <TabsList>
+            <TabsTrigger value="info" @click="activeTab = 'info'">
             Сведения об участке
-          </button>
-          <button type="button" class="lands-tab-btn" :class="{ 'is-active': activeTab === 'fields' }" @click="activeTab = 'fields'">
+          </TabsTrigger>
+            <TabsTrigger value="fields" @click="activeTab = 'fields'">
             Поля
-          </button>
-          <button type="button" class="lands-tab-btn" :class="{ 'is-active': activeTab === 'rights' }" @click="activeTab = 'rights'">
+          </TabsTrigger>
+            <TabsTrigger value="rights" @click="activeTab = 'rights'">
             Права владения
-          </button>
-          <button type="button" class="lands-tab-btn" :class="{ 'is-active': activeTab === 'users' }" @click="activeTab = 'users'">
+          </TabsTrigger>
+            <TabsTrigger value="users" @click="activeTab = 'users'">
             Землепользователи
-          </button>
-          <button type="button" class="lands-tab-btn" :class="{ 'is-active': activeTab === 'crop-rotation' }" @click="activeTab = 'crop-rotation'">
+          </TabsTrigger>
+            <TabsTrigger value="crop-rotation" @click="activeTab = 'crop-rotation'">
             Севооборот
-          </button>
-          <button type="button" class="lands-tab-btn" :class="{ 'is-active': activeTab === 'real-estate' }" @click="activeTab = 'real-estate'">
+          </TabsTrigger>
+            <TabsTrigger value="real-estate" @click="activeTab = 'real-estate'">
             Объекты недвижимости
-          </button>
-        </div>
+          </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <template v-if="selectedLand && activeTab === 'info'">
           <div class="lands-section-head">

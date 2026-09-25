@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Button } from '@/components/ui/shadcn/button'
 import { ArrowRightIcon, CheckIcon, FileIcon, RefreshCcwIcon, SaveIcon, SearchIcon, SendIcon } from '@lucide/vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
@@ -910,40 +911,27 @@ onUnmounted(() => {
             aria-label="Поиск по ФИО сотрудника или названию группы"
           />
         </div>
-        <div class="chat-page__tabs" role="tablist" aria-label="Фильтр диалогов">
-          <button
-            type="button"
-            role="tab"
-            :aria-selected="filterTab === 'all'"
-            class="chat-page__tab"
-            :class="{ 'chat-page__tab--active': filterTab === 'all' }"
-            @click="setTab('all')"
-          >
+        <Tabs :model-value="filterTab">
+          <TabsList aria-label="Фильтр диалогов">
+            <TabsTrigger value="all"
+           
+            @click="setTab('all')">
             Все
-          </button>
-          <button
-            type="button"
-            role="tab"
-            :aria-selected="filterTab === 'unread'"
-            class="chat-page__tab"
-            :class="{ 'chat-page__tab--active': filterTab === 'unread' }"
+          </TabsTrigger>
+            <TabsTrigger value="unread"
+           
             aria-label="Непрочитанные"
-            @click="setTab('unread')"
-          >
+            @click="setTab('unread')">
             <span class="chat-page__tab-text chat-page__tab-text--full">Непрочитанные</span>
             <span class="chat-page__tab-text chat-page__tab-text--short" aria-hidden="true">Непрочит.</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            :aria-selected="filterTab === 'teams'"
-            class="chat-page__tab"
-            :class="{ 'chat-page__tab--active': filterTab === 'teams' }"
-            @click="setTab('teams')"
-          >
+          </TabsTrigger>
+            <TabsTrigger value="teams"
+           
+            @click="setTab('teams')">
             Команды
-          </button>
-        </div>
+          </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       <div class="chat-page__list-scroll">
