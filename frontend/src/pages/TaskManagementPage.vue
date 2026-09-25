@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPersonPicker from '@/components/ui/UiPersonPicker.vue'
 import { CirclePlusIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -1354,40 +1355,11 @@ function statusClass(s: Status) {
                 <div v-if="isManager" class="modal-field modal-field--design">
                   <div class="modal-label-row modal-label-row--design">
                     <span class="modal-label modal-label--design">Участники задачи</span>
-                    <div class="modal-assignee-picker">
-                      <button
-                        type="button"
-                        class="modal-add-assignee-btn modal-add-assignee-btn--design"
-                        @click="toggleParticipantPicker"
-                      >
-                        <CirclePlusIcon :size="14" />
-                        Добавить
-                      </button>
-                      <div v-if="participantPickerOpen" class="modal-assignee-dropdown">
-                        <div class="modal-assignee-search">
-                          <SearchIcon class="modal-assignee-search-icon" :size="14" />
-                          <input
-                            v-model="participantSearch"
-                            type="text"
-                            class="modal-assignee-search-input"
-                            placeholder="Поиск по имени или email"
-                          />
-                        </div>
-                        <button
-                          v-for="p in participantOptions"
-                          :key="p.id"
-                          type="button"
-                          class="modal-assignee-option"
-                          @click="addParticipant(p.id)"
-                        >
-                          <UserAvatar class="modal-assignee-option-avatar" :style="avatarStyleByUserId(p.id)" :url="avatarUrlByUserId(p.id)" :initials="participantInitials(p)" />
-                          <span class="modal-assignee-option-label">{{ profileLabel(p) }}{{ p.id === auth.user.value?.id ? ' (Вы)' : '' }}</span>
-                        </button>
-                        <p v-if="participantOptions.length === 0" class="modal-assignee-empty">
-                          {{ participantsAvailable.length === 0 ? 'Все добавлены' : 'Ничего не найдено' }}
-                        </p>
-                      </div>
-                    </div>
+                    <UiPersonPicker
+                      :options="participantsAvailable.map((p) => ({ id: p.id, label: profileLabel(p) + (p.id === auth.user.value?.id ? ' (Вы)' : ''), initials: participantInitials(p), url: avatarUrlByUserId(p.id), avatarStyle: avatarStyleByUserId(p.id) }))"
+                      :all-added="participantsAvailable.length === 0"
+                      @pick="addParticipant"
+                    />
                   </div>
                   <div class="modal-chips modal-chips--design">
                     <div

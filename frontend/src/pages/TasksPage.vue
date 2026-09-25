@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPersonPicker from '@/components/ui/UiPersonPicker.vue'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/shadcn/radio-group'
 import { CalendarIcon, CirclePlusIcon, ClockIcon, FileIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon, UsersIcon } from '@lucide/vue'
@@ -2541,43 +2542,11 @@ async function confirmDeleteTask() {
             <div class="modal-field modal-field--design">
               <div class="modal-label-row modal-label-row--design">
                 <span class="modal-label modal-label--design">Ответственные специалисты</span>
-                <div class="modal-assignee-picker">
-                  <button
-                    type="button"
-                    class="modal-add-assignee-btn modal-add-assignee-btn--design"
-                    @click="assigneePickerOpen = !assigneePickerOpen"
-                  >
-                    <CirclePlusIcon :size="14" />
-                    Добавить
-                  </button>
-                  <div v-if="assigneePickerOpen" class="modal-assignee-dropdown">
-                    <div class="modal-assignee-search">
-                      <SearchIcon class="modal-assignee-search-icon" :size="14" />
-                      <input
-                        v-model="assigneeSearch"
-                        type="text"
-                        class="modal-assignee-search-input"
-                        placeholder="Поиск по имени или email"
-                      />
-                    </div>
-                    <button
-                      v-for="p in assigneeOptions"
-                      :key="p.id"
-                      type="button"
-                      class="modal-assignee-option"
-                      @click="addAssignee(p.id)"
-                    >
-                      <UserAvatar class="modal-assignee-option-avatar" :style="assigneeAvatarStyle(p)" :url="p.avatar_url" :initials="assigneeInitials(p)" />
-                      <span class="modal-assignee-option-label">{{ profileLabel(p) }}{{ p.id === auth.user.value?.id ? ' (Вы)' : '' }}</span>
-                    </button>
-                    <p
-                      v-if="assigneeOptions.length === 0"
-                      class="modal-assignee-empty"
-                    >
-                      {{ profilesNotAssigned.length === 0 ? 'Все добавлены' : 'Ничего не найдено' }}
-                    </p>
-                  </div>
-                </div>
+                <UiPersonPicker
+                  :options="profilesNotAssigned.map((p) => ({ id: p.id, label: profileLabel(p) + (p.id === auth.user.value?.id ? ' (Вы)' : ''), initials: assigneeInitials(p), url: p.avatar_url, avatarStyle: assigneeAvatarStyle(p) }))"
+                  :all-added="profilesNotAssigned.length === 0"
+                  @pick="addAssignee"
+                />
               </div>
               <div class="modal-chips modal-chips--design">
                 <div

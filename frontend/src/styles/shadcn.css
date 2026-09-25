@@ -25,6 +25,7 @@
 @source '../components/AppBackendModal.vue';
 @source '../components/RefFieldHelp.vue';
 @source '../components/UiLoadingBar.vue';
+@source '../components/UiDeleteButton.vue';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 

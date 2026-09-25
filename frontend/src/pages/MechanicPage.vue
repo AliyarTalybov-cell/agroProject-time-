@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
-import { CheckIcon, ChevronDownIcon, SaveIcon, XIcon } from '@lucide/vue'
+import { CheckIcon, ChevronDownIcon, PlusIcon, SaveIcon, XIcon } from '@lucide/vue'
 import PickSheet from '@/components/ui/dialogs/PickSheet.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -408,13 +409,10 @@ watch(
   { immediate: true },
 )
 
-function onGlobalPointerDown(e: MouseEvent) {
-  if (!isFieldsOpen.value) return
-  const root = fieldsDropdownRef.value
-  if (!root) return
-  if (e.target instanceof Node && root.contains(e.target)) return
-  isFieldsOpen.value = false
-}
+// Список полей — DropdownMenu shadcn: закрытие по клику мимо делает он сам.
+// Прежний обработчик закрывал меню на pointerdown раньше, чем срабатывал выбор
+// пункта (меню отрисовано вне обёртки), поэтому теперь он ничего не делает.
+function onGlobalPointerDown(_e: MouseEvent) {}
 
 const currentField = computed<MechanicField | null>(() => {
   if (active.value?.fieldId) {
@@ -1461,35 +1459,35 @@ function addField() {
             <div class="operator-fields-hint">Листайте и выберите поле</div>
           </div>
           <div ref="fieldsDropdownRef" class="operator-fields-dropdown">
-            <button
-              type="button"
-              class="operator-fields-trigger"
-              :disabled="isFieldLocked"
-              @click="isFieldsOpen = !isFieldsOpen"
-            >
-              <span class="operator-fields-trigger-main">{{ currentField?.name ?? 'Выберите поле' }}</span>
-              <span class="operator-fields-trigger-sub">{{ currentField?.operation ?? 'Операция не выбрана' }}</span>
-              <span class="operator-fields-trigger-chev" :class="{ 'operator-fields-trigger-chev--open': isFieldsOpen }">
-                <ChevronDownIcon :size="16" />
-              </span>
-            </button>
-            <div v-if="isFieldsOpen" class="operator-fields-menu">
-              <button
-                v-for="field in dropdownFields"
-                :key="field.id"
-                class="operator-fields-option"
-                :class="{ 'operator-fields-option--active': currentField?.id === field.id }"
-                type="button"
-                :disabled="isFieldLocked"
-                @click="pickField(field.id)"
-              >
-                <span class="operator-fields-option-name">{{ field.name }}</span>
-                <span class="operator-fields-option-op">{{ field.operation }}</span>
-              </button>
-              <button class="operator-fields-option operator-fields-option--add" type="button" @click="openAddField">
-                + Добавить поле
-              </button>
-            </div>
+            <DropdownMenu v-model:open="isFieldsOpen">
+              <DropdownMenuTrigger as-child :disabled="isFieldLocked">
+                <button type="button" class="operator-fields-trigger" :disabled="isFieldLocked">
+                  <span class="operator-fields-trigger-main">{{ currentField?.name ?? 'Выберите поле' }}</span>
+                  <span class="operator-fields-trigger-sub">{{ currentField?.operation ?? 'Операция не выбрана' }}</span>
+                  <span class="operator-fields-trigger-chev" :class="{ 'operator-fields-trigger-chev--open': isFieldsOpen }">
+                    <ChevronDownIcon :size="16" />
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" class="operator-fields-menu-content">
+                <DropdownMenuItem
+                  v-for="field in dropdownFields"
+                  :key="field.id"
+                  :disabled="isFieldLocked"
+                  class="operator-fields-menu-item"
+                  @select="pickField(field.id)"
+                >
+                  <span class="operator-fields-menu-name">{{ field.name }}</span>
+                  <span class="operator-fields-menu-op">{{ field.operation }}</span>
+                  <CheckIcon v-if="currentField?.id === field.id" :size="16" class="operator-fields-menu-check" />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem @select="openAddField">
+                  <PlusIcon :size="16" />
+                  Добавить поле
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </section>
 
