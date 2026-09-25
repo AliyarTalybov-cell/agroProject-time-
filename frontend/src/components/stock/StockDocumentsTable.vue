@@ -212,6 +212,7 @@ function toggle(id: string) {
 </template>
 
 <style scoped>
+@layer legacy {
 .stock-docs {
   min-width: 860px;
 }
@@ -292,5 +293,6 @@ function toggle(id: string) {
   .stock-doc-grid {
     grid-template-columns: 1fr;
   }
+}
 }
 </style>

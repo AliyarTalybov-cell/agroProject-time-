@@ -134,6 +134,7 @@ async function submit() {
 </template>
 
 <style scoped>
+@layer legacy {
 .login-layout {
   position: relative;
   isolation: isolate;
@@ -400,10 +401,12 @@ async function submit() {
     min-width: 100%;
   }
 }
+}
 </style>
 
 <!-- Тёмная тема: атрибут data-theme на <html> задаётся приложением -->
 <style>
+@layer legacy {
 html[data-theme='dark'] .auth-uiview .form_container {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
@@ -467,5 +470,6 @@ html[data-theme='dark'] .auth-uiview .sign-in_ggl:hover {
 html[data-theme='dark'] .auth-uiview .auth_error {
   background: rgba(211, 60, 60, 0.12);
   border-color: rgba(211, 60, 60, 0.35);
+}
 }
 </style>

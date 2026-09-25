@@ -47,6 +47,7 @@
 </template>
 
 <style scoped>
+@layer legacy {
 .rules-page {
   min-height: 100vh;
   padding: 24px;
@@ -99,5 +100,6 @@
 
 .rules-block a {
   color: var(--accent-green);
+}
 }
 </style>

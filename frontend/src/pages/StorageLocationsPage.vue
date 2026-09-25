@@ -530,6 +530,7 @@ function onPageSizeChange(size: number) {
 </template>
 
 <style scoped>
+@layer legacy {
 .fields-page {
   width: 100%;
 }
@@ -1050,5 +1051,6 @@ function onPageSizeChange(size: number) {
   .storage-code-text {
     max-width: 110px;
   }
+}
 }
 </style>

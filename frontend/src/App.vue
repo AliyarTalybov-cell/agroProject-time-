@@ -332,6 +332,7 @@ watch(
 </template>
 
 <style scoped>
+@layer legacy {
 .app-auth-shell {
   min-height: 100vh;
   display: flex;
@@ -527,6 +528,6 @@ watch(
   transition-delay: 160ms;
   transform: scale(1) rotate(360deg);
 }
-
+}
 </style>
 

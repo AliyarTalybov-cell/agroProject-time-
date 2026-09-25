@@ -304,6 +304,7 @@ async function saveEdit() {
 </template>
 
 <style scoped>
+@layer legacy {
 .batch-head {
   display: flex;
   flex-direction: column;
@@ -395,5 +396,6 @@ async function saveEdit() {
   .batch-actions > * {
     flex: 1 1 calc(50% - 8px);
   }
+}
 }
 </style>

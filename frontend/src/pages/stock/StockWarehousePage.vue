@@ -284,6 +284,7 @@ function openBatch(batchId: string) {
 </template>
 
 <style scoped>
+@layer legacy {
 .wh-head {
   display: flex;
   flex-direction: column;
@@ -382,5 +383,6 @@ function openBatch(batchId: string) {
   .wh-actions > * {
     flex: 1 1 calc(50% - 8px);
   }
+}
 }
 </style>

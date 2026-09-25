@@ -2692,6 +2692,7 @@ async function confirmDeleteTask() {
 <style scoped src="./TasksPage.css"></style>
 
 <style>
+@layer legacy {
 html[data-theme='dark'] .calendar-page .calendar-owner-card {
   background: linear-gradient(
     152deg,
@@ -3025,5 +3026,6 @@ html[data-theme='dark'] .calendar-page .assignee-status-chip--declined {
   .assignee-status-board {
     grid-template-columns: 1fr;
   }
+}
 }
 </style>

@@ -107,6 +107,7 @@ onMounted(() => void loadData())
 </template>
 
 <style scoped>
+@layer legacy {
 .news-page { display:flex; flex-direction:column; gap:1rem; }
 .news-header { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; }
 .news-header--actions-only { justify-content:flex-end; }
@@ -228,5 +229,6 @@ onMounted(() => void loadData())
   .news-pagination-right {
     justify-content: center;
   }
+}
 }
 </style>

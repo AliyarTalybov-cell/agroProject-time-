@@ -165,6 +165,7 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+@layer legacy {
 .stock-ref--hidden span {
   color: var(--text-secondary);
 }
@@ -183,5 +184,6 @@ async function confirmDelete() {
 
 .stock-ref-toggle:hover:not(:disabled) {
   color: var(--text-primary);
+}
 }
 </style>

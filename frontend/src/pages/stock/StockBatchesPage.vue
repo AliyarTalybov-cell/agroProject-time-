@@ -220,11 +220,13 @@ function onIntakeDone() {
 </template>
 
 <style scoped>
+@layer legacy {
 .batches-table {
   min-width: 900px;
 }
 
 .batches-where {
   max-width: 280px;
+}
 }
 </style>

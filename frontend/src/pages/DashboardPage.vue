@@ -143,6 +143,7 @@ function goAboutTab() {
 </template>
 
 <style scoped>
+@layer legacy {
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -384,5 +385,6 @@ function goAboutTab() {
 .dashboard-about-panel {
   flex: 1;
   min-height: 0;
+}
 }
 </style>

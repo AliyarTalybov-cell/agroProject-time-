@@ -354,6 +354,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
+@layer legacy {
 .notifications-page {
   display: grid;
   gap: 10px;
@@ -654,5 +655,6 @@ onMounted(() => {
   .notification-item-time {
     font-size: 0.78rem;
   }
+}
 }
 </style>

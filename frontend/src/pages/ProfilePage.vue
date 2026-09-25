@@ -732,6 +732,7 @@ async function confirmDeleteAccount() {
 </template>
 
 <style scoped>
+@layer legacy {
 .profile-page-wrapper {
   /* Один корневой элемент для Vue Transition — иначе переходы между страницами ломаются */
   min-height: 0;
@@ -1406,5 +1407,6 @@ async function confirmDeleteAccount() {
   .profile-page-title {
     font-size: 1.25rem;
   }
+}
 }
 </style>

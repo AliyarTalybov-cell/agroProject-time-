@@ -1075,6 +1075,7 @@ async function exportToPdf() {
 </template>
 
 <style scoped>
+@layer legacy {
 /* Сообщение о неудавшейся загрузке или действии.
    Оформление то же, что у ошибок в ChatPage и LandsPage. */
 .page-load-error {
@@ -1890,5 +1891,6 @@ async function exportToPdf() {
     width: 100%;
     justify-content: space-between;
   }
+}
 }
 </style>

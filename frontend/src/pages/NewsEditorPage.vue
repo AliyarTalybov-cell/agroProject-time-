@@ -438,6 +438,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+@layer legacy {
 .news-editor {
   display: flex;
   flex-direction: column;
@@ -796,5 +797,6 @@ onMounted(async () => {
     flex: 1;
     min-width: 130px;
   }
+}
 }
 </style>

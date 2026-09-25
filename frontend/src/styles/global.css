@@ -1,3 +1,6 @@
+/* Старые стили сайта — в нижнем слое legacy: классы компонентов shadcn-vue
+   (слои Tailwind выше) их перекрывают, остальная вёрстка выглядит как раньше. */
+@layer legacy {
 /* ——— Светлая тема по умолчанию ———
    Серые — палитра Zinc из shadcn-vue (эталон интерфейса, см. UI_PLAN.md),
    основной зелёный — фирменный #2d5a3d. */
@@ -285,11 +288,8 @@ body {
   }
 }
 
-/* В слое base, чтобы цвета ссылок из классов Tailwind (shadcn) могли его перебить. */
-@layer base {
-  a {
-    color: inherit;
-  }
+a {
+  color: inherit;
 }
 
 .app-layout {
@@ -1160,4 +1160,5 @@ body {
 
 .app-layout-shell .app-topbar-right {
   margin-left: auto;
+}
 }

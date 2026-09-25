@@ -262,6 +262,7 @@ const marqueeParts = [
 </template>
 
 <style scoped>
+@layer legacy {
 /* --- Локальные алиасы поверх глобальных токенов портала (global.css :root / [data-theme='dark']) --- */
 .about-landing {
   --ab-line: var(--border-color);
@@ -844,5 +845,6 @@ const marqueeParts = [
     padding-left: 8px;
     padding-right: 8px;
   }
+}
 }
 </style>

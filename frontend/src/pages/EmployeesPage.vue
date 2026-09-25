@@ -310,6 +310,7 @@ function openEmployee(e: EmployeeRow) {
 </template>
 
 <style scoped>
+@layer legacy {
 .emp-page {
   width: 100%;
 }
@@ -840,6 +841,7 @@ function openEmployee(e: EmployeeRow) {
   .emp-pagination-size {
     justify-content: center;
   }
+}
 }
 </style>
 

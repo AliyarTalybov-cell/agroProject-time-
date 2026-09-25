@@ -92,9 +92,11 @@ watch(page, () => void load())
 </template>
 
 <style scoped>
+@layer legacy {
 .journal-date {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
 }
 </style>

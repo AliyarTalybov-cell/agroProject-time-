@@ -1,3 +1,6 @@
+/* Старые стили сайта — в нижнем слое legacy: классы компонентов shadcn-vue
+   (слои Tailwind выше) их перекрывают, остальная вёрстка выглядит как раньше. */
+@layer legacy {
 /* Сообщение о неудавшемся действии. Цвет и подложка как у ошибок в ChatPage. */
 .tm-error {
   margin: 0 0 12px;
@@ -2933,4 +2936,5 @@
   --agro: var(--accent-green);
   --agro-dark: var(--accent-green-hover);
   --agro-light: color-mix(in srgb, var(--accent-green) 24%, transparent);
+}
 }

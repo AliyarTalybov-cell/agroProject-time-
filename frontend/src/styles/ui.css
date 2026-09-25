@@ -1,3 +1,6 @@
+/* Старые стили сайта — в нижнем слое legacy: классы компонентов shadcn-vue
+   (слои Tailwind выше) их перекрывают, остальная вёрстка выглядит как раньше. */
+@layer legacy {
 /* Общие стили экранов, собранных из components/ui (см. README там же).
    Эталон оформления — shadcn-vue (new-york-v4): размеры, скругления, тени и
    состояния взяты из его компонентов (Button, Input, NativeSelect, Card, Table,
@@ -1285,4 +1288,5 @@ select:is(
   grid-column: 2;
   align-self: center;
   color: var(--primary);
+}
 }

@@ -253,6 +253,7 @@ async function save() {
 </template>
 
 <style scoped>
+@layer legacy {
 .stock-line {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 110px 32px;
@@ -298,5 +299,6 @@ async function save() {
   .stock-line {
     grid-template-columns: minmax(0, 1fr) 90px 32px;
   }
+}
 }
 </style>

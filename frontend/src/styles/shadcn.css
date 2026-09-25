@@ -9,7 +9,8 @@
    - тёмная тема — по нашему [data-theme='dark'] на <html>;
    - цвета — палитра Zinc из shadcn, основной цвет — наш зелёный #2d5a3d. */
 
-@layer theme, base, components, utilities;
+/* legacy — старые стили сайта (global/ui/modal.css и стили страниц), ниже всех слоёв Tailwind. */
+@layer legacy, theme, base, components, utilities;
 
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);

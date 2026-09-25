@@ -145,6 +145,7 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+@layer legacy {
 .cp-table {
   min-width: 720px;
 }
@@ -166,5 +167,6 @@ async function confirmDelete() {
 .cp-del:hover {
   background: var(--bg-panel-hover);
   color: var(--danger-red);
+}
 }
 </style>

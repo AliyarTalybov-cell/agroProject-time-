@@ -207,6 +207,7 @@ onMounted(() => void loadData())
 </template>
 
 <style scoped>
+@layer legacy {
 .news-details { display:flex; flex-direction:column; gap:1rem; min-width:0; }
 .news-details-top { display:flex; justify-content:space-between; gap:.75rem; align-items:center; flex-wrap:wrap; }
 .news-back-btn {
@@ -449,5 +450,6 @@ onMounted(() => void loadData())
   .news-lightbox-nav { width: 38px; height: 38px; }
   .news-lightbox-nav--prev { left: .5rem; }
   .news-lightbox-nav--next { right: .5rem; }
+}
 }
 </style>

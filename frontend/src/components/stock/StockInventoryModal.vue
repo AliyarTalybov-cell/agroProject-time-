@@ -120,9 +120,11 @@ async function save() {
 </template>
 
 <style scoped>
+@layer legacy {
 .inv-input {
   max-width: 130px;
   margin-left: auto;
   text-align: right;
+}
 }
 </style>

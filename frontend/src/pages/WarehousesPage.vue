@@ -267,6 +267,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
+@layer legacy {
 .fields-page {
   width: 100%;
 }
@@ -932,5 +933,6 @@ onMounted(() => {
     width: 100%;
     justify-content: space-between;
   }
+}
 }
 </style>

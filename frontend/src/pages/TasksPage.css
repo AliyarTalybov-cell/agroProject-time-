@@ -1,3 +1,6 @@
+/* Старые стили сайта — в нижнем слое legacy: классы компонентов shadcn-vue
+   (слои Tailwind выше) их перекрывают, остальная вёрстка выглядит как раньше. */
+@layer legacy {
 /* Сообщение о неудавшейся загрузке или действии.
    Оформление то же, что у ошибок в ChatPage и LandsPage. */
 .page-load-error {
@@ -3833,4 +3836,5 @@ html[data-theme='dark'] .calendar-page .modal-chip-remove {
   .calendar-page .day-event-card--drag-preview {
     animation: none !important;
   }
+}
 }

@@ -573,6 +573,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+@layer legacy {
 .ymap-wrapper {
   width: 100%;
   border-radius: 12px;
@@ -640,5 +641,6 @@ onBeforeUnmount(() => {
   white-space: normal;
   text-align: center;
   line-height: 1.35;
+}
 }
 </style>

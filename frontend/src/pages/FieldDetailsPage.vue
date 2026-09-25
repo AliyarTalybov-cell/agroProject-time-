@@ -1205,6 +1205,7 @@ watch(
 </template>
 
 <style scoped>
+@layer legacy {
 .field-details {
   padding-bottom: 24px;
 }
@@ -2082,5 +2083,6 @@ watch(
   .field-history-pagination-size {
     justify-content: space-between;
   }
+}
 }
 </style>

@@ -30,6 +30,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
+@layer legacy {
 .db-badge {
   position: fixed;
   top: 16px;
@@ -113,5 +114,6 @@ const emit = defineEmits<{
   .db-badge__retry:hover:not(:disabled) {
     transform: none;
   }
+}
 }
 </style>

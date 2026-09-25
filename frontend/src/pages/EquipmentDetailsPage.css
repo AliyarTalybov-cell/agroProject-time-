@@ -1,3 +1,6 @@
+/* Старые стили сайта — в нижнем слое legacy: классы компонентов shadcn-vue
+   (слои Tailwind выше) их перекрывают, остальная вёрстка выглядит как раньше. */
+@layer legacy {
 /* Дизайн как на `FieldDetailsPage.vue` (классы field-details-*) */
 .field-details {
   padding-bottom: 24px;
@@ -1363,4 +1366,5 @@
     justify-content: space-between;
     width: 100%;
   }
+}
 }

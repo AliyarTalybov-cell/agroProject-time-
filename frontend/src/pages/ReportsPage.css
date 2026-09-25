@@ -1,3 +1,6 @@
+/* Старые стили сайта — в нижнем слое legacy: классы компонентов shadcn-vue
+   (слои Tailwind выше) их перекрывают, остальная вёрстка выглядит как раньше. */
+@layer legacy {
 .dash-page {
   width: 100%;
   padding-bottom: var(--space-xl);
@@ -1460,4 +1463,4 @@
   align-items: center;
   gap: 6px;
 }
-
+}
