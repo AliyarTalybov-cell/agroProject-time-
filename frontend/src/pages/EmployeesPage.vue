@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Button } from '@/components/ui/shadcn/button'
 import { CalendarIcon, MailIcon, PhoneIcon, PlusIcon, SearchIcon, SlidersVerticalIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -168,12 +169,12 @@ function openEmployee(e: EmployeeRow) {
       </div>
 
       <div class="emp-actions">
-        <div class="emp-search-wrap">
-          <span class="emp-search-icon" aria-hidden="true">
-            <SearchIcon :size="18" />
-          </span>
-          <input v-model.trim="search" class="emp-search-input" type="text" placeholder="Поиск сотрудника..." />
-        </div>
+        <InputGroup class="emp-search-wrap max-w-sm">
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput v-model.trim="search" type="text" placeholder="Поиск сотрудника..." />
+        </InputGroup>
 
         <div class="emp-filter-wrap">
           <SlidersVerticalIcon class="emp-filter-icon" aria-hidden="true" />

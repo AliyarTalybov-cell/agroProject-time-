@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { BoxIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
@@ -374,10 +375,12 @@ function onPageSizeChange(size: number) {
       <div v-else-if="error" class="storage-alert storage-alert--error" role="alert">{{ error }}</div>
 
       <div class="fields-toolbar">
-        <div class="fields-search-wrap">
-          <SearchIcon class="fields-search-icon" />
-          <input v-model.trim="search" class="fields-search-input" type="search" placeholder="Поиск по названию или адресу..." autocomplete="off" />
-        </div>
+        <InputGroup class="fields-search-wrap max-w-sm">
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput v-model.trim="search" type="search" placeholder="Поиск по названию или адресу..." autocomplete="off" />
+        </InputGroup>
       </div>
 
       <div v-if="loading" class="fields-loading" role="status" aria-live="polite">

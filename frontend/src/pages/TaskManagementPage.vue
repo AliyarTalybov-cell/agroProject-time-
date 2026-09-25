@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
@@ -1125,18 +1126,16 @@ function statusClass(s: Status) {
         </div>
       </div>
       <div class="task-header-actions">
-        <div class="task-search-wrap">
-          <span class="task-search-icon" aria-hidden="true">
-            <SearchIcon :size="18" />
-          </span>
-          <input
+        <InputGroup class="task-search-wrap max-w-sm">
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput
             v-model.trim="searchTaskNumber"
             type="text"
             inputmode="numeric"
-            class="task-search-input"
-            placeholder="Поиск по номеру"
-          />
-        </div>
+            placeholder="Поиск по номеру" />
+        </InputGroup>
         <div class="task-export-btns">
           <button
             type="button"

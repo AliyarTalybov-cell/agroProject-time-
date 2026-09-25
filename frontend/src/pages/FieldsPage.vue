@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
@@ -1588,16 +1589,16 @@ onMounted(async () => {
       <div v-show="activeTab === 'fields'" class="fields-tab-panel">
       <div class="fields-card">
         <div class="fields-toolbar">
-          <div class="fields-search-wrap">
-            <SearchIcon class="fields-search-icon" />
-            <input
+          <InputGroup class="fields-search-wrap max-w-sm">
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
               v-model="searchText"
               type="search"
-              class="fields-search-input"
               placeholder="Поиск по названию поля..."
-              autocomplete="off"
-            />
-          </div>
+              autocomplete="off" />
+          </InputGroup>
           <div class="fields-toolbar-actions">
             <button type="button" class="fields-export-btn task-btn-export action_has has_saved" :disabled="!sortedFilteredFields.length" title="Экспорт в Excel" @click="exportFieldsToExcel">
               <DownloadIcon class="task-header-icon" :size="18" />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Button } from '@/components/ui/shadcn/button'
 import { CylinderIcon, HouseIcon, PlusIcon, SearchIcon, SunIcon, WarehouseIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -144,16 +145,16 @@ onMounted(() => {
 
       <section class="fields-card">
         <div class="fields-toolbar">
-          <div class="fields-search-wrap">
-            <SearchIcon class="fields-search-icon" />
-            <input
+          <InputGroup class="fields-search-wrap max-w-sm">
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
               v-model.trim="search"
-              class="fields-search-input"
               type="search"
               placeholder="Поиск по названию склада..."
-              autocomplete="off"
-            />
-          </div>
+              autocomplete="off" />
+          </InputGroup>
           <div class="warehouse-toolbar-filters">
             <label class="warehouse-filter-label">
               <span class="warehouse-filter-text">Статус заполнения</span>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { CheckIcon, DownloadIcon, FileTextIcon, MenuIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
@@ -791,16 +792,16 @@ async function exportToPdf() {
         </h2>
         <span class="equipment-list-count">{{ totalCount }} {{ totalCount === 1 ? 'единица' : totalCount < 5 ? 'единицы' : 'единиц' }}</span>
         <div class="equipment-list-toolbar">
-          <div class="equipment-search-wrap">
-            <SearchIcon class="equipment-search-icon" />
-            <input
+          <InputGroup class="equipment-search-wrap max-w-sm">
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
               v-model="searchQuery"
               type="search"
-              class="equipment-search-input"
               placeholder="Поиск по марке, номер..."
-              autocomplete="off"
-            />
-          </div>
+              autocomplete="off" />
+          </InputGroup>
           <button type="button" class="equipment-export-btn task-btn-export action_has has_saved" :disabled="!filteredList.length" title="Экспорт в Excel" @click="exportToExcel">
             <DownloadIcon class="task-header-icon" :size="18" />
             Excel
@@ -933,16 +934,16 @@ async function exportToPdf() {
         </h2>
         <span class="equipment-list-count">{{ implementsTotal }} {{ implementsTotal === 1 ? 'позиция' : implementsTotal < 5 ? 'позиции' : 'позиций' }}</span>
         <div class="equipment-list-toolbar">
-          <div class="equipment-search-wrap">
-            <SearchIcon class="equipment-search-icon" />
-            <input
+          <InputGroup class="equipment-search-wrap max-w-sm">
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
               v-model="implementsSearch"
               type="search"
-              class="equipment-search-input"
               placeholder="Поиск по названию или назначению..."
-              autocomplete="off"
-            />
-          </div>
+              autocomplete="off" />
+          </InputGroup>
         </div>
       </div>
 
