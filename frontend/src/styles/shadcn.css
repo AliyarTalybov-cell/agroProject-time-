@@ -153,6 +153,12 @@
     font-weight: inherit;
   }
 
+  a[data-slot],
+  :where([data-slot='sidebar'], [data-slot='dropdown-menu-content'], [data-slot='breadcrumb']) a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
   :where(ul, ol)[data-slot] {
     list-style: none;
   }

@@ -1129,3 +1129,32 @@ a {
     padding: 12px;
   }
 }
+
+/* ——— Каркас на Sidebar shadcn-vue (SidebarProvider + SidebarInset) ———
+   Высота — экран, прокручивается содержимое страницы (main-content-inner),
+   как и раньше. Шапка: кнопка меню, разделитель, заголовок, справа — тема. */
+.app-layout-shell {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app-layout-shell .main-content {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-layout-shell .app-topbar {
+  gap: 8px;
+  min-height: 56px;
+  padding: 0 16px;
+}
+
+.app-topbar-sep {
+  height: 16px !important;
+  margin-right: 4px;
+}
+
+.app-layout-shell .app-topbar-right {
+  margin-left: auto;
+}

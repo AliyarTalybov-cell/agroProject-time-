@@ -1148,15 +1148,12 @@ select:is(
 /* ——— Слои shadcn-vue поверх интерфейса ———
    У компонентов shadcn z-50, а у шапки, бокового меню и старых окон проекта —
    до 1000, поэтому окна и всплывающие списки поднимаем выше. */
-:is(
-  [data-slot='dialog-overlay'],
-  [data-slot='dialog-content'],
-  [data-slot='alert-dialog-overlay'],
-  [data-slot='alert-dialog-content'],
-  [data-slot='sheet-overlay'],
-  [data-slot='sheet-content']
-) {
+:is([data-slot='dialog-overlay'], [data-slot='alert-dialog-overlay'], [data-slot='sheet-overlay'], [data-slot='drawer-overlay']) {
   z-index: 1050 !important;
+}
+
+:is([data-slot='dialog-content'], [data-slot='alert-dialog-content'], [data-slot='sheet-content'], [data-slot='drawer-content'], [data-slot='sidebar'][data-mobile='true']) {
+  z-index: 1051 !important;
 }
 
 [data-reka-popper-content-wrapper] {

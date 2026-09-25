@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArchiveIcon, BellIcon, BookMarkedIcon, BoxesIcon, CalendarIcon, ChevronDownIcon, CloudIcon, DropletsIcon, FileTextIcon, HomeIcon, LayoutDashboardIcon, LayoutGridIcon, LogOutIcon, MapIcon, MenuIcon, MessageCircleIcon, MonitorIcon, NewspaperIcon, PackageIcon, ScrollTextIcon, SettingsIcon, SquareCheckBigIcon, TractorIcon, UsersIcon, WarehouseIcon, WheatIcon } from '@lucide/vue'
+import { MoonIcon, SunIcon } from '@lucide/vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
@@ -11,6 +11,10 @@ import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import { Toaster } from '@/components/ui/shadcn/sonner'
 import UiPromptHost from '@/components/ui/UiPromptHost.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
+import AppSidebar from '@/components/ui/app/AppSidebar.vue'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/shadcn/sidebar'
+import { Separator } from '@/components/ui/shadcn/separator'
+import { Button } from '@/components/ui/shadcn/button'
 import { chatTotalUnread, refreshChatTotalUnread } from '@/lib/chatSupabase'
 import { countMyUnreadNotifications } from '@/lib/notificationsSupabase'
 import { startActivityHeartbeat, stopActivityHeartbeat } from '@/lib/activityHeartbeat'
@@ -263,7 +267,7 @@ watch(
     />
   </div>
 
-  <div v-else class="app-layout" :class="{ 'mobile-menu-open': mobileMenuOpen }">
+  <SidebarProvider v-else class="app-layout-shell">
     <Transition name="fade">
       <AppBackendBadge
         v-if="showBackendBadge"
@@ -271,299 +275,15 @@ watch(
         @retry="void backendHealth.check(true)"
       />
     </Transition>
-    <div class="sidebar-overlay" aria-hidden="true" @click="closeMobileMenu"></div>
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <RouterLink
-          class="sidebar-brand-link"
-          :to="{ path: '/dashboard', query: {} }"
-          data-text="АГРОСИСТЕМА"
-          aria-label="АГРОСИСТЕМА"
-        >
-          <span class="sidebar-brand-title-wrap">
-            <span class="actual-text"><span>АГРО</span><span class="actual-text-accent">СИСТЕМА</span></span>
-            <span aria-hidden="true" class="hover-text"><span>АГРО</span><span>СИСТЕМА</span></span>
-          </span>
-        </RouterLink>
-      </div>
-      <nav class="sidebar-nav">
-        <div class="nav-section">
-          <ul class="nav-menu">
-            <li>
-              <a
-                href="/dashboard"
-                class="nav-item"
-                :class="{ 'router-link-active': dashboardHomeActive }"
-                @click.prevent="goDashboardHome"
-              >
-                <span class="nav-item-icon" aria-hidden="true">
-                  <LayoutDashboardIcon />
-                </span>
-                Обзор
-              </a>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/news">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <NewspaperIcon />
-                </span>
-                Новости
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/weather">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <CloudIcon />
-                </span>
-                Погода
-              </RouterLink>
-            </li>
-            <li class="nav-item-group" :class="{ 'nav-item-group--open': landsNavExpanded }">
-              <button
-                type="button"
-                class="nav-item nav-item--group-toggle"
-                :aria-expanded="landsNavExpanded"
-                @click="toggleLandsNavSubmenu"
-              >
-                <span class="nav-item-icon" aria-hidden="true">
-                  <PackageIcon />
-                </span>
-                <span class="nav-item-label">Земли</span>
-                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': landsNavExpanded, 'is-active': landsSectionActive }" aria-hidden="true" :stroke-width="2.6" />
-              </button>
-              <ul class="nav-submenu">
-                <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': landsNavActive }" active-class="" exact-active-class="" to="/lands">
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <MapIcon />
-                    </span>
-                    Земельные участки
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': fieldsNavActive }" to="/fields">
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <HomeIcon />
-                    </span>
-                    Поля
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink
-                    class="nav-item nav-item--sub"
-                    :class="{ 'router-link-active': meliorationNavActive }"
-                    active-class=""
-                    exact-active-class=""
-                    :to="{ path: '/lands', query: { tab: 'melioration' } }"
-                  >
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <DropletsIcon />
-                    </span>
-                    Мелиорация
-                  </RouterLink>
-                </li>
-              </ul>
-            </li>
-            <li class="nav-item-group" :class="{ 'nav-item-group--open': warehousesNavExpanded }">
-              <button
-                type="button"
-                class="nav-item nav-item--group-toggle"
-                :aria-expanded="warehousesNavExpanded"
-                @click="toggleWarehousesNavSubmenu"
-              >
-                <span class="nav-item-icon" aria-hidden="true">
-                  <WarehouseIcon />
-                </span>
-                <span class="nav-item-label">Склады</span>
-                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': warehousesNavExpanded, 'is-active': warehousesSectionActive }" aria-hidden="true" :stroke-width="2.6" />
-              </button>
-              <ul class="nav-submenu">
-                <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': warehousesNavActive }" active-class="" exact-active-class="" to="/warehouses">
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <LayoutGridIcon />
-                    </span>
-                    Карточки складов
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': storageLocationsNavActive }" to="/warehouses/storage-locations">
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <ArchiveIcon />
-                    </span>
-                    Места хранения
-                  </RouterLink>
-                </li>
-              </ul>
-            </li>
-            <li class="nav-item-group" :class="{ 'nav-item-group--open': grainNavExpanded }">
-              <button
-                type="button"
-                class="nav-item nav-item--group-toggle"
-                :aria-expanded="grainNavExpanded"
-                @click="toggleGrainNavSubmenu"
-              >
-                <span class="nav-item-icon" aria-hidden="true">
-                  <WheatIcon />
-                </span>
-                <span class="nav-item-label">Учёт зерна</span>
-                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': grainNavExpanded, 'is-active': grainSectionActive }" aria-hidden="true" :stroke-width="2.6" />
-              </button>
-              <ul class="nav-submenu">
-                <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainBatchesNavActive }" to="/grain/batches">
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <BoxesIcon />
-                    </span>
-                    Партии
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainJournalNavActive }" to="/grain/journal">
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <ScrollTextIcon />
-                    </span>
-                    Журнал операций
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainCounterpartiesNavActive }" to="/grain/counterparties">
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <UsersIcon />
-                    </span>
-                    Контрагенты
-                  </RouterLink>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/equipment">
-                <span class="nav-item-icon nav-item-icon--equipment" aria-hidden="true">
-                  <TractorIcon />
-                </span>
-                Техника
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/task-management">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <SquareCheckBigIcon />
-                </span>
-                Задачи
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/tasks">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <CalendarIcon />
-                </span>
-                Календарь
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/reports">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <FileTextIcon />
-                </span>
-                Аналитика
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
-
-        <div class="nav-section nav-section-secondary">
-          <div class="nav-section-label">Операции</div>
-          <ul class="nav-menu">
-            <li>
-              <RouterLink class="nav-item" to="/mechanic">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <MonitorIcon />
-                </span>
-                Экран оператора
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
-
-        <div class="nav-section nav-section-secondary">
-          <div class="nav-section-label">Связь</div>
-          <ul class="nav-menu">
-            <li>
-              <RouterLink class="nav-item" to="/employees">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <UsersIcon />
-                </span>
-                Сотрудники
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/notifications">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <BellIcon />
-                </span>
-                Уведомления
-                <span v-if="notificationsUnreadDisplay > 0" class="nav-item-badge">{{ notificationsUnreadDisplay > 99 ? '99+' : notificationsUnreadDisplay }}</span>
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink class="nav-item" to="/chat">
-                <span class="nav-item-icon" aria-hidden="true">
-                  <MessageCircleIcon />
-                </span>
-                Чат
-                <span v-if="chatUnreadDisplay > 0" class="nav-item-badge">{{ chatUnreadDisplay > 99 ? '99+' : chatUnreadDisplay }}</span>
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
-
-        <div class="nav-section nav-section-secondary">
-          <div class="nav-section-label">Настройки</div>
-          <ul class="nav-menu">
-            <li class="nav-item-group" :class="{ 'nav-item-group--open': settingsNavExpanded }">
-              <button
-                type="button"
-                class="nav-item nav-item--group-toggle"
-                :aria-expanded="settingsNavExpanded"
-                @click="toggleSettingsNavSubmenu"
-              >
-                <span class="nav-item-icon" aria-hidden="true">
-                  <SettingsIcon />
-                </span>
-                <span class="nav-item-label">Настройки</span>
-                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': settingsNavExpanded, 'is-active': referencesNavActive }" aria-hidden="true" :stroke-width="2.6" />
-              </button>
-              <ul class="nav-submenu">
-                <li>
-                  <RouterLink
-                    class="nav-item nav-item--sub"
-                    :class="{ 'router-link-active': referencesNavActive }"
-                    active-class=""
-                    exact-active-class=""
-                    :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                  >
-                    <span class="nav-item-icon" aria-hidden="true">
-                      <BookMarkedIcon />
-                    </span>
-                    Справочники
-                  </RouterLink>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </nav>
-
-      <footer class="sidebar-footer">
-        <button type="button" class="app-logout-btn" aria-label="Выйти из аккаунта" @click="handleLogout">
-          <span class="app-logout-sign">
-            <LogOutIcon aria-hidden="true" />
-          </span>
-          <span class="app-logout-text">Выйти</span>
-        </button>
-      </footer>
-    </aside>
-
+    <AppSidebar
+      :chat-unread="chatUnreadDisplay"
+      :notifications-unread="notificationsUnreadDisplay"
+      :user-name="userDisplay"
+      :user-email="auth.user.value?.email ?? null"
+      :user-initials="userInitials"
+      :user-avatar-url="userAvatarUrl"
+      @logout="handleLogout"
+    />
     <UiConfirmModal
       v-if="logoutConfirmOpen"
       title="Выйти из аккаунта?"
@@ -574,58 +294,22 @@ watch(
       @cancel="closeLogoutConfirm"
       @confirm="confirmLogout"
     />
-
-    <main class="main-content">
+    <SidebarInset class="main-content">
       <header class="app-topbar">
-        <button type="button" class="topbar-menu-btn" aria-label="Меню" @click="toggleMobileMenu">
-          <MenuIcon :size="24" />
-        </button>
+        <SidebarTrigger class="-ml-1" />
+        <Separator orientation="vertical" class="app-topbar-sep" />
         <h1 class="app-topbar-title">{{ pageTitle }}</h1>
         <div class="app-topbar-right">
-          <div class="app-theme-cd-wrap">
-            <label
-              for="app-theme-cd-switch"
-              class="app-theme-cd-toggle"
-              :title="theme === 'dark' ? 'Переключить на светлую тему' : 'Переключить на тёмную тему'"
-            >
-              <input
-                id="app-theme-cd-switch"
-                v-model="themeIsLight"
-                type="checkbox"
-                class="app-theme-cd-input"
-                role="switch"
-                :aria-checked="themeIsLight"
-                :aria-label="theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'"
-              />
-              <div class="app-theme-cd-icon app-theme-cd-icon--moon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-                  <path
-                    fill-rule="evenodd"
-                    d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div class="app-theme-cd-icon app-theme-cd-icon--sun" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-                  <path
-                    d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"
-                  />
-                </svg>
-              </div>
-            </label>
-          </div>
-          <div class="topbar-user">
-            <RouterLink to="/profile" class="topbar-user-link" aria-label="Настройки профиля">
-              <div class="topbar-user-avatar">
-                <img v-if="userAvatarUrl" :src="userAvatarUrl" alt="" class="topbar-user-avatar-img" />
-                <template v-else>{{ userInitials }}</template>
-              </div>
-              <div class="topbar-user-meta">
-                <span class="topbar-user-name">{{ userDisplay }}</span>
-              </div>
-            </RouterLink>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            :aria-label="theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'"
+            :title="theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'"
+            @click="setTheme(theme === 'dark' ? 'light' : 'dark')"
+          >
+            <SunIcon v-if="theme === 'dark'" />
+            <MoonIcon v-else />
+          </Button>
         </div>
       </header>
       <div class="main-content-inner main-content-inner--animated">
@@ -641,8 +325,8 @@ watch(
           </RouterView>
         </template>
       </div>
-    </main>
-  </div>
+    </SidebarInset>
+  </SidebarProvider>
   <Toaster position="top-center" />
   <UiPromptHost />
 </template>
