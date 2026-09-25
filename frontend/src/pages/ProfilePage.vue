@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
@@ -703,51 +704,29 @@ async function confirmDeleteAccount() {
     </div>
   </section>
 
-  <div
+  <UiConfirmModal
     v-if="showSaveConfirmModal"
-    class="profile-confirm-backdrop"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="profile-confirm-title"
-    @click.self="closeSaveConfirmModal"
-  >
-    <div class="profile-confirm-modal">
-      <h2 id="profile-confirm-title" class="profile-confirm-title">Вы уверены в изменении данных.</h2>
-      <p class="profile-confirm-text">Изменения будут сохранены в вашем профиле.</p>
-      <div class="profile-confirm-actions">
-        <button type="button" class="profile-btn profile-btn--secondary" @click="closeSaveConfirmModal">
-          Отмена
-        </button>
-        <button type="button" class="profile-btn profile-btn--primary" :disabled="saving" @click="confirmSaveProfile">
-          Да, сохранить
-        </button>
-      </div>
-    </div>
-  </div>
+    title="Сохранить изменения?"
+    text="Изменения будут сохранены в вашем профиле."
+    confirm-label="Да, сохранить"
+    busy-label="Сохранение…"
+    :danger="false"
+    :busy="saving"
+    @cancel="closeSaveConfirmModal"
+    @confirm="confirmSaveProfile"
+  />
 
-  <div
+  <UiConfirmModal
     v-if="showDeleteAccountModal"
-    class="profile-confirm-backdrop"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="profile-delete-title"
-    @click.self="closeDeleteAccountModal"
+    title="Удалить аккаунт?"
+    confirm-label="Да, удалить"
+    :busy="deletingAccount"
+    @cancel="closeDeleteAccountModal"
+    @confirm="confirmDeleteAccount"
   >
-    <div class="profile-confirm-modal profile-confirm-modal--danger">
-      <h2 id="profile-delete-title" class="profile-confirm-title">Удалить аккаунт?</h2>
-      <p class="profile-confirm-text">
-        Вы удалите свой профиль и вход в систему. Это действие необратимо.
-      </p>
-      <p v-if="deleteAccountMessage" class="profile-confirm-error">{{ deleteAccountMessage.text }}</p>
-      <div class="profile-confirm-actions">
-        <button type="button" class="profile-btn profile-btn--secondary" :disabled="deletingAccount" @click="closeDeleteAccountModal">
-          Отмена
-        </button>
-        <button type="button" class="profile-btn profile-btn--danger" :disabled="deletingAccount" @click="confirmDeleteAccount">
-          {{ deletingAccount ? 'Удаление…' : 'Да, удалить' }}
-        </button>
-      </div>
-    </div>
+    Вы удалите свой профиль и вход в систему. Это действие необратимо.
+    <span v-if="deleteAccountMessage" class="text-destructive mt-2 block">{{ deleteAccountMessage.text }}</span>
+  </UiConfirmModal>
   </div>
   </div>
 </template>

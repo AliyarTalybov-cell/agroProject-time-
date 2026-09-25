@@ -36,7 +36,22 @@ function onOpenChange(open: boolean) {
   if (!open && !props.closeDisabled) emit('close')
 }
 
+/**
+ * Клик «мимо окна» не закрывает его, если пришёлся на то, что окну принадлежит
+ * по смыслу, но отрисовано вне него: подсказки и балуны Яндекс Карт, всплывающие
+ * списки и календари. Иначе поиск адреса на карте в окне закрывал бы окно.
+ */
+function isInsideOwnedLayer(e: Event): boolean {
+  const detail = (e as CustomEvent<{ originalEvent?: Event }>).detail
+  const target = (detail?.originalEvent?.target ?? e.target) as Element | null
+  return Boolean(target?.closest?.('[class*="ymaps"], [data-reka-popper-content-wrapper], [data-sonner-toaster]'))
+}
+
 function guard(e: Event) {
+  if (props.closeDisabled || isInsideOwnedLayer(e)) e.preventDefault()
+}
+
+function guardEscape(e: Event) {
   if (props.closeDisabled) e.preventDefault()
 }
 </script>
@@ -46,13 +61,18 @@ function guard(e: Event) {
     <DialogContent
       class="ui-dialog"
       :style="{ maxWidth: `min(calc(100vw - 2rem), ${maxWidth}px)` }"
-      @escape-key-down="guard"
+      @escape-key-down="guardEscape"
       @pointer-down-outside="guard"
       @interact-outside="guard"
     >
-      <DialogHeader>
-        <DialogTitle>{{ title }}</DialogTitle>
-        <DialogDescription :class="{ 'sr-only': !description }">{{ description || title }}</DialogDescription>
+      <DialogHeader class="pr-8">
+        <div class="flex items-start gap-2">
+          <div class="grid min-w-0 flex-1 gap-2">
+            <DialogTitle>{{ title }}</DialogTitle>
+            <DialogDescription :class="{ 'sr-only': !description }">{{ description || title }}</DialogDescription>
+          </div>
+          <slot name="header-actions" />
+        </div>
       </DialogHeader>
       <div class="ui-dialog-body">
         <slot />

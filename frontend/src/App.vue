@@ -8,7 +8,8 @@ import AppBackendBadge from '@/components/AppBackendBadge.vue'
 import AppBackendModal from '@/components/AppBackendModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import { Toaster } from '@/components/ui/shadcn/sonner'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
+import UiPromptHost from '@/components/ui/UiPromptHost.vue'
+import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import { chatTotalUnread, refreshChatTotalUnread } from '@/lib/chatSupabase'
 import { countMyUnreadNotifications } from '@/lib/notificationsSupabase'
 import { startActivityHeartbeat, stopActivityHeartbeat } from '@/lib/activityHeartbeat'
@@ -613,25 +614,16 @@ watch(
       </footer>
     </aside>
 
-    <teleport to="body">
-      <div v-if="logoutConfirmOpen" class="app-modal-backdrop" role="dialog" aria-modal="true" aria-label="Подтверждение выхода" @click.self="closeLogoutConfirm">
-        <div class="app-modal" @click.stop>
-          <div class="app-modal-header">
-            <div class="app-modal-title">Выйти из аккаунта?</div>
-            <ModalCloseButton :disabled="logoutBusy" @click="closeLogoutConfirm" />
-          </div>
-          <div class="app-modal-body">
-            <div class="app-modal-text">Вы действительно хотите выйти? Несохранённые изменения могут быть потеряны.</div>
-          </div>
-          <div class="app-modal-footer">
-            <button type="button" class="app-modal-btn app-modal-btn--ghost" :disabled="logoutBusy" @click="closeLogoutConfirm">Отмена</button>
-            <button type="button" class="app-modal-btn app-modal-btn--danger" :disabled="logoutBusy" @click="confirmLogout">
-              {{ logoutBusy ? 'Выход…' : 'Выйти' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </teleport>
+    <UiConfirmModal
+      v-if="logoutConfirmOpen"
+      title="Выйти из аккаунта?"
+      text="Вы действительно хотите выйти? Несохранённые изменения могут быть потеряны."
+      confirm-label="Выйти"
+      busy-label="Выход…"
+      :busy="logoutBusy"
+      @cancel="closeLogoutConfirm"
+      @confirm="confirmLogout"
+    />
 
     <main class="main-content">
       <header class="app-topbar">
@@ -702,6 +694,7 @@ watch(
     </main>
   </div>
   <Toaster position="top-center" />
+  <UiPromptHost />
 </template>
 
 <style scoped>

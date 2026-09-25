@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import UiButton from '@/components/ui/UiButton.vue'
+import UiModal from '@/components/ui/UiModal.vue'
+import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
@@ -38,7 +41,6 @@ import {
 import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
 import { PHOTO_MAX_BYTES, PHOTO_MAX_LABEL } from '@/lib/uploadLimits'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
@@ -1947,35 +1949,12 @@ onMounted(async () => {
         <p v-else class="refs-no-supabase">Подключите Supabase для управления справочниками.</p>
       </div>
 
-      <div
+      <UiModal
         v-if="isFieldModalOpen"
-        class="modal-backdrop"
-        @click="closeFieldModal"
+        :title="fieldModalTitle"
+        :max-width="1100"
+        @close="closeFieldModal"
       >
-        <div class="modal modal-fields modal-fields--add" :class="{ 'modal-fields--wide': isFieldModalWide }" @click.stop>
-          <header class="modal-header modal-header--fields">
-            <h2 class="modal-title modal-title--fields">
-              {{ fieldModalTitle }}
-            </h2>
-            <div class="modal-header-actions">
-              <button
-                type="button"
-                class="modal-expand-btn"
-                :class="{ 'modal-expand-btn--active': isFieldModalWide }"
-                :aria-label="isFieldModalWide ? 'Свернуть окно' : 'Расширить окно'"
-                :title="isFieldModalWide ? 'Свернуть окно' : 'Расширить окно'"
-                @click="toggleFieldModalWidth"
-              >
-                <svg class="modal-expand-btn-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 3H3v6" />
-                  <path d="M15 3h6v6" />
-                  <path d="M3 15v6h6" />
-                  <path d="M21 15v6h-6" />
-                </svg>
-              </button>
-              <ModalCloseButton @click="closeFieldModal" />
-            </div>
-          </header>
           <div v-if="fieldFormError" class="modal-error">{{ fieldFormError }}</div>
           <div class="modal-form modal-form--add">
             <div class="modal-form-section">
@@ -2224,74 +2203,25 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <div class="modal-actions modal-actions--fields">
-            <button class="modal-btn-ghost" type="button" @click="closeFieldModal">Отмена</button>
-            <button class="modal-btn" type="button" @click="addField">{{ editingFieldId ? 'Сохранить' : 'Сохранить поле' }}</button>
-          </div>
-          </div>
-        </div>
-      <div
-        v-if="deleteConfirmFieldId"
-        class="fields-confirm-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="fields-delete-confirm-title"
-        @click.self="closeDeleteConfirm"
-      >
-        <div class="fields-confirm-modal">
-          <h2 id="fields-delete-confirm-title" class="fields-confirm-title">Удаление поля</h2>
-          <p class="fields-confirm-text">
-            <template v-if="fieldToDelete">Вы уверены, что хотите удалить поле «{{ fieldToDelete.name }}»?</template>
-            <template v-else>Вы уверены, что хотите удалить это поле?</template>
-          </p>
-          <div class="fields-confirm-actions">
-            <button type="button" class="modal-btn-ghost" @click="closeDeleteConfirm">Отмена</button>
-            <UiDeleteButton size="md" @click="confirmDelete" />
-          </div>
-        </div>
-      </div>
+        <template #actions>
+          <UiButton @click="closeFieldModal">Отмена</UiButton>
+          <UiButton variant="primary" @click="addField">{{ editingFieldId ? 'Сохранить' : 'Сохранить поле' }}</UiButton>
+        </template>
+      </UiModal>
+      <UiConfirmModal v-if="deleteConfirmFieldId" title="Удалить поле?" @cancel="closeDeleteConfirm" @confirm="confirmDelete">
+        <template v-if="fieldToDelete">Поле «{{ fieldToDelete.name }}» будет удалено.</template>
+        <template v-else>Поле будет удалено.</template>
+      </UiConfirmModal>
 
-      <div
-        v-if="deleteConfirmReasonId"
-        class="fields-confirm-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="refs-delete-reason-title"
-        @click.self="closeDeleteReasonConfirm"
-      >
-        <div class="fields-confirm-modal">
-          <h2 id="refs-delete-reason-title" class="fields-confirm-title">Удаление причины простоя</h2>
-          <p class="fields-confirm-text">
-            <template v-if="reasonToDelete">Вы уверены, что хотите удалить причину «{{ reasonToDelete.label }}»?</template>
-            <template v-else>Вы уверены, что хотите удалить эту причину простоя?</template>
-          </p>
-          <div class="fields-confirm-actions">
-            <button type="button" class="modal-btn-ghost" @click="closeDeleteReasonConfirm">Отмена</button>
-            <UiDeleteButton size="md" @click="confirmDeleteReason" />
-          </div>
-        </div>
-      </div>
+      <UiConfirmModal v-if="deleteConfirmReasonId" title="Удалить причину простоя?" @cancel="closeDeleteReasonConfirm" @confirm="confirmDeleteReason">
+        <template v-if="reasonToDelete">Причина «{{ reasonToDelete.label }}» будет удалена.</template>
+        <template v-else>Причина простоя будет удалена.</template>
+      </UiConfirmModal>
 
-      <div
-        v-if="deleteConfirmOperationId"
-        class="fields-confirm-backdrop"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="refs-delete-operation-title"
-        @click.self="closeDeleteOperationConfirm"
-      >
-        <div class="fields-confirm-modal">
-          <h2 id="refs-delete-operation-title" class="fields-confirm-title">Удаление операции</h2>
-          <p class="fields-confirm-text">
-            <template v-if="operationToDelete">Вы уверены, что хотите удалить операцию «{{ operationToDelete.name }}»?</template>
-            <template v-else>Вы уверены, что хотите удалить эту операцию?</template>
-          </p>
-          <div class="fields-confirm-actions">
-            <button type="button" class="modal-btn-ghost" @click="closeDeleteOperationConfirm">Отмена</button>
-            <UiDeleteButton size="md" @click="confirmDeleteOperation" />
-          </div>
-        </div>
-      </div>
+      <UiConfirmModal v-if="deleteConfirmOperationId" title="Удалить операцию?" @cancel="closeDeleteOperationConfirm" @confirm="confirmDeleteOperation">
+        <template v-if="operationToDelete">Операция «{{ operationToDelete.name }}» будет удалена.</template>
+        <template v-else>Операция будет удалена.</template>
+      </UiConfirmModal>
 
     </div>
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { promptText } from '@/composables/usePromptText'
 import UiSelect from '@/components/ui/UiSelect.vue'
 // Общие стили раздела земель — те же, что у вынесенных окон и вкладок.
 import '@/components/lands/landsShared.css'
@@ -7,7 +8,6 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loadPdfTools } from '@/lib/pdfExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import LandCropRotationModal from '@/components/lands/LandCropRotationModal.vue'
 import LandCropRotationTab from '@/components/lands/LandCropRotationTab.vue'
 import LandFieldsTab from '@/components/lands/LandFieldsTab.vue'
@@ -1446,7 +1446,7 @@ async function removeLandType(id: string) {
 }
 
 async function editLandType(row: { id: string; name: string }) {
-  const next = prompt('Новое название типа земли', row.name)?.trim()
+  const next = (await promptText('Новое название типа земли', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1475,7 +1475,7 @@ async function removeLandCategory(id: string) {
 }
 
 async function editLandCategory(row: { id: string; name: string }) {
-  const next = prompt('Новое название категории земли', row.name)?.trim()
+  const next = (await promptText('Новое название категории земли', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1521,7 +1521,7 @@ async function removeLandActualUseOption(id: string) {
 }
 
 async function editLandUsageOption(row: { id: string; name: string }) {
-  const next = prompt('Новое значение использования участка', row.name)?.trim()
+  const next = (await promptText('Новое значение использования участка', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1553,7 +1553,7 @@ async function addCropRef() {
 }
 
 async function editCropRef(row: CropRow) {
-  const next = prompt('Новое название культуры', row.label)?.trim()
+  const next = (await promptText('Новое название культуры', row.label))?.trim()
   if (!next || next === row.label || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1599,7 +1599,7 @@ async function addCropRotationTypeRef() {
 }
 
 async function editCropRotationTypeRef(row: LandCropRotationTypeRefRow) {
-  const next = prompt('Новое название типа севооборота', row.name)?.trim()
+  const next = (await promptText('Новое название типа севооборота', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1645,7 +1645,7 @@ async function addStorageLocationTypeRef() {
 }
 
 async function editStorageLocationTypeRef(row: StorageLocationTypeRow) {
-  const next = prompt('Новое название типа места хранения', row.name)?.trim()
+  const next = (await promptText('Новое название типа места хранения', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1695,7 +1695,7 @@ async function addStorageLocationStatusRef() {
 }
 
 async function editStorageLocationStatusRef(row: StorageLocationStatusRow) {
-  const next = prompt('Новое название статуса', row.name)?.trim()
+  const next = (await promptText('Новое название статуса', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1741,7 +1741,7 @@ async function addStorageFillStatusRef() {
 }
 
 async function editStorageFillStatusRef(row: StorageFillStatusRow) {
-  const next = prompt('Новое название статуса заполнения', row.name)?.trim()
+  const next = (await promptText('Новое название статуса заполнения', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1801,7 +1801,7 @@ async function removeOwnershipForm(id: string) {
 }
 
 async function editOwnershipForm(row: LandRightRefRow) {
-  const next = prompt('Новое название формы собственности', row.name)?.trim()
+  const next = (await promptText('Новое название формы собственности', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1847,7 +1847,7 @@ async function removeRightTypeRef(id: string) {
 }
 
 async function editRightTypeRef(row: LandRightRefRow) {
-  const next = prompt('Новое название вида права', row.name)?.trim()
+  const next = (await promptText('Новое название вида права', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1893,7 +1893,7 @@ async function removeRightDocumentTypeRef(id: string) {
 }
 
 async function editRightDocumentTypeRef(row: LandRightRefRow) {
-  const next = prompt('Новое название типа документа', row.name)?.trim()
+  const next = (await promptText('Новое название типа документа', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -1939,7 +1939,7 @@ async function removeHolderTypeRef(id: string) {
 }
 
 async function editHolderTypeRef(row: LandRightRefRow) {
-  const next = prompt('Новое название вида правообладания', row.name)?.trim()
+  const next = (await promptText('Новое название вида правообладания', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -2042,7 +2042,7 @@ async function addMeliorationTypeRef() {
 }
 
 async function editMeliorationTypeRef(row: LandRightRefRow) {
-  const next = prompt('Новое название типа мелиорации', row.name)?.trim()
+  const next = (await promptText('Новое название типа мелиорации', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -2088,7 +2088,7 @@ async function addMeliorationSubtypeRef() {
 }
 
 async function editMeliorationSubtypeRef(row: LandRightRefRow) {
-  const next = prompt('Новое название вида мелиорации', row.name)?.trim()
+  const next = (await promptText('Новое название вида мелиорации', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -2134,7 +2134,7 @@ async function addMeliorationEventTypeRef() {
 }
 
 async function editMeliorationEventTypeRef(row: LandRightRefRow) {
-  const next = prompt('Новое название типа мероприятия', row.name)?.trim()
+  const next = (await promptText('Новое название типа мероприятия', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -2209,7 +2209,7 @@ async function addEquipmentTypeReference() {
 }
 
 async function editEquipmentTypeReference(row: EquipmentTypeRefRow) {
-  const next = prompt('Новое название типа техники', row.name)?.trim()
+  const next = (await promptText('Новое название типа техники', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -2238,7 +2238,7 @@ async function removeEquipmentTypeReference(id: string) {
 }
 
 async function editEquipmentConditionReference(row: EquipmentConditionRefRow) {
-  const next = prompt('Новое название состояния техники', row.name)?.trim()
+  const next = (await promptText('Новое название состояния техники', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -2376,7 +2376,7 @@ async function addFieldMunicipalityReference() {
 }
 
 async function editFieldMunicipalityReference(row: FieldMunicipalityRefRow) {
-  const next = prompt('Новое название муниципального образования', row.name)?.trim()
+  const next = (await promptText('Новое название муниципального образования', row.name))?.trim()
   if (!next || next === row.name || !isSupabaseConfigured()) return
   refsLoading.value = true
   refsError.value = null
@@ -4882,12 +4882,7 @@ onMounted(() => void reloadAll())
     </div>
 
     <teleport to="body">
-      <div v-if="landEditorOpen" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Редактор земли" @click.self="closeLandEditor">
-        <div class="lands-modal">
-          <div class="lands-modal-head">
-            <h2>{{ landEditorMode === 'create' ? 'Новая земля' : 'Редактирование земли' }}</h2>
-            <ModalCloseButton @click="closeLandEditor" />
-          </div>
+      <UiModal v-if="landEditorOpen" :title="landEditorMode === 'create' ? 'Новая земля' : 'Редактирование земли'" :max-width="1100" @close="closeLandEditor">
           <div class="lands-modal-body">
             <div class="lands-form-grid">
               <label class="lands-field">
@@ -5004,20 +4999,19 @@ onMounted(() => void reloadAll())
               <textarea v-model.trim="form.notes" rows="3" />
             </label>
           </div>
-          <div class="lands-modal-actions">
-            <button type="button" class="lands-btn" :disabled="saving" @click="closeLandEditor">Отмена</button>
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving" @click="saveLand">
+        <template #actions>
+            <UiButton :disabled="saving" @click="closeLandEditor">Отмена</UiButton>
+            <UiButton variant="primary" :disabled="saving" @click="saveLand">
               {{ saving ? 'Сохранение...' : landEditorMode === 'create' ? 'Создать землю' : 'Сохранить изменения' }}
-            </button>
+            </UiButton>
             <UiDeleteButton
               v-if="landEditorMode === 'edit' && selectedLand"
               size="md"
               :disabled="saving"
               @click="() => removeLand()"
             />
-          </div>
-        </div>
-      </div>
+        </template>
+      </UiModal>
 
       <LandCropRotationModal
         :open="cropRotationModalOpen"
