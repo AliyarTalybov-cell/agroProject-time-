@@ -15,7 +15,6 @@ import UiSelect from '@/components/ui/UiSelect.vue'
 // Общие стили раздела: подключаются импортом, а не <style src>, — так файл
 // попадает в сборку одной копией, а не отдельной на каждый компонент.
 import './landsShared.css'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import type { LandUserForm } from '@/components/lands/types'
 import { fileLabelFromUrl, isImageUrl } from '@/lib/fileLinks'
 import type { LandRightHolderRow, LandRightRefRow } from '@/lib/landsSupabase'
@@ -44,12 +43,7 @@ defineEmits<{
 </script>
 
 <template>
-<div v-if="open" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Землепользователь" @click.self="$emit('close')">
-  <div class="lands-modal">
-    <div class="lands-modal-head">
-      <h2>{{ editingId ? 'Редактировать землепользователя' : 'Добавить землепользователя' }}</h2>
-      <ModalCloseButton :disabled="saving || uploading" @click="$emit('close')" />
-    </div>
+<UiModal v-if="open" :title="editingId ? 'Редактировать землепользователя' : 'Добавить землепользователя'" :max-width="1100" :close-disabled="saving || uploading" @close="$emit('close')">
     <div class="lands-modal-body">
       <label class="lands-field">
         <span class="lands-label-with-help">
@@ -174,13 +168,12 @@ defineEmits<{
         <input v-model.number="form.usageAreaHa" type="number" min="0" step="0.01" placeholder="7.49" />
       </label>
     </div>
-    <div class="lands-modal-actions">
-      <button type="button" class="lands-btn" :disabled="saving || uploading" @click="$emit('close')">Отмена</button>
-      <button type="button" class="lands-btn lands-btn--save" :disabled="saving || uploading" @click="$emit('save')">
+  <template #actions>
+      <UiButton :disabled="saving || uploading" @click="$emit('close')">Отмена</UiButton>
+      <UiButton variant="primary" :disabled="saving || uploading" @click="$emit('save')">
         {{ saving ? 'Сохранение...' : editingId ? 'Сохранить' : 'Добавить' }}
-      </button>
-    </div>
-  </div>
-</div>
+      </UiButton>
+  </template>
+</UiModal>
 </template>
 

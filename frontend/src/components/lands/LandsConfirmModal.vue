@@ -12,7 +12,6 @@
 // Общие стили раздела: подключаются импортом, а не <style src>, — так файл
 // попадает в сборку одной копией, а не отдельной на каждый компонент.
 import './landsShared.css'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 
 withDefaults(
   defineProps<{
@@ -40,33 +39,14 @@ defineEmits<{
 </script>
 
 <template>
-  <div
-    v-if="open"
-    class="lands-modal-backdrop"
-    role="dialog"
-    aria-modal="true"
-    :aria-label="dialogLabel"
-    @click.self="$emit('close')"
-  >
-    <div class="lands-modal lands-modal--compact">
-      <div class="lands-modal-head">
-        <h2>{{ title }}</h2>
-        <ModalCloseButton :disabled="busy" @click="$emit('close')" />
-      </div>
+  <UiModal v-if="open" :title="title" :max-width="560" :close-disabled="busy" @close="$emit('close')">
       <div class="lands-modal-body">
         <p class="lands-confirm-text">{{ text }}</p>
       </div>
-      <div class="lands-modal-actions">
-        <button v-if="cancellable" type="button" class="lands-btn" :disabled="busy" @click="$emit('close')">Отмена</button>
-        <button
-          type="button"
-          class="lands-btn"
-          :class="confirmVariant === 'danger' ? 'lands-btn--danger' : 'lands-btn--save'"
-          :disabled="busy"
-          @click="$emit('confirm')"
-        >{{ confirmLabel }}</button>
-      </div>
-    </div>
-  </div>
+    <template #actions>
+        <UiButton v-if="cancellable" :disabled="busy" @click="$emit('close')">Отмена</UiButton>
+        <UiButton :variant="confirmVariant === 'danger' ? 'danger' : 'primary'" :disabled="busy" @click="$emit('confirm')">{{ confirmLabel }}</UiButton>
+    </template>
+  </UiModal>
 </template>
 

@@ -17,6 +17,12 @@
 
 @source '../components/ui';
 
+/* Файлы, полностью переведённые на shadcn: в них классы Tailwind уже свои,
+   старых классов страницы нет, поэтому их можно сканировать. */
+@source '../components/EmployeeCreateModal.vue';
+@source '../components/EmployeeEditModal.vue';
+@source '../components/UserAvatar.vue';
+
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 :root {

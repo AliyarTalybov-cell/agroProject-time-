@@ -10,7 +10,6 @@ import UiSelect from '@/components/ui/UiSelect.vue'
 // Общие стили раздела: подключаются импортом, а не <style src>, — так файл
 // попадает в сборку одной копией, а не отдельной на каждый компонент.
 import './landsShared.css'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import type { CropRotationFieldOption, RealEstateForm } from '@/components/lands/types'
 
 defineProps<{
@@ -30,12 +29,7 @@ defineEmits<{
 </script>
 
 <template>
-<div v-if="open" class="lands-modal-backdrop" role="dialog" aria-modal="true" aria-label="Объект недвижимости" @click.self="$emit('close')">
-  <div class="lands-modal">
-    <div class="lands-modal-head">
-      <h2>{{ editingId ? 'Редактировать объект недвижимости' : 'Добавить объект недвижимости' }}</h2>
-      <ModalCloseButton @click="$emit('close')" />
-    </div>
+<UiModal v-if="open" :title="editingId ? 'Редактировать объект недвижимости' : 'Добавить объект недвижимости'" :max-width="1100" @close="$emit('close')">
     <div class="lands-modal-body">
       <div class="lands-form-grid">
         <label class="lands-field">
@@ -118,13 +112,12 @@ defineEmits<{
         </label>
       </div>
     </div>
-    <div class="lands-modal-actions">
-      <button type="button" class="lands-btn" @click="$emit('close')">Отмена</button>
-      <button type="button" class="lands-btn lands-btn--save" :disabled="!form.cadastralNumber.trim() || saving" @click="$emit('save')">
+  <template #actions>
+      <UiButton @click="$emit('close')">Отмена</UiButton>
+      <UiButton variant="primary" :disabled="!form.cadastralNumber.trim() || saving" @click="$emit('save')">
         {{ editingId ? 'Сохранить' : 'Добавить' }}
-      </button>
-    </div>
-  </div>
-</div>
+      </UiButton>
+  </template>
+</UiModal>
 </template>
 

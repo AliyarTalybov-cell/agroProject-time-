@@ -1196,3 +1196,11 @@ select:is(
 [data-slot='popover-trigger'] {
   background-image: none !important;
 }
+
+/* Тело старых окон внутри UiModal: свой отступ и прокрутка у них больше не
+   нужны — это делает тело Dialog. */
+.ui-dialog-body > [class*='modal-body'] {
+  padding: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}

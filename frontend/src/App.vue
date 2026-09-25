@@ -7,6 +7,7 @@ import { useBackendHealth } from '@/stores/backendHealth'
 import AppBackendBadge from '@/components/AppBackendBadge.vue'
 import AppBackendModal from '@/components/AppBackendModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
+import { Toaster } from '@/components/ui/shadcn/sonner'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import { chatTotalUnread, refreshChatTotalUnread } from '@/lib/chatSupabase'
 import { countMyUnreadNotifications } from '@/lib/notificationsSupabase'
@@ -700,6 +701,7 @@ watch(
       </div>
     </main>
   </div>
+  <Toaster position="top-center" />
 </template>
 
 <style scoped>

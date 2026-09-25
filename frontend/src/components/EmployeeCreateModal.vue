@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch } from 'vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
+import UiModal from '@/components/ui/UiModal.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Input } from '@/components/ui/shadcn/input'
+import { Label } from '@/components/ui/shadcn/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/shadcn/radio-group'
+import { Textarea } from '@/components/ui/shadcn/textarea'
 import { createEmployee, type EmployeeRole, type PositionRow } from '@/lib/employeesSupabase'
 
 const props = defineProps<{
@@ -24,6 +30,11 @@ const form = ref({
   passwordConfirm: '',
   additionalInfo: '',
 })
+
+const roles: { value: EmployeeRole; title: string; desc: string }[] = [
+  { value: 'worker', title: 'Сотрудник', desc: 'Базовый доступ к системе' },
+  { value: 'manager', title: 'Руководитель', desc: 'Расширенные права управления' },
+]
 
 const submitting = ref(false)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -89,301 +100,71 @@ watch(
 </script>
 
 <template>
-  <teleport to="body">
-    <div v-if="open" class="emp-modal-backdrop" role="dialog" aria-modal="true" aria-label="Новый сотрудник" @click.self="close">
-      <div class="emp-modal">
-        <ModalCloseButton :absolute="true" @click="close" />
+  <UiModal v-if="open" title="Новый сотрудник" description="Учётная запись с доступом к порталу" :max-width="600" :close-disabled="submitting" @close="close">
+    <Alert v-if="message" :variant="message.type === 'error' ? 'destructive' : 'default'">
+      <AlertDescription>{{ message.text }}</AlertDescription>
+    </Alert>
 
-        <div class="emp-modal-body">
-          <div v-if="message" class="emp-modal-message" :class="message.type === 'success' ? 'emp-modal-message--success' : 'emp-modal-message--error'">
-            {{ message.text }}
-          </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-2 sm:col-span-2">
+        <Label for="emp-fullname">Фамилия Имя Отчество</Label>
+        <Input id="emp-fullname" v-model="form.fullName" type="text" placeholder="Иванов Иван Иванович" autocomplete="name" />
+      </div>
 
-          <div class="emp-form-grid">
-            <div class="emp-field emp-field--full">
-              <label class="emp-label" for="emp-fullname">Фамилия Имя Отчество</label>
-              <input id="emp-fullname" v-model="form.fullName" class="emp-input" type="text" placeholder="Иванов Иван Иванович" autocomplete="name" />
-            </div>
+      <div class="grid gap-2">
+        <Label for="emp-email">Электронная почта</Label>
+        <Input id="emp-email" v-model="form.email" type="email" placeholder="example@agro.ru" autocomplete="email" />
+      </div>
 
-            <div class="emp-field">
-              <label class="emp-label" for="emp-email">Электронная почта</label>
-              <input id="emp-email" v-model="form.email" class="emp-input" type="email" placeholder="example@agro.ru" autocomplete="email" />
-            </div>
+      <div class="grid gap-2">
+        <Label for="emp-phone">Телефон</Label>
+        <Input id="emp-phone" v-model="form.phone" type="tel" placeholder="+7 (___) ___-__-__" autocomplete="tel" />
+      </div>
 
-            <div class="emp-field">
-              <label class="emp-label" for="emp-phone">Телефон</label>
-              <input id="emp-phone" v-model="form.phone" class="emp-input" type="tel" placeholder="+7 (___) ___-__-__" autocomplete="tel" />
-            </div>
+      <div class="grid gap-2 sm:col-span-2">
+        <Label for="emp-position">Должность</Label>
+        <UiSelect id="emp-position" v-model="form.position" :options="positions.map((p) => ({ value: p.name, label: p.name }))" placeholder="Выберите должность" block />
+      </div>
 
-            <div class="emp-field emp-field--full">
-              <label class="emp-label" for="emp-position">Должность</label>
-              <UiSelect v-model="form.position" :options="[...(positions).map((p) => ({ value: p.name, label: String(p.name) }))]" placeholder="Выберите должность" id="emp-position" class="emp-input emp-select" />
-            </div>
+      <div class="grid gap-2 sm:col-span-2">
+        <Label>Роль доступа</Label>
+        <RadioGroup v-model="form.role" class="grid gap-3 sm:grid-cols-2">
+          <Label
+            v-for="r in roles"
+            :key="r.value"
+            :for="`emp-role-${r.value}`"
+            class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 font-normal has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+          >
+            <RadioGroupItem :id="`emp-role-${r.value}`" :value="r.value" class="mt-0.5" />
+            <span class="grid gap-1">
+              <span class="text-sm font-medium">{{ r.title }}</span>
+              <span class="text-muted-foreground text-xs">{{ r.desc }}</span>
+            </span>
+          </Label>
+        </RadioGroup>
+      </div>
 
-            <div class="emp-field emp-field--full">
-              <label class="emp-label">Роль доступа</label>
-              <div class="emp-role-grid">
-                <label class="emp-role-card" :class="{ 'emp-role-card--active': form.role === 'worker' }">
-                  <input v-model="form.role" class="emp-role-radio" type="radio" value="worker" />
-                  <div class="emp-role-title">Сотрудник</div>
-                  <div class="emp-role-desc">Базовый доступ к системе</div>
-                </label>
-                <label class="emp-role-card" :class="{ 'emp-role-card--active': form.role === 'manager' }">
-                  <input v-model="form.role" class="emp-role-radio" type="radio" value="manager" />
-                  <div class="emp-role-title">Руководитель</div>
-                  <div class="emp-role-desc">Расширенные права управления</div>
-                </label>
-              </div>
-            </div>
+      <div class="grid gap-2">
+        <Label for="emp-pass">Пароль</Label>
+        <Input id="emp-pass" v-model="form.password" type="password" placeholder="Минимум 6 символов" autocomplete="new-password" />
+      </div>
 
-            <div class="emp-field">
-              <label class="emp-label" for="emp-pass">Пароль</label>
-              <input id="emp-pass" v-model="form.password" class="emp-input" type="password" placeholder="Минимум 6 символов" autocomplete="new-password" />
-            </div>
+      <div class="grid gap-2">
+        <Label for="emp-pass2">Подтверждение пароля</Label>
+        <Input id="emp-pass2" v-model="form.passwordConfirm" type="password" placeholder="Повторите пароль" autocomplete="new-password" />
+      </div>
 
-            <div class="emp-field">
-              <label class="emp-label" for="emp-pass2">Подтверждение пароля</label>
-              <input id="emp-pass2" v-model="form.passwordConfirm" class="emp-input" type="password" placeholder="Повторите пароль" autocomplete="new-password" />
-            </div>
-
-            <div class="emp-field emp-field--full">
-              <label class="emp-label" for="emp-notes">Заметки (внутренние)</label>
-              <textarea id="emp-notes" v-model="form.additionalInfo" class="emp-input emp-textarea" rows="3" placeholder="Дополнительная информация..."></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="emp-modal-footer">
-          <button type="button" class="emp-btn emp-btn--ghost" :disabled="submitting" @click="close">Отмена</button>
-          <button type="button" class="emp-btn emp-btn--primary" :disabled="submitting || !canSubmit" @click="submit">
-            {{ submitting ? 'Создание…' : 'Сохранить' }}
-          </button>
-        </div>
+      <div class="grid gap-2 sm:col-span-2">
+        <Label for="emp-notes">Заметки (внутренние)</Label>
+        <Textarea id="emp-notes" v-model="form.additionalInfo" rows="3" placeholder="Дополнительная информация..." />
       </div>
     </div>
-  </teleport>
+
+    <template #actions>
+      <UiButton :disabled="submitting" @click="close">Отмена</UiButton>
+      <UiButton variant="primary" :disabled="submitting || !canSubmit" @click="submit">
+        {{ submitting ? 'Создание…' : 'Сохранить' }}
+      </UiButton>
+    </template>
+  </UiModal>
 </template>
-
-<style scoped>
-.emp-modal-backdrop {
-  z-index: 1200;
-  padding: 20px;
-  overflow: auto;
-}
-
-.emp-modal {
-  position: relative;
-  width: 100%;
-  max-width: 560px;
-  max-height: calc(100vh - 40px);
-  max-height: calc(100dvh - 40px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-color);
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-sm);
-}
-
-[data-theme='dark'] .emp-modal {
-  background: var(--bg-elevated);
-  border-color: var(--border-color);
-}
-
-/* .emp-modal-close positioning/sizing — absolute positioning now via .modal-close--absolute */
-
-.emp-modal-body {
-  padding: 28px 24px 20px;
-  overflow: auto;
-}
-
-.emp-modal-message {
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-size: 0.9375rem;
-  margin-bottom: 14px;
-  border: 1px solid transparent;
-}
-.emp-modal-message--success {
-  background: color-mix(in srgb, var(--accent-green) 14%, transparent);
-  border-color: color-mix(in srgb, var(--accent-green) 28%, var(--border-color));
-  color: #166534;
-}
-.emp-modal-message--error {
-  background: color-mix(in srgb, var(--danger-red) 12%, transparent);
-  border-color: color-mix(in srgb, var(--danger-red) 24%, transparent);
-  color: var(--danger-red);
-}
-
-[data-theme='dark'] .emp-modal-message--success {
-  background: color-mix(in srgb, var(--accent-green) 18%, transparent);
-  border-color: color-mix(in srgb, var(--accent-green) 34%, var(--border-color));
-  color: color-mix(in srgb, white 82%, var(--accent-green));
-}
-[data-theme='dark'] .emp-modal-message--error {
-  background: color-mix(in srgb, var(--danger-red) 22%, transparent);
-  border-color: color-mix(in srgb, var(--danger-red) 36%, transparent);
-  color: color-mix(in srgb, white 80%, var(--danger-red));
-}
-
-.emp-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.emp-field--full {
-  grid-column: 1 / -1;
-}
-
-.emp-label {
-  display: block;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.emp-input {
-  width: 100%;
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-xl);
-  padding: 7px 14px;
-  font-size: 0.875rem;
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.emp-input:focus {
-  outline: none;
-  border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-.emp-input::placeholder {
-  color: var(--text-muted);
-}
-[data-theme='dark'] .emp-input {
-  background: color-mix(in srgb, var(--bg-elevated) 86%, black);
-  border-color: var(--border-color);
-}
-[data-theme='dark'] .emp-input:focus {
-  background: color-mix(in srgb, var(--bg-elevated) 94%, black);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-.emp-textarea {
-  resize: vertical;
-  min-height: 96px;
-}
-
-.emp-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 40px;
-}
-[data-theme='dark'] .emp-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e2e8f0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
-  background-position: right 14px center;
-}
-
-.emp-role-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.emp-role-card {
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 14px 16px;
-  background: var(--bg-elevated);
-  cursor: pointer;
-  position: relative;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-[data-theme='dark'] .emp-role-card {
-  background: color-mix(in srgb, var(--bg-elevated) 78%, black);
-  border-color: var(--border-color);
-}
-.emp-role-card--active {
-  border-color: var(--accent-green);
-  background: color-mix(in srgb, var(--accent-green) 8%, transparent);
-}
-[data-theme='dark'] .emp-role-card--active {
-  border-color: var(--accent-green);
-  background: color-mix(in srgb, var(--accent-green) 12%, transparent);
-}
-.emp-role-radio {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-.emp-role-title {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-.emp-role-desc {
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-}
-
-.emp-modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-overlay);
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-[data-theme='dark'] .emp-modal-footer {
-  background: var(--bg-overlay);
-  border-top-color: var(--border-color);
-}
-
-.emp-btn {
-  border-radius: var(--radius-xl);
-  padding: 11px 20px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-.emp-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-.emp-btn--ghost {
-  background: var(--bg-elevated);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-.emp-btn--ghost:hover:not(:disabled) {
-  background: var(--bg-panel-hover);
-  border-color: color-mix(in srgb, var(--accent-green) 30%, var(--border-color));
-}
-[data-theme='dark'] .emp-btn--ghost {
-  background: color-mix(in srgb, var(--bg-elevated) 90%, black);
-  border-color: var(--border-color);
-}
-.emp-btn--primary {
-  background: var(--accent-green);
-  color: #fff;
-}
-.emp-btn--primary:hover:not(:disabled) {
-  background: var(--accent-green-hover);
-}
-
-@media (max-width: 720px) {
-  .emp-form-grid {
-    grid-template-columns: 1fr;
-  }
-  .emp-role-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
-
