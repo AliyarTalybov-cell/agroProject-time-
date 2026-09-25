@@ -156,6 +156,13 @@
     text-decoration: inherit;
   }
 
+  /* Рамки из утилит на обычных элементах — цвет рамки темы, как под preflight
+     (иначе border-color = currentColor). Утилиты цвета рамки сильнее. */
+  :where(.border, .border-t, .border-b, .border-l, .border-r, .border-x, .border-y, .border-2, .border-dashed) {
+    border-color: var(--color-border);
+    border-style: solid;
+  }
+
   :where(ul, ol)[data-slot] {
     list-style: none;
   }
