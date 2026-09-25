@@ -24,6 +24,7 @@
 @source '../components/UserAvatar.vue';
 @source '../components/AppBackendModal.vue';
 @source '../components/RefFieldHelp.vue';
+@source '../components/UiLoadingBar.vue';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
