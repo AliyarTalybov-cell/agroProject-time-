@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CheckIcon, ChevronDownIcon, SaveIcon, XIcon } from '@lucide/vue'
 import PickSheet from '@/components/ui/dialogs/PickSheet.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -1468,9 +1469,7 @@ function addField() {
               <span class="operator-fields-trigger-main">{{ currentField?.name ?? 'Выберите поле' }}</span>
               <span class="operator-fields-trigger-sub">{{ currentField?.operation ?? 'Операция не выбрана' }}</span>
               <span class="operator-fields-trigger-chev" :class="{ 'operator-fields-trigger-chev--open': isFieldsOpen }">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
+                <ChevronDownIcon :size="16" />
               </span>
             </button>
             <div v-if="isFieldsOpen" class="operator-fields-menu">
@@ -1566,9 +1565,7 @@ function addField() {
                       <div class="checkbox-box">
                         <div class="checkbox-fill"></div>
                         <div class="checkmark">
-                          <svg viewBox="0 0 24 24" class="check-icon">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"></path>
-                          </svg>
+                          <CheckIcon class="check-icon" />
                         </div>
                         <div class="success-ripple"></div>
                       </div>
@@ -1623,7 +1620,7 @@ function addField() {
               <div v-if="issueReportFile" class="mechanic-dispatcher-file-pill">
                 <span class="mechanic-dispatcher-file-name">{{ issueReportFile.name }}</span>
                 <span class="mechanic-dispatcher-file-size">{{ formatIssueFileSize(issueReportFile.size) }}</span>
-                <button type="button" class="mechanic-dispatcher-file-remove" @click="removeIssueFile">✕</button>
+                <button type="button" class="mechanic-dispatcher-file-remove" @click="removeIssueFile"><XIcon :size="16" aria-label="Убрать файл" /></button>
               </div>
               <input
                 ref="issueFileInputRef"
@@ -1639,25 +1636,7 @@ function addField() {
                   @click="openIssueFilePicker"
                   aria-label="Добавить файл"
                 >
-                  <svg
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    stroke-linejoin="round"
-                    stroke-linecap="round"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    fill="none"
-                  >
-                    <path
-                      d="m19,21H5c-1.1,0-2-.9-2-2V5c0-1.1.9-2,2-2h11l5,5v11c0,1.1-.9,2-2,2Z"
-                      data-path="box"
-                    />
-                    <path d="M7 3L7 8L15 8" data-path="line-top" />
-                    <path d="M17 20L17 13L7 13L7 20" data-path="line-bottom" />
-                  </svg>
+                  <SaveIcon aria-hidden="true" :size="20" />
                 </button>
                 <button
                   type="button"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ChevronLeftIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 /**
  * Карточка склада на складском журнале: ячейки и что в них лежит, операции,
  * история. Все цифры — из журнала движений (lib/stockLedger).
@@ -127,7 +128,7 @@ function openBatch(batchId: string) {
   <section class="ui-page">
     <div class="ui-page-inner">
       <button type="button" class="ui-back-btn" aria-label="Назад к списку складов" @click="router.push('/warehouses')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+        <ChevronLeftIcon :size="16" />
         Назад к списку складов
       </button>
 
@@ -169,7 +170,7 @@ function openBatch(batchId: string) {
 
           <div class="wh-actions">
             <button type="button" class="ui-add-btn" @click="dialog = { kind: 'intake' }">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19" /><line x1="5" x2="19" y1="12" y2="12" /></svg>
+              <PlusIcon />
               Приёмка
             </button>
             <button type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'transfer' }">Перемещение</button>
@@ -236,7 +237,7 @@ function openBatch(batchId: string) {
                     </td>
                     <td class="wh-cell-actions">
                       <button type="button" class="wh-icon-btn" aria-label="Изменить ячейку" title="Изменить" @click="dialog = { kind: 'cell', cell: c }">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                        <PencilIcon :size="18" />
                       </button>
                       <button
                         v-if="c.kind !== 'main' && c.tons === 0"
@@ -246,7 +247,7 @@ function openBatch(batchId: string) {
                         title="Удалить"
                         @click="dialog = { kind: 'delete-cell', cell: c }"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                        <Trash2Icon :size="18" />
                       </button>
                     </td>
                   </tr>

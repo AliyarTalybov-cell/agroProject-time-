@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ArrowRightIcon, CheckIcon, FileIcon, RefreshCcwIcon, SaveIcon, SearchIcon, SendIcon } from '@lucide/vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import ChatGroupDialog from '@/components/ui/dialogs/ChatGroupDialog.vue'
 import ChatDmDialog from '@/components/ui/dialogs/ChatDmDialog.vue'
@@ -882,23 +883,7 @@ onUnmounted(() => {
             aria-label="Обновить чат"
             @click="refreshChat"
           >
-            <svg
-              class="chat-page__toolbar-refresh-svg"
-              :class="{ 'chat-page__toolbar-refresh-svg--spin': refreshBusy }"
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-              <path d="M16 16h5v5" />
-            </svg>
+            <RefreshCcwIcon class="chat-page__toolbar-refresh-svg" :class="{ 'chat-page__toolbar-refresh-svg--spin': refreshBusy }" aria-hidden="true" :size="18" />
           </button>
           <button
             v-if="isManager"
@@ -913,10 +898,7 @@ onUnmounted(() => {
         </div>
         <div class="chat-page__search-wrap">
           <span class="chat-page__search-icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
+            <SearchIcon :size="20" />
           </span>
           <input
             v-model="searchLocal"
@@ -1035,18 +1017,10 @@ onUnmounted(() => {
           >
             <div class="chat-page__mobile-back-box">
               <span class="chat-page__mobile-back-ico" aria-hidden="true">
-                <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-                  />
-                </svg>
+                <ArrowRightIcon />
               </span>
               <span class="chat-page__mobile-back-ico" aria-hidden="true">
-                <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-                  />
-                </svg>
+                <ArrowRightIcon />
               </span>
             </div>
           </button>
@@ -1111,23 +1085,7 @@ onUnmounted(() => {
               :disabled="refreshBusy"
               @click="refreshChat"
             >
-              <svg
-                class="chat-page__thread-refresh-ico"
-                :class="{ 'chat-page__thread-refresh-ico--spin': refreshBusy }"
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
-                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-                <path d="M16 16h5v5" />
-              </svg>
+              <RefreshCcwIcon class="chat-page__thread-refresh-ico" :class="{ 'chat-page__thread-refresh-ico--spin': refreshBusy }" aria-hidden="true" :size="20" />
             </button>
           </div>
         </header>
@@ -1299,9 +1257,7 @@ onUnmounted(() => {
                         :download="block.msg.attachment.name"
                       >
                         <div class="chat-page__attach-icon" aria-hidden="true">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M7 21h10a2 2 0 0 0 2-2V9.414a1 1 0 0 0-.293-.707l-5.414-5.414A1 1 0 0 0 12.586 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z" />
-                          </svg>
+                          <FileIcon :size="24" />
                         </div>
                         <div class="chat-page__attach-meta">
                           <p class="chat-page__attach-name">{{ block.msg.attachment.name }}</p>
@@ -1317,9 +1273,7 @@ onUnmounted(() => {
                         :aria-label="`Вложение: ${block.msg.attachment.name}`"
                       >
                         <div class="chat-page__attach-icon" aria-hidden="true">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M7 21h10a2 2 0 0 0 2-2V9.414a1 1 0 0 0-.293-.707l-5.414-5.414A1 1 0 0 0 12.586 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z" />
-                          </svg>
+                          <FileIcon :size="24" />
                         </div>
                         <div class="chat-page__attach-meta">
                           <p class="chat-page__attach-name">{{ block.msg.attachment.name }}</p>
@@ -1328,20 +1282,7 @@ onUnmounted(() => {
                       </div>
                       <div class="chat-page__msg-foot" :class="{ 'chat-page__msg-foot--out': block.msg.side === 'out' }">
                         <span>{{ block.msg.time }}</span>
-                        <svg
-                          v-if="block.msg.side === 'out' && block.msg.read"
-                          class="chat-page__read-icon"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          aria-label="Прочитано"
-                        >
-                          <path d="M5 13l4 4L19 7" />
-                        </svg>
+                        <CheckIcon v-if="block.msg.side === 'out' && block.msg.read" class="chat-page__read-icon" aria-label="Прочитано" :size="16" />
                       </div>
                     </div>
                   </div>
@@ -1379,37 +1320,7 @@ onUnmounted(() => {
               :disabled="chatLoading || attachBusy"
               @click="triggerAttachmentPick"
             >
-              <svg
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                stroke-linejoin="round"
-                stroke-linecap="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                fill="none"
-              >
-                <path
-                  d="m19,21H5c-1.1,0-2-.9-2-2V5c0-1.1.9-2,2-2h11l5,5v11c0,1.1-.9,2-2,2Z"
-                  stroke-linejoin="round"
-                  stroke-linecap="round"
-                  data-path="box"
-                />
-                <path
-                  d="M7 3L7 8L15 8"
-                  stroke-linejoin="round"
-                  stroke-linecap="round"
-                  data-path="line-top"
-                />
-                <path
-                  d="M17 20L17 13L7 13L7 20"
-                  stroke-linejoin="round"
-                  stroke-linecap="round"
-                  data-path="line-bottom"
-                />
-              </svg>
+              <SaveIcon aria-hidden="true" :size="20" />
             </button>
             <textarea
               v-model="draft"
@@ -1437,13 +1348,7 @@ onUnmounted(() => {
               >
                 <div class="svg-wrapper-1">
                   <div class="svg-wrapper">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                      <path fill="none" d="M0 0h24v24H0z"></path>
-                      <path
-                        fill="currentColor"
-                        d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"
-                      ></path>
-                    </svg>
+                    <SendIcon aria-hidden="true" :size="20" />
                   </div>
                 </div>
               </button>

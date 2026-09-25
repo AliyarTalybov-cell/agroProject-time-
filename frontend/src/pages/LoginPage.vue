@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { LockIcon, MailIcon } from '@lucide/vue'
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -81,10 +82,7 @@ async function submit() {
 
       <div class="input_container">
         <label class="input_label" for="auth-email">Логин (email)</label>
-        <svg fill="none" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg" class="icon">
-          <path stroke-linejoin="round" stroke-linecap="round" stroke-width="1.5" stroke="currentColor" d="M7 8.5L9.942 10.239C11.657 11.254 12.343 11.254 14.058 10.239L17 8.5"></path>
-          <path stroke-linejoin="round" stroke-width="1.5" stroke="currentColor" d="M2.016 13.476C2.081 16.541 2.114 18.074 3.245 19.209C4.376 20.345 5.95 20.384 9.099 20.463C11.039 20.512 12.961 20.512 14.901 20.463C18.05 20.384 19.624 20.345 20.755 19.209C21.886 18.074 21.919 16.541 21.984 13.476C22.005 12.49 22.005 11.51 21.984 10.524C21.919 7.459 21.886 5.926 20.755 4.791C19.624 3.655 18.05 3.616 14.901 3.537C12.961 3.488 11.039 3.488 9.099 3.537C5.95 3.616 4.376 3.655 3.245 4.791C2.114 5.926 2.081 7.459 2.016 10.524C1.995 11.51 1.995 12.49 2.016 13.476Z"></path>
-        </svg>
+        <MailIcon class="icon" :size="20" />
         <input
           id="auth-email"
           v-model="email"
@@ -98,10 +96,7 @@ async function submit() {
 
       <div class="input_container">
         <label class="input_label" for="auth-password">Пароль</label>
-        <svg fill="none" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg" class="icon">
-          <rect x="4" y="11" width="16" height="9" rx="3" stroke="currentColor" stroke-width="1.8"></rect>
-          <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
-        </svg>
+        <LockIcon class="icon" :size="20" />
         <input
           id="auth-password"
           v-model="password"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ClockIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, onActivated, onUnmounted, ref, watch } from 'vue'
@@ -1147,7 +1148,7 @@ onUnmounted(() => {
                 {{ equipmentTitle(statusByUserId.get(p.id)?.equipment_id) }}
               </RouterLink>
               <span v-else>{{ equipmentTitle(statusByUserId.get(p.id)?.equipment_id) }}</span>
-              <span>🕐 {{ elapsedLabel(statusByUserId.get(p.id)!.started_at) }}</span>
+              <span style="display:inline-flex;align-items:center;gap:4px"><ClockIcon :size="14" aria-hidden="true" /> {{ elapsedLabel(statusByUserId.get(p.id)!.started_at) }}</span>
             </div>
           </template>
 

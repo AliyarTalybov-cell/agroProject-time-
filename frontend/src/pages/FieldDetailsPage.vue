@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Building2Icon, CalendarIcon, ChevronLeftIcon, CircleQuestionMarkIcon, Clock4Icon, ClockIcon, FileIcon, FileTextIcon, HomeIcon, LayersIcon, LayoutGridIcon, MapPinIcon, PencilIcon, SproutIcon, TractorIcon, UploadIcon, UserIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -621,7 +622,7 @@ watch(
   <div class="field-details">
     <div class="field-details-header">
       <button type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку полей">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        <ChevronLeftIcon :size="20" />
         К списку полей
       </button>
     </div>
@@ -642,7 +643,7 @@ watch(
         <div class="field-details-card field-details-card--left">
           <div class="field-details-title-row">
             <span class="field-details-title-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              <LayoutGridIcon :size="24" />
             </span>
             <div class="field-details-title-block">
               <h1 class="field-details-name">{{ isEditing ? editForm.name : field.name }}</h1>
@@ -662,7 +663,7 @@ watch(
                 aria-label="Редактировать"
                 v-if="!isEditing"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                <PencilIcon :size="18" />
                 Редактировать
               </button>
             </div>
@@ -672,84 +673,84 @@ watch(
             <ul class="field-details-list">
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <FileTextIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Кадастровый номер</span>
                 <span class="field-details-item-value">{{ field.cadastral_number || '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <MapPinIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Адрес</span>
                 <span class="field-details-item-value">{{ field.address || '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6"/><path d="M10 21h4"/><path d="M12 17v4"/><path d="m5 8 7-5 7 5"/><path d="M5 8h14v9H5z"/></svg>
+                  <TractorIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">№ ПОЛЯ ЕФИС ЗСН</span>
                 <span class="field-details-item-value">{{ (field as any).efis_zsn_number || '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"/><path d="M12 6v6l3 3"/></svg>
+                  <ClockIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Геолокация</span>
                 <span class="field-details-item-value">{{ (field as any).geolocation || '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>
+                  <Building2Icon :size="18" />
                 </span>
                 <span class="field-details-item-label">Муниципальное образование</span>
                 <span class="field-details-item-value">{{ (field as any).municipality || '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="M3 17l9 5 9-5"/></svg>
+                  <LayersIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Регион</span>
                 <span class="field-details-item-value">{{ (field as any).region || '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22v-7"/><path d="M12 15a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z"/><path d="M4 15s1.5 2 4 2 4-2 4-2"/></svg>
+                  <SproutIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Тип земли</span>
                 <span class="field-details-item-value">{{ field.land_type || '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                  <CalendarIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Год посева</span>
                 <span class="field-details-item-value">{{ field.sowing_year ?? '—' }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  <HomeIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Культура</span>
                 <span class="field-details-item-value">{{ cropLabel }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <UserIcon :size="18" />
                 </span>
                 <span class="field-details-item-label">Ответственный</span>
                 <span class="field-details-item-value field-details-item-value--link">{{ responsibleName }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <Clock4Icon :size="18" />
                 </span>
                 <span class="field-details-item-label">Создано</span>
                 <span class="field-details-item-value">{{ createdFormatted }}</span>
               </li>
               <li class="field-details-item">
                 <span class="field-details-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <Clock4Icon :size="18" />
                 </span>
                 <span class="field-details-item-label">Обновлено</span>
                 <span class="field-details-item-value">{{ updatedFormatted }}</span>
@@ -1010,7 +1011,7 @@ watch(
               :disabled="photoUploading"
               @click="triggerPhotoUpload"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <UploadIcon :size="18" />
               {{ photoUploading ? 'Загрузка…' : 'Загрузить фото' }}
             </button>
           </div>
@@ -1044,14 +1045,14 @@ watch(
               </div>
               <p class="field-details-main-media-desc">{{ mainMedia.description || '—' }}</p>
               <p class="field-details-main-media-date">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <CalendarIcon :size="14" />
                 {{ mainMedia.date ? new Date(mainMedia.date).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }) : '—' }}
               </p>
             </template>
             <template v-else>
               <div class="field-details-main-media-label">Нет фото и схем</div>
               <div class="field-details-main-media-placeholder">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                <CircleQuestionMarkIcon :size="48" :stroke-width="1.5" />
                 <span>Загрузите фото или прикрепите схему в карточке поля</span>
               </div>
             </template>
@@ -1070,7 +1071,7 @@ watch(
                 rel="noopener noreferrer"
                 class="field-details-gallery-thumb field-details-gallery-thumb--link"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <FileIcon :size="24" />
                 <span class="field-details-gallery-title">{{ item.title }}</span>
                 <div class="field-details-gallery-delete-wrap">
                   <UiDeleteButton size="xs" @click.prevent="removeScheme" />
@@ -1118,11 +1119,7 @@ watch(
               <div class="field-history-head">
                 <div class="field-history-title-wrap">
                   <span class="field-history-op-icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 22v-7" />
-                      <path d="M12 15a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z" />
-                      <path d="M4 15s1.5 2 4 2 4-2 4-2" />
-                    </svg>
+                    <SproutIcon :size="17" />
                   </span>
                   <div>
                     <div class="field-history-title">{{ h.operation || 'Операция' }}</div>

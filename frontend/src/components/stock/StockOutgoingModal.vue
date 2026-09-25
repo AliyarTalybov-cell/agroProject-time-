@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { XIcon } from '@lucide/vue'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -180,7 +181,7 @@ async function save() {
       <UiSelect v-model="line.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Партия в ячейке" class="ui-form-select" />
       <input v-model.trim="line.tons" inputmode="decimal" class="ui-form-input stock-line-tons" placeholder="т" />
       <button v-if="lines.length > 1" type="button" class="stock-line-remove" aria-label="Убрать строку" @click="removeLine(i)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+        <XIcon :size="16" />
       </button>
       <p v-if="parsedLines[i].over" class="ui-form-hint stock-line-hint">
         Больше остатка: доступно {{ formatTons(parsedLines[i].src?.available) }}

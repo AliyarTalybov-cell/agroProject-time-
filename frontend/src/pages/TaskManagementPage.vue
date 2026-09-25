@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CirclePlusIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -1122,7 +1123,7 @@ function statusClass(s: Status) {
       <div class="task-header-actions">
         <div class="task-search-wrap">
           <span class="task-search-icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <SearchIcon :size="18" />
           </span>
           <input
             v-model.trim="searchTaskNumber"
@@ -1140,12 +1141,7 @@ function statusClass(s: Status) {
             title="Экспорт в PDF (предпросмотр)"
             @click="exportToPdf"
           >
-            <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
-              <path d="M14 2v6h6" data-path="line-top" />
-              <path d="M12 18v-6" data-path="line-bottom" />
-              <path d="M9 15h6" />
-            </svg>
+            <FileTextIcon class="task-header-icon" />
             PDF
           </button>
           <button
@@ -1155,19 +1151,12 @@ function statusClass(s: Status) {
             title="Экспорт в Excel"
             @click="exportToExcel"
           >
-            <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
-              <path d="M14 2v6h6" data-path="line-top" />
-              <path d="M8 13h2" data-path="line-bottom" />
-              <path d="M8 17h2" />
-              <path d="M14 13h2" />
-              <path d="M14 17h2" />
-            </svg>
+            <FileSpreadsheetIcon class="task-header-icon" />
             Excel
           </button>
         </div>
         <button type="button" class="task-btn-create" @click="openCreate">
-          <svg class="task-header-icon task-btn-create-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          <PlusIcon class="task-header-icon task-btn-create-icon" />
           Создать задачу
         </button>
       </div>
@@ -1371,19 +1360,12 @@ function statusClass(s: Status) {
                         class="modal-add-assignee-btn modal-add-assignee-btn--design"
                         @click="toggleParticipantPicker"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="12" x2="12" y1="8" y2="16" />
-                          <line x1="8" x2="16" y1="12" y2="12" />
-                        </svg>
+                        <CirclePlusIcon :size="14" />
                         Добавить
                       </button>
                       <div v-if="participantPickerOpen" class="modal-assignee-dropdown">
                         <div class="modal-assignee-search">
-                          <svg class="modal-assignee-search-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="7" />
-                            <line x1="16.65" y1="16.65" x2="21" y2="21" />
-                          </svg>
+                          <SearchIcon class="modal-assignee-search-icon" :size="14" />
                           <input
                             v-model="participantSearch"
                             type="text"
@@ -1466,16 +1448,8 @@ function statusClass(s: Status) {
                       <div v-for="file in pendingCreateFiles" :key="file.id" class="task-file-card">
                         <div class="task-file-icon-box">
                           <img v-if="file.previewUrl" class="task-file-thumb" :src="file.previewUrl" :alt="file.file.name" />
-                          <svg v-else-if="isPdfFile(file.file.name)" class="task-file-icon-pdf" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <path d="M14 2v6h6" />
-                            <path d="M9 13h6" />
-                            <path d="M9 17h6" />
-                          </svg>
-                          <svg v-else class="task-file-icon-doc" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <path d="M14 2v6h6" />
-                          </svg>
+                          <FileTextIcon v-else-if="isPdfFile(file.file.name)" class="task-file-icon-pdf" :size="20" />
+                          <FileIcon v-else class="task-file-icon-doc" :size="20" />
                         </div>
                         <div class="task-file-info">
                           <span class="task-file-name">{{ file.file.name }}</span>
@@ -1491,9 +1465,7 @@ function statusClass(s: Status) {
                       :disabled="fileUploading"
                       @click="triggerCreateFileInput"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                      </svg>
+                      <PaperclipIcon :size="20" />
                       <span>Добавьте фото, PDF или документы к задаче</span>
                     </button>
                   </div>
@@ -1626,16 +1598,8 @@ function statusClass(s: Status) {
                   >
                     <div class="task-file-icon-box">
                       <img v-if="isImageFile(file.file_name)" class="task-file-thumb" :src="getTaskFilePublicUrl(file.file_path)" :alt="file.file_name" />
-                      <svg v-else-if="isPdfFile(file.file_name)" class="task-file-icon-pdf" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <path d="M14 2v6h6" />
-                        <path d="M9 13h6" />
-                        <path d="M9 17h6" />
-                      </svg>
-                      <svg v-else class="task-file-icon-doc" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <path d="M14 2v6h6" />
-                      </svg>
+                      <FileTextIcon v-else-if="isPdfFile(file.file_name)" class="task-file-icon-pdf" :size="20" />
+                      <FileIcon v-else class="task-file-icon-doc" :size="20" />
                     </div>
                     <div class="task-file-info">
                       <span class="task-file-name">{{ file.file_name }}</span>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BriefcaseIcon, CameraIcon, CheckIcon, CircleAlertIcon, InfoIcon, LoaderCircleIcon, LockIcon, MailIcon, PhoneIcon } from '@lucide/vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
@@ -489,8 +490,8 @@ async function confirmDeleteAccount() {
               <img v-if="avatarUrl" :src="avatarUrl" alt="Фото профиля" class="profile-avatar-img" />
               <span v-else class="profile-avatar-initials">{{ userInitials }}</span>
               <span class="profile-avatar-overlay" aria-hidden="true">
-                <svg v-if="!avatarUploading" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                <svg v-else class="profile-avatar-spinner" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <CameraIcon v-if="!avatarUploading" :size="22" />
+                <LoaderCircleIcon v-else class="profile-avatar-spinner" :size="22" />
               </span>
             </button>
             <input
@@ -515,7 +516,7 @@ async function confirmDeleteAccount() {
           <div class="profile-user-name">{{ displayName }}</div>
           <div class="profile-user-position">{{ profileForm.position || 'Главный агроном' }}</div>
           <div class="profile-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <CheckIcon :size="14" />
             {{ roleLabel }}
           </div>
         </div>
@@ -523,15 +524,15 @@ async function confirmDeleteAccount() {
         <div class="profile-contact-block card-rounded">
           <h3 class="profile-block-title">Контактная информация</h3>
           <div class="profile-contact-row">
-            <svg class="profile-contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <MailIcon class="profile-contact-icon" />
             <span>{{ profileForm.email || auth.user.value?.email || '—' }}</span>
           </div>
           <div class="profile-contact-row">
-            <svg class="profile-contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <PhoneIcon class="profile-contact-icon" />
             <span>{{ profileForm.phone || '—' }}</span>
           </div>
           <div class="profile-contact-row">
-            <svg class="profile-contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <BriefcaseIcon class="profile-contact-icon" />
             <span>Агрономическая служба</span>
           </div>
         </div>
@@ -566,8 +567,8 @@ async function confirmDeleteAccount() {
           <p class="profile-form-section-desc">Обновите ваши персональные данные и контактную информацию.</p>
 
           <div v-if="saveMessage" class="profile-save-message" :class="saveMessage.type === 'success' ? 'profile-save-message--success' : 'profile-save-message--error'" role="alert">
-            <svg v-if="saveMessage.type === 'success'" class="profile-save-message-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            <svg v-else class="profile-save-message-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            <CheckIcon v-if="saveMessage.type === 'success'" class="profile-save-message-icon" />
+            <CircleAlertIcon v-else class="profile-save-message-icon" />
             <span>{{ saveMessage.text }}</span>
           </div>
 
@@ -587,14 +588,14 @@ async function confirmDeleteAccount() {
             <div class="profile-field profile-field--full">
               <label class="profile-label" for="pf-email">Электронная почта</label>
               <div class="profile-input-wrap">
-                <svg class="profile-input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <MailIcon class="profile-input-icon" />
                 <input id="pf-email" v-model="profileForm.email" type="email" class="profile-input" placeholder="email@example.com" />
               </div>
             </div>
             <div class="profile-field profile-field--full">
               <label class="profile-label" for="pf-phone">Номер телефона</label>
               <div class="profile-input-wrap">
-                <svg class="profile-input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <PhoneIcon class="profile-input-icon" />
                 <input id="pf-phone" v-model="profileForm.phone" type="tel" class="profile-input" placeholder="+7 (___) ___-__-__" />
               </div>
             </div>
@@ -605,10 +606,10 @@ async function confirmDeleteAccount() {
             <div class="profile-field profile-field--full">
               <label class="profile-label profile-label--with-info" for="pf-role">
                 Роль в системе
-                <svg class="profile-info-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" title="Для изменения роли обратитесь в ИТ-отдел"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <InfoIcon class="profile-info-icon" title="Для изменения роли обратитесь в ИТ-отдел" :size="16" />
               </label>
               <div class="profile-input-wrap profile-input-wrap--readonly">
-                <svg class="profile-input-icon profile-input-icon--lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <LockIcon class="profile-input-icon profile-input-icon--lock" />
                 <input id="pf-role" type="text" class="profile-input" :value="roleLabel" readonly />
               </div>
               <p class="profile-field-hint">Для изменения роли обратитесь в ИТ-отдел.</p>
@@ -633,8 +634,8 @@ async function confirmDeleteAccount() {
           <div class="profile-password-section">
             <h3 class="profile-password-heading">Смена пароля</h3>
             <div v-if="passwordMessage" class="profile-save-message" :class="passwordMessage.type === 'success' ? 'profile-save-message--success' : 'profile-save-message--error'" role="alert">
-              <svg v-if="passwordMessage.type === 'success'" class="profile-save-message-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              <svg v-else class="profile-save-message-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+              <CheckIcon v-if="passwordMessage.type === 'success'" class="profile-save-message-icon" />
+              <CircleAlertIcon v-else class="profile-save-message-icon" />
               <span>{{ passwordMessage.text }}</span>
             </div>
             <div class="profile-form-grid">

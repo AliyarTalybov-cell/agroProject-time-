@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PlusIcon, SearchIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Партии зерна — один реестр вместо «Реестра партий» и «Текущих партий».
@@ -140,7 +141,7 @@ function onIntakeDone() {
         <p class="ui-page-subtitle">Партии зерна по всем складам. Остатки из журнала операций — те же, что в карточках складов.</p>
         <div class="ui-header-actions">
           <button type="button" class="ui-add-btn" @click="intakeOpen = true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19" /><line x1="5" x2="19" y1="12" y2="12" /></svg>
+            <PlusIcon />
             Приёмка зерна
           </button>
         </div>
@@ -149,7 +150,7 @@ function onIntakeDone() {
       <section class="ui-card">
         <div class="ui-toolbar">
           <label class="ui-search">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <SearchIcon />
             <input v-model="search" type="search" placeholder="№ партии, сорт, поле, поставщик, № ФГИС" />
           </label>
           <UiSelect v-model="statusFilter" :options="statusOptions" aria-label="Статус" class="ui-filter-select" />

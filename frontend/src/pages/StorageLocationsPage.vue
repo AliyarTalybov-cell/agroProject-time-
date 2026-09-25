@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BoxIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -359,7 +360,7 @@ function onPageSizeChange(size: number) {
           <p class="fields-subtitle">Склады, силосы, тока и бурты для хранения зерна</p>
         </div>
         <button class="fields-add-btn" type="button" @click="openCreateModal">
-          <svg class="fields-add-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          <PlusIcon class="fields-add-btn-icon" />
           Добавить место хранения
         </button>
       </header>
@@ -372,7 +373,7 @@ function onPageSizeChange(size: number) {
 
       <div class="fields-toolbar">
         <div class="fields-search-wrap">
-          <svg class="fields-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <SearchIcon class="fields-search-icon" />
           <input v-model.trim="search" class="fields-search-input" type="search" placeholder="Поиск по названию или адресу..." autocomplete="off" />
         </div>
       </div>
@@ -419,7 +420,7 @@ function onPageSizeChange(size: number) {
               <td class="storage-td-actions" @click.stop>
                 <div class="fields-actions-row">
                   <button type="button" class="fields-action-btn" aria-label="Редактировать" title="Редактировать" @click="openEditModal(place)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="18" />
                   </button>
                   <UiDeleteButton size="sm" class="storage-delete-btn" @click="requestDeletePlace(place.id)" />
                 </div>
@@ -431,12 +432,12 @@ function onPageSizeChange(size: number) {
 
       <div v-else class="storage-empty">
         <div class="storage-empty-icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          <BoxIcon :size="52" :stroke-width="1.7" />
         </div>
         <h3>Нет мест хранения</h3>
         <p>Добавьте первый склад или ток для начала работы</p>
         <button type="button" class="fields-add-btn" @click="openCreateModal">
-          <svg class="fields-add-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          <PlusIcon class="fields-add-btn-icon" />
           Добавить место хранения
         </button>
       </div>

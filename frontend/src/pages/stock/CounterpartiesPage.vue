@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PlusIcon, SearchIcon, Trash2Icon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Справочник контрагентов: покупатели и поставщики зерна. */
 import { computed, onMounted, ref, watch } from 'vue'
@@ -77,7 +78,7 @@ async function confirmDelete() {
         <p class="ui-page-subtitle">Покупатели и поставщики зерна и семян. Выбираются при продаже и закупке.</p>
         <div class="ui-header-actions">
           <button type="button" class="ui-add-btn" @click="editing = 'new'">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19" /><line x1="5" x2="19" y1="12" y2="12" /></svg>
+            <PlusIcon />
             Добавить контрагента
           </button>
         </div>
@@ -85,7 +86,7 @@ async function confirmDelete() {
       <section class="ui-card">
         <div class="ui-toolbar">
           <label class="ui-search">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <SearchIcon />
             <input v-model="search" type="search" placeholder="Название, ИНН, контакт" />
           </label>
           <UiSelect v-model="kind" :options="[{ value: '', label: 'Все' }, { value: 'buyer', label: 'Покупатели' }, { value: 'supplier', label: 'Поставщики' }]" class="ui-filter-select" aria-label="Роль" />
@@ -119,7 +120,7 @@ async function confirmDelete() {
                   </td>
                   <td class="cp-actions" @click.stop>
                     <button v-if="isManager" type="button" class="cp-del" aria-label="Удалить контрагента" title="Удалить" @click="deleting = r">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                      <Trash2Icon :size="18" />
                     </button>
                   </td>
                 </tr>

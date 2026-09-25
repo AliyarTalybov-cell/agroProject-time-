@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ChevronLeftIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Карточка партии: происхождение, качество, где лежит, операции, история. */
 import { computed, onMounted, ref } from 'vue'
@@ -158,7 +159,7 @@ async function saveEdit() {
   <section class="ui-page">
     <div class="ui-page-inner">
       <button type="button" class="ui-back-btn" aria-label="Назад к списку партий" @click="router.push('/grain/batches')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+        <ChevronLeftIcon :size="16" />
         Назад к списку партий
       </button>
 

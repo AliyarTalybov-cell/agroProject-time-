@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CalendarIcon, ChevronDownIcon, ChevronLeftIcon, CircleCheckIcon, CircleQuestionMarkIcon, ClipboardCheckIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, LeafIcon, PenLineIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon, WrenchIcon } from '@lucide/vue'
 import ImagePreviewDialog from '@/components/ui/dialogs/ImagePreviewDialog.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -466,9 +467,7 @@ onMounted(refreshAll)
   <div class="field-details page-enter-item">
     <div class="field-details-header">
       <button type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку техники">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="m15 18-6-6 6-6" />
-        </svg>
+        <ChevronLeftIcon :size="20" />
         Назад к списку техники
       </button>
     </div>
@@ -489,11 +488,7 @@ onMounted(refreshAll)
         <div class="field-details-card field-details-card--left">
           <div class="field-details-title-row">
             <span class="field-details-title-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 7h13l5 5v5a2 2 0 0 1-2 2H7a4 4 0 0 1-4-4V7z" />
-                <path d="M16 7v5h5" />
-                <circle cx="7" cy="18" r="2" />
-              </svg>
+              <TruckIcon :size="22" />
             </span>
 
             <div class="field-details-title-block">
@@ -507,10 +502,7 @@ onMounted(refreshAll)
           <ul class="field-details-list">
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 20h4l12-12a4 4 0 0 0-6-6L2 14v4z" />
-                  <path d="M13 5l6 6" />
-                </svg>
+                <PencilIcon :size="18" />
               </span>
               <span class="field-details-item-label">Тип</span>
               <span class="field-details-item-value">{{ equipmentTypeLabel(equipment.equipment_type) }}</span>
@@ -518,11 +510,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 5h18" />
-                  <path d="M3 12h18" />
-                  <path d="M3 19h18" />
-                </svg>
+                <TextAlignJustifyIcon :size="18" />
               </span>
               <span class="field-details-item-label">Заводской номер (VIN/PIN)</span>
               <span class="field-details-item-value">{{ equipment.factory_number || '—' }}</span>
@@ -530,11 +518,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="M7 9h10" />
-                  <path d="M7 13h6" />
-                </svg>
+                <IdCardIcon :size="18" />
               </span>
               <span class="field-details-item-label">ЭПСМ/ПСМ</span>
               <span class="field-details-item-value">{{ equipment.epsm_psm || '—' }}</span>
@@ -542,11 +526,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="M8 10h8" />
-                  <path d="M8 14h4" />
-                </svg>
+                <IdCardIcon :size="18" />
               </span>
               <span class="field-details-item-label">СВР</span>
               <span class="field-details-item-value">{{ equipment.svr_number || '—' }}</span>
@@ -554,10 +534,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                </svg>
+                <FileIcon :size="18" />
               </span>
               <span class="field-details-item-label">Свидетельство о регистрации</span>
               <span class="field-details-item-value">{{ equipment.registration_certificate || '—' }}</span>
@@ -565,12 +542,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                  <line x1="16" x2="16" y1="2" y2="6" />
-                  <line x1="8" x2="8" y1="2" y2="6" />
-                  <line x1="3" x2="21" y1="10" y2="10" />
-                </svg>
+                <CalendarIcon :size="18" />
               </span>
               <span class="field-details-item-label">Дата регистрации</span>
               <span class="field-details-item-value">{{ equipment.registration_date || '—' }}</span>
@@ -578,12 +550,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                  <line x1="16" x2="16" y1="2" y2="6" />
-                  <line x1="8" x2="8" y1="2" y2="6" />
-                  <line x1="3" x2="21" y1="10" y2="10" />
-                </svg>
+                <CalendarIcon :size="18" />
               </span>
               <span class="field-details-item-label">Дата снятия с учета</span>
               <span class="field-details-item-value">{{ equipment.deregistration_date || '—' }}</span>
@@ -591,9 +558,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 12l2-2 4 4 12-12 2 2L9 16l-4-4z" />
-                </svg>
+                <CircleCheckIcon :size="18" />
               </span>
               <span class="field-details-item-label">Назначение / культура</span>
               <span class="field-details-item-value">{{ equipment.purpose_crop || '—' }}</span>
@@ -601,11 +566,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="8" width="18" height="8" rx="2" />
-                  <path d="M7 8V5" />
-                  <path d="M17 8V5" />
-                </svg>
+                <GaugeIcon :size="18" />
               </span>
               <span class="field-details-item-label">Орудие</span>
               <span class="field-details-item-value">{{ implementLabel }}</span>
@@ -613,14 +574,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="6" y1="3" x2="6" y2="21" />
-                  <line x1="12" y1="3" x2="12" y2="21" />
-                  <line x1="18" y1="3" x2="18" y2="21" />
-                  <circle cx="6" cy="14" r="2" />
-                  <circle cx="12" cy="10" r="2" />
-                  <circle cx="18" cy="6" r="2" />
-                </svg>
+                <SlidersVerticalIcon :size="18" />
               </span>
               <span class="field-details-item-label">Состояние</span>
               <span class="field-details-item-value">{{ conditionLabel(equipment.condition) }}</span>
@@ -628,10 +582,7 @@ onMounted(refreshAll)
 
             <li class="field-details-item">
               <span class="field-details-item-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+                <UserIcon :size="18" />
               </span>
               <span class="field-details-item-label">Ответственный</span>
               <span class="field-details-item-value">{{ responsibleLabel }}</span>
@@ -725,23 +676,14 @@ onMounted(refreshAll)
               </div>
               <p class="field-details-main-media-desc">{{ mainMedia.description || '—' }}</p>
               <p class="field-details-main-media-date">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                  <line x1="16" x2="16" y1="2" y2="6" />
-                  <line x1="8" x2="8" y1="2" y2="6" />
-                  <line x1="3" x2="21" y1="10" y2="10" />
-                </svg>
+                <CalendarIcon :size="14" />
                 {{ mainMedia.date ? new Date(mainMedia.date).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }) : '—' }}
               </p>
             </template>
             <template v-else>
               <div class="field-details-main-media-label">Пока нет фото</div>
               <div class="field-details-main-media-placeholder">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                  <path d="M12 17h.01" />
-                </svg>
+                <CircleQuestionMarkIcon :size="48" :stroke-width="1.5" />
                 <span>Загрузите фото техники</span>
               </div>
             </template>
@@ -803,35 +745,18 @@ onMounted(refreshAll)
                   >
                     <!-- Агрохим / анализ -->
                     <template v-if="visual.kind === 'analysis'">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6h18" />
-                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                        <path d="M10 11v6" />
-                        <path d="M14 11v6" />
-                      </svg>
+                      <TrashIcon :size="18" />
                     </template>
                     <!-- Обработка полей -->
                     <template v-else-if="visual.kind === 'field'">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 2 8.8-1.73 2.61-3 4.5-8 6.2Z" />
-                        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-                      </svg>
+                      <LeafIcon :size="18" />
                     </template>
                     <!-- Контроль полевых работ -->
                     <template v-else-if="visual.kind === 'control'">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                        <path d="M9 14l2 2 4-4" />
-                      </svg>
+                      <ClipboardCheckIcon :size="18" />
                     </template>
                     <template v-else>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2l-1 1 7 7 1-1-7-7z" />
-                        <path d="M3 21l3-1 14-14-2-2L4 18l-1 3z" />
-                        <path d="M13 6l5 5" />
-                      </svg>
+                      <PencilIcon :size="18" />
                     </template>
                   </span>
                   <div class="equipment-history-op-text">
@@ -851,9 +776,7 @@ onMounted(refreshAll)
                     {{ h.equipmentConditionLabel || (h.equipmentConditionValue != null ? `${h.equipmentConditionValue}%` : '—') }}
                   </span>
                   <span class="equipment-history-chevron" :class="{ 'equipment-history-chevron--open': isHistoryExpanded(h.id) }" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
+                    <ChevronDownIcon :size="20" />
                   </span>
                 </div>
               </button>
@@ -863,14 +786,7 @@ onMounted(refreshAll)
                   <div class="equipment-history-body-col">
                     <div class="equipment-history-body-col-head">
                       <span class="equipment-history-body-col-icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M5 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
-                          <path d="M7 8h4" />
-                          <path d="M7 12h5" />
-                          <path d="M15 7V5a1 1 0 0 1 1-1" />
-                          <path d="M15 7h2a2 2 0 0 1 2 2v7a2 2 0 0 0 2 2" />
-                          <path d="M19 18v2" />
-                        </svg>
+                        <ClipboardListIcon />
                       </span>
                       <span class="equipment-history-body-col-label">Топливо</span>
                     </div>
@@ -905,10 +821,7 @@ onMounted(refreshAll)
                   <div class="equipment-history-body-col">
                     <div class="equipment-history-body-col-head">
                       <span class="equipment-history-body-col-icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M12 20h9" />
-                          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 18l-4 1 1-4Z" />
-                        </svg>
+                        <PenLineIcon :size="14" />
                       </span>
                       <span class="equipment-history-body-col-label">Список дел / заметки</span>
                     </div>
@@ -920,9 +833,7 @@ onMounted(refreshAll)
                   <div class="equipment-history-body-col">
                     <div class="equipment-history-body-col-head">
                       <span class="equipment-history-body-col-icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                        </svg>
+                        <WrenchIcon />
                       </span>
                       <span class="equipment-history-body-col-label">Починка / проблемы</span>
                     </div>

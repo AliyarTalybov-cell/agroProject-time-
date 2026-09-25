@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PencilIcon } from '@lucide/vue'
 /**
  * Простой справочник складского учёта во вкладке «Справочники хранения»:
  * причины списания, направления расхода, назначения партий. Разметка — как у
@@ -133,7 +134,7 @@ async function confirmDelete() {
         <div class="lands-item-actions">
           <button type="button" class="stock-ref-toggle" :disabled="busy" @click="toggleActive(row)">{{ row.active ? 'Скрыть' : 'Показать' }}</button>
           <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Переименовать" title="Переименовать" @click="startEdit(row)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+            <PencilIcon :size="17" :stroke-width="2.1" />
           </button>
           <UiDeleteButton v-if="isManager" size="sm" :disabled="busy" @click="deleting = row" />
         </div>

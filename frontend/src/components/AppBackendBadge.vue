@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TriangleAlertIcon } from '@lucide/vue'
 withDefaults(
   defineProps<{
     checking?: boolean
@@ -13,7 +14,7 @@ const emit = defineEmits<{
 
 <template>
   <div class="db-badge" role="status" aria-live="polite">
-    <span class="db-badge__icon" aria-hidden="true">⚠️</span>
+    <TriangleAlertIcon class="db-badge__icon" :size="14" aria-hidden="true" />
     <span class="db-badge__text">Нет связи с БД</span>
     <button
       type="button"

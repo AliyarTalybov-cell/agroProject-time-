@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PlusIcon } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -66,7 +67,7 @@ onMounted(() => void loadData())
   <section class="news-page">
     <header class="news-header news-header--actions-only page-enter-item">
       <button v-if="isManager" type="button" class="news-add-btn" @click="openCreate">
-        <svg class="news-add-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+        <PlusIcon class="news-add-btn-icon" />
         Добавить новость
       </button>
     </header>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, FileTextIcon, PaperclipIcon, PencilIcon, PlusIcon, SearchIcon, UploadIcon } from '@lucide/vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
@@ -1563,7 +1564,7 @@ onMounted(async () => {
           type="button"
           @click="openAddField"
         >
-          <svg class="fields-add-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          <PlusIcon class="fields-add-btn-icon" />
           Добавить поле
         </button>
       </header>
@@ -1585,7 +1586,7 @@ onMounted(async () => {
       <div class="fields-card">
         <div class="fields-toolbar">
           <div class="fields-search-wrap">
-            <svg class="fields-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <SearchIcon class="fields-search-icon" />
             <input
               v-model="searchText"
               type="search"
@@ -1596,11 +1597,11 @@ onMounted(async () => {
           </div>
           <div class="fields-toolbar-actions">
             <button type="button" class="fields-export-btn task-btn-export action_has has_saved" :disabled="!sortedFilteredFields.length" title="Экспорт в Excel" @click="exportFieldsToExcel">
-              <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <DownloadIcon class="task-header-icon" :size="18" />
               Excel
             </button>
             <button type="button" class="fields-export-btn task-btn-export action_has has_saved" :disabled="!sortedFilteredFields.length" title="Экспорт в PDF" @click="exportFieldsToPdf">
-              <svg class="task-header-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+              <FileTextIcon class="task-header-icon" :size="18" />
               PDF
             </button>
           </div>
@@ -1737,13 +1738,13 @@ onMounted(async () => {
                       title="Открыть схему"
                       @click.stop
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                      <PaperclipIcon :size="18" />
                     </a>
                     <span v-else class="fields-action-btn fields-action-btn--disabled" title="Нет схемы" aria-label="Нет схемы">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                      <PaperclipIcon :size="18" />
                     </span>
                     <button type="button" class="fields-action-btn" aria-label="Редактировать" title="Редактировать" @click="openEditField(f)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                      <PencilIcon :size="18" />
                     </button>
                     <UiDeleteButton size="sm" @click="openDeleteConfirm(f)" />
                   </div>
@@ -1870,14 +1871,14 @@ onMounted(async () => {
               </div>
               <nav class="refs-pagination-nav" aria-label="Пагинация">
                 <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageReasons <= 1" aria-label="Предыдущая страница" @click="setRefsPageReasons(refsPageReasons - 1)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                  <ChevronLeftIcon :size="16" />
                 </button>
                 <template v-for="(p, i) in refsPaginationPages(totalPagesReasons, refsPageReasons)" :key="p === '...' ? `reasons-ellipsis-${i}` : p">
                   <button v-if="p !== '...'" type="button" class="refs-page-btn" :class="{ 'refs-page-btn--active': p === refsPageReasons }" @click="setRefsPageReasons(p as number)">{{ p }}</button>
                   <span v-else class="refs-page-ellipsis">…</span>
                 </template>
                 <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageReasons >= totalPagesReasons" aria-label="Следующая страница" @click="setRefsPageReasons(refsPageReasons + 1)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                  <ChevronRightIcon :size="16" />
                 </button>
               </nav>
             </div>
@@ -1933,14 +1934,14 @@ onMounted(async () => {
               </div>
               <nav class="refs-pagination-nav" aria-label="Пагинация">
                 <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageOperations <= 1" aria-label="Предыдущая страница" @click="setRefsPageOperations(refsPageOperations - 1)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                  <ChevronLeftIcon :size="16" />
                 </button>
                 <template v-for="(p, i) in refsPaginationPages(totalPagesOperations, refsPageOperations)" :key="p === '...' ? `ops-ellipsis-${i}` : p">
                   <button v-if="p !== '...'" type="button" class="refs-page-btn" :class="{ 'refs-page-btn--active': p === refsPageOperations }" @click="setRefsPageOperations(p as number)">{{ p }}</button>
                   <span v-else class="refs-page-ellipsis">…</span>
                 </template>
                 <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageOperations >= totalPagesOperations" aria-label="Следующая страница" @click="setRefsPageOperations(refsPageOperations + 1)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                  <ChevronRightIcon :size="16" />
                 </button>
               </nav>
             </div>
@@ -2186,7 +2187,7 @@ onMounted(async () => {
                         @error="($event.target as HTMLImageElement).style.display = 'none'"
                       />
                       <div v-else class="modal-scheme-preview-pdf">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <FileTextIcon :size="40" />
                         <span>PDF</span>
                       </div>
                       <span class="modal-dropzone-filename">{{ newFieldSchemeFileName }}</span>
@@ -2194,7 +2195,7 @@ onMounted(async () => {
                     </div>
                   </template>
                   <template v-else>
-                    <svg class="modal-dropzone-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <UploadIcon class="modal-dropzone-icon" />
                     <span class="modal-dropzone-text">Загрузить файл</span> или перетащите сюда
                     <span class="modal-file-hint">JPG, PNG, PDF до 20 МБ</span>
                   </template>

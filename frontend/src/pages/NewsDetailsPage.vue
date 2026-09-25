@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ChevronLeftIcon, ChevronRightIcon, PenLineIcon, Trash2Icon, XIcon } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -130,15 +131,15 @@ onMounted(() => void loadData())
   <section class="news-details">
     <div class="news-details-top">
       <button type="button" class="news-back-btn" @click="goBack" aria-label="Назад к новостям">
-        <svg class="news-back-btn-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        <ChevronLeftIcon class="news-back-btn-icon" :size="22" />
         Назад к новостям
       </button>
       <div v-if="isManager && post" class="news-details-actions">
         <button type="button" class="news-icon-btn" aria-label="Редактировать новость" title="Редактировать" @click="openEdit">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
+          <PenLineIcon :size="18" />
         </button>
         <button type="button" class="news-icon-btn news-icon-btn--danger" aria-label="Удалить новость" title="Удалить" @click="removePost">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          <Trash2Icon :size="18" />
         </button>
       </div>
     </div>
@@ -163,7 +164,7 @@ onMounted(() => void loadData())
           aria-label="Предыдущее фото"
           @click="prevGalleryPage"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          <ChevronLeftIcon :size="18" />
         </button>
         <div class="news-gallery" :class="galleryShiftClass">
           <button
@@ -184,21 +185,21 @@ onMounted(() => void loadData())
           aria-label="Следующее фото"
           @click="nextGalleryPage"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          <ChevronRightIcon :size="18" />
         </button>
       </div>
     </article>
     <teleport to="body">
       <div v-if="lightboxImage" class="news-lightbox" role="dialog" aria-modal="true" aria-label="Просмотр фото" @click.self="closeLightbox">
         <button type="button" class="news-lightbox-close" aria-label="Закрыть" @click="closeLightbox">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+          <XIcon :size="20" />
         </button>
         <button type="button" class="news-lightbox-nav news-lightbox-nav--prev" aria-label="Предыдущее фото" @click="lightboxPrev">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          <ChevronLeftIcon :size="22" />
         </button>
         <img :src="lightboxImage" alt="Фото новости" class="news-lightbox-image" />
         <button type="button" class="news-lightbox-nav news-lightbox-nav--next" aria-label="Следующее фото" @click="lightboxNext">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          <ChevronRightIcon :size="22" />
         </button>
       </div>
     </teleport>

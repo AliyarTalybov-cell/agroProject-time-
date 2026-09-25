@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PencilIcon } from '@lucide/vue'
 /**
  * Вкладка «Землепользователи» карточки участка.
  *
@@ -80,7 +81,7 @@ defineEmits<{
             </div>
             <div class="lands-item-actions">
               <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="$emit('edit', user)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                <PencilIcon :size="18" />
               </button>
               <UiDeleteButton size="sm" @click="$emit('remove', user.id)" />
             </div>

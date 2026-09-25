@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ChevronLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon } from '@lucide/vue'
 import { promptText } from '@/composables/usePromptText'
 import UiSelect from '@/components/ui/UiSelect.vue'
 // Общие стили раздела земель — те же, что у вынесенных окон и вкладок.
@@ -3690,9 +3691,7 @@ onMounted(() => void reloadAll())
     <header class="lands-top page-enter-item">
       <div class="lands-top-text">
         <button v-if="isDetailsMode" type="button" class="lands-back-btn" @click="goToRegistry" aria-label="Назад к списку земель">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
+          <ChevronLeftIcon :size="20" />
           Назад к списку земель
         </button>
         <p v-if="!isDetailsMode" class="lands-subtitle">{{ landsListSubtitle }}</p>
@@ -3774,12 +3773,7 @@ onMounted(() => void reloadAll())
                   title="Экспорт в PDF"
                   @click="exportLandsToPdf"
                 >
-                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
-                    <path d="M14 2v6h6" data-path="line-top" />
-                    <path d="M12 18v-6" data-path="line-bottom" />
-                    <path d="M9 15h6" />
-                  </svg>
+                  <FileTextIcon class="lands-export-icon" />
                   PDF
                 </button>
                 <button
@@ -3789,14 +3783,7 @@ onMounted(() => void reloadAll())
                   title="Экспорт в Excel"
                   @click="exportLandsToExcel"
                 >
-                  <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-path="box" />
-                    <path d="M14 2v6h6" data-path="line-top" />
-                    <path d="M8 13h2" data-path="line-bottom" />
-                    <path d="M8 17h2" />
-                    <path d="M14 13h2" />
-                    <path d="M14 17h2" />
-                  </svg>
+                  <FileSpreadsheetIcon class="lands-export-icon" />
                   Excel
                 </button>
               </div>
@@ -3901,23 +3888,11 @@ onMounted(() => void reloadAll())
           <div class="lands-melioration-head">
             <div class="lands-export-btns">
               <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
-                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M12 18v-6" />
-                  <path d="M9 15h6" />
-                </svg>
+                <FileTextIcon class="lands-export-icon" />
                 PDF
               </button>
               <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
-                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M8 13h2" />
-                  <path d="M8 17h2" />
-                  <path d="M14 13h2" />
-                  <path d="M14 17h2" />
-                </svg>
+                <FileSpreadsheetIcon class="lands-export-icon" />
                 Excel
               </button>
             </div>
@@ -3981,7 +3956,7 @@ onMounted(() => void reloadAll())
                   <td @click.stop>
                     <div class="lands-item-actions">
                       <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openMeliorationEditModal(entry)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        <PencilIcon :size="17" :stroke-width="2.1" />
                       </button>
                       <UiDeleteButton size="sm" @click="requestDeleteMelioration(entry.id)" />
                     </div>
@@ -4068,7 +4043,7 @@ onMounted(() => void reloadAll())
                 <span>{{ type.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandType(type)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandType(type.id)" />
                 </div>
@@ -4089,7 +4064,7 @@ onMounted(() => void reloadAll())
                 <span>{{ category.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandCategory(category)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandCategory(category.id)" />
                 </div>
@@ -4110,7 +4085,7 @@ onMounted(() => void reloadAll())
                 <span>{{ option.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandUsageOption(option)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandUsage(option.id)" />
                 </div>
@@ -4134,7 +4109,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.label }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteCropRef(row.id)" />
                 </div>
@@ -4169,7 +4144,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationTypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationType(row.id)" />
                 </div>
@@ -4190,7 +4165,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationSubtypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationSubtype(row.id)" />
                 </div>
@@ -4211,7 +4186,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationEventTypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationEventType(row.id)" />
                 </div>
@@ -4243,7 +4218,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentTypeReference(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteEquipmentType(row.id)" />
                 </div>
@@ -4264,7 +4239,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentConditionReference(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteEquipmentCondition(row.code)" />
                 </div>
@@ -4293,7 +4268,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editFieldMunicipalityReference(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteFieldMunicipality(row.id)" />
                 </div>
@@ -4322,7 +4297,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRotationTypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteCropRotationType(row.id)" />
                 </div>
@@ -4363,7 +4338,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationTypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteStorageLocationType(row.id)" />
                 </div>
@@ -4389,7 +4364,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}<template v-if="row.marks_inactive"> — не используется</template></span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationStatusRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteStorageLocationStatus(row.id)" />
                 </div>
@@ -4450,7 +4425,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editOwnershipForm(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteOwnershipForm(row.id)" />
                 </div>
@@ -4469,7 +4444,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightTypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightType(row.id)" />
                 </div>
@@ -4488,7 +4463,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightDocumentTypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightDocumentType(row.id)" />
                 </div>
@@ -4507,7 +4482,7 @@ onMounted(() => void reloadAll())
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editHolderTypeRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteHolderType(row.id)" />
                 </div>
@@ -4546,7 +4521,7 @@ onMounted(() => void reloadAll())
                 </div>
                 <div class="lands-item-actions">
                   <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightHolderRef(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    <PencilIcon :size="17" :stroke-width="2.1" />
                   </button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightHolder(row.id)" />
                 </div>
@@ -4699,23 +4674,11 @@ onMounted(() => void reloadAll())
             <h2>Сведения об участке</h2>
             <div class="lands-export-btns">
               <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в PDF" @click="exportLandInfoToPdf">
-                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M12 18v-6" />
-                  <path d="M9 15h6" />
-                </svg>
+                <FileTextIcon class="lands-export-icon" />
                 PDF
               </button>
               <button type="button" class="lands-export-btn action_has has_saved" :disabled="!landInfoExportRows.length" title="Экспорт в Excel" @click="exportLandInfoToExcel">
-                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M8 13h2" />
-                  <path d="M8 17h2" />
-                  <path d="M14 13h2" />
-                  <path d="M14 17h2" />
-                </svg>
+                <FileSpreadsheetIcon class="lands-export-icon" />
                 Excel
               </button>
             </div>

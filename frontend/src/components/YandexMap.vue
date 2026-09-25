@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MapPinIcon } from '@lucide/vue'
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { type LatLon, polygonCenter } from '@/lib/geoContour'
 
@@ -557,10 +558,7 @@ onBeforeUnmount(() => {
     </div>
     <div ref="mapEl" class="ymap-container" />
     <div v-if="interactive && overlayHint" class="ymap-hint">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
+      <MapPinIcon :size="14" />
       <span class="ymap-hint-text">
         <template v-if="fieldMarkers.length">Зелёные объекты — ваши поля. </template>
         <template v-if="geometryMode === 'polygon'">

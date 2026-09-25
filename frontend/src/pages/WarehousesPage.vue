@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CylinderIcon, HouseIcon, PlusIcon, SearchIcon, SunIcon, WarehouseIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Склады — карточки. Масса, культуры и заполненность считаются по складскому
@@ -103,16 +104,12 @@ function cropsLabel(w: WarehouseOverview): string {
   return w.crops.map((c) => `${c.label} ${formatMassTons(c.tons)}`).join(', ') || 'Нет'
 }
 
-function typeIconPath(type: string): string {
-  if (type === 'Ток')
-    return 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z'
-  if (type === 'Силос')
-    return 'M6 20h12M6 20V10l6-4 6 4v10M6 20H4m16 0h2M9 14h6'
-  if (type === 'Склад')
-    return 'M3 21h18M5 21V7l8-4v18M19 21V11M9 9h1m0 4h1m4-4h1m0 4h1'
-  if (type === 'Бурт')
-    return 'M3 20h18M5 20V8l7-4 7 4v12'
-  return 'M3 20h18M5 20V8l7-4 7 4v12'
+/** Иконка типа места хранения — Lucide (набор shadcn-vue). */
+function typeIcon(type: string) {
+  if (type === 'Ток') return SunIcon
+  if (type === 'Силос') return CylinderIcon
+  if (type === 'Склад') return WarehouseIcon
+  return HouseIcon
 }
 
 function openStorageCell(id: string) {
@@ -139,7 +136,7 @@ onMounted(() => {
           </p>
         </div>
         <RouterLink class="fields-add-btn" to="/warehouses/storage-locations?create=1">
-          <svg class="fields-add-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          <PlusIcon class="fields-add-btn-icon" />
           Добавить склад
         </RouterLink>
       </header>
@@ -147,7 +144,7 @@ onMounted(() => {
       <section class="fields-card">
         <div class="fields-toolbar">
           <div class="fields-search-wrap">
-            <svg class="fields-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <SearchIcon class="fields-search-icon" />
             <input
               v-model.trim="search"
               class="fields-search-input"
@@ -185,7 +182,7 @@ onMounted(() => {
           <p class="warehouse-empty-title">Нет мест хранения</p>
           <p class="warehouse-empty-text">Добавьте место в справочнике — кнопка выше откроет форму создания.</p>
           <RouterLink class="fields-add-btn" to="/warehouses/storage-locations?create=1">
-            <svg class="fields-add-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            <PlusIcon class="fields-add-btn-icon" />
             Добавить склад
           </RouterLink>
         </div>
@@ -212,9 +209,7 @@ onMounted(() => {
             >
             <div class="warehouse-card-top">
               <div class="warehouse-card-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path :d="typeIconPath(w.typeName)" />
-                </svg>
+                <component :is="typeIcon(w.typeName)" :size="22" :stroke-width="1.8" aria-hidden="true" />
               </div>
               <span class="warehouse-card-status" :class="fillStateClass(fillState(w))">
                 {{ FILL_LABELS[fillState(w)] }}

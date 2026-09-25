@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ActivityIcon, CheckIcon, CloudIcon, CloudRainIcon, CopyIcon, DropletIcon, EyeIcon, GaugeIcon, LeafIcon, MapPinIcon, SunIcon, SunriseIcon, ThermometerIcon, WindIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { loadFields, type FieldRow } from '@/lib/fieldsSupabase'
@@ -602,7 +603,7 @@ const weatherMapFieldMarkers = computed(() => {
     <header class="header-area header-weather page-enter-item">
       <div class="weather-page-title">
         <span class="weather-page-title-icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          <LeafIcon :size="18" />
         </span>
         <div>
           <h1>АгроМетео</h1>
@@ -639,7 +640,7 @@ const weatherMapFieldMarkers = computed(() => {
         <div class="weather-hero-inner">
           <div class="weather-hero-main">
             <div class="weather-hero-location">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+              <MapPinIcon class="w-5 h-5" :size="20" />
               <span>Локация</span>
             </div>
             <h2 class="weather-hero-city">{{ weather.cityName }}</h2>
@@ -659,13 +660,13 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
           <aside class="weather-recommendation-inline">
             <h3>
-              <span style="background:#4ade80;color:#14532d;padding:6px;border-radius:8px;display:inline-flex;">✓</span>
+              <span style="background:#4ade80;color:#14532d;padding:6px;border-radius:8px;display:inline-flex;"><CheckIcon :size="16" aria-hidden="true" /></span>
               Рекомендация
             </h3>
             <p>{{ heroRecommendation.title }}</p>
             <ul>
               <li v-for="item in heroRecommendation.items" :key="`${item.label}:${item.value}`">
-                <span>✓ {{ item.label }}</span>
+                <span style="display:inline-flex;align-items:center;gap:6px"><CheckIcon :size="14" aria-hidden="true" /> {{ item.label }}</span>
                 <span>{{ item.value }}</span>
               </li>
             </ul>
@@ -677,7 +678,7 @@ const weatherMapFieldMarkers = computed(() => {
       <div class="weather-indicators-grid page-enter-item" style="--enter-delay: 180ms">
         <div class="weather-indicator-card">
           <div class="weather-indicator-icon weather-icon-wind">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" /><path d="M9.6 4.6A2 2 0 1 1 11 8H2" /><path d="M12.6 19.4A2 2 0 1 0 14 16H2" /></svg>
+            <WindIcon :size="24" />
           </div>
           <div>
             <div class="weather-indicator-label">Ветер</div>
@@ -686,7 +687,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
         </div>
         <div class="weather-indicator-card">
-          <div class="weather-indicator-icon weather-icon-humidity"><!-- humidity --><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a5 5 0 0 0 5-5c0-2-5-10-5-10S7 15 7 17a5 5 0 0 0 5 5z" /></svg></div>
+          <div class="weather-indicator-icon weather-icon-humidity"><!-- humidity --><DropletIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">Влажность</div>
             <div class="weather-indicator-value">{{ weather.humidity != null ? weather.humidity : '—' }}<span class="weather-indicator-muted">%</span></div>
@@ -694,7 +695,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
         </div>
         <div class="weather-indicator-card">
-          <div class="weather-indicator-icon weather-icon-pressure"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 14 4-4" /><path d="M3.34 19a10 10 0 1 1 17.32 0" /></svg></div>
+          <div class="weather-indicator-icon weather-icon-pressure"><GaugeIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">Давление</div>
             <div class="weather-indicator-value">{{ weather.pressure != null ? weather.pressure : '—' }}<span class="weather-indicator-muted"> гПа</span></div>
@@ -702,7 +703,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
         </div>
         <div class="weather-indicator-card">
-          <div class="weather-indicator-icon weather-icon-visibility"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg></div>
+          <div class="weather-indicator-icon weather-icon-visibility"><EyeIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">Видимость</div>
             <div class="weather-indicator-value">{{ weather.visibility != null ? Number((weather.visibility / 1000).toFixed(1)) : '—' }}<span class="weather-indicator-muted"> км</span></div>
@@ -710,7 +711,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
         </div>
         <div class="weather-indicator-card">
-          <div class="weather-indicator-icon weather-icon-clouds"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" /></svg></div>
+          <div class="weather-indicator-icon weather-icon-clouds"><CloudIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">Облачность</div>
             <div class="weather-indicator-value">{{ weather.clouds != null ? weather.clouds : '—' }}<span class="weather-indicator-muted" v-if="weather.clouds != null">%</span></div>
@@ -719,7 +720,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
         </div>
         <div class="weather-indicator-card">
-          <div class="weather-indicator-icon weather-icon-precip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="M16 14v6" /><path d="M8 14v6" /><path d="M12 16v6" /></svg></div>
+          <div class="weather-indicator-icon weather-icon-precip"><CloudRainIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">Вер. осадков</div>
             <div class="weather-indicator-value">{{ weather.precProbability != null ? weather.precProbability : '—' }}<span class="weather-indicator-muted">%</span></div>
@@ -727,7 +728,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
         </div>
         <div class="weather-indicator-card">
-          <div class="weather-indicator-icon weather-icon-uv"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg></div>
+          <div class="weather-indicator-icon weather-icon-uv"><SunIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">УФ-Индекс</div>
             <div class="weather-indicator-value">{{ forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? '—' }} <span v-if="forecastWithLabels[0]?.uvIndexMax != null || weatherInsights?.airQuality?.uvIndex != null || weather.uvIndex != null" class="weather-badge" :class="((forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? 0) > 5) ? 'weather-badge-high' : 'weather-badge-low'">{{ ((forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? 0) > 5) ? 'Высокий' : 'Низкий' }}</span></div>
@@ -736,7 +737,7 @@ const weatherMapFieldMarkers = computed(() => {
         </div>
         <div class="weather-indicator-card">
           <div class="weather-indicator-icon weather-icon-soil" style="color: #8B4513; background: rgba(139,69,19,0.15)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" /></svg>
+            <ThermometerIcon :size="24" />
           </div>
           <div>
             <div class="weather-indicator-label">Темп. почвы</div>
@@ -747,7 +748,7 @@ const weatherMapFieldMarkers = computed(() => {
         
         <div class="weather-indicator-card">
           <div class="weather-indicator-icon weather-icon-moisture" style="color: #20B2AA; background: rgba(32,178,170,0.15)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a5 5 0 0 0 5-5c0-2-5-10-5-10S7 15 7 17a5 5 0 0 0 5 5z" /></svg>
+            <DropletIcon :size="24" />
           </div>
           <div>
             <div class="weather-indicator-label">Влажн. почвы</div>
@@ -758,7 +759,7 @@ const weatherMapFieldMarkers = computed(() => {
 
         <div class="weather-indicator-card">
           <div class="weather-indicator-icon weather-icon-leaf" style="color: #4ade80; background: rgba(74,222,128,0.15)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            <LeafIcon :size="24" />
           </div>
           <div>
             <div class="weather-indicator-label">Листья</div>
@@ -769,7 +770,7 @@ const weatherMapFieldMarkers = computed(() => {
 
         <div class="weather-indicator-card">
           <div class="weather-indicator-icon weather-icon-kp" style="color: #9333ea; background: rgba(147,51,234,0.15)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <ActivityIcon :size="24" />
           </div>
           <div>
             <div class="weather-indicator-label">Осадки сейчас</div>
@@ -779,7 +780,7 @@ const weatherMapFieldMarkers = computed(() => {
         </div>
 
         <div class="weather-indicator-card weather-indicator-card--bottom weather-indicator-card--sun">
-          <div class="weather-indicator-icon weather-icon-sun"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v8" /><path d="m4.93 10.93 1.41 1.41" /><path d="M2 18h2" /><path d="M20 18h2" /><path d="m19.07 10.93-1.41 1.41" /><path d="M22 22H2" /><path d="m8 6 4-4 4 4" /><path d="M16 18a4 4 0 0 0-8 0" /></svg></div>
+          <div class="weather-indicator-icon weather-icon-sun"><SunriseIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">Солнце</div>
             <div class="weather-indicator-value weather-indicator-value-sun">
@@ -792,7 +793,7 @@ const weatherMapFieldMarkers = computed(() => {
 
         <div class="weather-indicator-card weather-indicator-card--bottom weather-indicator-card--dew">
           <div class="weather-indicator-icon weather-icon-dew" style="color: #2563eb; background: rgba(37,99,235,0.15)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7l-3.3 3.3a4.67 4.67 0 0 0 0 6.6 4.67 4.67 0 0 0 6.6 0 4.67 4.67 0 0 0 0-6.6Z"/></svg>
+            <DropletIcon :size="24" />
           </div>
           <div>
             <div class="weather-indicator-label">Точка росы</div>
@@ -933,11 +934,7 @@ const weatherMapFieldMarkers = computed(() => {
         <div class="weather-air-card">
           <div class="weather-air-main">
             <div class="weather-air-value">{{ weatherInsights?.airQuality?.europeanAqi ?? '—' }}</div>
-            <svg class="weather-air-wind-icon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M3 8h10a3 3 0 1 0-3-3" />
-              <path d="M3 12h15a3 3 0 1 1-3 3" />
-              <path d="M3 16h8" />
-            </svg>
+            <WindIcon class="weather-air-wind-icon" aria-hidden="true" :size="28" :stroke-width="2.4" />
             <div class="weather-air-sub">European AQI</div>
           </div>
           <div class="weather-air-metrics">
@@ -970,7 +967,7 @@ const weatherMapFieldMarkers = computed(() => {
           />
           <div v-if="pickedCoords" class="ymap-picked-coords">
             <div class="ymap-picked-coords-main">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <MapPinIcon :size="14" />
               <span
                 >Выбрана точка:
                 <strong>{{ pickedCoords.lat.toFixed(5) }}° N, {{ pickedCoords.lon.toFixed(5) }}° E</strong></span
@@ -983,10 +980,7 @@ const weatherMapFieldMarkers = computed(() => {
               :aria-label="pickedCoordsCopied ? 'Скопировано в буфер' : 'Копировать координаты в буфер обмена'"
               @click="copyPickedCoords"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-              </svg>
+              <CopyIcon aria-hidden="true" :size="18" />
             </button>
           </div>
           <p class="weather-map-hint">
@@ -1001,7 +995,7 @@ const weatherMapFieldMarkers = computed(() => {
         <p class="weather-block-subtitle">Быстрые правила по текущему прогнозу</p>
         <div class="weather-crops-list">
           <div v-for="card in agroRiskCards.slice(0, 4)" :key="card.title" class="weather-crop-item">
-            <div class="weather-crop-icon corn">✓</div>
+            <div class="weather-crop-icon corn"><CheckIcon :size="16" aria-hidden="true" /></div>
             <div>
               <div>
                 <strong>{{ card.title }}</strong>

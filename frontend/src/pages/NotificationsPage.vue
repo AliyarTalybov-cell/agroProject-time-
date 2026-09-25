@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CalendarIcon, ClipboardListIcon } from '@lucide/vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import {
   countMyUnreadNotifications,
@@ -288,16 +289,8 @@ onMounted(() => {
             :class="{ 'notification-item--read': item.isRead }"
           >
             <div class="notification-item-icon" :class="`notification-item-icon--${item.type}`" aria-hidden="true">
-              <svg v-if="item.type === 'calendar_invited'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <rect x="3" y="4" width="18" height="18" rx="3" ry="3" fill="none" stroke="currentColor" stroke-width="1.8" />
-                <line x1="8" y1="2.5" x2="8" y2="6.5" stroke="currentColor" stroke-width="1.8" />
-                <line x1="16" y1="2.5" x2="16" y2="6.5" stroke="currentColor" stroke-width="1.8" />
-                <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.8" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.8" />
-                <path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
+              <CalendarIcon v-if="item.type === 'calendar_invited'" />
+              <ClipboardListIcon v-else />
             </div>
             <div class="notification-item-main">
               <div class="notification-item-title-row">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FileSpreadsheetIcon, FileTextIcon, PencilIcon } from '@lucide/vue'
 /**
  * Вкладка «Объекты недвижимости» карточки участка.
  *
@@ -39,23 +40,11 @@ defineEmits<{
           <div class="lands-section-actions">
             <div class="lands-export-btns">
               <button type="button" class="lands-export-btn action_has has_saved" :disabled="!exportRows.length" title="Экспорт в PDF" @click="$emit('export-pdf')">
-                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M12 18v-6" />
-                  <path d="M9 15h6" />
-                </svg>
+                <FileTextIcon class="lands-export-icon" />
                 PDF
               </button>
               <button type="button" class="lands-export-btn action_has has_saved" :disabled="!exportRows.length" title="Экспорт в Excel" @click="$emit('export-excel')">
-                <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                  <path d="M8 13h2" />
-                  <path d="M8 17h2" />
-                  <path d="M14 13h2" />
-                  <path d="M14 17h2" />
-                </svg>
+                <FileSpreadsheetIcon class="lands-export-icon" />
                 Excel
               </button>
             </div>
@@ -92,7 +81,7 @@ defineEmits<{
             </div>
             <div class="lands-item-actions">
               <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="$emit('edit', obj)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                <PencilIcon :size="18" />
               </button>
               <UiDeleteButton size="sm" @click="$emit('remove', obj.id)" />
             </div>

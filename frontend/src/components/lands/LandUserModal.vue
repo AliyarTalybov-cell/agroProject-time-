@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FileIcon, XIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -131,14 +132,12 @@ defineEmits<{
               >
                 <div class="lands-docs-preview-thumb-wrap">
                   <img v-if="isImageUrl(link)" class="lands-docs-preview-thumb" :src="link" :alt="fileLabelFromUrl(link)" loading="lazy" />
-                  <svg v-else class="lands-docs-preview-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
-                  </svg>
+                  <FileIcon v-else class="lands-docs-preview-icon" :size="18" />
                 </div>
                 <span class="lands-docs-preview-name">{{ fileLabelFromUrl(link) }}</span>
               </a>
               <button type="button" class="lands-docs-remove-btn" title="Удалить файл" aria-label="Удалить файл" :disabled="uploading || saving" @click="$emit('remove-file', link)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <XIcon :size="14" :stroke-width="2.3" />
               </button>
             </div>
           </div>

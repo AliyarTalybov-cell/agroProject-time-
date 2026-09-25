@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ArchiveIcon, BellIcon, BookMarkedIcon, BoxesIcon, CalendarIcon, ChevronDownIcon, CloudIcon, DropletsIcon, FileTextIcon, HomeIcon, LayoutDashboardIcon, LayoutGridIcon, LogOutIcon, MapIcon, MenuIcon, MessageCircleIcon, MonitorIcon, NewspaperIcon, PackageIcon, ScrollTextIcon, SettingsIcon, SquareCheckBigIcon, TractorIcon, UsersIcon, WarehouseIcon, WheatIcon } from '@lucide/vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
@@ -296,7 +297,7 @@ watch(
                 @click.prevent="goDashboardHome"
               >
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                  <LayoutDashboardIcon />
                 </span>
                 Обзор
               </a>
@@ -304,7 +305,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/news">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2z"/><path d="M8 8h8"/><path d="M8 12h8"/></svg>
+                  <NewspaperIcon />
                 </span>
                 Новости
               </RouterLink>
@@ -312,7 +313,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/weather">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                  <CloudIcon />
                 </span>
                 Погода
               </RouterLink>
@@ -325,16 +326,16 @@ watch(
                 @click="toggleLandsNavSubmenu"
               >
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7l8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                  <PackageIcon />
                 </span>
                 <span class="nav-item-label">Земли</span>
-                <svg class="nav-group-chevron" :class="{ 'is-open': landsNavExpanded, 'is-active': landsSectionActive }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': landsNavExpanded, 'is-active': landsSectionActive }" aria-hidden="true" :stroke-width="2.6" />
               </button>
               <ul class="nav-submenu">
                 <li>
                   <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': landsNavActive }" active-class="" exact-active-class="" to="/lands">
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>
+                      <MapIcon />
                     </span>
                     Земельные участки
                   </RouterLink>
@@ -342,7 +343,7 @@ watch(
                 <li>
                   <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': fieldsNavActive }" to="/fields">
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                      <HomeIcon />
                     </span>
                     Поля
                   </RouterLink>
@@ -356,7 +357,7 @@ watch(
                     :to="{ path: '/lands', query: { tab: 'melioration' } }"
                   >
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M7 21v-7a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v7"/><path d="M12 11V3"/><path d="m8 7 4-4 4 4"/></svg>
+                      <DropletsIcon />
                     </span>
                     Мелиорация
                   </RouterLink>
@@ -371,25 +372,16 @@ watch(
                 @click="toggleWarehousesNavSubmenu"
               >
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 10.5 12 4l9 6.5" />
-                    <path d="M5 9.5V20h14V9.5" />
-                    <path d="M9 20v-5h6v5" />
-                  </svg>
+                  <WarehouseIcon />
                 </span>
                 <span class="nav-item-label">Склады</span>
-                <svg class="nav-group-chevron" :class="{ 'is-open': warehousesNavExpanded, 'is-active': warehousesSectionActive }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': warehousesNavExpanded, 'is-active': warehousesSectionActive }" aria-hidden="true" :stroke-width="2.6" />
               </button>
               <ul class="nav-submenu">
                 <li>
                   <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': warehousesNavActive }" active-class="" exact-active-class="" to="/warehouses">
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" />
-                      </svg>
+                      <LayoutGridIcon />
                     </span>
                     Карточки складов
                   </RouterLink>
@@ -397,11 +389,7 @@ watch(
                 <li>
                   <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': storageLocationsNavActive }" to="/warehouses/storage-locations">
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 7h18" />
-                        <path d="M5 7v13h14V7" />
-                        <path d="M9 11h6" />
-                      </svg>
+                      <ArchiveIcon />
                     </span>
                     Места хранения
                   </RouterLink>
@@ -416,25 +404,16 @@ watch(
                 @click="toggleGrainNavSubmenu"
               >
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22V8" />
-                    <path d="M12 8c0-2.5-1.5-4-4-4 0 2.5 1.5 4 4 4Z" />
-                    <path d="M12 8c0-2.5 1.5-4 4-4 0 2.5-1.5 4-4 4Z" />
-                    <path d="M12 14c0-2.5-1.5-4-4-4 0 2.5 1.5 4 4 4Z" />
-                    <path d="M12 14c0-2.5 1.5-4 4-4 0 2.5-1.5 4-4 4Z" />
-                  </svg>
+                  <WheatIcon />
                 </span>
                 <span class="nav-item-label">Учёт зерна</span>
-                <svg class="nav-group-chevron" :class="{ 'is-open': grainNavExpanded, 'is-active': grainSectionActive }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': grainNavExpanded, 'is-active': grainSectionActive }" aria-hidden="true" :stroke-width="2.6" />
               </button>
               <ul class="nav-submenu">
                 <li>
                   <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainBatchesNavActive }" to="/grain/batches">
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="16" rx="2" />
-                        <path d="M7 8h10M7 12h10M7 16h6" />
-                      </svg>
+                      <BoxesIcon />
                     </span>
                     Партии
                   </RouterLink>
@@ -442,11 +421,7 @@ watch(
                 <li>
                   <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainJournalNavActive }" to="/grain/journal">
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2 2 7l10 5 10-5-10-5Z" />
-                        <path d="m2 17 10 5 10-5" />
-                        <path d="m2 12 10 5 10-5" />
-                      </svg>
+                      <ScrollTextIcon />
                     </span>
                     Журнал операций
                   </RouterLink>
@@ -454,11 +429,7 @@ watch(
                 <li>
                   <RouterLink class="nav-item nav-item--sub" :class="{ 'router-link-active': grainCounterpartiesNavActive }" to="/grain/counterparties">
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
+                      <UsersIcon />
                     </span>
                     Контрагенты
                   </RouterLink>
@@ -468,14 +439,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/equipment">
                 <span class="nav-item-icon nav-item-icon--equipment" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 15a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
-                    <path d="M7 15l0 .01"/>
-                    <path d="M17 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
-                    <path d="M10.5 17l6.5 0"/>
-                    <path d="M20 15.2v-4.2a1 1 0 0 0 -1 -1h-6l-2 -5h-6v6.5"/>
-                    <path d="M18 5h-1a1 1 0 0 0 -1 1v4"/>
-                  </svg>
+                  <TractorIcon />
                 </span>
                 Техника
               </RouterLink>
@@ -483,7 +447,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/task-management">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  <SquareCheckBigIcon />
                 </span>
                 Задачи
               </RouterLink>
@@ -491,7 +455,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/tasks">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                  <CalendarIcon />
                 </span>
                 Календарь
               </RouterLink>
@@ -499,7 +463,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/reports">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+                  <FileTextIcon />
                 </span>
                 Аналитика
               </RouterLink>
@@ -513,7 +477,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/mechanic">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+                  <MonitorIcon />
                 </span>
                 Экран оператора
               </RouterLink>
@@ -527,12 +491,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/employees">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
+                  <UsersIcon />
                 </span>
                 Сотрудники
               </RouterLink>
@@ -540,10 +499,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/notifications">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V10a6 6 0 1 0-12 0v4.2c0 .53-.21 1.04-.59 1.42L4 17h5"/>
-                    <path d="M9 17a3 3 0 0 0 6 0"/>
-                  </svg>
+                  <BellIcon />
                 </span>
                 Уведомления
                 <span v-if="notificationsUnreadDisplay > 0" class="nav-item-badge">{{ notificationsUnreadDisplay > 99 ? '99+' : notificationsUnreadDisplay }}</span>
@@ -552,9 +508,7 @@ watch(
             <li>
               <RouterLink class="nav-item" to="/chat">
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
+                  <MessageCircleIcon />
                 </span>
                 Чат
                 <span v-if="chatUnreadDisplay > 0" class="nav-item-badge">{{ chatUnreadDisplay > 99 ? '99+' : chatUnreadDisplay }}</span>
@@ -574,10 +528,10 @@ watch(
                 @click="toggleSettingsNavSubmenu"
               >
                 <span class="nav-item-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.82-.33 1.7 1.7 0 0 0-1.03 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.03-1.55 1.7 1.7 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 8.4a1.7 1.7 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.96 4.6a1.7 1.7 0 0 0 1.03-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.33 1.82 1.7 1.7 0 0 0 1.55 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1.03Z"/></svg>
+                  <SettingsIcon />
                 </span>
                 <span class="nav-item-label">Настройки</span>
-                <svg class="nav-group-chevron" :class="{ 'is-open': settingsNavExpanded, 'is-active': referencesNavActive }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                <ChevronDownIcon class="nav-group-chevron" :class="{ 'is-open': settingsNavExpanded, 'is-active': referencesNavActive }" aria-hidden="true" :stroke-width="2.6" />
               </button>
               <ul class="nav-submenu">
                 <li>
@@ -589,7 +543,7 @@ watch(
                     :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
                   >
                     <span class="nav-item-icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6"/><path d="M12 9v6"/><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg>
+                      <BookMarkedIcon />
                     </span>
                     Справочники
                   </RouterLink>
@@ -603,11 +557,7 @@ watch(
       <footer class="sidebar-footer">
         <button type="button" class="app-logout-btn" aria-label="Выйти из аккаунта" @click="handleLogout">
           <span class="app-logout-sign">
-            <svg viewBox="0 0 512 512" aria-hidden="true">
-              <path
-                d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"
-              />
-            </svg>
+            <LogOutIcon aria-hidden="true" />
           </span>
           <span class="app-logout-text">Выйти</span>
         </button>
@@ -628,7 +578,7 @@ watch(
     <main class="main-content">
       <header class="app-topbar">
         <button type="button" class="topbar-menu-btn" aria-label="Меню" @click="toggleMobileMenu">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <MenuIcon :size="24" />
         </button>
         <h1 class="app-topbar-title">{{ pageTitle }}</h1>
         <div class="app-topbar-right">

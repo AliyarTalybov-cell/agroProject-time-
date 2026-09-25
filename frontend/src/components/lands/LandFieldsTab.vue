@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ExternalLinkIcon, FileSpreadsheetIcon, FileTextIcon, Trash2Icon } from '@lucide/vue'
 /**
  * Вкладка «Поля» карточки участка.
  *
@@ -38,23 +39,11 @@ defineEmits<{
           <h2>Поля земли</h2>
           <div class="lands-export-btns">
             <button type="button" class="lands-export-btn action_has has_saved" :disabled="!exportRows.length" title="Экспорт в PDF" @click="$emit('export-pdf')">
-              <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <path d="M14 2v6h6" />
-                <path d="M12 18v-6" />
-                <path d="M9 15h6" />
-              </svg>
+              <FileTextIcon class="lands-export-icon" />
               PDF
             </button>
             <button type="button" class="lands-export-btn action_has has_saved" :disabled="!exportRows.length" title="Экспорт в Excel" @click="$emit('export-excel')">
-              <svg class="lands-export-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <path d="M14 2v6h6" />
-                <path d="M8 13h2" />
-                <path d="M8 17h2" />
-                <path d="M14 13h2" />
-                <path d="M14 17h2" />
-              </svg>
+              <FileSpreadsheetIcon class="lands-export-icon" />
               Excel
             </button>
           </div>
@@ -94,10 +83,10 @@ defineEmits<{
                 <td @click.stop>
                   <div class="lands-item-actions">
                     <button type="button" class="lands-action-btn" aria-label="Открыть поле" title="Открыть поле" @click="$emit('open-field', field.id)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+                      <ExternalLinkIcon :size="17" :stroke-width="2.1" />
                     </button>
                     <button v-if="inlineEditOpen" type="button" class="lands-action-btn lands-action-btn--danger" aria-label="Отвязать поле" title="Отвязать поле" @click="$emit('unlink', field.id)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                      <Trash2Icon :size="17" :stroke-width="2.1" />
                     </button>
                   </div>
                 </td>
