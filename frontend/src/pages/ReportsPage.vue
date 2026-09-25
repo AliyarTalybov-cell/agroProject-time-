@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import StatusDonutChart from '@/components/ui/charts/StatusDonutChart.vue'
+import CountBarChart from '@/components/ui/charts/CountBarChart.vue'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { ClockIcon } from '@lucide/vue'
@@ -390,10 +392,10 @@ const taskDonut = computed(() => {
     return { total: 0, slices: [] as { key: string; label: string; count: number; pct: number; color: string }[] }
   }
   const slices = [
-    { key: 'done', label: taskStatusLabels.done, count: done, pct: (done / total) * 100, color: '#22c55e' },
-    { key: 'in_progress', label: taskStatusLabels.in_progress, count: prog, pct: (prog / total) * 100, color: '#3b82f6' },
-    { key: 'review', label: taskStatusLabels.review, count: review, pct: (review / total) * 100, color: '#f59e0b' },
-    { key: 'todo', label: taskStatusLabels.todo, count: todo, pct: (todo / total) * 100, color: '#94a3b8' },
+    { key: 'done', label: taskStatusLabels.done, count: done, pct: (done / total) * 100, color: 'var(--chart-5)' },
+    { key: 'in_progress', label: taskStatusLabels.in_progress, count: prog, pct: (prog / total) * 100, color: 'var(--chart-2)' },
+    { key: 'review', label: taskStatusLabels.review, count: review, pct: (review / total) * 100, color: 'var(--chart-3)' },
+    { key: 'todo', label: taskStatusLabels.todo, count: todo, pct: (todo / total) * 100, color: 'var(--chart-4)' },
   ].filter((s) => s.count > 0)
   return { total, slices }
 })
@@ -1303,18 +1305,13 @@ onUnmounted(() => {
       <div class="dash-charts">
         <div class="dash-chart-card">
           <h3 class="dash-chart-title">Распределение по статусам</h3>
-          <div class="dash-donut-row">
-            <div class="dash-donut" :style="taskDonutGradient">
-              <div class="dash-donut-inner">
-                <div class="dash-donut-num">{{ taskDonut.total }}</div>
-                <div class="dash-donut-label">Всего задач</div>
-              </div>
-            </div>
-            <ul class="dash-donut-legend">
-              <li v-for="s in taskDonut.slices" :key="s.key">
-                <i class="dash-leg-dot" :style="{ background: s.color }" />
-                <span>{{ s.label }}</span>
-                <strong>{{ s.count }}</strong>
+          <div v-if="taskDonut.total" class="grid items-center gap-4 sm:grid-cols-[minmax(0,220px)_1fr]">
+            <StatusDonutChart :slices="taskDonut.slices" :total="taskDonut.total" total-label="Всего задач" />
+            <ul class="grid gap-2 text-sm">
+              <li v-for="sl in taskDonut.slices" :key="sl.key" class="flex items-center gap-2">
+                <span class="size-2.5 shrink-0 rounded-sm" :style="{ background: sl.color }" />
+                <span class="text-muted-foreground flex-1">{{ sl.label }}</span>
+                <span class="font-medium tabular-nums">{{ sl.count }}</span>
               </li>
             </ul>
           </div>
@@ -1325,39 +1322,7 @@ onUnmounted(() => {
           <p class="dash-chart-sub muted">
             Столбцы — число выполненных за период (по дате обновления); сотрудники отсортированы по убыванию этого числа. Верх шкалы Y — по максимуму <strong>активных</strong> задач в периоде (к выполнению / в процессе / на проверке) среди исполнителей, чтобы масштаб отражал объём текущей работы. Разбивка статусов — слева.
           </p>
-          <div v-if="taskEmployeeBarChart.rows.length" class="dash-vchart">
-            <div class="dash-vchart-inner">
-              <div class="dash-vchart-y" aria-hidden="true">
-                <span v-for="tick in taskEmployeeBarChart.yTicks" :key="tick">{{ tick }}</span>
-              </div>
-              <div class="dash-vchart-plot">
-                <div
-                  v-for="tick in taskEmployeeBarChart.yTicks"
-                  :key="'grid-' + tick"
-                  class="dash-vchart-hline"
-                  :style="{ bottom: `${(tick / taskEmployeeBarChart.yTop) * 100}%` }"
-                />
-                <div class="dash-vchart-cols">
-                  <div v-for="r in taskEmployeeBarChart.rows" :key="r.id" class="dash-vchart-col">
-                    <div class="dash-vchart-col-body">
-                      <span class="dash-vchart-total">{{ r.count }}</span>
-                      <div
-                        class="dash-vchart-stack dash-vchart-stack--done-only"
-                        :style="{ height: `${(r.count / taskEmployeeBarChart.yTop) * 100}%` }"
-                        :title="`Выполнено: ${r.count}`"
-                      >
-                        <div class="dash-vchart-seg dash-vchart-seg--done" />
-                      </div>
-                    </div>
-                    <span class="dash-vchart-xlabel">{{ r.label }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="dash-vchart-legend">
-              <span><i class="dash-leg-dot" style="background: #22c55e" /> Выполнено</span>
-            </div>
-          </div>
+          <CountBarChart v-if="taskEmployeeBarChart.rows.length" :rows="taskEmployeeBarChart.rows" series-label="Выполнено" color="var(--chart-5)" />
           <p v-else class="dash-empty">Нет завершённых задач в периоде.</p>
         </div>
       </div>
