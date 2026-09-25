@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import CalendarDeleteDialog from '@/components/ui/dialogs/CalendarDeleteDialog.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiModal from '@/components/ui/UiModal.vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
@@ -26,7 +29,6 @@ import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
 import { avatarColorByPosition } from '@/lib/avatarColors'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
 
@@ -2424,36 +2426,16 @@ async function confirmDeleteTask() {
       </section>
     </div>
 
-    <div
+    <UiModal
       v-if="isTaskModalOpen"
-      class="modal-backdrop"
-      @click="closeTaskModal"
+      :title="editingTaskId ? 'Редактирование события' : 'Новое событие'"
+      :description="`Постановщик: ${modalTaskOwnerLabel}` + (!editingTaskId ? ' · ' + new Date((taskStartDate || selectedDate) + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' }) : '')"
+      :max-width="720"
+      :close-disabled="taskSaveLoading"
+      @close="closeTaskModal"
     >
-      <div class="modal modal-calendar" @click.stop>
-        <!-- Шапка по макету: px-8 py-6, border-b, иконка 40x40 rounded-xl bg-green-50 -->
-        <div class="modal-header modal-header--design">
-          <div class="modal-header-main">
-            <div class="modal-icon modal-icon--design">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-            </div>
-            <div class="modal-header-text">
-              <h2 class="modal-title modal-title--design">
-                {{ editingTaskId ? 'Редактирование события' : 'Новое событие' }}
-              </h2>
-              <p v-if="editingTaskId" class="modal-task-id modal-task-id--design">ID: {{ shortTaskId(editingTaskId) }}</p>
-              <p class="modal-task-owner modal-task-owner--design">Постановщик: {{ modalTaskOwnerLabel }}</p>
-              <p v-if="!editingTaskId" class="modal-subtitle">
-                {{ new Date((taskStartDate || selectedDate) + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' }) }}
-              </p>
-            </div>
-          </div>
-          <ModalCloseButton @click="closeTaskModal" />
-        </div>
-
-        <form class="modal-form modal-form--design" @submit.prevent="onSubmitTask" :aria-busy="taskSaveLoading">
+      <div class="calendar-page modal-calendar ui-legacy-scope">
+        <form id="calendar-task-form" class="modal-form modal-form--design" @submit.prevent="onSubmitTask" :aria-busy="taskSaveLoading">
           <fieldset class="modal-form-fieldset" :disabled="taskSaveLoading">
           <div class="modal-body">
             <label class="modal-field modal-field--design">
@@ -2782,80 +2764,32 @@ async function confirmDeleteTask() {
             </div>
           </div>
 
-          <!-- Подвал по макету: bg-gray-50, border-t, Удалить слева, Отмена + Сохранить справа -->
-          <div class="modal-actions modal-actions--design">
-            <UiDeleteButton
-              v-if="editingTaskId && canDeleteCurrentTask"
-              size="md"
-              wide
-              :disabled="taskSaveLoading"
-              @click="openDeleteConfirm"
-            />
-            <div class="modal-actions-right">
-              <button type="button" class="modal-btn-ghost modal-btn-ghost--design" :disabled="taskSaveLoading" @click="closeTaskModal">Отмена</button>
-              <button
-                type="submit"
-                class="modal-btn modal-btn--design"
-                :disabled="taskSaveLoading || (!!editingTaskId && !canEditCurrentTask)"
-              >
-                <span v-if="taskSaveLoading" class="modal-btn-loading">
-                  <span class="modal-btn-loading-scale">
-                    <UiLoadingBar size="compact" />
-                  </span>
-                </span>
-                <span v-else>{{ editingTaskId ? 'Сохранить изменения' : 'Создать событие' }}</span>
-              </button>
-            </div>
-          </div>
           </fieldset>
         </form>
         <input ref="fileInputRef" type="file" class="modal-file-input-hidden" accept="image/*,.pdf,.doc,.docx" @change="onFileSelect" />
       </div>
-    </div>
+      <template #actions>
+        <UiButton v-if="editingTaskId && canDeleteCurrentTask" variant="danger" class="sm:mr-auto" :disabled="taskSaveLoading" @click="openDeleteConfirm">Удалить</UiButton>
+        <UiButton :disabled="taskSaveLoading" @click="closeTaskModal">Отмена</UiButton>
+        <UiButton variant="primary" type="submit" form="calendar-task-form" :disabled="taskSaveLoading || (!!editingTaskId && !canEditCurrentTask)">
+          {{ taskSaveLoading ? 'Сохранение…' : (editingTaskId ? 'Сохранить изменения' : 'Создать событие') }}
+        </UiButton>
+      </template>
+    </UiModal>
 
-    <!-- Подтверждение удаления задачи -->
-    <div
+    <!-- Подтверждение удаления события — Dialog shadcn -->
+    <CalendarDeleteDialog
       v-if="showDeleteConfirm"
-      class="modal-backdrop modal-backdrop--confirm"
-      @click="closeDeleteConfirm"
-    >
-      <div class="modal modal-confirm" @click.stop>
-        <h3 class="modal-confirm-title">Удалить событие?</h3>
-        <p class="modal-confirm-text">
-          {{ canDeleteAsSeries ? 'Выберите вариант удаления для повторяющихся событий.' : 'Событие будет удалено без возможности восстановления.' }}
-        </p>
-        <div v-if="showDeleteAudienceChoice" class="delete-scope-box">
-          <div class="delete-scope-caption">Область удаления</div>
-          <label class="delete-scope-option" :class="{ 'is-disabled': !canDeleteForAll }">
-            <input v-model="deleteAudienceScope" type="radio" value="all" :disabled="!canDeleteForAll" />
-            <span>Удалить у всех участников</span>
-          </label>
-          <label class="delete-scope-option" :class="{ 'is-disabled': !canDeleteOnlyForMe }">
-            <input v-model="deleteAudienceScope" type="radio" value="only_me" :disabled="!canDeleteOnlyForMe" />
-            <span>Удалить только у меня</span>
-          </label>
-          <p v-if="!canDeleteForAll || !canDeleteOnlyForMe" class="delete-scope-note">
-            Удалить у всех может только постановщик или руководитель. Удалить у себя можно только после отказа от участия.
-          </p>
-        </div>
-        <div v-if="canDeleteAsSeries" class="delete-scope-box">
-          <label class="delete-scope-option">
-            <input v-model="deleteScope" type="radio" value="only_this" />
-            <span>Удалить только этот слот</span>
-          </label>
-          <label class="delete-scope-option">
-            <input v-model="deleteScope" type="radio" value="this_and_following" />
-            <span>Удалить этот и все последующие слоты</span>
-          </label>
-        </div>
-        <div class="modal-confirm-actions">
-          <button type="button" class="modal-btn-ghost modal-btn-ghost--design" :disabled="deleteInProgress" @click="closeDeleteConfirm">
-            Отмена
-          </button>
-          <UiDeleteButton size="md" :loading="deleteInProgress" :disabled="deleteInProgress" @click="confirmDeleteTask" />
-        </div>
-      </div>
-    </div>
+      v-model:audience="deleteAudienceScope"
+      v-model:scope="deleteScope"
+      :busy="deleteInProgress"
+      :as-series="canDeleteAsSeries"
+      :audience-choice="showDeleteAudienceChoice"
+      :can-for-all="canDeleteForAll"
+      :can-only-for-me="canDeleteOnlyForMe"
+      @cancel="closeDeleteConfirm"
+      @confirm="confirmDeleteTask"
+    />
 
     <UiSuccessModal
       :open="successModalOpen"

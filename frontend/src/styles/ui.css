@@ -1206,3 +1206,10 @@ select:is(
   max-height: none !important;
   overflow: visible !important;
 }
+
+/* Обёртка со старыми классами окна/страницы внутри Dialog: держит правила
+   полей вида «.modal-calendar .modal-input», но сама не рисует рамку, фон и
+   ширину старого окна. */
+.ui-legacy-scope {
+  display: contents !important;
+}
