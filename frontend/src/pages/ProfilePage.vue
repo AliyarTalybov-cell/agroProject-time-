@@ -728,7 +728,6 @@ async function confirmDeleteAccount() {
     <span v-if="deleteAccountMessage" class="text-destructive mt-2 block">{{ deleteAccountMessage.text }}</span>
   </UiConfirmModal>
   </div>
-  </div>
 </template>
 
 <style scoped>
