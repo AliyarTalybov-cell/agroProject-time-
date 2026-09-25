@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import PickSheet from '@/components/ui/dialogs/PickSheet.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiModal from '@/components/ui/UiModal.vue'
 import { computed, ref, onMounted, onUnmounted, onActivated, watch } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { useRouter } from 'vue-router'
@@ -28,7 +31,6 @@ import { loadEquipment, type EquipmentRow } from '@/lib/equipmentSupabase'
 import { loadEmployees, loadPositions, searchEmployees, type EmployeeRow, type PositionRow } from '@/lib/employeesSupabase'
 import { getOrCreateDmThread, sendChatMessage, sendChatMessageWithFile } from '@/lib/chatSupabase'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
 
 const DEFAULT_REASONS: Array<{ label: string; description: string; category: DowntimeCategory }> = [
@@ -1694,14 +1696,9 @@ function addField() {
       </main>
     </div>
 
-    <div
-      v-if="issueDispatcherModalOpen"
-      class="modal-backdrop"
-      @click.self="closeIssueDispatcherPicker"
-    >
-      <div class="modal modal--issue-recipients" @click.stop>
-        <div class="modal-badge">АГРОСИСТЕМА</div>
-        <div class="modal-title">Кому отправить сообщение о проблеме?</div>
+    <UiModal v-if="issueDispatcherModalOpen" title="Кому отправить сообщение о проблеме?" :max-width="560" @close="closeIssueDispatcherPicker">
+      <div class="mechanic-modal modal--issue-recipients">
+        
         <p class="modal-text modal-text-muted">Выберите одного или нескольких сотрудников. Сообщение будет отправлено в чат как важное.</p>
         <div class="modal-form modal-form--issue-filters">
           <label class="modal-field">
@@ -1750,9 +1747,9 @@ function addField() {
           Выбрано получателей: {{ selectedIssueRecipientIds.length }}
         </p>
         <div class="modal-actions modal-actions--two">
-          <button type="button" class="modal-btn-ghost" :disabled="issueReportBusy" @click="closeIssueDispatcherPicker">
+          <UiButton size="lg" :disabled="issueReportBusy" @click="closeIssueDispatcherPicker">
             Отмена
-          </button>
+          </UiButton>
           <button
             type="button"
             class="mechanic-dispatcher-send modal-issue-submit"
@@ -1764,90 +1761,29 @@ function addField() {
           </button>
         </div>
       </div>
-    </div>
+    </UiModal>
 
-    <div
-      class="sheet-backdrop"
-      :class="{ 'sheet-backdrop-open': isReasonsOpen }"
-      @click="isReasonsOpen = false"
+    <PickSheet
+      v-model:open="isReasonsOpen"
+      label="Простой"
+      title="Выберите причину начала простоя"
+      :items="reasons.map((reason) => ({ key: reason.category, title: reason.label, description: reason.description, onPick: () => startDowntime(reason) }))"
     />
-    <aside class="sheet" :class="{ 'sheet-open': isReasonsOpen }">
-      <header class="sheet-header">
-        <div>
-          <div class="sheet-label">Простой</div>
-          <div class="sheet-title">Выберите причину начала простоя</div>
-        </div>
-        <button class="sheet-close" type="button" @click="isReasonsOpen = false">
-          ✕
-        </button>
-      </header>
-      <ul class="sheet-list">
-        <li
-          v-for="reason in reasons"
-          :key="reason.category"
-          class="sheet-item"
-        >
-          <button
-            class="sheet-button"
-            type="button"
-            @click="startDowntime(reason)"
-          >
-            <span class="sheet-button-title">{{ reason.label }}</span>
-            <span class="sheet-button-desc">{{ reason.description }}</span>
-          </button>
-        </li>
-      </ul>
-    </aside>
 
-    <div
-      class="sheet-backdrop"
-      :class="{ 'sheet-backdrop-open': isOperationsOpen }"
-      @click="isOperationsOpen = false"
+    <PickSheet
+      v-model:open="isOperationsOpen"
+      label="Операция"
+      title="Выберите операцию для работы"
+      empty="Добавьте операции на странице «Поля» (блок «Справочники») или поля в «Мои поля сегодня»."
+      :items="workOperationsList.length
+        ? workOperationsList.map((op) => ({ key: op.id, title: op.name, description: `Начать операцию (поле: ${currentField?.name ?? 'не выбрано'})`, onPick: () => startOperationByName(op) }))
+        : fields.map((field) => ({ key: 'f-' + field.id, title: `${field.name} — ${field.operation}`, description: 'Начать работу по этому полю', onPick: () => startOperation(field) }))"
     />
-    <aside class="sheet" :class="{ 'sheet-open': isOperationsOpen }">
-      <header class="sheet-header">
-        <div>
-          <div class="sheet-label">Операция</div>
-          <div class="sheet-title">Выберите операцию для работы</div>
-        </div>
-        <button class="sheet-close" type="button" @click="isOperationsOpen = false">
-          ✕
-        </button>
-      </header>
-      <ul class="sheet-list">
-        <li
-          v-for="op in workOperationsList"
-          :key="op.id"
-          class="sheet-item"
-        >
-          <button
-            class="sheet-button"
-            type="button"
-            @click="startOperationByName(op)"
-          >
-            <span class="sheet-button-title">{{ op.name }}</span>
-            <span class="sheet-button-desc">Начать операцию (поле: {{ currentField?.name ?? 'не выбрано' }})</span>
-          </button>
-        </li>
-        <li v-for="field in (workOperationsList.length ? [] : fields)" :key="'f-' + field.id" class="sheet-item">
-          <button class="sheet-button" type="button" @click="startOperation(field)">
-            <span class="sheet-button-title">{{ field.name }} — {{ field.operation }}</span>
-            <span class="sheet-button-desc">Начать работу по этому полю</span>
-          </button>
-        </li>
-      </ul>
-      <p v-if="!workOperationsList.length && !fields.length" class="sheet-empty">Добавьте операции на странице «Поля» (блок «Справочники») или поля в «Мои поля сегодня».</p>
-    </aside>
 
     <!-- Modal: Будет ли использована техника? -->
-    <div
-      v-if="isEquipmentChoiceOpen"
-      class="modal-backdrop"
-      @click="closeEquipmentChoiceAndReturnToSheet()"
-    >
-      <div class="modal" @click.stop>
-        <div class="modal-badge">АГРОСИСТЕМА</div>
-        <div class="modal-title">Будет ли использована техника?</div>
+    <UiModal v-if="isEquipmentChoiceOpen" title="Будет ли использована техника?" :max-width="460" @close="closeEquipmentChoiceAndReturnToSheet()">
+      <div class="mechanic-modal ">
+        
         <p class="modal-text modal-text-muted">
           Если техника нужна — выберите её и укажите параметры (топливо и состояние).
         </p>
@@ -1855,25 +1791,20 @@ function addField() {
           {{ startOperationPlanError }}
         </p>
         <div class="modal-actions modal-actions--two">
-          <button type="button" class="modal-btn-ghost" @click="startOperationConfirmedWithoutEquipment">
+          <UiButton size="lg" @click="startOperationConfirmedWithoutEquipment">
             Нет
-          </button>
-          <button type="button" class="modal-btn" @click="openEquipmentModal">
+          </UiButton>
+          <UiButton variant="primary" size="lg" @click="openEquipmentModal">
             Да
-          </button>
+          </UiButton>
         </div>
       </div>
-    </div>
+    </UiModal>
 
     <!-- Modal: Выбор техники + топливо/состояние -->
-    <div
-      v-if="isEquipmentModalOpen"
-      class="modal-backdrop"
-      @click="backFromEquipmentModalToChoice()"
-    >
-      <div class="modal" @click.stop>
-        <div class="modal-badge">АГРОСИСТЕМА</div>
-        <div class="modal-title">Техника для операции</div>
+    <UiModal v-if="isEquipmentModalOpen" title="Техника для операции" :max-width="460" @close="backFromEquipmentModalToChoice()">
+      <div class="mechanic-modal ">
+        
 
         <div v-if="equipmentLoading" class="modal-text modal-text--loading">
           <UiLoadingBar size="md" />
@@ -1963,52 +1894,33 @@ function addField() {
         </div>
 
         <div class="modal-actions modal-actions--two">
-          <button type="button" class="modal-btn-ghost" @click="backFromEquipmentModalToChoice">
+          <UiButton size="lg" @click="backFromEquipmentModalToChoice">
             Назад
-          </button>
-          <button
-            type="button"
-            class="modal-btn"
-            :disabled="!selectedEquipmentId || equipmentLoading || (equipmentConditionRequiresNotes && !equipmentRepairNotes.trim())"
-            @click="startOperationConfirmedWithEquipment"
-          >
+          </UiButton>
+          <UiButton variant="primary" size="lg" :disabled="!selectedEquipmentId || equipmentLoading || (equipmentConditionRequiresNotes && !equipmentRepairNotes.trim())"
+            @click="startOperationConfirmedWithEquipment">
             Начать операцию
-          </button>
+          </UiButton>
         </div>
       </div>
-    </div>
+    </UiModal>
 
-    <div
-      v-if="isStartedModalOpen"
-      class="modal-backdrop"
-      @click="isStartedModalOpen = false"
-    >
-      <div class="modal" @click.stop>
-        <div class="modal-badge">АГРОСИСТЕМА</div>
-        <div class="modal-title">Простой зафиксирован</div>
+    <UiModal v-if="isStartedModalOpen" title="Простой зафиксирован" :max-width="460" @close="isStartedModalOpen = false">
+      <div class="mechanic-modal ">
+        
         <p class="modal-text">
           Начало простоя записано по объекту «{{ circleFieldLabel }}», операция: {{ circleTaskLabel }}.
           Данные учтены в системе.
         </p>
-        <button class="modal-btn" type="button" @click="isStartedModalOpen = false">
+        <UiButton variant="primary" size="lg" @click="isStartedModalOpen = false">
           Понятно
-        </button>
+        </UiButton>
       </div>
-    </div>
+    </UiModal>
 
-    <div
-      v-if="finishNotesModalOpen"
-      class="modal-backdrop"
-      @click="closeFinishNotesModal"
-    >
-      <div class="modal" @click.stop>
-        <div class="modal-badge">АГРОСИСТЕМА</div>
-        <div class="modal-title-row">
-          <div class="modal-title">
-            {{ finishNotesType === 'downtime' ? 'Завершить простой' : 'Остановить операцию' }}
-          </div>
-          <ModalCloseButton aria-label="Закрыть без завершения" @click="closeFinishNotesModal" />
-        </div>
+    <UiModal v-if="finishNotesModalOpen" :title="finishNotesType === 'downtime' ? 'Завершить простой' : 'Остановить операцию'" :max-width="460" @close="closeFinishNotesModal">
+      <div class="mechanic-modal ">
+        
         <p class="modal-text modal-text-muted">
           По желанию укажите список дел, которые были выполнены. Заметки сохранятся и будут видны в журнале работ и аналитике.
         </p>
@@ -2057,40 +1969,28 @@ function addField() {
           </div>
         </div>
         <div class="modal-actions">
-          <button class="modal-btn" type="button" @click="confirmFinishNotes(finishNotesText)">
+          <UiButton variant="primary" size="lg" @click="confirmFinishNotes(finishNotesText)">
             Сохранить и завершить
-          </button>
+          </UiButton>
         </div>
       </div>
-    </div>
+    </UiModal>
 
-    <div
-      v-if="isFinishedModalOpen"
-      class="modal-backdrop"
-      @click="isFinishedModalOpen = false"
-    >
-      <div class="modal" @click.stop>
-        <div class="modal-badge">АГРОСИСТЕМА</div>
-        <div class="modal-title">
-          {{ isFinishedModalType === 'downtime' ? 'Простой завершён' : 'Операция завершена' }}
-        </div>
+    <UiModal v-if="isFinishedModalOpen" :title="isFinishedModalType === 'downtime' ? 'Простой завершён' : 'Операция завершена'" :max-width="460" @close="isFinishedModalOpen = false">
+      <div class="mechanic-modal ">
+        
         <p class="modal-text">
           Запись сохранена. Данные отображаются в разделе «Аналитика» и в журнале работ.
         </p>
-        <button class="modal-btn" type="button" @click="isFinishedModalOpen = false">
+        <UiButton variant="primary" size="lg" @click="isFinishedModalOpen = false">
           Закрыть
-        </button>
+        </UiButton>
       </div>
-    </div>
+    </UiModal>
 
-    <div
-      v-if="isAddFieldOpen"
-      class="modal-backdrop"
-      @click="isAddFieldOpen = false"
-    >
-      <div class="modal" @click.stop>
-        <div class="modal-badge">АГРОСИСТЕМА</div>
-        <div class="modal-title">Новое поле</div>
+    <UiModal v-if="isAddFieldOpen" title="Новое поле" :max-width="460" @close="isAddFieldOpen = false">
+      <div class="mechanic-modal ">
+        
         <p class="modal-text modal-text-muted">
           Добавьте поле в список «Мои поля сегодня» для учёта работ и простоев.
         </p>
@@ -2113,15 +2013,15 @@ function addField() {
           </label>
         </div>
         <div class="modal-actions">
-          <button class="modal-btn-ghost" type="button" @click="isAddFieldOpen = false">
+          <UiButton size="lg" @click="isAddFieldOpen = false">
             Отмена
-          </button>
-          <button class="modal-btn" type="button" @click="addField">
+          </UiButton>
+          <UiButton variant="primary" size="lg" @click="addField">
             Добавить
-          </button>
+          </UiButton>
         </div>
       </div>
-    </div>
+    </UiModal>
 
     <UiSuccessModal
       :open="successModalOpen"
