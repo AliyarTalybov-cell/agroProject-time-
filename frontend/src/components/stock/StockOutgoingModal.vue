@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Расход зерна: продажа, посев, переработка или корм, списание. Одним
  * документом можно отгрузить из нескольких партий и ячеек.
@@ -147,49 +149,35 @@ async function save() {
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Дата и время *</label>
-        <input v-model="form.docDate" type="datetime-local" class="ui-form-input" />
+        <UiDateTimePicker v-model="form.docDate" />
       </div>
       <div v-if="type === 'sale'" class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Покупатель *
           <RefFieldHelp text="Нет покупателя? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
         </label>
-        <select v-model="form.counterpartyId" class="ui-form-select">
-          <option value="" disabled>{{ refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»' }}</option>
-          <option v-for="c in refs.buyers.value" :key="c.id" :value="c.id">{{ c.name }}{{ c.inn ? ` · ИНН ${c.inn}` : '' }}</option>
-        </select>
+        <UiSelect v-model="form.counterpartyId" :options="[...(refs.buyers.value).map((c) => ({ value: c.id, label: `${c.name}${c.inn ? ` · ИНН ${c.inn}` : ''}` }))]" placeholder="{{ refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»' }}" class="ui-form-select" />
       </div>
       <div v-else-if="type === 'seeding'" class="ui-form-field">
         <label class="ui-form-label">Поле *</label>
-        <select v-model="form.fieldId" class="ui-form-select">
-          <option value="" disabled>Выберите поле</option>
-          <option v-for="f in refs.fields.value" :key="f.id" :value="f.id">{{ fieldOptionLabel(f) }}</option>
-        </select>
+        <UiSelect v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
       </div>
       <div v-else-if="type === 'consumption'" class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Куда *
           <RefFieldHelp text="Нужно другое направление? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-consumption-targets' } }" link-label="Справочники хранения" />
         </label>
-        <select v-model="form.target" class="ui-form-select">
-          <option v-for="t in refs.targets.value" :key="t.id" :value="t.id">{{ t.label }}</option>
-        </select>
+        <UiSelect v-model="form.target" :options="[...(refs.targets.value).map((t) => ({ value: t.id, label: String(t.label) }))]" class="ui-form-select" />
       </div>
       <div v-else class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Причина *
           <RefFieldHelp text="Нет нужной причины? Добавьте её в" :to="{ path: '/lands', query: { tab: 'storage-writeoff-reasons' } }" link-label="Справочники хранения" />
         </label>
-        <select v-model="form.reasonId" class="ui-form-select">
-          <option value="" disabled>Выберите причину</option>
-          <option v-for="r in refs.reasons.value" :key="r.id" :value="r.id">{{ r.label }}</option>
-        </select>
+        <UiSelect v-model="form.reasonId" :options="[...(refs.reasons.value).map((r) => ({ value: r.id, label: String(r.label) }))]" placeholder="Выберите причину" class="ui-form-select" />
       </div>
     </div>
 
     <p class="ui-form-section-title">Из каких партий</p>
     <div v-for="(line, i) in lines" :key="i" class="stock-line">
-      <select v-model="line.source" class="ui-form-select">
-        <option value="" disabled>Партия в ячейке</option>
-        <option v-for="p in sources" :key="p.key" :value="p.key">{{ p.label }} · {{ formatTons(p.tons) }}</option>
-      </select>
+      <UiSelect v-model="line.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Партия в ячейке" class="ui-form-select" />
       <input v-model.trim="line.tons" inputmode="decimal" class="ui-form-input stock-line-tons" placeholder="т" />
       <button v-if="lines.length > 1" type="button" class="stock-line-remove" aria-label="Убрать строку" @click="removeLine(i)">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>

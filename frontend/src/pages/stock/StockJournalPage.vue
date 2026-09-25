@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /** Журнал складских операций по всем складам с фильтрами по виду и датам. */
 import { onMounted, ref, watch } from 'vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
@@ -68,16 +70,14 @@ watch(page, () => void load())
       </header>
       <section class="ui-card">
         <div class="ui-toolbar">
-          <select v-model.number="group" class="ui-filter-select" aria-label="Вид операции">
-            <option v-for="(g, i) in TYPE_GROUPS" :key="g.label" :value="i">{{ g.label }}</option>
-          </select>
+          <UiSelect v-model="group" :options="TYPE_GROUPS.map((g, i) => ({ value: i, label: g.label }))" aria-label="Вид операции" />
           <label class="journal-date">
             <span class="ui-muted">с</span>
-            <input v-model="dateFrom" type="date" class="ui-filter-select" aria-label="Дата с" />
+            <UiDatePicker v-model="dateFrom" :block="false" placeholder="Дата" aria-label="Дата с" />
           </label>
           <label class="journal-date">
             <span class="ui-muted">по</span>
-            <input v-model="dateTo" type="date" class="ui-filter-select" aria-label="Дата по" />
+            <UiDatePicker v-model="dateTo" :block="false" placeholder="Дата" aria-label="Дата по" />
           </label>
         </div>
         <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch } from 'vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import { createEmployee, type EmployeeRole, type PositionRow } from '@/lib/employeesSupabase'
@@ -116,10 +117,7 @@ watch(
 
             <div class="emp-field emp-field--full">
               <label class="emp-label" for="emp-position">Должность</label>
-              <select id="emp-position" v-model="form.position" class="emp-input emp-select">
-                <option value="" disabled>Выберите должность</option>
-                <option v-for="p in positions" :key="p.id" :value="p.name">{{ p.name }}</option>
-              </select>
+              <UiSelect v-model="form.position" :options="[...(positions).map((p) => ({ value: p.name, label: String(p.name) }))]" placeholder="Выберите должность" id="emp-position" class="emp-input emp-select" />
             </div>
 
             <div class="emp-field emp-field--full">

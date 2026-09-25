@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Перемещение партии из ячейки в ячейку (в том числе на другой склад).
  * Потери в пути уменьшают приход в ячейку назначения.
@@ -92,24 +94,16 @@ async function save() {
 
     <div class="ui-form-field">
       <label class="ui-form-label">Что и откуда *</label>
-      <select v-model="form.source" class="ui-form-select">
-        <option value="" disabled>Выберите партию в ячейке</option>
-        <option v-for="p in sources" :key="p.key" :value="p.key">{{ p.label }} · {{ formatTons(p.tons) }}</option>
-      </select>
+      <UiSelect v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию в ячейке" class="ui-form-select" />
     </div>
     <div class="ui-form-field">
       <label class="ui-form-label">Куда *</label>
-      <select v-model="form.toCellId" class="ui-form-select">
-        <option value="" disabled>Выберите ячейку</option>
-        <option v-for="c in targets" :key="c.id" :value="c.id">
-          {{ c.label }}{{ c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто' }}
-        </option>
-      </select>
+      <UiSelect v-model="form.toCellId" :options="[...(targets).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" placeholder="Выберите ячейку" class="ui-form-select" />
     </div>
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Дата и время *</label>
-        <input v-model="form.docDate" type="datetime-local" class="ui-form-input" />
+        <UiDateTimePicker v-model="form.docDate" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Масса, т *</label>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Склады — карточки. Масса, культуры и заполненность считаются по складскому
  * журналу (lib/stockLedger), статус заполнения — по остатку, а не вручную.
@@ -158,20 +159,15 @@ onMounted(() => {
           <div class="warehouse-toolbar-filters">
             <label class="warehouse-filter-label">
               <span class="warehouse-filter-text">Статус заполнения</span>
-              <select v-model="statusFilter" class="warehouse-filter-select">
-                <option value="all">Все статусы</option>
-                <option value="empty">Пусто</option>
-                <option value="filling">Есть зерно</option>
-                <option value="formed">Заполнен</option>
-              </select>
+              <UiSelect v-model="statusFilter" :options="[{ value: 'all', label: 'Все статусы' }, { value: 'empty', label: 'Пусто' }, { value: 'filling', label: 'Есть зерно' }, { value: 'formed', label: 'Заполнен' }]" class="warehouse-filter-select" />
             </label>
             <label class="warehouse-filter-label">
               <span class="warehouse-filter-text">Культура</span>
-              <select v-model="cropFilter" class="warehouse-filter-select">
-                <option value="all">Все культуры</option>
-                <option value="__none__">Пустые</option>
-                <option v-for="[key, label] in cropOptions" :key="key" :value="key">{{ label }}</option>
-              </select>
+              <UiSelect
+                v-model="cropFilter"
+                :options="[{ value: 'all', label: 'Все культуры' }, { value: '__none__', label: 'Пустые' }, ...cropOptions.map(([key, label]) => ({ value: key, label }))]"
+                class="warehouse-filter-select"
+              />
             </label>
           </div>
         </div>

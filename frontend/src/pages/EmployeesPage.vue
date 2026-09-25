@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { isSupabaseConfigured } from '@/lib/supabase'
@@ -176,10 +177,7 @@ function openEmployee(e: EmployeeRow) {
           <svg class="emp-filter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 21v-7" /><path d="M4 10V3" /><path d="M12 21v-9" /><path d="M12 8V3" /><path d="M20 21v-5" /><path d="M20 12V3" /><path d="M2 14h4" /><path d="M10 8h4" /><path d="M18 16h4" />
           </svg>
-          <select v-model="positionFilter" class="emp-filter-select" aria-label="Фильтр по должности">
-            <option value="">Должность: все</option>
-            <option v-for="p in positions" :key="p.id" :value="p.name">{{ p.name }}</option>
-          </select>
+          <UiSelect v-model="positionFilter" :options="[{ value: '', label: 'Должность: все' }, ...(positions).map((p) => ({ value: p.name, label: String(p.name) }))]" class="emp-filter-select" aria-label="Фильтр по должности" />
         </div>
 
         <button type="button" class="emp-btn emp-btn--primary" :disabled="!canManage" @click="createOpen = true">
@@ -257,13 +255,7 @@ function openEmployee(e: EmployeeRow) {
         <div class="emp-pagination-right">
           <label class="emp-pagination-size">
             <span class="emp-pagination-size-label">На странице</span>
-            <select v-model.number="pageSize" class="emp-pagination-select" aria-label="На странице">
-              <option :value="5">5</option>
-              <option :value="8">8</option>
-              <option :value="12">12</option>
-              <option :value="24">24</option>
-              <option :value="48">48</option>
-            </select>
+            <UiSelect v-model="pageSize" :options="[{ value: 5, label: '5' }, { value: 8, label: '8' }, { value: 12, label: '12' }, { value: 24, label: '24' }, { value: 48, label: '48' }]" class="emp-pagination-select" aria-label="На странице" />
           </label>
           <div class="emp-pagination-btns">
             <button

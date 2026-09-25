@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Приёмка зерна: с поля или закупка. Новая партия или досыпка в существующую
  * той же культуры. В журнал идёт зачётный вес (computeCreditedWeight) —
@@ -192,44 +194,29 @@ function num(v: number | null | undefined, digits = 2): string {
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Дата и время *</label>
-        <input v-model="form.docDate" type="datetime-local" class="ui-form-input" />
+        <UiDateTimePicker v-model="form.docDate" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Куда (ячейка склада) *</label>
-        <select v-model="form.cellId" class="ui-form-select">
-          <option v-for="c in cellsForLocation" :key="c.id" :value="c.id">
-            {{ c.label }}{{ c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто' }}
-          </option>
-        </select>
+        <UiSelect v-model="form.cellId" :options="[...(cellsForLocation).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" class="ui-form-select" />
       </div>
     </div>
 
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Откуда зерно *</label>
-        <select v-model="form.origin" class="ui-form-select" :disabled="form.mode === 'existing'">
-          <option value="field">С поля (урожай)</option>
-          <option value="purchase">Закупка у поставщика</option>
-        </select>
+        <UiSelect v-model="form.origin" :options="[{ value: 'field', label: 'С поля (урожай)' }, { value: 'purchase', label: 'Закупка у поставщика' }]" class="ui-form-select" :disabled="form.mode === 'existing'" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Партия *</label>
-        <select v-model="form.mode" class="ui-form-select">
-          <option value="new">Новая партия</option>
-          <option value="existing">Досыпать в существующую</option>
-        </select>
+        <UiSelect v-model="form.mode" :options="[{ value: 'new', label: 'Новая партия' }, { value: 'existing', label: 'Досыпать в существующую' }]" class="ui-form-select" />
       </div>
     </div>
 
     <template v-if="form.mode === 'existing'">
       <div class="ui-form-field">
         <label class="ui-form-label">Существующая партия *</label>
-        <select v-model="form.batchId" class="ui-form-select">
-          <option value="" disabled>Выберите партию</option>
-          <option v-for="b in existingBatches" :key="b.id" :value="b.id">
-            {{ b.code }} · {{ b.cropLabel }} · {{ formatTons(b.tons) }}
-          </option>
-        </select>
+        <UiSelect v-model="form.batchId" :options="[...(existingBatches).map((b) => ({ value: b.id, label: `${b.code} · ${b.cropLabel} · ${formatTons(b.tons)}` }))]" placeholder="Выберите партию" class="ui-form-select" />
       </div>
     </template>
     <template v-else>
@@ -238,26 +225,17 @@ function num(v: number | null | undefined, digits = 2): string {
           <label class="ui-form-label ui-form-label--with-help">Культура *
             <RefFieldHelp text="Нет нужной культуры? Добавьте её в" :to="{ path: '/lands', query: { tab: 'crops-refs' } }" link-label="Справочники СХ культур" />
           </label>
-          <select v-model="form.cropKey" class="ui-form-select">
-            <option value="" disabled>Выберите культуру</option>
-            <option v-for="c in refs.crops.value" :key="c.key" :value="c.key">{{ c.label }}</option>
-          </select>
+          <UiSelect v-model="form.cropKey" :options="[...(refs.crops.value).map((c) => ({ value: c.key, label: String(c.label) }))]" placeholder="Выберите культуру" class="ui-form-select" />
         </div>
         <div v-if="form.origin === 'field'" class="ui-form-field">
           <label class="ui-form-label">Поле *</label>
-          <select v-model="form.fieldId" class="ui-form-select">
-            <option value="" disabled>Выберите поле</option>
-            <option v-for="f in refs.fields.value" :key="f.id" :value="f.id">{{ fieldOptionLabel(f) }}</option>
-          </select>
+          <UiSelect v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
         </div>
         <div v-else class="ui-form-field">
           <label class="ui-form-label ui-form-label--with-help">Поставщик *
             <RefFieldHelp text="Нет поставщика? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
           </label>
-          <select v-model="form.supplierId" class="ui-form-select">
-            <option value="" disabled>{{ refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»' }}</option>
-            <option v-for="s in refs.suppliers.value" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </select>
+          <UiSelect v-model="form.supplierId" :options="[...(refs.suppliers.value).map((s) => ({ value: s.id, label: String(s.name) }))]" placeholder="{{ refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»' }}" class="ui-form-select" />
         </div>
       </div>
       <div class="ui-form-row ui-form-row--three">
@@ -273,9 +251,7 @@ function num(v: number | null | undefined, digits = 2): string {
           <label class="ui-form-label ui-form-label--with-help">Назначение
             <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
           </label>
-          <select v-model="form.purpose" class="ui-form-select">
-            <option v-for="p in refs.purposes.value" :key="p.id" :value="p.id">{{ p.label }}</option>
-          </select>
+          <UiSelect v-model="form.purpose" :options="[...(refs.purposes.value).map((p) => ({ value: p.id, label: String(p.label) }))]" class="ui-form-select" />
         </div>
       </div>
     </template>

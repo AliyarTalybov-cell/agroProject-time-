@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Партии зерна — один реестр вместо «Реестра партий» и «Текущих партий».
  * Остатки из того же журнала, что и карточки складов, поэтому сходятся.
@@ -67,6 +68,24 @@ const locationOptions = computed(() =>
   Array.from(new Map(placements.value.map((p) => [p.locationId, p.locationName]))).sort((a, b) => a[1].localeCompare(b[1], 'ru')),
 )
 
+const statusOptions: { value: 'open' | 'closed' | 'all'; label: string }[] = [
+  { value: 'open', label: 'С остатком' },
+  { value: 'closed', label: 'Закрытые (0 т)' },
+  { value: 'all', label: 'Все партии' },
+]
+const cropSelectOptions = computed(() => [
+  { value: '', label: 'Все культуры' },
+  ...cropOptions.value.map(([value, label]) => ({ value, label })),
+])
+const locationSelectOptions = computed(() => [
+  { value: '', label: 'Все склады' },
+  ...locationOptions.value.map(([value, label]) => ({ value, label })),
+])
+const purposeSelectOptions = computed(() => [
+  { value: '', label: 'Все назначения' },
+  ...purposes.value.map((p) => ({ value: p.id, label: p.label })),
+])
+
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
   return batches.value.filter((b) => {
@@ -133,23 +152,10 @@ function onIntakeDone() {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
             <input v-model="search" type="search" placeholder="№ партии, сорт, поле, поставщик, № ФГИС" />
           </label>
-          <select v-model="statusFilter" class="ui-filter-select" aria-label="Статус">
-            <option value="open">С остатком</option>
-            <option value="closed">Закрытые (0 т)</option>
-            <option value="all">Все партии</option>
-          </select>
-          <select v-model="cropFilter" class="ui-filter-select" aria-label="Культура">
-            <option value="">Все культуры</option>
-            <option v-for="[key, label] in cropOptions" :key="key" :value="key">{{ label }}</option>
-          </select>
-          <select v-model="locationFilter" class="ui-filter-select" aria-label="Склад">
-            <option value="">Все склады</option>
-            <option v-for="[id, name] in locationOptions" :key="id" :value="id">{{ name }}</option>
-          </select>
-          <select v-model="purposeFilter" class="ui-filter-select" aria-label="Назначение">
-            <option value="">Все назначения</option>
-            <option v-for="p in purposes" :key="p.id" :value="p.id">{{ p.label }}</option>
-          </select>
+          <UiSelect v-model="statusFilter" :options="statusOptions" aria-label="Статус" class="ui-filter-select" />
+          <UiSelect v-model="cropFilter" :options="cropSelectOptions" aria-label="Культура" class="ui-filter-select" />
+          <UiSelect v-model="locationFilter" :options="locationSelectOptions" aria-label="Склад" class="ui-filter-select" />
+          <UiSelect v-model="purposeFilter" :options="purposeSelectOptions" aria-label="Назначение" class="ui-filter-select" />
         </div>
 
         <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>

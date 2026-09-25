@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -598,9 +599,7 @@ async function confirmDeleteAccount() {
             </div>
             <div class="profile-field">
               <label class="profile-label" for="pf-position">Должность</label>
-              <select id="pf-position" v-model="profileForm.position" class="profile-input profile-select">
-                <option v-for="p in POSITIONS" :key="p" :value="p">{{ p }}</option>
-              </select>
+              <UiSelect v-model="profileForm.position" :options="[...(POSITIONS).map((p) => ({ value: p, label: String(p) }))]" id="pf-position" class="profile-input profile-select" />
             </div>
             <div class="profile-field profile-field--full">
               <label class="profile-label profile-label--with-info" for="pf-role">

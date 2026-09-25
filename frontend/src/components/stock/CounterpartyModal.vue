@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /** Контрагент: покупатель и/или поставщик зерна. */
 import { computed, ref } from 'vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -54,9 +55,7 @@ async function save() {
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Роль *</label>
-        <select v-model="form.kind" class="ui-form-select">
-          <option v-for="k in COUNTERPARTY_KINDS" :key="k" :value="k">{{ counterpartyKindLabel(k) }}</option>
-        </select>
+        <UiSelect v-model="form.kind" :options="[...(COUNTERPARTY_KINDS).map((k) => ({ value: k, label: String(counterpartyKindLabel(k)) }))]" class="ui-form-select" />
       </div>
     </div>
     <div class="ui-form-row ui-form-row--two">

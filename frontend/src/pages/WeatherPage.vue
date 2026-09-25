@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { loadFields, type FieldRow } from '@/lib/fieldsSupabase'
 import { loadCrops, type CropRow } from '@/lib/landTypesAndCrops'
@@ -609,14 +610,13 @@ const weatherMapFieldMarkers = computed(() => {
         </div>
       </div>
       <div class="weather-header-actions">
-        <select
-          :value="cityValue"
+        <UiSelect
+          :model-value="cityValue"
+          :options="RUSSIAN_CITIES.map((c) => ({ value: c.value, label: c.label }))"
           class="weather-city-select"
           aria-label="Выбор города"
-          @change="(e) => setCity((e.target as HTMLSelectElement).value)"
-        >
-          <option v-for="c in RUSSIAN_CITIES" :key="c.value" :value="c.value">{{ c.label }}</option>
-        </select>
+          @update:model-value="(v) => setCity(String(v))"
+        />
         <button type="button" class="weather-refresh-btn" aria-label="Обновить" @click="refresh">Обновить</button>
       </div>
     </header>

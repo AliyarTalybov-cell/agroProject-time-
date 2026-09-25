@@ -30,8 +30,25 @@ function requestClose() {
   if (!props.closeDisabled) emit('close')
 }
 
+/** Открыт ли поверх окна список, календарь или меню из Reka UI (UiSelect, UiDatePicker…). */
+function popupOpen() {
+  return Boolean(document.querySelector('[data-reka-popper-content-wrapper]'))
+}
+
+// Esc и клик по подложке сначала закрывают открытый список, а не всё окно.
+let pointerDownWithPopup = false
+function onBackdropPointerDown() {
+  pointerDownWithPopup = popupOpen()
+}
+
+function onBackdropClick() {
+  if (pointerDownWithPopup) return
+  requestClose()
+}
+
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') requestClose()
+  if (e.key !== 'Escape' || e.defaultPrevented || popupOpen()) return
+  requestClose()
 }
 
 onMounted(() => window.addEventListener('keydown', onKeydown))
@@ -39,7 +56,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
-  <div class="modal-backdrop" role="dialog" aria-modal="true" :aria-label="title" @click.self="requestClose">
+  <div class="modal-backdrop" role="dialog" aria-modal="true" :aria-label="title" @pointerdown.self="onBackdropPointerDown" @click.self="onBackdropClick">
     <div class="modal" :style="{ width: `min(calc(100vw - 48px), ${maxWidth}px)` }">
       <div class="modal-header">
         <h2 class="modal-title">{{ title }}</h2>

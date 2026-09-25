@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Окно объекта недвижимости на участке. Разметка перенесена из LandsPage
  * дословно, классы с префиксом lands- сохранены — стили к ним приходят из
@@ -39,12 +40,7 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>№ ПОЛЯ ЕФИС ЗСН</span>
-          <select v-model="form.fieldId">
-            <option value="">—</option>
-            <option v-for="field in assignedFields" :key="field.id" :value="field.id">
-              №{{ field.number }} — {{ field.name }}
-            </option>
-          </select>
+          <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '—' }, ...(assignedFields).map((field) => ({ value: field.id, label: `№${field.number} — ${field.name}` }))]" />
         </label>
         <label class="lands-field">
           <span>Кадастровый номер *</span>

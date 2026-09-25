@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 // Общие стили раздела земель — те же, что у вынесенных окон и вкладок.
 import '@/components/lands/landsShared.css'
 import LandsStockRefList from '@/components/lands/LandsStockRefList.vue'
@@ -3878,15 +3879,7 @@ onMounted(() => void reloadAll())
               </nav>
               <label class="fields-pagination-size">
                 <span class="fields-pagination-size-label">На странице</span>
-                <select
-                  v-model.number="landsPageSize"
-                  class="fields-pagination-select"
-                  @change="onLandsPageSizeChange"
-                >
-                  <option :value="10">10</option>
-                  <option :value="25">25</option>
-                  <option :value="50">50</option>
-                </select>
+                <UiSelect v-model="landsPageSize" :options="[10, 25, 50].map((n) => ({ value: n, label: String(n) }))" class="fields-pagination-select" @change="onLandsPageSizeChange" />
               </label>
             </div>
           </footer>
@@ -4044,15 +4037,7 @@ onMounted(() => void reloadAll())
               </nav>
               <label class="fields-pagination-size">
                 <span class="fields-pagination-size-label">На странице</span>
-                <select
-                  v-model.number="meliorationPageSize"
-                  class="fields-pagination-select"
-                  @change="onMeliorationPageSizeChange"
-                >
-                  <option :value="10">10</option>
-                  <option :value="25">25</option>
-                  <option :value="50">50</option>
-                </select>
+                <UiSelect v-model="meliorationPageSize" :options="[10, 25, 50].map((n) => ({ value: n, label: String(n) }))" class="fields-pagination-select" @change="onMeliorationPageSizeChange" />
               </label>
             </div>
           </footer>
@@ -4536,10 +4521,7 @@ onMounted(() => void reloadAll())
               <label class="lands-field"><span>Наименование</span><input v-model="newHolderName" type="text" /></label>
               <label class="lands-field">
                 <span>Вид правообладания</span>
-                <select v-model="newHolderTypeId">
-                  <option value="">—</option>
-                  <option v-for="t in landRightHolderTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
-                </select>
+                <UiSelect v-model="newHolderTypeId" :options="[{ value: '', label: '—' }, ...(landRightHolderTypes).map((t) => ({ value: t.id, label: String(t.name) }))]" />
               </label>
             </div>
             <div class="lands-form-grid">
@@ -4587,10 +4569,7 @@ onMounted(() => void reloadAll())
                   link-label="Справочники земель"
                 />
               </span>
-              <select v-if="landInlineEditOpen" v-model="form.landCategory" class="lands-passport-input">
-                <option value="">—</option>
-                <option v-for="category in landCategories" :key="category.id" :value="category.name">{{ category.name }}</option>
-              </select>
+              <UiSelect v-model="form.landCategory" :options="[{ value: '', label: '—' }, ...(landCategories).map((category) => ({ value: category.name, label: String(category.name) }))]" v-if="landInlineEditOpen" class="lands-passport-input" />
               <strong v-else>{{ selectedLand.land_category || '—' }}</strong>
             </div>
             <div class="lands-overview-item">
@@ -4602,10 +4581,7 @@ onMounted(() => void reloadAll())
                   link-label="Использование участка"
                 />
               </span>
-              <select v-if="landInlineEditOpen" v-model="form.actualUseStatus" class="lands-passport-input">
-                <option value="">—</option>
-                <option v-for="option in actualUseOptions" :key="option.id" :value="option.name">{{ option.name }}</option>
-              </select>
+              <UiSelect v-model="form.actualUseStatus" :options="[{ value: '', label: '—' }, ...(actualUseOptions).map((option) => ({ value: option.name, label: String(option.name) }))]" v-if="landInlineEditOpen" class="lands-passport-input" />
               <strong v-else>{{ selectedLand.actual_use_status || '—' }}</strong>
             </div>
             <div class="lands-overview-item">
@@ -4632,10 +4608,7 @@ onMounted(() => void reloadAll())
                   link-label="Типы прав"
                 />
               </span>
-              <select v-if="landInlineEditOpen" v-model="form.permittedUseDocs" class="lands-passport-input">
-                <option value="">—</option>
-                <option v-for="row in landRightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-              </select>
+              <UiSelect v-model="form.permittedUseDocs" :options="[{ value: '', label: '—' }, ...(landRightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" v-if="landInlineEditOpen" class="lands-passport-input" />
               <strong v-else>{{ selectedLand.permitted_use_docs || '—' }}</strong>
             </div>
             <div class="lands-overview-item">
@@ -4695,12 +4668,7 @@ onMounted(() => void reloadAll())
           </div>
           <div v-if="landInlineEditOpen && (addressCandidatesLoading || addressCandidates.length)" class="lands-address-candidates lands-address-candidates--details">
             <span class="lands-address-candidates-label">Варианты адреса по геометрии</span>
-            <select v-model="selectedAddressCandidate" class="lands-address-candidates-select" @change="onAddressCandidateChange">
-              <option value="" disabled>Выберите вариант адреса</option>
-              <option v-for="candidate in addressCandidates" :key="candidate" :value="candidate">
-                {{ candidate }}
-              </option>
-            </select>
+            <UiSelect v-model="selectedAddressCandidate" :options="addressCandidates.map((a) => ({ value: a, label: a }))" placeholder="Выберите вариант адреса" class="lands-address-candidates-select" @change="onAddressCandidateChange" />
             <span v-if="addressCandidatesLoading" class="lands-muted">Подбираем варианты адреса...</span>
           </div>
         </template>
@@ -4784,10 +4752,7 @@ onMounted(() => void reloadAll())
                   link-label="Справочники земель"
                 />
               </span>
-              <select v-model="form.isAgriLand">
-                <option value="">—</option>
-                  <option v-for="type in landTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
-              </select>
+              <UiSelect v-model="form.isAgriLand" :options="[{ value: '', label: '—' }, ...(landTypes).map((type) => ({ value: type.id, label: String(type.name) }))]" />
             </label>
             <label class="lands-field">
               <span>Площадь сельхозугодий, га</span>
@@ -4811,10 +4776,7 @@ onMounted(() => void reloadAll())
                   link-label="Использование участка"
                 />
               </span>
-                <select v-model="form.actualUseStatus">
-                  <option value="">—</option>
-                  <option v-for="option in actualUseOptions" :key="option.id" :value="option.name">{{ option.name }}</option>
-                </select>
+                <UiSelect v-model="form.actualUseStatus" :options="[{ value: '', label: '—' }, ...(actualUseOptions).map((option) => ({ value: option.name, label: String(option.name) }))]" />
             </label>
           </div>
           <div v-if="landInlineEditOpen" class="lands-form-grid">
@@ -4941,10 +4903,7 @@ onMounted(() => void reloadAll())
                     link-label="Справочники земель"
                   />
                 </span>
-                <select v-model="form.landCategory">
-                  <option value="">—</option>
-                  <option v-for="category in landCategories" :key="category.id" :value="category.name">{{ category.name }}</option>
-                </select>
+                <UiSelect v-model="form.landCategory" :options="[{ value: '', label: '—' }, ...(landCategories).map((category) => ({ value: category.name, label: String(category.name) }))]" />
               </label>
             </div>
             <div class="lands-form-grid">
@@ -4957,10 +4916,7 @@ onMounted(() => void reloadAll())
                     link-label="Справочники земель"
                   />
                 </span>
-                <select v-model="form.landTypeId">
-                  <option value="">— Не указан —</option>
-                  <option v-for="type in landTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
-                </select>
+                <UiSelect v-model="form.landTypeId" :options="[{ value: '', label: '— Не указан —' }, ...(landTypes).map((type) => ({ value: type.id, label: String(type.name) }))]" />
               </label>
               <label class="lands-field">
                 <span>Регион</span>
@@ -4980,10 +4936,7 @@ onMounted(() => void reloadAll())
             <div class="lands-form-grid">
               <label class="lands-field">
                 <span>Вид разрешенного использования (документы)</span>
-                <select v-model="form.permittedUseDocs">
-                  <option value="">—</option>
-                  <option v-for="row in landRightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
+                <UiSelect v-model="form.permittedUseDocs" :options="[{ value: '', label: '—' }, ...(landRightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
               </label>
               <label class="lands-field">
                 <span>№ ПОЛЯ ЕФИС ЗСН</span>
@@ -5006,12 +4959,7 @@ onMounted(() => void reloadAll())
             </label>
             <div v-if="addressCandidatesLoading || addressCandidates.length" class="lands-address-candidates">
               <span class="lands-address-candidates-label">Варианты адреса по геометрии</span>
-              <select v-model="selectedAddressCandidate" class="lands-address-candidates-select" @change="onAddressCandidateChange">
-                <option value="" disabled>Выберите вариант адреса</option>
-                <option v-for="candidate in addressCandidates" :key="candidate" :value="candidate">
-                  {{ candidate }}
-                </option>
-              </select>
+              <UiSelect v-model="selectedAddressCandidate" :options="addressCandidates.map((a) => ({ value: a, label: a }))" placeholder="Выберите вариант адреса" class="lands-address-candidates-select" @change="onAddressCandidateChange" />
               <span v-if="addressCandidatesLoading" class="lands-muted">Подбираем варианты адреса...</span>
             </div>
             <div class="lands-map-wrap">

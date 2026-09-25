@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Окно землепользователя — того, кто пользуется участком по договору.
  *
@@ -70,12 +72,7 @@ defineEmits<{
       <div v-if="form.holderMode === 'reference'" class="lands-form-grid">
         <label class="lands-field">
           <span>Справочник правообладателей</span>
-          <select v-model="form.holderRefId">
-            <option value="">—</option>
-            <option v-for="holder in holders" :key="holder.id" :value="holder.id">
-              {{ holder.name }}
-            </option>
-          </select>
+          <UiSelect v-model="form.holderRefId" :options="[{ value: '', label: '—' }, ...(holders).map((holder) => ({ value: holder.id, label: String(holder.name) }))]" />
         </label>
       </div>
       <div class="lands-form-grid">
@@ -108,10 +105,7 @@ defineEmits<{
               link-label="Справочники прав"
             />
           </span>
-          <select v-model="form.rightType">
-            <option value="">—</option>
-            <option v-for="row in rightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-          </select>
+          <UiSelect v-model="form.rightType" :options="[{ value: '', label: '—' }, ...(rightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
         <label class="lands-field">
           <span class="lands-label-with-help">
@@ -122,10 +116,7 @@ defineEmits<{
               link-label="Справочники прав"
             />
           </span>
-          <select v-model="form.documentType">
-            <option value="">—</option>
-            <option v-for="row in documentTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-          </select>
+          <UiSelect v-model="form.documentType" :options="[{ value: '', label: '—' }, ...(documentTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
       </div>
       <label class="lands-field">
@@ -171,11 +162,11 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>Начало *</span>
-          <input v-model="form.startsAt" type="date" />
+          <UiDatePicker v-model="form.startsAt" />
         </label>
         <label class="lands-field">
           <span>Окончание *</span>
-          <input v-model="form.endsAt" type="date" />
+          <UiDatePicker v-model="form.endsAt" />
         </label>
       </div>
       <label class="lands-field">

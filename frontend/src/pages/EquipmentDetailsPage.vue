@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -972,12 +973,7 @@ onMounted(refreshAll)
               </div>
               <label class="equipment-task-pagination-size">
                 <span class="equipment-task-pagination-size-label">На странице</span>
-                <select v-model.number="historyPageSize" class="equipment-task-pagination-select">
-                  <option :value="5">5</option>
-                  <option :value="10">10</option>
-                  <option :value="20">20</option>
-                  <option :value="50">50</option>
-                </select>
+                <UiSelect v-model="historyPageSize" :options="[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]" class="equipment-task-pagination-select" />
               </label>
             </div>
           </div>

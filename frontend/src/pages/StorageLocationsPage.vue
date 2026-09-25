@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
@@ -469,19 +470,13 @@ function onPageSizeChange(size: number) {
             <label class="task-form-label task-form-label--with-help">Тип *
               <RefFieldHelp text="Нет нужного типа? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-types' } }" link-label="Справочники хранения" />
             </label>
-            <select v-model="form.typeId" class="task-form-select" required>
-              <option v-if="!storageTypes.length" value="" disabled>Сначала добавьте типы в справочниках</option>
-              <option v-for="t in storageTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
-            </select>
+            <UiSelect v-model="form.typeId" :options="storageTypes.map((t) => ({ value: t.id, label: t.name }))" :placeholder="storageTypes.length ? 'Выберите тип' : 'Сначала добавьте типы в справочниках'" class="task-form-select" />
           </div>
           <div class="task-form-field">
             <label class="task-form-label task-form-label--with-help">Статус места *
               <RefFieldHelp text="Нужен другой статус? Создайте его в" :to="{ path: '/lands', query: { tab: 'storage-statuses' } }" link-label="Справочники хранения" />
             </label>
-            <select v-model="form.statusId" class="task-form-select" required>
-              <option v-if="!storageStatuses.length" value="" disabled>Сначала добавьте статусы в справочниках</option>
-              <option v-for="s in storageStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
+            <UiSelect v-model="form.statusId" :options="storageStatuses.map((s) => ({ value: s.id, label: s.name }))" :placeholder="storageStatuses.length ? 'Выберите статус' : 'Сначала добавьте статусы в справочниках'" class="task-form-select" />
           </div>
         </div>
 

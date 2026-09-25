@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /** Ячейка склада. Тип — из справочника «Типы мест хранения» (силос, бункер, секция…). */
 import { computed, onMounted, ref } from 'vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -70,10 +71,7 @@ async function save() {
         <label class="ui-form-label ui-form-label--with-help">Тип *
           <RefFieldHelp text="Нет нужного типа? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-types' } }" link-label="Справочники хранения" />
         </label>
-        <select v-if="!isMain" v-model="form.typeId" class="ui-form-select">
-          <option value="" disabled>Выберите тип</option>
-          <option v-for="t in types" :key="t.id" :value="t.id">{{ t.name }}</option>
-        </select>
+        <UiSelect v-model="form.typeId" :options="[...(types).map((t) => ({ value: t.id, label: String(t.name) }))]" placeholder="Выберите тип" v-if="!isMain" class="ui-form-select" />
         <input v-else class="ui-form-input" value="Основная" readonly tabindex="-1" />
       </div>
     </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -816,13 +817,12 @@ watch(
                 <input v-model="editForm.address" type="text" class="field-details-edit-input" placeholder="Адрес" @input="onEditAddressInput" />
                 <div v-if="editAddressCandidates.length" class="field-details-address-candidates">
                   <span class="field-details-address-candidates-label">Варианты адреса по контуру</span>
-                  <select
+                  <UiSelect
                     v-model="selectedEditAddressCandidate"
+                    :options="editAddressCandidates.map((addr) => ({ value: addr, label: addr }))"
                     class="field-details-edit-select field-details-address-candidates-select"
                     @change="onEditAddressCandidateChange"
-                  >
-                    <option v-for="addr in editAddressCandidates" :key="addr" :value="addr">{{ addr }}</option>
-                  </select>
+                  />
                 </div>
                 <p v-if="editAddressCandidatesLoading" class="field-details-map-status">Подбираем адреса по контуру...</p>
               </label>
@@ -896,10 +896,7 @@ watch(
                     link-label="Справочники полей"
                   />
                 </span>
-                <select v-model="editForm.municipality" class="field-details-edit-select">
-                  <option value="">—</option>
-                  <option v-for="row in fieldMunicipalityRefs" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
+                <UiSelect v-model="editForm.municipality" :options="[{ value: '', label: '—' }, ...(fieldMunicipalityRefs).map((row) => ({ value: row.name, label: String(row.name) }))]" class="field-details-edit-select" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Регион</span>
@@ -918,10 +915,14 @@ watch(
                     link-label="Справочники земель"
                   />
                 </span>
-                <select v-model="editForm.land_type" class="field-details-edit-select">
-                  <option v-if="editForm.land_type && !landTypes.some((t) => t.name === editForm.land_type)" :value="editForm.land_type">{{ editForm.land_type }}</option>
-                  <option v-for="t in landTypes" :key="t.name" :value="t.name">{{ t.name }}</option>
-                </select>
+                <UiSelect
+                  v-model="editForm.land_type"
+                  :options="[
+                    ...(editForm.land_type && !landTypes.some((t) => t.name === editForm.land_type) ? [{ value: editForm.land_type, label: editForm.land_type }] : []),
+                    ...landTypes.map((t) => ({ value: t.name, label: t.name })),
+                  ]"
+                  class="field-details-edit-select"
+                />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label field-details-edit-label--with-help">
@@ -932,9 +933,7 @@ watch(
                     link-label="Справочники СХ культур"
                   />
                 </span>
-                <select v-model="editForm.crop_key" class="field-details-edit-select">
-                  <option v-for="c in crops" :key="c.key" :value="c.key">{{ c.label }}</option>
-                </select>
+                <UiSelect v-model="editForm.crop_key" :options="[...(crops).map((c) => ({ value: c.key, label: String(c.label) }))]" class="field-details-edit-select" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Год посева</span>
@@ -942,10 +941,7 @@ watch(
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Ответственный</span>
-                <select v-model="editForm.responsible_id" class="field-details-edit-select">
-                  <option value="">Не назначен</option>
-                  <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.display_name || p.email }}</option>
-                </select>
+                <UiSelect v-model="editForm.responsible_id" :options="[{ value: '', label: 'Не назначен' }, ...(profiles).map((p) => ({ value: p.id, label: String(p.display_name || p.email) }))]" class="field-details-edit-select" />
               </label>
               <label class="field-details-edit-field field-details-edit-field--full">
                 <span class="field-details-edit-label">Доп. информация</span>
@@ -1211,12 +1207,7 @@ watch(
               </div>
               <label class="field-history-pagination-size">
                 <span class="field-history-pagination-size-label">На странице</span>
-                <select v-model.number="historyPageSize" class="field-history-pagination-select">
-                  <option :value="5">5</option>
-                  <option :value="10">10</option>
-                  <option :value="20">20</option>
-                  <option :value="50">50</option>
-                </select>
+                <UiSelect v-model="historyPageSize" :options="[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]" class="field-history-pagination-select" />
               </label>
             </div>
           </div>

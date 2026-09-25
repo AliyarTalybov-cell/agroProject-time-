@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
@@ -687,15 +689,7 @@ async function exportToPdf() {
               link-label="Справочники техники"
             />
           </label>
-          <select id="eq-type" v-model="form.equipment_type" class="equipment-input equipment-select">
-            <option
-              v-for="opt in equipmentTypeOptions"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.label }}
-            </option>
-          </select>
+          <UiSelect v-model="form.equipment_type" :options="[...(equipmentTypeOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-type" class="equipment-input equipment-select" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-svr-number">СВР (Номер свидетельства о регистрации)</label>
@@ -731,21 +725,11 @@ async function exportToPdf() {
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-reg-date">Дата регистрации</label>
-          <input
-            id="eq-reg-date"
-            v-model="form.registration_date"
-            type="date"
-            class="equipment-input"
-          />
+          <UiDatePicker v-model="form.registration_date" id="eq-reg-date" class="equipment-input" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-dereg-date">Дата снятия с учета</label>
-          <input
-            id="eq-dereg-date"
-            v-model="form.deregistration_date"
-            type="date"
-            class="equipment-input"
-          />
+          <UiDatePicker v-model="form.deregistration_date" id="eq-dereg-date" class="equipment-input" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-purpose">Назначение / Культура</label>
@@ -759,33 +743,11 @@ async function exportToPdf() {
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-implement">Орудие</label>
-          <select id="eq-implement" v-model="form.implement_id" class="equipment-input equipment-select">
-            <option value="">Не выбрано</option>
-            <option
-              v-for="opt in implementOptions"
-              :key="opt.id"
-              :value="opt.id"
-            >
-              {{ opt.name }}
-            </option>
-          </select>
+          <UiSelect v-model="form.implement_id" :options="[{ value: '', label: 'Не выбрано' }, ...(implementOptions).map((opt) => ({ value: opt.id, label: String(opt.name) }))]" id="eq-implement" class="equipment-input equipment-select" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-responsible">Ответственный</label>
-          <select
-            id="eq-responsible"
-            v-model="form.responsible_id"
-            class="equipment-input equipment-select"
-          >
-            <option value="">Не назначен</option>
-            <option
-              v-for="opt in responsibleOptions"
-              :key="opt.id"
-              :value="opt.id"
-            >
-              {{ opt.label }}
-            </option>
-          </select>
+          <UiSelect v-model="form.responsible_id" :options="[{ value: '', label: 'Не назначен' }, ...(responsibleOptions).map((opt) => ({ value: opt.id, label: String(opt.label) }))]" id="eq-responsible" class="equipment-input equipment-select" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label equipment-label--with-help" for="eq-condition">
@@ -796,15 +758,7 @@ async function exportToPdf() {
               link-label="Справочники техники"
             />
           </label>
-          <select id="eq-condition" v-model="form.condition" class="equipment-input equipment-select">
-            <option
-              v-for="opt in conditionOptions"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.label }}
-            </option>
-          </select>
+          <UiSelect v-model="form.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-condition" class="equipment-input equipment-select" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-notes">Примечания</label>
@@ -1010,11 +964,7 @@ async function exportToPdf() {
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="impl-condition">Состояние</label>
-          <select id="impl-condition" v-model="implementForm.condition" class="equipment-input equipment-select">
-            <option v-for="opt in conditionOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </option>
-          </select>
+          <UiSelect v-model="implementForm.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="impl-condition" class="equipment-input equipment-select" />
         </div>
         <div class="equipment-form-field equipment-form-field--full">
           <label class="equipment-label" for="impl-description">Описание</label>
@@ -1083,9 +1033,7 @@ async function exportToPdf() {
         <div class="equipment-pagination-right">
           <label class="equipment-pagination-size">
             <span class="equipment-pagination-size-label">На странице</span>
-            <select v-model.number="implementsPageSize" class="equipment-pagination-select">
-              <option v-for="size in IMPLEMENTS_PAGE_SIZE_OPTIONS" :key="size" :value="size">{{ size }}</option>
-            </select>
+            <UiSelect v-model="implementsPageSize" :options="[...(IMPLEMENTS_PAGE_SIZE_OPTIONS).map((size) => ({ value: size, label: String(size) }))]" class="equipment-pagination-select" />
           </label>
           <div class="equipment-pagination-btns">
             <button

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /** Карточка партии: происхождение, качество, где лежит, операции, история. */
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -259,9 +260,7 @@ async function saveEdit() {
               <label class="ui-form-label ui-form-label--with-help">Назначение
                 <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
               </label>
-              <select v-model="edit.purpose" class="ui-form-select">
-                <option v-for="p in purposes" :key="p.id" :value="p.id" :disabled="!p.active && p.id !== edit.purpose">{{ p.label }}</option>
-              </select>
+              <UiSelect v-model="edit.purpose" :options="[...(purposes).map((p) => ({ value: p.id, label: String(p.label), disabled: !p.active && p.id !== edit.purpose }))]" class="ui-form-select" />
             </div>
           </div>
           <div class="ui-form-row ui-form-row--two">

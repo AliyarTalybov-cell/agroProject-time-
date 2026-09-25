@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch } from 'vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import type { EmployeeRole, EmployeeRow, PositionRow } from '@/lib/employeesSupabase'
@@ -210,18 +211,12 @@ watch(
 
                 <div class="eem-field">
                   <label class="eem-label" for="eem-pos">Должность</label>
-                  <select id="eem-pos" v-model="form.position" class="eem-input eem-select">
-                    <option value="" disabled>Выберите должность</option>
-                    <option v-for="p in positions" :key="p.id" :value="p.name">{{ p.name }}</option>
-                  </select>
+                  <UiSelect v-model="form.position" :options="[...(positions).map((p) => ({ value: p.name, label: String(p.name) }))]" placeholder="Выберите должность" id="eem-pos" class="eem-input eem-select" />
                 </div>
 
                 <div class="eem-field">
                   <label class="eem-label" for="eem-role">Роль в системе</label>
-                  <select id="eem-role" v-model="form.role" class="eem-input eem-select">
-                    <option value="worker">Сотрудник</option>
-                    <option value="manager">Руководитель</option>
-                  </select>
+                  <UiSelect v-model="form.role" :options="[{ value: 'worker', label: 'Сотрудник' }, { value: 'manager', label: 'Руководитель' }]" id="eem-role" class="eem-input eem-select" />
                 </div>
 
                 <div class="eem-field eem-field--full">

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, onActivated, onUnmounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useSupabaseCheck } from '@/composables/useSupabaseCheck'
@@ -985,12 +987,7 @@ onUnmounted(() => {
     <div class="dash-toolbar page-enter-item" style="--enter-delay: 40ms">
       <div class="dash-toolbar-left">
         <div v-if="isManager" class="dash-select-wrap">
-          <select v-model="selectedEmployeeId" class="dash-select" aria-label="Сотрудник">
-            <option value="">Все сотрудники</option>
-            <option v-for="p in profilesForEmployeeFilter" :key="p.id" :value="p.id">
-              {{ p.display_name || p.email }}{{ p.role === 'manager' ? ' (руководитель)' : '' }}
-            </option>
-          </select>
+          <UiSelect v-model="selectedEmployeeId" :options="[{ value: '', label: 'Все сотрудники' }, ...(profilesForEmployeeFilter).map((p) => ({ value: p.id, label: `${p.display_name || p.email}${p.role === 'manager' ? ' (руководитель)' : ''}` }))]" class="dash-select" aria-label="Сотрудник" />
         </div>
         <div class="dash-segment" role="group" aria-label="Период">
           <button
@@ -1018,12 +1015,10 @@ onUnmounted(() => {
         <div class="dash-dates">
           <label class="dash-date-label"
             >С:
-            <input v-model="dateFrom" type="date" class="dash-date-input"
-          /></label>
+            <UiDatePicker v-model="dateFrom" class="dash-date-input" /></label>
           <label class="dash-date-label"
             >По:
-            <input v-model="dateTo" type="date" class="dash-date-input"
-          /></label>
+            <UiDatePicker v-model="dateTo" class="dash-date-input" /></label>
         </div>
       </div>
       <button type="button" class="dash-refresh" :disabled="loading" @click="loadDashboard">

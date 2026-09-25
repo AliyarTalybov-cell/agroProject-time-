@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Подработка (сушка, очистка): из массы «до» остаётся масса «после», разница —
  * усушка и отходы. Показатели после подработки обновляют качество партии.
@@ -86,15 +88,12 @@ async function save() {
     <p v-if="refs.error.value" class="ui-form-error">{{ refs.error.value }}</p>
     <div class="ui-form-field">
       <label class="ui-form-label">Партия в ячейке *</label>
-      <select v-model="form.source" class="ui-form-select">
-        <option value="" disabled>Выберите партию</option>
-        <option v-for="p in sources" :key="p.key" :value="p.key">{{ p.label }} · {{ formatTons(p.tons) }}</option>
-      </select>
+      <UiSelect v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию" class="ui-form-select" />
     </div>
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Дата и время *</label>
-        <input v-model="form.docDate" type="datetime-local" class="ui-form-input" />
+        <UiDateTimePicker v-model="form.docDate" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Масса до, т *</label>

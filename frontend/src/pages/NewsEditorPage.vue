@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAuthUser } from '@/stores/auth'
@@ -327,12 +329,7 @@ onMounted(async () => {
 
       <label class="news-field">
         <span>Позиция короткого описания на обложке</span>
-        <select v-model="form.coverExcerptPosition" class="news-select">
-          <option value="left-top">Слева сверху</option>
-          <option value="right-top">Справа сверху</option>
-          <option value="left-bottom">Слева снизу</option>
-          <option value="right-bottom">Справа снизу</option>
-        </select>
+        <UiSelect v-model="form.coverExcerptPosition" :options="[{ value: 'left-top', label: 'Слева сверху' }, { value: 'right-top', label: 'Справа сверху' }, { value: 'left-bottom', label: 'Слева снизу' }, { value: 'right-bottom', label: 'Справа снизу' }]" class="news-select" />
       </label>
 
       <div class="news-grid-two">
@@ -348,7 +345,7 @@ onMounted(async () => {
         </label>
         <label class="news-field">
           <span>Дата публикации</span>
-          <input v-model="form.publishedAt" type="datetime-local" />
+          <UiDateTimePicker v-model="form.publishedAt" />
         </label>
       </div>
 

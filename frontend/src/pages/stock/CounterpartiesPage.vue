@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /** Справочник контрагентов: покупатели и поставщики зерна. */
 import { computed, onMounted, ref, watch } from 'vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
@@ -87,11 +88,7 @@ async function confirmDelete() {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
             <input v-model="search" type="search" placeholder="Название, ИНН, контакт" />
           </label>
-          <select v-model="kind" class="ui-filter-select" aria-label="Роль">
-            <option value="">Все</option>
-            <option value="buyer">Покупатели</option>
-            <option value="supplier">Поставщики</option>
-          </select>
+          <UiSelect v-model="kind" :options="[{ value: '', label: 'Все' }, { value: 'buyer', label: 'Покупатели' }, { value: 'supplier', label: 'Поставщики' }]" class="ui-filter-select" aria-label="Роль" />
         </div>
         <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>
         <div v-if="loading" class="ui-loading"><UiLoadingBar /></div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Окно добавления и правки записи севооборота. Разметка перенесена из
  * LandsPage без изменений, включая классы с префиксом lands-: стили к ним
@@ -59,12 +60,7 @@ function canSave(): boolean {
         <div class="lands-form-grid">
           <label class="lands-field">
             <span>№ ПОЛЯ ЕФИС ЗСН</span>
-            <select v-model="form.fieldId">
-              <option value="">— Выберите поле —</option>
-              <option v-for="field in assignedFields" :key="field.id" :value="field.id">
-                №{{ field.number }} — {{ field.name }}
-              </option>
-            </select>
+            <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '— Выберите поле —' }, ...(assignedFields).map((field) => ({ value: field.id, label: `№${field.number} — ${field.name}` }))]" />
           </label>
           <label class="lands-field">
             <span>Площадь, га</span>
@@ -85,10 +81,7 @@ function canSave(): boolean {
                 link-label="Справочники севооборота"
               />
             </span>
-            <select v-model="form.rotationType">
-              <option value="">— Выберите тип —</option>
-              <option v-for="type in cropRotationTypeOptions" :key="type" :value="type">{{ type }}</option>
-            </select>
+            <UiSelect v-model="form.rotationType" :options="[{ value: '', label: '— Выберите тип —' }, ...(cropRotationTypeOptions).map((type) => ({ value: type, label: String(type) }))]" />
           </label>
         </div>
         <label class="lands-field">
@@ -100,10 +93,7 @@ function canSave(): boolean {
               link-label="Справочники СХ культур"
             />
           </span>
-          <select v-model="form.cropKey">
-            <option value="">— Выберите культуру —</option>
-            <option v-for="crop in crops" :key="crop.id" :value="crop.key">{{ crop.label }}</option>
-          </select>
+          <UiSelect v-model="form.cropKey" :options="[{ value: '', label: '— Выберите культуру —' }, ...(crops).map((crop) => ({ value: crop.key, label: String(crop.label) }))]" />
         </label>
         <label class="lands-field">
           <span>Наименование семян (посадочный материал)</span>

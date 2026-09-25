@@ -1144,3 +1144,355 @@ select:is(
   background: rgba(59, 130, 246, 0.15) !important;
   color: #93c5fd !important;
 }
+
+/* ——— Всплывающие элементы на Reka UI (UiSelect, UiDatePicker) ———
+   Классы и значения — Select / Popover / Calendar из shadcn-vue. Панель
+   рендерится в body (портал), поэтому стили глобальные. z-index выше окон (1000). */
+[data-reka-popper-content-wrapper] {
+  z-index: 1100 !important;
+}
+
+.ui-popover {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  outline: none;
+  animation: ui-popover-in 0.12s ease-out;
+  transform-origin: var(--reka-popper-transform-origin);
+}
+
+[data-theme='dark'] .ui-popover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes ui-popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Кнопка списка — SelectTrigger: h-9 rounded-md border px-3 text-sm shadow-xs */
+.ui-select-trigger,
+.ui-date-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: var(--control-h);
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.ui-select-trigger--sm {
+  height: var(--control-h-sm);
+}
+
+.ui-select-trigger--block,
+.ui-date-trigger--block {
+  display: flex;
+  width: 100%;
+}
+
+.ui-select-trigger:focus-visible,
+.ui-date-trigger:focus-visible,
+.ui-select-trigger[data-state='open'],
+.ui-date-trigger[data-state='open'] {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.ui-select-trigger:disabled,
+.ui-date-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-select-trigger[data-placeholder] .ui-select-value,
+.ui-date-trigger.is-empty .ui-date-label {
+  color: var(--text-secondary);
+}
+
+.ui-select-value,
+.ui-date-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-select-chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* Список — SelectContent: rounded-md border shadow-md p-1, пункт py-1.5 pl-2 pr-8 rounded-sm */
+.ui-select-content {
+  min-width: var(--reka-select-trigger-width);
+  max-height: min(var(--reka-select-content-available-height), 320px);
+  overflow: hidden;
+}
+
+.ui-select-viewport {
+  padding: 4px;
+}
+
+.ui-select-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 32px 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  line-height: 1.25;
+  color: var(--text-primary);
+  cursor: default;
+  outline: none;
+  user-select: none;
+}
+
+.ui-select-item[data-highlighted] {
+  background: var(--muted-bg);
+}
+
+.ui-select-item[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ui-select-item-check {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-select-item-check svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Дата — кнопка с иконкой слева, как Date Picker shadcn */
+.ui-date-trigger {
+  justify-content: flex-start;
+}
+
+.ui-date-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+/* Календарь — Calendar shadcn: p-3, дни size-8, выбранный — primary, сегодня — accent */
+.ui-date-content {
+  padding: 0;
+}
+
+.ui-calendar {
+  padding: 12px;
+}
+
+.ui-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.ui-calendar-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.ui-calendar-nav:hover {
+  opacity: 1;
+}
+
+.ui-calendar-nav svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-calendar-selects {
+  display: flex;
+  gap: 4px;
+}
+
+.ui-calendar-select {
+  height: 28px;
+  padding: 0 22px 0 8px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ui-calendar-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ui-calendar-row {
+  display: flex;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.ui-calendar-head-cell {
+  flex: 1;
+  width: 32px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 400;
+  text-transform: capitalize;
+}
+
+.ui-calendar-cell {
+  flex: 1;
+  padding: 0;
+  text-align: center;
+}
+
+.ui-calendar-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  cursor: default;
+  outline: none;
+  transition: background-color 0.12s ease;
+}
+
+.ui-calendar-day:hover {
+  background: var(--muted-bg);
+}
+
+.ui-calendar-day:focus-visible {
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.ui-calendar-day[data-today]:not([data-selected]) {
+  background: var(--muted-bg);
+  font-weight: 500;
+}
+
+.ui-calendar-day[data-selected] {
+  background: var(--accent-green);
+  color: #fff;
+}
+
+.ui-calendar-day[data-outside-view] {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.ui-calendar-day[data-disabled],
+.ui-calendar-day[data-unavailable] {
+  color: var(--text-secondary);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ui-date-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.ui-date-clear {
+  height: var(--control-h-sm);
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ui-date-clear:hover {
+  background: var(--muted-bg);
+  color: var(--text-primary);
+}
+
+/* UiSelect в панели фильтров — ширина как у ui-filter-select */
+.ui-toolbar .ui-select-trigger {
+  min-width: 150px;
+}
+
+@media (max-width: 640px) {
+  .ui-toolbar .ui-select-trigger {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Кнопке списка/даты достаются классы старых select/input со страниц — убираем
+   то, что у кнопки лишнее: нарисованную стрелку select и нативный вид. */
+.ui-select-trigger,
+.ui-date-trigger {
+  appearance: none;
+  background-image: none !important;
+  text-align: left;
+}
+
+/* Дата и время: календарь + поле времени (Date and Time picker shadcn) */
+.ui-datetime {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 104px;
+  gap: 8px;
+}
+
+.ui-datetime-time {
+  appearance: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-datetime-time::-webkit-calendar-picker-indicator {
+  display: none;
+}

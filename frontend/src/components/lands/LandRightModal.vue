@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Окно права владения земельным участком.
  *
@@ -65,12 +67,7 @@ defineEmits<{
       <div v-if="form.holderMode === 'reference'" class="lands-form-grid">
         <label class="lands-field">
           <span>Правообладатель из справочника</span>
-          <select v-model="form.holderRefId">
-            <option value="">— Выберите правообладателя —</option>
-            <option v-for="holder in holders" :key="holder.id" :value="holder.id">
-              {{ holder.name }} · ИНН: {{ holder.inn || '—' }}
-            </option>
-          </select>
+          <UiSelect v-model="form.holderRefId" :options="[{ value: '', label: '— Выберите правообладателя —' }, ...(holders).map((holder) => ({ value: holder.id, label: `${holder.name} · ИНН: ${holder.inn || '—'}` }))]" />
         </label>
         <div />
       </div>
@@ -82,10 +79,7 @@ defineEmits<{
         </label>
         <label class="lands-field">
           <span>Вид правообладания</span>
-          <select v-model="form.holderTypeId" :disabled="form.holderMode === 'reference'">
-            <option value="">—</option>
-            <option v-for="row in holderTypes" :key="row.id" :value="row.id">{{ row.name }}</option>
-          </select>
+          <UiSelect v-model="form.holderTypeId" :options="[{ value: '', label: '—' }, ...(holderTypes).map((row) => ({ value: row.id, label: String(row.name) }))]" :disabled="form.holderMode === 'reference'" />
         </label>
       </div>
       <div class="lands-form-grid">
@@ -119,10 +113,7 @@ defineEmits<{
               link-label="Справочники прав"
             />
           </span>
-          <select v-model="form.ownershipForm">
-            <option value="">— Выберите форму собственности —</option>
-            <option v-for="row in ownershipForms" :key="row.id" :value="row.name">{{ row.name }}</option>
-          </select>
+          <UiSelect v-model="form.ownershipForm" :options="[{ value: '', label: '— Выберите форму собственности —' }, ...(ownershipForms).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
       </div>
       <div class="lands-form-grid">
@@ -135,10 +126,7 @@ defineEmits<{
               link-label="Справочники прав"
             />
           </span>
-          <select v-model="form.rightType">
-            <option value="">— Выберите вид права —</option>
-            <option v-for="row in rightTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-          </select>
+          <UiSelect v-model="form.rightType" :options="[{ value: '', label: '— Выберите вид права —' }, ...(rightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
         <label class="lands-field">
           <span class="lands-label-with-help">
@@ -149,10 +137,7 @@ defineEmits<{
               link-label="Справочники прав"
             />
           </span>
-          <select v-model="form.documentType">
-            <option value="">— Выберите тип документа —</option>
-            <option v-for="row in documentTypes" :key="row.id" :value="row.name">{{ row.name }}</option>
-          </select>
+          <UiSelect v-model="form.documentType" :options="[{ value: '', label: '— Выберите тип документа —' }, ...(documentTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
       </div>
       <div class="lands-form-grid">
@@ -210,7 +195,7 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>Дата документа</span>
-          <input v-model="form.documentDate" type="date" />
+          <UiDatePicker v-model="form.documentDate" />
         </label>
         <label class="lands-field">
           <span>Примечание</span>
@@ -220,11 +205,11 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>Начало владения *</span>
-          <input v-model="form.startsAt" type="date" />
+          <UiDatePicker v-model="form.startsAt" />
         </label>
         <label class="lands-field">
           <span>Окончание *</span>
-          <input v-model="form.endsAt" type="date" />
+          <UiDatePicker v-model="form.endsAt" />
         </label>
       </div>
     </div>

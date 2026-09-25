@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Инвентаризация ячейки: для каждой партии в ячейке вводится фактический
  * остаток, разница с учётом проводится корректировкой.
@@ -73,13 +75,11 @@ async function save() {
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Ячейка *</label>
-        <select v-model="cellId" class="ui-form-select">
-          <option v-for="c in cells" :key="c.id" :value="c.id">{{ c.label }}</option>
-        </select>
+        <UiSelect v-model="cellId" :options="[...(cells).map((c) => ({ value: c.id, label: String(c.label) }))]" class="ui-form-select" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Дата и время *</label>
-        <input v-model="docDate" type="datetime-local" class="ui-form-input" />
+        <UiDateTimePicker v-model="docDate" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Акт №</label>

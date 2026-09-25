@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { useAuth } from '@/stores/auth'
@@ -1928,15 +1930,7 @@ async function confirmDeleteTask() {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </span>
-            <select
-              id="calendar-owner-select"
-              v-model="managerCalendarUserId"
-              class="calendar-owner-select"
-            >
-              <option v-for="opt in managerCalendarOptions" :key="opt.id" :value="opt.id">
-                {{ opt.label }}{{ opt.id === auth.user.value?.id ? ' (я)' : '' }}
-              </option>
-            </select>
+            <UiSelect v-model="managerCalendarUserId" :options="[...(managerCalendarOptions).map((opt) => ({ value: opt.id, label: `${opt.label}${opt.id === auth.user.value?.id ? ' (я)' : ''}` }))]" id="calendar-owner-select" class="calendar-owner-select" />
           </div>
         </div>
         <p v-if="calendarViewingOtherLabel" class="calendar-view-hint">
@@ -2495,7 +2489,7 @@ async function confirmDeleteTask() {
                       <line x1="8" x2="8" y1="2" y2="6" />
                       <line x1="3" x2="21" y1="10" y2="10" />
                     </svg>
-                    <input v-model="taskStartDate" type="date" class="modal-input modal-input--design modal-input--with-icon" />
+                    <UiDatePicker v-model="taskStartDate" class="modal-input modal-input--design modal-input--with-icon" />
                   </div>
                   <div class="modal-deadline-time-range modal-deadline-time-range--single">
                     <div class="modal-deadline-time-start">
@@ -2518,7 +2512,7 @@ async function confirmDeleteTask() {
                       <line x1="8" x2="8" y1="2" y2="6" />
                       <line x1="3" x2="21" y1="10" y2="10" />
                     </svg>
-                    <input v-model="taskEndDate" type="date" class="modal-input modal-input--design modal-input--with-icon" />
+                    <UiDatePicker v-model="taskEndDate" class="modal-input modal-input--design modal-input--with-icon" />
                   </div>
                   <div class="modal-deadline-time-range modal-deadline-time-range--single">
                     <div class="modal-deadline-time-start">
@@ -2535,24 +2529,14 @@ async function confirmDeleteTask() {
 
             <label class="modal-field modal-field--design">
               <span class="modal-label modal-label--design">Приоритет</span>
-              <select v-model="taskPriority" class="modal-input modal-input--design modal-select modal-select--design">
-                <option value="normal">Обычный</option>
-                <option value="high">Высокий</option>
-                <option value="low">Низкий</option>
-              </select>
+              <UiSelect v-model="taskPriority" :options="[{ value: 'normal', label: 'Обычный' }, { value: 'high', label: 'Высокий' }, { value: 'low', label: 'Низкий' }]" class="modal-input modal-input--design modal-select modal-select--design" />
             </label>
 
             <div class="modal-grid-2">
               <label class="modal-field modal-field--design">
                 <span class="modal-label modal-label--design">Повторяемость</span>
                 <div class="repeat-row">
-                <select v-model="taskRepeatRule" class="modal-input modal-input--design modal-select modal-select--design">
-                  <option value="none">Не повторяется</option>
-                  <option value="daily">Каждый день</option>
-                  <option value="weekly">Каждую неделю</option>
-                  <option value="monthly">Каждый месяц</option>
-                  <option value="yearly">Каждый год</option>
-                </select>
+                <UiSelect v-model="taskRepeatRule" :options="[{ value: 'none', label: 'Не повторяется' }, { value: 'daily', label: 'Каждый день' }, { value: 'weekly', label: 'Каждую неделю' }, { value: 'monthly', label: 'Каждый месяц' }, { value: 'yearly', label: 'Каждый год' }]" class="modal-input modal-input--design modal-select modal-select--design" />
                 <template v-if="taskRepeatRule !== 'none'">
                   <span class="repeat-inline-label">каждые</span>
                   <input
@@ -2610,13 +2594,7 @@ async function confirmDeleteTask() {
                   <label class="repeat-end-item repeat-end-item--date">
                     <input v-model="taskRepeatEndMode" type="radio" value="on_date" />
                     <span>Дата</span>
-                    <input
-                      v-model="taskRepeatUntil"
-                      type="date"
-                      class="modal-input modal-input--design repeat-date-input"
-                      :min="taskStartDate || selectedDate"
-                      :disabled="taskRepeatEndMode !== 'on_date'"
-                    />
+                    <UiDatePicker v-model="taskRepeatUntil" class="modal-input modal-input--design repeat-date-input" :min="taskStartDate || selectedDate" :disabled="taskRepeatEndMode !== 'on_date'" />
                   </label>
                 </div>
               </label>

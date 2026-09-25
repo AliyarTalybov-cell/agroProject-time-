@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -1104,37 +1105,8 @@ function statusClass(s: Status) {
               {{ f.label }}
             </button>
           </div>
-          <select
-            v-if="isManager"
-            v-model="filterEmployeeId"
-            class="task-filter-pill task-filter-pill--select"
-            title="Сотрудник"
-            :disabled="!assignees.length"
-          >
-            <option value="">Все сотрудники</option>
-            <option :value="TASK_ASSIGNEE_FILTER_UNASSIGNED">Без исполнителя</option>
-            <option
-              v-for="a in assignees"
-              :key="a.id"
-              :value="a.id"
-            >
-              {{ a.name }}
-            </option>
-          </select>
-          <select
-            v-model="filterStatus"
-            class="task-filter-pill task-filter-pill--select"
-            title="Статус"
-          >
-            <option value="">Все статусы</option>
-            <option
-              v-for="col in statusColumns"
-              :key="col.key"
-              :value="col.key"
-            >
-              {{ col.title }}
-            </option>
-          </select>
+          <UiSelect v-model="filterEmployeeId" :options="[{ value: '', label: 'Все сотрудники' }, { value: TASK_ASSIGNEE_FILTER_UNASSIGNED, label: 'Без исполнителя' }, ...(assignees).map((a) => ({ value: a.id, label: String(a.name) }))]" v-if="isManager" class="task-filter-pill task-filter-pill--select" title="Сотрудник" :disabled="!assignees.length" />
+          <UiSelect v-model="filterStatus" :options="[{ value: '', label: 'Все статусы' }, ...(statusColumns).map((col) => ({ value: col.key, label: String(col.title) }))]" class="task-filter-pill task-filter-pill--select" title="Статус" />
           <div class="task-filter-dates">
             <span class="task-filter-date-label">С</span>
             <CalendarPopover v-model="dateFromInput" placeholder="Дата с" />
@@ -1343,12 +1315,7 @@ function statusClass(s: Status) {
         </div>
         <label class="task-pagination-size">
           <span class="task-filter-select-label">На странице</span>
-          <select v-model.number="pageSize" class="task-filter-select task-pagination-select">
-            <option :value="5">5</option>
-            <option :value="10">10</option>
-            <option :value="20">20</option>
-            <option :value="50">50</option>
-          </select>
+          <UiSelect v-model="pageSize" :options="[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]" class="task-filter-select task-pagination-select" />
         </label>
       </div>
     </div>
@@ -1402,19 +1369,13 @@ function statusClass(s: Status) {
                         :url="avatarUrlByUserId(form.assigneeId || null)"
                         :initials="form.assigneeId ? (assignees.find((a) => a.id === form.assigneeId)?.initials ?? '?') : '—'"
                       />
-                      <select v-model="form.assigneeId" class="modal-input modal-input--design modal-select modal-select--design task-form-select">
-                        <option value="">Без исполнителя</option>
-                        <option v-for="a in assignees" :key="a.id" :value="a.id">{{ a.name }}</option>
-                      </select>
+                      <UiSelect v-model="form.assigneeId" :options="[{ value: '', label: 'Без исполнителя' }, ...(assignees).map((a) => ({ value: a.id, label: String(a.name) }))]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
                     </div>
                     <div v-else class="task-form-static-assignee modal-input modal-input--design">Назначить себе</div>
                   </label>
                   <label class="modal-field modal-field--design">
                     <span class="modal-label modal-label--design">Объект / поле</span>
-                    <select v-model="form.field" class="modal-input modal-input--design modal-select modal-select--design task-form-select">
-                      <option value="">Не выбрано</option>
-                      <option v-for="f in fields" :key="f" :value="f">{{ f }}</option>
-                    </select>
+                    <UiSelect v-model="form.field" :options="[{ value: '', label: 'Не выбрано' }, ...(fields).map((f) => ({ value: f, label: String(f) }))]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
                   </label>
                 </div>
                 <div v-if="isManager" class="modal-field modal-field--design">
@@ -1481,11 +1442,7 @@ function statusClass(s: Status) {
                 </div>
                 <label class="modal-field modal-field--design tm-form-field--half">
                   <span class="modal-label modal-label--design">Приоритет</span>
-                  <select v-model="form.priority" class="modal-input modal-input--design modal-select modal-select--design task-form-select">
-                    <option value="high">Высокий</option>
-                    <option value="medium">Средний</option>
-                    <option value="low">Низкий</option>
-                  </select>
+                  <UiSelect v-model="form.priority" :options="[{ value: 'high', label: 'Высокий' }, { value: 'medium', label: 'Средний' }, { value: 'low', label: 'Низкий' }]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
                 </label>
                 <div class="modal-grid-2">
                   <label class="modal-field modal-field--design">
@@ -1499,10 +1456,7 @@ function statusClass(s: Status) {
                   </label>
                   <label class="modal-field modal-field--design">
                     <span class="modal-label modal-label--design">Тип работ</span>
-                    <select v-model="form.workType" class="modal-input modal-input--design modal-select modal-select--design task-form-select">
-                      <option value="">Не указано</option>
-                      <option v-for="w in workTypes" :key="w" :value="w">{{ w }}</option>
-                    </select>
+                    <UiSelect v-model="form.workType" :options="[{ value: '', label: 'Не указано' }, ...(workTypes).map((w) => ({ value: w, label: String(w) }))]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
                   </label>
                 </div>
                 <label class="modal-field modal-field--design">
@@ -1631,15 +1585,12 @@ function statusClass(s: Status) {
                 <div class="task-detail-item">
                   <dt class="task-detail-label">Статус</dt>
                   <dd class="task-detail-value">
-                    <select
-                      :value="selectedTask.status"
+                    <UiSelect
+                      :model-value="selectedTask.status"
+                      :options="statusColumns.map((col) => ({ value: col.key, label: col.title }))"
                       class="task-detail-status-select"
-                      @change="(e) => selectedTask && updateTaskStatus(selectedTask.id, (e.target as HTMLSelectElement).value as Status)"
-                    >
-                      <option v-for="col in statusColumns" :key="col.key" :value="col.key">
-                        {{ col.title }}
-                      </option>
-                    </select>
+                      @update:model-value="(v) => selectedTask && updateTaskStatus(selectedTask.id, v as Status)"
+                    />
                   </dd>
                 </div>
                 <div class="task-detail-item">

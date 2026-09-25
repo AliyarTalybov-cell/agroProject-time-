@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Окно записи мелиорации. Набор полей зависит от вкладки раздела: системы,
  * лесные насаждения или мероприятия — поэтому вкладка приходит пропсом.
@@ -46,12 +48,7 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>№ ПОЛЯ ЕФИС ЗСН</span>
-          <select v-model="form.fieldId">
-            <option value="">—</option>
-            <option v-for="field in fieldOptions" :key="field.id" :value="field.id">
-              {{ fieldLabel(field.id) }}
-            </option>
-          </select>
+          <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '—' }, ...(fieldOptions).map((field) => ({ value: field.id, label: String(fieldLabel(field.id)) }))]" />
         </label>
         <label v-if="tab === 'systems'" class="lands-field">
           <span class="lands-label-with-help">
@@ -62,12 +59,7 @@ defineEmits<{
               link-label="Справочники мелиорации"
             />
           </span>
-          <select v-model="form.meliorationType">
-            <option value="">—</option>
-            <option v-for="row in types" :key="row.id" :value="row.name">
-              {{ row.name }}
-            </option>
-          </select>
+          <UiSelect v-model="form.meliorationType" :options="[{ value: '', label: '—' }, ...(types).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
         <label v-else-if="tab === 'forest'" class="lands-field">
           <span>Год создания</span>
@@ -82,12 +74,7 @@ defineEmits<{
               link-label="Типы мероприятий"
             />
           </span>
-          <select v-model="form.eventType">
-            <option value="">—</option>
-            <option v-for="row in eventTypes" :key="row.id" :value="row.name">
-              {{ row.name }}
-            </option>
-          </select>
+          <UiSelect v-model="form.eventType" :options="[{ value: '', label: '—' }, ...(eventTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
       </div>
       <div v-if="tab === 'systems'" class="lands-form-grid lands-form-grid--mel">
@@ -100,12 +87,7 @@ defineEmits<{
               link-label="Справочники мелиорации"
             />
           </span>
-          <select v-model="form.meliorationSubtype">
-            <option value="">—</option>
-            <option v-for="row in subtypes" :key="row.id" :value="row.name">
-              {{ row.name }}
-            </option>
-          </select>
+          <UiSelect v-model="form.meliorationSubtype" :options="[{ value: '', label: '—' }, ...(subtypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
         </label>
         <label class="lands-field">
           <span>Кадастровый номер земельного участка</span>
@@ -115,7 +97,7 @@ defineEmits<{
       <div v-if="tab === 'systems'" class="lands-form-grid lands-form-grid--mel">
         <label class="lands-field">
           <span>Дата ввода в эксплуатацию</span>
-          <input v-model="form.commissionedAt" type="date" />
+          <UiDatePicker v-model="form.commissionedAt" />
         </label>
         <label class="lands-field">
           <span>Площадь орошаемых (осушаемых) земель, га</span>
@@ -149,7 +131,7 @@ defineEmits<{
       <div v-if="tab === 'events'" class="lands-form-grid lands-form-grid--mel">
         <label class="lands-field">
           <span>Дата проведения</span>
-          <input v-model="form.eventDate" type="date" />
+          <UiDatePicker v-model="form.eventDate" />
         </label>
         <label class="lands-field">
           <span>Площадь земельного участка, га</span>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { useRouter, useRoute } from 'vue-router'
@@ -1715,14 +1716,12 @@ onMounted(async () => {
                 <td>{{ f.municipality || '—' }}</td>
                 <td>{{ f.region || '—' }}</td>
                 <td class="fields-td-responsible" @click.stop>
-                  <select
-                    :value="f.responsibleId || ''"
+                  <UiSelect
+                    :model-value="f.responsibleId || ''"
+                    :options="[{ value: '', label: 'Не назначен' }, ...profiles.map((p) => ({ value: p.id, label: p.display_name || p.email || '' }))]"
                     class="fields-responsible-select"
-                    @change="onResponsibleChange(f.id, ($event.target as HTMLSelectElement).value)"
-                  >
-                    <option value="">Не назначен</option>
-                    <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.display_name || p.email }}</option>
-                  </select>
+                    @update:model-value="(v) => onResponsibleChange(f.id, String(v))"
+                  />
                 </td>
                 <td class="fields-td-actions" @click.stop>
                   <div class="fields-actions-row">
@@ -1811,16 +1810,7 @@ onMounted(async () => {
           </nav>
           <label class="fields-pagination-size">
             <span class="fields-pagination-size-label">На странице</span>
-            <select
-              v-model.number="pageSize"
-              class="fields-pagination-select"
-              @change="onPageSizeChange"
-            >
-              <option :value="5">5</option>
-              <option :value="10">10</option>
-              <option :value="20">20</option>
-              <option :value="50">50</option>
-            </select>
+            <UiSelect v-model="pageSize" :options="[5, 10, 20, 50].map((n) => ({ value: n, label: String(n) }))" class="fields-pagination-select" @change="onPageSizeChange" />
           </label>
         </div>
       </div>
@@ -1834,9 +1824,7 @@ onMounted(async () => {
             <div class="refs-add-row">
               <input v-model="newReasonLabel" type="text" placeholder="Название (например: Поломка гидравлики)" class="refs-input" />
               <input v-model="newReasonDesc" type="text" placeholder="Описание (необязательно)" class="refs-input refs-input--wide" />
-              <select v-model="newReasonCategory" class="refs-select">
-                <option v-for="(label, key) in CATEGORY_LABELS" :key="key" :value="key">{{ label }}</option>
-              </select>
+              <UiSelect v-model="newReasonCategory" :options="(Object.keys(CATEGORY_LABELS) as DowntimeCategory[]).map((key) => ({ value: key, label: CATEGORY_LABELS[key] }))" class="refs-select" />
               <button type="button" class="refs-btn" :disabled="refsLoading || !newReasonLabel.trim()" @click="addReason">Добавить</button>
             </div>
             <div class="refs-table-wrap">
@@ -1875,9 +1863,7 @@ onMounted(async () => {
                 </p>
                 <label class="refs-pagination-size">
                   Строк на странице:
-                  <select v-model.number="refsPageSize" class="refs-pagination-select" @change="onRefsPageSizeChange">
-                    <option v-for="n in REFS_PAGE_SIZE_OPTIONS" :key="n" :value="n">{{ n }}</option>
-                  </select>
+                  <UiSelect v-model="refsPageSize" :options="REFS_PAGE_SIZE_OPTIONS.map((n) => ({ value: n, label: String(n) }))" class="refs-pagination-select" @change="onRefsPageSizeChange" />
                 </label>
               </div>
               <nav class="refs-pagination-nav" aria-label="Пагинация">
@@ -1940,9 +1926,7 @@ onMounted(async () => {
                 </p>
                 <label class="refs-pagination-size">
                   Строк на странице:
-                  <select v-model.number="refsPageSize" class="refs-pagination-select" @change="onRefsPageSizeChange">
-                    <option v-for="n in REFS_PAGE_SIZE_OPTIONS" :key="n" :value="n">{{ n }}</option>
-                  </select>
+                  <UiSelect v-model="refsPageSize" :options="REFS_PAGE_SIZE_OPTIONS.map((n) => ({ value: n, label: String(n) }))" class="refs-pagination-select" @change="onRefsPageSizeChange" />
                 </label>
               </div>
               <nav class="refs-pagination-nav" aria-label="Пагинация">
@@ -2047,9 +2031,7 @@ onMounted(async () => {
                 />
                 <div v-if="newFieldAddressCandidates.length" class="field-address-candidates">
                   <span class="field-address-candidates-label">Варианты адреса по контуру</span>
-                  <select v-model="selectedAddressCandidate" class="modal-select field-address-candidates-select" @change="onAddressCandidateChange">
-                    <option v-for="addr in newFieldAddressCandidates" :key="addr" :value="addr">{{ addr }}</option>
-                  </select>
+                  <UiSelect v-model="selectedAddressCandidate" :options="newFieldAddressCandidates.map((a) => ({ value: a, label: a }))" class="modal-select field-address-candidates-select" @change="onAddressCandidateChange" />
                 </div>
                 <p v-if="fieldMapAddressCandidatesLoading" class="field-map-picker-status">Подбираем адреса по контуру...</p>
               </label>
@@ -2059,12 +2041,7 @@ onMounted(async () => {
                 <span class="modal-label">Карта участка</span>
                 <label class="modal-field modal-field--full field-map-land-select">
                   <span class="modal-label">Земельный участок (контур для ориентира)</span>
-                  <select v-model="newFieldLandId" class="modal-select">
-                    <option value="">— Выберите участок, чтобы показать контур —</option>
-                    <option v-for="land in lands" :key="land.id" :value="land.id">
-                      {{ land.cadastral_number || `Участок №${land.number}` }}{{ land.address ? ` — ${land.address}` : '' }}
-                    </option>
-                  </select>
+                  <UiSelect v-model="newFieldLandId" :options="[{ value: '', label: '— Выберите участок, чтобы показать контур —' }, ...(lands).map((land) => ({ value: land.id, label: `${land.cadastral_number || `Участок №${land.number}`}${land.address ? ` — ${land.address}` : ''}` }))]" class="modal-select" />
                 </label>
                 <div class="field-geometry-head">
                   <span class="modal-label">Режим геометрии</span>
@@ -2127,9 +2104,7 @@ onMounted(async () => {
                     link-label="Справочники земель"
                   />
                 </span>
-                <select v-model="newFieldLandType" class="modal-select">
-                  <option v-for="t in landTypeOptions" :key="t.name" :value="t.name">{{ t.name }}</option>
-                </select>
+                <UiSelect v-model="newFieldLandType" :options="[...(landTypeOptions).map((t) => ({ value: t.name, label: String(t.name) }))]" class="modal-select" />
               </label>
               <label class="modal-field">
                 <span class="modal-label modal-label--with-help">
@@ -2140,9 +2115,7 @@ onMounted(async () => {
                     link-label="Справочники СХ культур"
                   />
                 </span>
-                <select v-model="newFieldCropKey" class="modal-select">
-                  <option v-for="opt in cropOptions" :key="opt.key" :value="opt.key">{{ opt.label }}</option>
-                </select>
+                <UiSelect v-model="newFieldCropKey" :options="[...(cropOptions).map((opt) => ({ value: opt.key, label: String(opt.label) }))]" class="modal-select" />
               </label>
               <label class="modal-field">
                 <span class="modal-label">Год посева</span>
@@ -2150,10 +2123,7 @@ onMounted(async () => {
               </label>
               <label class="modal-field">
                 <span class="modal-label">Ответственный</span>
-                <select v-model="newFieldResponsibleId" class="modal-select">
-                  <option value="">Не назначен</option>
-                  <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.display_name || p.email }}</option>
-                </select>
+                <UiSelect v-model="newFieldResponsibleId" :options="[{ value: '', label: 'Не назначен' }, ...(profiles).map((p) => ({ value: p.id, label: String(p.display_name || p.email) }))]" class="modal-select" />
               </label>
               <label class="modal-field">
                 <span class="modal-label modal-label--with-help">
@@ -2164,10 +2134,7 @@ onMounted(async () => {
                     link-label="Справочники полей"
                   />
                 </span>
-                <select v-model="newFieldMunicipality" class="modal-select">
-                  <option value="">—</option>
-                  <option v-for="row in fieldMunicipalityRefs" :key="row.id" :value="row.name">{{ row.name }}</option>
-                </select>
+                <UiSelect v-model="newFieldMunicipality" :options="[{ value: '', label: '—' }, ...(fieldMunicipalityRefs).map((row) => ({ value: row.name, label: String(row.name) }))]" class="modal-select" />
               </label>
               <label class="modal-field">
                 <span class="modal-label">Регион</span>
