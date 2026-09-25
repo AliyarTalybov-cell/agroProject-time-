@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { CircleAlertIcon, ImageIcon, NewspaperIcon, PlusIcon } from '@lucide/vue'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/shadcn/alert'
+import { AspectRatio } from '@/components/ui/shadcn/aspect-ratio'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Button } from '@/components/ui/shadcn/button'
-import { PlusIcon } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { isSupabaseConfigured, loadNewsPostsPage, type NewsPostRow } from '@/lib/newsSupabase'
-import UiLoadingBar from '@/components/UiLoadingBar.vue'
 
 const auth = useAuth()
 const router = useRouter()
@@ -66,23 +70,58 @@ onMounted(() => void loadData())
 </script>
 
 <template>
-  <section class="news-page">
-    <header class="news-header news-header--actions-only page-enter-item">
-      <Button variant="default" v-if="isManager" type="button" class="news-add-btn" @click="openCreate">
-        <PlusIcon class="news-add-btn-icon" />
+  <section class="grid gap-6">
+    <header v-if="isManager" class="flex justify-end">
+      <Button @click="openCreate">
+        <PlusIcon />
         Добавить новость
       </Button>
     </header>
-    <div v-if="loading" class="news-loading"><UiLoadingBar /></div>
-    <p v-else-if="error" class="news-empty">{{ error }}</p>
-    <p v-else-if="!posts.length" class="news-empty">Пока нет новостей.</p>
-    <div v-else class="news-grid page-enter-item">
-      <article v-for="post in posts" :key="post.id" class="news-card" @click="openPost(post.id)">
-        <img v-if="post.cover_image_url" :src="post.cover_image_url" :alt="post.title" class="news-card-image" loading="lazy" />
-        <div v-else class="news-card-image news-card-image--empty">Без изображения</div>
-        <h2 class="news-card-title">{{ post.title }}</h2>
-        <p class="news-card-date">{{ formatDate(post.published_at) }}</p>
-      </article>
+    <div v-if="loading" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <div v-for="i in 6" :key="i" class="grid gap-3">
+        <Skeleton class="aspect-video w-full rounded-xl" />
+        <Skeleton class="h-4 w-4/5" />
+        <Skeleton class="h-3 w-1/3" />
+      </div>
+    </div>
+    <Alert v-else-if="error" variant="destructive">
+      <CircleAlertIcon />
+      <AlertTitle>Не удалось загрузить новости</AlertTitle>
+      <AlertDescription>{{ error }}</AlertDescription>
+    </Alert>
+    <Empty v-else-if="!posts.length" class="border">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><NewspaperIcon /></EmptyMedia>
+        <EmptyTitle>Пока нет новостей</EmptyTitle>
+      </EmptyHeader>
+    </Empty>
+    <div v-else class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <Card
+        v-for="post in posts"
+        :key="post.id"
+        class="group cursor-pointer gap-0 overflow-hidden py-0 transition-shadow hover:shadow-md"
+        role="link"
+        tabindex="0"
+        @click="openPost(post.id)"
+        @keydown.enter="openPost(post.id)"
+      >
+        <AspectRatio :ratio="16 / 9" class="bg-muted">
+          <img
+            v-if="post.cover_image_url"
+            :src="post.cover_image_url"
+            :alt="post.title"
+            class="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            loading="lazy"
+          />
+          <div v-else class="text-muted-foreground flex size-full items-center justify-center text-sm">
+            <ImageIcon class="size-6 opacity-50" />
+          </div>
+        </AspectRatio>
+        <CardHeader class="gap-1.5 p-4">
+          <CardTitle class="line-clamp-2 leading-snug">{{ post.title }}</CardTitle>
+          <CardDescription>{{ formatDate(post.published_at) }}</CardDescription>
+        </CardHeader>
+      </Card>
     </div>
     <UiPagination v-if="!loading && !error && total > 0" :page="page" :page-size="pageSize" :total="total" hide-size @update:page="setPage" />
   </section>
