@@ -591,7 +591,7 @@
 }
 
 .task-list-table tbody tr:nth-child(even) {
-  background-color: color-mix(in srgb, var(--border-color) 22%, var(--bg-panel));
+  background-color: var(--bg-panel);
 }
 
 .task-list-row {
@@ -2440,12 +2440,9 @@
   border-color: var(--border-color);
 }
 
-[data-theme='dark'] .task-list-table tbody tr:nth-child(odd) {
-  background-color: var(--bg-elevated);
-}
-
+[data-theme='dark'] .task-list-table tbody tr:nth-child(odd),
 [data-theme='dark'] .task-list-table tbody tr:nth-child(even) {
-  background-color: color-mix(in srgb, #ffffff 11%, var(--bg-elevated));
+  background-color: var(--bg-panel);
 }
 
 [data-theme='dark'] .task-list-table tbody tr.task-list-row:hover {
