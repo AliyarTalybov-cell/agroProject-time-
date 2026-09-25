@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/shadcn/badge'
+import { Bubble, BubbleContent } from '@/components/ui/shadcn/bubble'
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from '@/components/ui/shadcn/input-group'
+import { Spinner } from '@/components/ui/shadcn/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Button } from '@/components/ui/shadcn/button'
-import { ArrowRightIcon, CheckIcon, FileIcon, RefreshCcwIcon, SaveIcon, SearchIcon, SendIcon } from '@lucide/vue'
+import { ArrowRightIcon, ArrowUpIcon, CheckIcon, FileIcon, PaperclipIcon, RefreshCcwIcon, SaveIcon, SearchIcon, SendIcon } from '@lucide/vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import ChatGroupDialog from '@/components/ui/dialogs/ChatGroupDialog.vue'
 import ChatDmDialog from '@/components/ui/dialogs/ChatDmDialog.vue'
@@ -898,19 +902,16 @@ onUnmounted(() => {
             <span class="chat-page__toolbar-label chat-page__toolbar-label--short" aria-hidden="true">Команда</span>
           </Button>
         </div>
-        <div class="chat-page__search-wrap">
-          <span class="chat-page__search-icon" aria-hidden="true">
-            <SearchIcon :size="20" />
-          </span>
-          <input
+        <InputGroup class="chat-page__search-wrap">
+          <InputGroupAddon><SearchIcon /></InputGroupAddon>
+          <InputGroupInput
             v-model="searchLocal"
             type="search"
-            class="chat-page__search"
             placeholder="ФИО или название группы…"
             autocomplete="off"
             aria-label="Поиск по ФИО сотрудника или названию группы"
           />
-        </div>
+        </InputGroup>
         <Tabs :model-value="filterTab">
           <TabsList aria-label="Фильтр диалогов">
             <TabsTrigger value="all"
@@ -936,7 +937,7 @@ onUnmounted(() => {
 
       <div class="chat-page__list-scroll">
         <div v-if="listLoading" class="chat-page__list-loader" role="status" aria-live="polite">
-          <span class="chat-page__spinner chat-page__spinner--sm" aria-hidden="true" />
+          <Spinner class="size-4" />
           <span class="chat-page__list-loader-text">Загрузка списка…</span>
         </div>
         <template v-else>
@@ -968,12 +969,8 @@ onUnmounted(() => {
               {{ c.lastPreview }}
             </p>
           </div>
-          <div v-if="c.unreadUrgent > 0" class="chat-page__urgent-badge" :aria-label="`Важно: ${c.unreadUrgent}`">
-            Важно
-          </div>
-          <div v-if="c.unread > 0" class="chat-page__unread-badge" :aria-label="`Непрочитано: ${c.unread}`">
-            {{ c.unread > 9 ? '9+' : c.unread }}
-          </div>
+          <Badge v-if="c.unreadUrgent > 0" variant="destructive" class="shrink-0" :aria-label="`Важно: ${c.unreadUrgent}`">Важно</Badge>
+          <Badge v-if="c.unread > 0" class="h-5 min-w-5 shrink-0 rounded-full px-1.5 tabular-nums" :aria-label="`Непрочитано: ${c.unread}`">{{ c.unread > 9 ? '9+' : c.unread }}</Badge>
         </button>
         <p v-if="!filteredList.length" class="chat-page__empty">Нет диалогов по выбранному фильтру.</p>
         </template>
@@ -1081,7 +1078,7 @@ onUnmounted(() => {
 
         <div class="chat-page__thread-main">
           <div v-if="chatLoading" class="chat-page__chat-loading" role="status" aria-live="polite">
-            <span class="chat-page__spinner chat-page__spinner--lg" aria-hidden="true" />
+            <Spinner class="size-6" />
             <p class="chat-page__chat-loading-title">Загрузка чата</p>
           </div>
 
@@ -1101,7 +1098,7 @@ onUnmounted(() => {
                 </span>
               </div>
               <div v-if="groupMembersLoading" class="chat-page__group-roster-loading" role="status">
-                <span class="chat-page__spinner chat-page__spinner--sm" aria-hidden="true" />
+                <Spinner class="size-4" />
                 <span>Загрузка состава…</span>
               </div>
               <ul v-else class="chat-page__group-roster-list">
@@ -1152,7 +1149,7 @@ onUnmounted(() => {
               </div>
 
               <div class="chat-page__date-pill-wrap">
-                <span class="chat-page__date-pill">{{ todayLabel() }}</span>
+                <Badge variant="secondary" class="font-normal">{{ todayLabel() }}</Badge>
               </div>
 
               <div v-if="!messageBlocks.length" class="chat-page__no-messages">Сообщений пока нет — напишите первым.</div>
@@ -1203,17 +1200,17 @@ onUnmounted(() => {
                       @touchend="onOwnPaneTouchEnd(block.msg)"
                       @contextmenu="onMessageContextMenu($event, block.msg)"
                     >
-                      <div
+                      <Bubble
                         v-if="block.msg.text"
-                        class="chat-page__bubble"
-                        :class="[
-                          block.msg.side === 'out' ? 'chat-page__bubble--out' : 'chat-page__bubble--in',
-                          block.msg.isUrgent && block.msg.side === 'in' ? 'chat-page__bubble--urgent' : '',
-                        ]"
+                        :variant="block.msg.side === 'out' ? 'default' : block.msg.isUrgent ? 'destructive' : 'secondary'"
+                        :align="block.msg.side === 'out' ? 'end' : 'start'"
+                        class="chat-page__bubble max-w-full"
                       >
-                        <div v-if="block.msg.isUrgent && block.msg.side === 'in'" class="chat-page__urgent-chip">Важно: проблема</div>
-                        <p>{{ block.msg.text }}</p>
-                      </div>
+                        <BubbleContent class="break-words whitespace-pre-wrap">
+                          <Badge v-if="block.msg.isUrgent && block.msg.side === 'in'" variant="destructive" class="mb-1">Важно: проблема</Badge>
+                          <p class="m-0">{{ block.msg.text }}</p>
+                        </BubbleContent>
+                      </Bubble>
                       <a
                         v-if="
                           block.msg.attachment?.url &&
@@ -1299,50 +1296,42 @@ onUnmounted(() => {
                   ×
                 </Button>
               </div>
-              <div class="chat-page__composer" :class="{ 'chat-page__composer--busy': attachBusy }">
-            <!-- From Uiverse.io by ilkhoeri — иконка «документ» для вложения -->
-            <button
-              type="button"
-              class="action_has has_saved chat-page__composer-attach"
-              title="Прикрепить файл"
-              aria-label="Прикрепить файл"
-              :disabled="chatLoading || attachBusy"
-              @click="triggerAttachmentPick"
-            >
-              <SaveIcon aria-hidden="true" :size="20" />
-            </button>
-            <textarea
-              v-model="draft"
-              class="chat-page__textarea"
-              rows="1"
-              :maxlength="CHAT_MESSAGE_MAX_CHARS"
-              :placeholder="pendingAttachment ? 'Подпись к файлу (необязательно)…' : composerPlaceholder"
-              :disabled="chatLoading || attachBusy"
-              @keydown="onKeydown"
-            />
-            <div class="chat-page__composer-right">
-              <!-- From Uiverse.io by adamgiebl -->
-              <button
-                type="button"
-                class="chat-page__send"
-                :class="{ 'chat-page__send--click-anim': sendClickAnimating }"
-                aria-label="Отправить"
-                :disabled="
-                  chatLoading ||
-                  attachBusy ||
-                  (!pendingAttachment && !draft.trim()) ||
-                  draftLength > CHAT_MESSAGE_MAX_CHARS
-                "
-                @click="onSend"
-              >
-                <div class="svg-wrapper-1">
-                  <div class="svg-wrapper">
-                    <SendIcon aria-hidden="true" :size="20" />
-                  </div>
-                </div>
-              </button>
-            </div>
-              </div>
+              <InputGroup class="chat-page__composer" :class="{ 'opacity-70': attachBusy }">
+                <InputGroupTextarea
+                  v-model="draft"
+                  rows="1"
+                  class="max-h-40 min-h-10"
+                  :maxlength="CHAT_MESSAGE_MAX_CHARS"
+                  :placeholder="pendingAttachment ? 'Подпись к файлу (необязательно)…' : composerPlaceholder"
+                  :disabled="chatLoading || attachBusy"
+                  @keydown="onKeydown"
+                />
+                <InputGroupAddon align="block-end">
+                  <InputGroupButton
+                    variant="ghost"
+                    size="icon-sm"
+                    title="Прикрепить файл"
+                    aria-label="Прикрепить файл"
+                    :disabled="chatLoading || attachBusy"
+                    @click="triggerAttachmentPick"
+                  >
+                    <PaperclipIcon />
+                  </InputGroupButton>
+                  <span class="ml-auto text-xs tabular-nums" :class="draftAtLimit ? 'text-destructive' : 'text-muted-foreground'" aria-live="polite">
+                    {{ draftLength }}/{{ CHAT_MESSAGE_MAX_CHARS }}
+                  </span>
+                  <InputGroupButton
+                    variant="default"
+                    size="icon-sm"
+                    class="rounded-full"
+                    aria-label="Отправить"
+                    :disabled="chatLoading || attachBusy || (!pendingAttachment && !draft.trim()) || draftLength > CHAT_MESSAGE_MAX_CHARS"
+                    @click="onSend"
+                  >
+                    <ArrowUpIcon />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
               <div class="chat-page__composer-meta">
                 <p class="chat-page__hint">
                   <template v-if="isMobileChatLayout && mobileChatPanel === 'thread'">
@@ -1354,13 +1343,6 @@ onUnmounted(() => {
                     Свои сообщения: ПКМ — меню, на телефоне — свайп влево.
                   </template>
                 </p>
-                <span
-                  class="chat-page__draft-count"
-                  :class="{ 'chat-page__draft-count--limit': draftAtLimit }"
-                  aria-live="polite"
-                >
-                  {{ draftLength }}/{{ CHAT_MESSAGE_MAX_CHARS }}
-                </span>
               </div>
             </footer>
             </div>
