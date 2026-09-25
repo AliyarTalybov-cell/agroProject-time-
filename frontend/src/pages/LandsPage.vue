@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
+import { Checkbox } from '@/components/ui/shadcn/checkbox'
 import { ChevronLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon } from '@lucide/vue'
 import { promptText } from '@/composables/usePromptText'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -4352,7 +4354,7 @@ onMounted(() => void reloadAll())
             <div class="lands-ref-add-row lands-ref-add-row--wrap">
               <input v-model="newStorageLocationStatusName" class="lands-search" type="text" placeholder="Например: На ремонте" />
               <label class="lands-checkbox-inline">
-                <input v-model="newStorageLocationStatusMarksInactive" type="checkbox" />
+                <Checkbox v-model="newStorageLocationStatusMarksInactive" />
                 <span>Не используется (неактивно)</span>
               </label>
               <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageLocationStatusName.trim()" @click="addStorageLocationStatusRef">
@@ -4609,10 +4611,13 @@ onMounted(() => void reloadAll())
           <div v-if="showDetailsMap" class="lands-map-wrap">
             <div v-if="landInlineEditOpen" class="lands-map-head">
               <span class="lands-map-title">Редактирование геометрии участка</span>
-              <div class="lands-map-switch" role="group" aria-label="Режим геометрии земли">
-                <button type="button" class="lands-map-switch-btn" :class="{ 'lands-map-switch-btn--active': mapGeometryMode === 'point' }" @click="mapGeometryMode = 'point'">Точка</button>
-                <button type="button" class="lands-map-switch-btn" :class="{ 'lands-map-switch-btn--active': mapGeometryMode === 'polygon' }" @click="mapGeometryMode = 'polygon'">Контур</button>
-              </div>
+              <ToggleGroup type="single" variant="outline" size="sm" aria-label="Режим геометрии земли"
+                :model-value="(mapGeometryMode === 'point') ? 'b0' : (mapGeometryMode === 'polygon') ? 'b1' : ''"
+                @update:model-value="(v) => { if (v === 'b0') { mapGeometryMode = 'point' } else if (v === 'b1') { mapGeometryMode = 'polygon' } }"
+              >
+                <ToggleGroupItem value="b0" class="px-3">Точка</ToggleGroupItem>
+                <ToggleGroupItem value="b1" class="px-3">Контур</ToggleGroupItem>
+              </ToggleGroup>
             </div>
             <YandexMap
               :lat="landInlineEditOpen ? mapLat : detailsMapLat"
@@ -4725,10 +4730,13 @@ onMounted(() => void reloadAll())
           <div v-if="landInlineEditOpen" class="lands-form-grid">
             <label class="lands-field">
               <span>Особо ценные продуктивные угодья</span>
-              <div class="lands-yesno-toggle" role="group" aria-label="Особо ценные продуктивные угодья">
-                <button type="button" class="lands-yesno-btn" :class="{ 'is-active': form.isValuableAgriLand === 'yes' }" @click="form.isValuableAgriLand = 'yes'">Да</button>
-                <button type="button" class="lands-yesno-btn" :class="{ 'is-active': form.isValuableAgriLand === 'no' }" @click="form.isValuableAgriLand = 'no'">Нет</button>
-              </div>
+              <ToggleGroup type="single" variant="outline" size="sm" aria-label="Особо ценные продуктивные угодья"
+                :model-value="(form.isValuableAgriLand === 'yes') ? 'b0' : (form.isValuableAgriLand === 'no') ? 'b1' : ''"
+                @update:model-value="(v) => { if (v === 'b0') { form.isValuableAgriLand = 'yes' } else if (v === 'b1') { form.isValuableAgriLand = 'no' } }"
+              >
+                <ToggleGroupItem value="b0" class="px-3">Да</ToggleGroupItem>
+                <ToggleGroupItem value="b1" class="px-3">Нет</ToggleGroupItem>
+              </ToggleGroup>
             </label>
             <label class="lands-field">
               <span class="lands-label-with-help">
@@ -4755,10 +4763,13 @@ onMounted(() => void reloadAll())
           <div v-if="landInlineEditOpen" class="lands-form-grid">
             <label class="lands-field">
               <span>Использование для племенного/селекции/семеноводства</span>
-              <div class="lands-yesno-toggle" role="group" aria-label="Использование для племенного или селекции">
-                <button type="button" class="lands-yesno-btn" :class="{ 'is-active': form.breedingUse === 'yes' }" @click="form.breedingUse = 'yes'">Да</button>
-                <button type="button" class="lands-yesno-btn" :class="{ 'is-active': form.breedingUse === 'no' }" @click="form.breedingUse = 'no'">Нет</button>
-              </div>
+              <ToggleGroup type="single" variant="outline" size="sm" aria-label="Использование для племенного или селекции"
+                :model-value="(form.breedingUse === 'yes') ? 'b0' : (form.breedingUse === 'no') ? 'b1' : ''"
+                @update:model-value="(v) => { if (v === 'b0') { form.breedingUse = 'yes' } else if (v === 'b1') { form.breedingUse = 'no' } }"
+              >
+                <ToggleGroupItem value="b0" class="px-3">Да</ToggleGroupItem>
+                <ToggleGroupItem value="b1" class="px-3">Нет</ToggleGroupItem>
+              </ToggleGroup>
             </label>
             <label class="lands-field">
               <span>Иные сведения об использовании</span>
@@ -4923,10 +4934,13 @@ onMounted(() => void reloadAll())
             <div class="lands-map-wrap">
               <div class="lands-map-head">
                 <span class="lands-map-title">Геометрия земельного участка</span>
-                <div class="lands-map-switch" role="group" aria-label="Режим геометрии земли">
-                  <button type="button" class="lands-map-switch-btn" :class="{ 'lands-map-switch-btn--active': mapGeometryMode === 'point' }" @click="mapGeometryMode = 'point'">Точка</button>
-                  <button type="button" class="lands-map-switch-btn" :class="{ 'lands-map-switch-btn--active': mapGeometryMode === 'polygon' }" @click="mapGeometryMode = 'polygon'">Контур</button>
-                </div>
+                <ToggleGroup type="single" variant="outline" size="sm" aria-label="Режим геометрии земли"
+                  :model-value="(mapGeometryMode === 'point') ? 'b0' : (mapGeometryMode === 'polygon') ? 'b1' : ''"
+                  @update:model-value="(v) => { if (v === 'b0') { mapGeometryMode = 'point' } else if (v === 'b1') { mapGeometryMode = 'polygon' } }"
+                >
+                  <ToggleGroupItem value="b0" class="px-3">Точка</ToggleGroupItem>
+                  <ToggleGroupItem value="b1" class="px-3">Контур</ToggleGroupItem>
+                </ToggleGroup>
               </div>
               <YandexMap
                 :lat="mapLat"

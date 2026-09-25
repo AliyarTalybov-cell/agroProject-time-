@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Checkbox } from '@/components/ui/shadcn/checkbox'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Контрагент: покупатель и/или поставщик зерна. */
 import { computed, ref } from 'vue'
@@ -93,7 +94,7 @@ async function save() {
       <textarea v-model.trim="form.comment" class="ui-form-textarea" rows="2" />
     </div>
     <label v-if="c" class="ui-muted" style="display: inline-flex; gap: 8px; align-items: center">
-      <input v-model="form.active" type="checkbox" /> Работаем с ним (снимите, чтобы скрыть из списков выбора)
+      <Checkbox v-model="form.active" /> Работаем с ним (снимите, чтобы скрыть из списков выбора)
     </label>
     <p v-if="error" class="ui-form-error">{{ error }}</p>
     <template #actions>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, FileTextIcon, PaperclipIcon, PencilIcon, PlusIcon, SearchIcon, UploadIcon } from '@lucide/vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -2025,24 +2026,13 @@ onMounted(async () => {
                 </label>
                 <div class="field-geometry-head">
                   <span class="modal-label">Режим геометрии</span>
-                  <div class="field-geometry-switch" role="group" aria-label="Режим геометрии поля">
-                    <button
-                      type="button"
-                      class="field-geometry-switch-btn"
-                      :class="{ 'field-geometry-switch-btn--active': newFieldGeometryMode === 'point' }"
-                      @click="setFieldGeometryMode('point')"
-                    >
-                      Точка
-                    </button>
-                    <button
-                      type="button"
-                      class="field-geometry-switch-btn"
-                      :class="{ 'field-geometry-switch-btn--active': newFieldGeometryMode === 'polygon' }"
-                      @click="setFieldGeometryMode('polygon')"
-                    >
-                      Контур
-                    </button>
-                  </div>
+                  <ToggleGroup type="single" variant="outline" size="sm" aria-label="Режим геометрии поля"
+                    :model-value="(newFieldGeometryMode === 'point') ? 'b0' : (newFieldGeometryMode === 'polygon') ? 'b1' : ''"
+                    @update:model-value="(v) => { if (v === 'b0') { setFieldGeometryMode('point') } else if (v === 'b1') { setFieldGeometryMode('polygon') } }"
+                  >
+                    <ToggleGroupItem value="b0" class="px-3">Точка</ToggleGroupItem>
+                    <ToggleGroupItem value="b1" class="px-3">Контур</ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
                 <div class="field-map-picker-wrap">
                   <YandexMap

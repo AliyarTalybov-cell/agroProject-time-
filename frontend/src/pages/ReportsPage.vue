@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { ClockIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -990,29 +991,14 @@ onUnmounted(() => {
         <div v-if="isManager" class="dash-select-wrap">
           <UiSelect v-model="selectedEmployeeId" :options="[{ value: '', label: 'Все сотрудники' }, ...(profilesForEmployeeFilter).map((p) => ({ value: p.id, label: `${p.display_name || p.email}${p.role === 'manager' ? ' (руководитель)' : ''}` }))]" class="dash-select" aria-label="Сотрудник" />
         </div>
-        <div class="dash-segment" role="group" aria-label="Период">
-          <button
-            type="button"
-            :class="['dash-seg-btn', { 'dash-seg-btn--active': periodPreset === 'today' }]"
-            @click=";(periodPreset = 'today'), applyPeriodPreset()"
-          >
-            Сегодня
-          </button>
-          <button
-            type="button"
-            :class="['dash-seg-btn', { 'dash-seg-btn--active': periodPreset === 'week' }]"
-            @click=";(periodPreset = 'week'), applyPeriodPreset()"
-          >
-            Неделя
-          </button>
-          <button
-            type="button"
-            :class="['dash-seg-btn', { 'dash-seg-btn--active': periodPreset === 'month' }]"
-            @click=";(periodPreset = 'month'), applyPeriodPreset()"
-          >
-            Месяц
-          </button>
-        </div>
+        <ToggleGroup type="single" variant="outline" size="sm" aria-label="Период"
+          :model-value="(periodPreset === 'today') ? 'b0' : (periodPreset === 'week') ? 'b1' : (periodPreset === 'month') ? 'b2' : ''"
+          @update:model-value="(v) => { if (v === 'b0') { (periodPreset = 'today'), applyPeriodPreset() } else if (v === 'b1') { (periodPreset = 'week'), applyPeriodPreset() } else if (v === 'b2') { (periodPreset = 'month'), applyPeriodPreset() } }"
+        >
+          <ToggleGroupItem value="b0" class="px-3">Сегодня</ToggleGroupItem>
+          <ToggleGroupItem value="b1" class="px-3">Неделя</ToggleGroupItem>
+          <ToggleGroupItem value="b2" class="px-3">Месяц</ToggleGroupItem>
+        </ToggleGroup>
         <div class="dash-dates">
           <label class="dash-date-label"
             >С:

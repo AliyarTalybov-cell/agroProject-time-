@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Checkbox } from '@/components/ui/shadcn/checkbox'
 import { CheckIcon, ChevronDownIcon, SaveIcon, XIcon } from '@lucide/vue'
 import PickSheet from '@/components/ui/dialogs/PickSheet.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -1552,26 +1553,14 @@ function addField() {
                   class="mechanic-calendar-item"
                   :class="{ 'mechanic-calendar-item--done': !!task.completedAt }"
                 >
-                  <div class="checkbox-container">
-                    <input
-                      :id="`calendar-task-${task.id}`"
-                      class="task-checkbox"
-                      type="checkbox"
-                      :checked="!!task.completedAt"
-                      :disabled="isCalendarTaskSaving(task.id)"
-                      @change="toggleCalendarTaskCompleted(task.id)"
-                    />
-                    <label :for="`calendar-task-${task.id}`" class="checkbox-label">
-                      <div class="checkbox-box">
-                        <div class="checkbox-fill"></div>
-                        <div class="checkmark">
-                          <CheckIcon class="check-icon" />
-                        </div>
-                        <div class="success-ripple"></div>
-                      </div>
-                      <span class="checkbox-text">{{ task.title }}</span>
-                    </label>
-                  </div>
+                  <Checkbox
+                    :id="`calendar-task-${task.id}`"
+                    class="size-5"
+                    :model-value="!!task.completedAt"
+                    :disabled="isCalendarTaskSaving(task.id)"
+                    aria-label="Задача выполнена"
+                    @update:model-value="toggleCalendarTaskCompleted(task.id)"
+                  />
                   <div class="mechanic-calendar-meta">
                     <span class="mechanic-calendar-time">{{ formatCalendarTaskTime(task) }}</span>
                     <span
@@ -1711,13 +1700,10 @@ function addField() {
             class="modal-issue-recipient-item"
             :class="{ 'modal-issue-recipient-item--selected': selectedIssueRecipientIds.includes(d.id) }"
           >
-            <input
-              class="modal-issue-checkbox-input"
-              type="checkbox"
-              :checked="selectedIssueRecipientIds.includes(d.id)"
-              @change="toggleIssueRecipient(d.id)"
+            <Checkbox
+              :model-value="selectedIssueRecipientIds.includes(d.id)"
+              @update:model-value="toggleIssueRecipient(d.id)"
             />
-            <span class="modal-issue-checkbox-mark" aria-hidden="true"></span>
             <span class="modal-issue-recipient-main">{{ d.display_name || d.email || 'Сотрудник' }}</span>
             <span class="modal-issue-recipient-meta">{{ d.position || d.role || '—' }} · {{ d.email || 'без email' }}</span>
           </label>

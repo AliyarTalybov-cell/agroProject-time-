@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/shadcn/radio-group'
 import { CalendarIcon, CirclePlusIcon, ClockIcon, FileIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon, UsersIcon } from '@lucide/vue'
 import CalendarDeleteDialog from '@/components/ui/dialogs/CalendarDeleteDialog.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -1937,44 +1939,15 @@ async function confirmDeleteTask() {
         </p>
       </div>
       <div class="calendar-header-actions">
-        <div class="calendar-view-switch" role="tablist" aria-label="Режим календаря">
-          <button
-            type="button"
-            class="calendar-view-switch-btn"
-            :class="{ 'is-active': isDayView }"
-            :aria-selected="isDayView"
-            @click="setCalendarView('day')"
-          >
-            День
-          </button>
-          <button
-            type="button"
-            class="calendar-view-switch-btn"
-            :class="{ 'is-active': isWeekView }"
-            :aria-selected="isWeekView"
-            @click="setCalendarView('week')"
-          >
-            Неделя
-          </button>
-          <button
-            type="button"
-            class="calendar-view-switch-btn"
-            :class="{ 'is-active': isMonthView }"
-            :aria-selected="isMonthView"
-            @click="setCalendarView('month')"
-          >
-            Месяц
-          </button>
-          <button
-            type="button"
-            class="calendar-view-switch-btn"
-            :class="{ 'is-active': isScheduleView }"
-            :aria-selected="isScheduleView"
-            @click="setCalendarView('schedule')"
-          >
-            Расписание
-          </button>
-        </div>
+        <ToggleGroup type="single" variant="outline" size="sm" aria-label="Режим календаря"
+          :model-value="(isDayView) ? 'b0' : (isWeekView) ? 'b1' : (isMonthView) ? 'b2' : (isScheduleView) ? 'b3' : ''"
+          @update:model-value="(v) => { if (v === 'b0') { setCalendarView('day') } else if (v === 'b1') { setCalendarView('week') } else if (v === 'b2') { setCalendarView('month') } else if (v === 'b3') { setCalendarView('schedule') } }"
+        >
+          <ToggleGroupItem value="b0" class="px-3">День</ToggleGroupItem>
+          <ToggleGroupItem value="b1" class="px-3">Неделя</ToggleGroupItem>
+          <ToggleGroupItem value="b2" class="px-3">Месяц</ToggleGroupItem>
+          <ToggleGroupItem value="b3" class="px-3">Расписание</ToggleGroupItem>
+        </ToggleGroup>
         <button type="button" class="calendar-add-btn" @click="openNewTaskModal()">
           <PlusIcon class="calendar-add-btn-icon" />
           Создать событие
@@ -2500,34 +2473,30 @@ async function confirmDeleteTask() {
                 </template>
                 </div>
                 <Transition name="repeat-reveal">
-                <div v-if="taskRepeatRule === 'weekly'" class="repeat-weekdays">
-                  <label v-for="(d, idx) in weekdaysShort" :key="d" class="repeat-weekday-item">
-                    <input
-                      :checked="taskRepeatWeekDays.includes(idx + 1)"
-                      type="checkbox"
-                      :disabled="false"
-                      @change="
-                        taskRepeatWeekDays = taskRepeatWeekDays.includes(idx + 1)
-                          ? taskRepeatWeekDays.filter((x) => x !== idx + 1)
-                          : [...taskRepeatWeekDays, idx + 1]
-                      "
-                    />
-                    <span>{{ d }}</span>
-                  </label>
-                </div>
+                <ToggleGroup
+                  v-if="taskRepeatRule === 'weekly'"
+                  v-model="taskRepeatWeekDays"
+                  type="multiple"
+                  variant="outline"
+                  size="sm"
+                  class="repeat-weekdays"
+                  aria-label="Дни недели"
+                >
+                  <ToggleGroupItem v-for="(d, idx) in weekdaysShort" :key="d" :value="idx + 1" :aria-label="d">{{ d }}</ToggleGroupItem>
+                </ToggleGroup>
                 </Transition>
               </label>
               <Transition name="repeat-reveal">
               <label v-if="taskRepeatRule !== 'none'" class="modal-field modal-field--design">
                 <span class="modal-label modal-label--design">Окончание</span>
-                <div class="repeat-end">
+                <RadioGroup v-model="taskRepeatEndMode" class="repeat-end">
                   <label class="repeat-end-item">
-                    <input v-model="taskRepeatEndMode" type="radio" value="never" />
+                    <RadioGroupItem value="never" />
                     <span>Никогда</span>
                     <span class="repeat-end-spacer" aria-hidden="true"></span>
                   </label>
                   <label class="repeat-end-item repeat-end-item--after">
-                    <input v-model="taskRepeatEndMode" type="radio" value="after" />
+                    <RadioGroupItem value="after" />
                     <span>После</span>
                     <span class="repeat-end-inline">
                       <input
@@ -2542,25 +2511,27 @@ async function confirmDeleteTask() {
                     </span>
                   </label>
                   <label class="repeat-end-item repeat-end-item--date">
-                    <input v-model="taskRepeatEndMode" type="radio" value="on_date" />
+                    <RadioGroupItem value="on_date" />
                     <span>Дата</span>
                     <UiDatePicker v-model="taskRepeatUntil" class="modal-input modal-input--design repeat-date-input" :min="taskStartDate || selectedDate" :disabled="taskRepeatEndMode !== 'on_date'" />
                   </label>
-                </div>
+                </RadioGroup>
               </label>
               </Transition>
             </div>
 
             <div v-if="editingTaskId && taskRepeatRule !== 'none'" class="repeat-apply-box">
               <div class="repeat-apply-title">Как применить изменения повторяемости</div>
+              <RadioGroup v-model="taskRepeatApplyMode" class="repeat-apply-options">
               <label class="repeat-apply-option">
-                <input v-model="taskRepeatApplyMode" type="radio" value="only_this" />
+                <RadioGroupItem value="only_this" />
                 <span>Только это событие</span>
               </label>
               <label class="repeat-apply-option">
-                <input v-model="taskRepeatApplyMode" type="radio" value="this_and_following" />
+                <RadioGroupItem value="this_and_following" />
                 <span>Это событие и следующие</span>
               </label>
+              </RadioGroup>
               <p class="repeat-apply-hint">
                 При выборе «это и следующие» будут созданы новые встречи по выбранному правилу начиная с текущей даты.
               </p>

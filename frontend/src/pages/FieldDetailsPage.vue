@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { Building2Icon, CalendarIcon, ChevronLeftIcon, CircleQuestionMarkIcon, Clock4Icon, ClockIcon, FileIcon, FileTextIcon, HomeIcon, LayersIcon, LayoutGridIcon, MapPinIcon, PencilIcon, SproutIcon, TractorIcon, UploadIcon, UserIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { ref, computed, onMounted, watch } from 'vue'
@@ -831,24 +832,13 @@ watch(
                 <span class="field-details-edit-label">Карта участка</span>
                 <div class="field-details-geometry-head">
                   <span class="field-details-edit-label">Режим геометрии</span>
-                  <div class="field-details-geometry-switch" role="group" aria-label="Режим геометрии поля">
-                    <button
-                      type="button"
-                      class="field-details-geometry-switch-btn"
-                      :class="{ 'field-details-geometry-switch-btn--active': editForm.geometry_mode === 'point' }"
-                      @click="setEditGeometryMode('point')"
-                    >
-                      Точка
-                    </button>
-                    <button
-                      type="button"
-                      class="field-details-geometry-switch-btn"
-                      :class="{ 'field-details-geometry-switch-btn--active': editForm.geometry_mode === 'polygon' }"
-                      @click="setEditGeometryMode('polygon')"
-                    >
-                      Контур
-                    </button>
-                  </div>
+                  <ToggleGroup type="single" variant="outline" size="sm" aria-label="Режим геометрии поля"
+                    :model-value="(editForm.geometry_mode === 'point') ? 'b0' : (editForm.geometry_mode === 'polygon') ? 'b1' : ''"
+                    @update:model-value="(v) => { if (v === 'b0') { setEditGeometryMode('point') } else if (v === 'b1') { setEditGeometryMode('polygon') } }"
+                  >
+                    <ToggleGroupItem value="b0" class="px-3">Точка</ToggleGroupItem>
+                    <ToggleGroupItem value="b1" class="px-3">Контур</ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
                 <div class="field-details-map-picker">
                   <YandexMap
