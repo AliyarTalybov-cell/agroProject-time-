@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/shadcn/button'
-import { CalendarIcon, ClipboardListIcon } from '@lucide/vue'
+import { BellIcon, CalendarIcon, CheckCheckIcon, CircleAlertIcon, ClipboardListIcon } from '@lucide/vue'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/shadcn/alert'
+import { Badge } from '@/components/ui/shadcn/badge'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/shadcn/item'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
+import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { computed, onMounted, ref, watch } from 'vue'
 import {
   countMyUnreadNotifications,
@@ -33,6 +40,7 @@ const unreadCount = ref(0)
 const rows = ref<NotificationRow[]>([])
 const markBusyId = ref<string | null>(null)
 const markAllBusy = ref(false)
+const loadError = ref<string | null>(null)
 
 const monthNamesGenitive = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
@@ -166,6 +174,7 @@ async function refreshUnreadCount() {
 async function loadPage(append: boolean) {
   if (append) loadingMore.value = true
   else loading.value = true
+  loadError.value = null
   try {
     const data = await loadMyNotifications({
       filter: activeTab.value,
@@ -175,6 +184,10 @@ async function loadPage(append: boolean) {
     if (append) rows.value = [...rows.value, ...data]
     else rows.value = data
     hasMore.value = data.length === pageSize
+  } catch (e) {
+    // Раньше сбой выглядел как пустой список («Пока уведомлений нет») — теперь показываем ошибку.
+    loadError.value = formatSupabaseError(e)
+    if (!append) rows.value = []
   } finally {
     if (append) loadingMore.value = false
     else loading.value = false
@@ -238,78 +251,62 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="notifications-page">
-    <div class="notifications-tabs" role="tablist" aria-label="Фильтр уведомлений">
-      <button
-        type="button"
-        class="notifications-tab"
-        :class="{ 'notifications-tab--active': activeTab === 'all' }"
-        role="tab"
-        :aria-selected="activeTab === 'all'"
-        @click="activeTab = 'all'"
-      >
-        Все
-      </button>
-      <button
-        type="button"
-        class="notifications-tab"
-        :class="{ 'notifications-tab--active': activeTab === 'unread' }"
-        role="tab"
-        :aria-selected="activeTab === 'unread'"
-        @click="activeTab = 'unread'"
-      >
-        Не прочитано
-        <span v-if="unreadCount > 0" class="notifications-tab-badge">{{ unreadCount }}</span>
-      </button>
-      <Button variant="outline"
-        v-if="unreadCount > 0"
-        type="button"
-        class="notifications-read-all-btn"
-        :disabled="markAllBusy"
-        @click="markAllAsRead"
-      >
-        {{ markAllBusy ? 'Обновление...' : 'Прочитать все' }}
+  <div class="mx-auto grid w-full max-w-3xl gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <Tabs :model-value="activeTab" @update:model-value="(v) => (activeTab = v as NotificationFilter)">
+        <TabsList aria-label="Фильтр уведомлений">
+          <TabsTrigger value="all">Все</TabsTrigger>
+          <TabsTrigger value="unread">
+            Не прочитано
+            <Badge v-if="unreadCount > 0" class="ml-1 h-5 min-w-5 rounded-full px-1.5 tabular-nums">{{ unreadCount }}</Badge>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <Button v-if="unreadCount > 0" variant="outline" size="sm" :disabled="markAllBusy" @click="markAllAsRead">
+        <CheckCheckIcon />
+        {{ markAllBusy ? 'Обновление…' : 'Прочитать все' }}
       </Button>
     </div>
 
-    <section class="notifications-card">
-      <div v-if="loading" class="notifications-empty">Загрузка уведомлений...</div>
-      <template v-else-if="groupedItems.length">
-        <section
-          v-for="group in groupedItems"
-          :key="group.key"
-          class="notifications-day-group"
-        >
-          <div class="notifications-day-head-wrap">
-            <div class="notifications-day-head">{{ group.label }}</div>
-          </div>
-          <article
+    <Alert v-if="loadError" variant="destructive">
+      <CircleAlertIcon />
+      <AlertTitle>Не удалось загрузить уведомления</AlertTitle>
+      <AlertDescription>
+        <p>{{ loadError }}</p>
+        <Button variant="outline" size="sm" class="mt-2" @click="reloadCurrentTab">Повторить</Button>
+      </AlertDescription>
+    </Alert>
+
+    <div v-else-if="loading" class="grid gap-3">
+      <div v-for="i in 4" :key="i" class="flex items-start gap-4 rounded-lg border p-4">
+        <Skeleton class="size-8 rounded-md" />
+        <div class="grid flex-1 gap-2">
+          <Skeleton class="h-4 w-1/2" />
+          <Skeleton class="h-4 w-4/5" />
+        </div>
+      </div>
+    </div>
+
+    <template v-else-if="groupedItems.length">
+      <section v-for="group in groupedItems" :key="group.key" class="grid gap-2">
+        <h2 class="text-muted-foreground px-1 text-xs font-medium">{{ group.label }}</h2>
+        <ItemGroup class="gap-2">
+          <Item
             v-for="item in group.items"
             :key="item.id"
-            class="notification-item"
-            :class="{ 'notification-item--read': item.isRead }"
+            variant="outline"
+            :class="item.isRead ? 'opacity-70' : 'bg-card'"
           >
-            <div class="notification-item-icon" :class="`notification-item-icon--${item.type}`" aria-hidden="true">
+            <ItemMedia variant="icon">
               <CalendarIcon v-if="item.type === 'calendar_invited'" />
               <ClipboardListIcon v-else />
-            </div>
-            <div class="notification-item-main">
-              <div class="notification-item-title-row">
-                <h3 class="notification-item-title">
-                  {{ item.title }}
-                  <span v-if="!item.isRead" class="notification-item-dot" aria-hidden="true"></span>
-                </h3>
-                <Button variant="ghost" size="sm"
-                  v-if="!item.isRead"
-                  type="button"
-                  class="notification-item-read-btn"
-                  :disabled="markBusyId === item.id"
-                  @click="markOneAsRead(item.id)"
-                >
-                  Отметить как прочитано
-                </Button>
-              </div>
-              <p class="notification-item-body">
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>
+                {{ item.title }}
+                <span v-if="!item.isRead" class="bg-primary size-2 rounded-full" aria-label="Не прочитано" />
+              </ItemTitle>
+            <ItemDescription class="line-clamp-none">
                 <template v-if="isTaskDirectLinkType(item.type)">
                   Задача
                   <RouterLink
@@ -328,29 +325,29 @@ onMounted(() => {
                 <template v-else>
                   {{ item.body }}
                 </template>
-              </p>
-              <div class="notification-item-time">{{ item.timeLabel }}</div>
-            </div>
-          </article>
-        </section>
-
-        <div class="notifications-load-more-wrap">
-          <Button variant="outline"
-            v-if="hasMore"
-            type="button"
-            class="notifications-load-more"
-            :disabled="loadingMore"
-            @click="loadMore"
-          >
-            {{ loadingMore ? 'Загрузка...' : 'Загрузить еще' }}
-          </Button>
-        </div>
-      </template>
-      <div v-else class="notifications-empty">
-        <p v-if="activeTab === 'unread'">Непрочитанных уведомлений пока нет.</p>
-        <p v-else>Пока уведомлений нет.</p>
+              </ItemDescription>
+              <span class="text-muted-foreground text-xs">{{ item.timeLabel }}</span>
+            </ItemContent>
+            <ItemActions v-if="!item.isRead">
+              <Button variant="ghost" size="sm" :disabled="markBusyId === item.id" @click="markOneAsRead(item.id)">Прочитано</Button>
+            </ItemActions>
+          </Item>
+        </ItemGroup>
+      </section>
+      <div v-if="hasMore" class="flex justify-center">
+        <Button variant="outline" :disabled="loadingMore" @click="loadMore">
+          {{ loadingMore ? 'Загрузка…' : 'Загрузить ещё' }}
+        </Button>
       </div>
-    </section>
+    </template>
+
+    <Empty v-else class="border">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><BellIcon /></EmptyMedia>
+        <EmptyTitle>{{ activeTab === 'unread' ? 'Непрочитанных нет' : 'Уведомлений пока нет' }}</EmptyTitle>
+        <EmptyDescription>Здесь появятся приглашения в события календаря и новости по задачам.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   </div>
 </template>
 
