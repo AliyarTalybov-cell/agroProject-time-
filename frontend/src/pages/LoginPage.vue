@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { LockIcon, MailIcon } from '@lucide/vue'
+import { CircleAlertIcon, LockIcon, MailIcon, SproutIcon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Button } from '@/components/ui/shadcn/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
+import { Label } from '@/components/ui/shadcn/label'
+import { Separator } from '@/components/ui/shadcn/separator'
+import { Spinner } from '@/components/ui/shadcn/spinner'
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -64,7 +71,7 @@ async function submit() {
 </script>
 
 <template>
-  <div class="login-layout auth-uiview">
+  <div class="login-layout auth-uiview relative flex min-h-svh items-center justify-center p-4">
     <img
       class="login-bg-img"
       src="/login-bg.jpg"
@@ -74,62 +81,57 @@ async function submit() {
       decoding="async"
       fetchpriority="high"
     />
-    <form class="form_container" @submit.prevent="submit">
-      <div class="title_container">
-        <p class="title">{{ title }}</p>
-        <span class="subtitle">{{ subtitle }}</span>
-      </div>
+    <Card class="relative z-10 w-full max-w-sm gap-6 shadow-lg">
+      <CardHeader class="items-center text-center">
+        <div class="bg-primary text-primary-foreground mx-auto mb-2 flex size-10 items-center justify-center rounded-lg">
+          <SproutIcon class="size-5" />
+        </div>
+        <CardTitle class="text-xl">{{ title }}</CardTitle>
+        <CardDescription>{{ subtitle }}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form class="grid gap-4" @submit.prevent="submit">
+          <div class="grid gap-2">
+            <Label for="auth-email">Логин (email)</Label>
+            <InputGroup>
+              <InputGroupAddon><MailIcon /></InputGroupAddon>
+              <InputGroupInput id="auth-email" v-model="email" type="email" placeholder="name@mail.com" autocomplete="email" required />
+            </InputGroup>
+          </div>
+          <div class="grid gap-2">
+            <Label for="auth-password">Пароль</Label>
+            <InputGroup>
+              <InputGroupAddon><LockIcon /></InputGroupAddon>
+              <InputGroupInput id="auth-password" v-model="password" type="password" placeholder="Пароль" autocomplete="current-password" required />
+            </InputGroup>
+          </div>
 
-      <div class="input_container">
-        <label class="input_label" for="auth-email">Логин (email)</label>
-        <MailIcon class="icon" :size="20" />
-        <input
-          id="auth-email"
-          v-model="email"
-          class="input_field"
-          placeholder="name@mail.com"
-          type="email"
-          autocomplete="email"
-          required
-        />
-      </div>
+          <Alert v-if="error" variant="destructive" role="alert">
+            <CircleAlertIcon />
+            <AlertDescription>{{ error }}</AlertDescription>
+          </Alert>
 
-      <div class="input_container">
-        <label class="input_label" for="auth-password">Пароль</label>
-        <LockIcon class="icon" :size="20" />
-        <input
-          id="auth-password"
-          v-model="password"
-          class="input_field"
-          type="password"
-          placeholder="Password"
-          autocomplete="current-password"
-          required
-        />
-      </div>
+          <Button type="submit" class="w-full" :disabled="loading">
+            <Spinner v-if="loading" />
+            {{ loading ? 'Проверка…' : submitLabel }}
+          </Button>
 
-      <p v-if="error" class="auth_error" role="alert">{{ error }}</p>
+          <div class="text-muted-foreground flex items-center gap-3 text-xs">
+            <Separator class="flex-1" />
+            или
+            <Separator class="flex-1" />
+          </div>
 
-      <button type="submit" class="sign-in_btn" :disabled="loading">
-        <span>{{ loading ? 'Проверка...' : submitLabel }}</span>
-      </button>
+          <Button type="button" variant="outline" class="w-full" @click="switchMode">{{ switchBtnLabel }}</Button>
 
-      <div class="separator">
-        <hr class="line" />
-        <span>или</span>
-        <hr class="line" />
-      </div>
-
-      <button type="button" class="sign-in_ggl" @click="switchMode">
-        <span>{{ switchBtnLabel }}</span>
-      </button>
-
-      <p class="note">
-        Продолжая, вы принимаете
-        <RouterLink class="note-link" to="/rules">правила</RouterLink>
-        использования корпоративного портала.
-      </p>
-    </form>
+          <p class="text-muted-foreground text-center text-xs text-balance">
+            Продолжая, вы принимаете
+            <RouterLink class="text-foreground underline underline-offset-4" to="/rules">правила</RouterLink>
+            использования корпоративного портала.
+          </p>
+        </form>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
