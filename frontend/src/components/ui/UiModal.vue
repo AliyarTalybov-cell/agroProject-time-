@@ -1,144 +1,65 @@
 <script setup lang="ts">
 /**
- * Модальное окно проекта: подложка, шапка с заголовком и крестиком, тело,
- * нижние кнопки. Разметка и стили — эталон «Место хранения»
- * (StorageLocationsPage), крестик — ModalCloseButton по modal-close-button.mdc.
- * Тёмная тема и анимация открытия приходят из styles/modal.css по классам
- * modal-backdrop / modal.
+ * Окно проекта — Dialog из shadcn-vue: затемнение, заголовок, крестик, тело
+ * (слот по умолчанию), кнопки (слот `actions`, как DialogFooter).
  *
- * Показывать через v-if у родителя: окно закрывается по крестику, по клику на
- * подложку и по Esc — во всех случаях эмитит `close`, решать закрыть ли
- * (например, пока идёт сохранение) остаётся родителю.
+ * Показывать через v-if у родителя: окно закрывается по крестику, по клику
+ * вне окна и по Esc — во всех случаях эмитит `close`, решать закрыть ли
+ * (например, пока идёт сохранение) остаётся родителю. Списки, календари и
+ * подсказки внутри окна (Reka UI) закрываются первыми — это делает сам Dialog.
  */
-import { onBeforeUnmount, onMounted } from 'vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/shadcn/dialog'
 
 const props = withDefaults(
   defineProps<{
     title: string
     /** Ширина окна, px (на узком экране — во всю ширину минус поля). 560 — форма, 460 — подтверждение. */
     maxWidth?: number
-    /** Блокирует закрытие (крестик, подложка, Esc) — например, во время сохранения. */
+    /** Блокирует закрытие (крестик, клик вне окна, Esc) — например, во время сохранения. */
     closeDisabled?: boolean
+    /** Подпись под заголовком (DialogDescription). */
+    description?: string
   }>(),
-  { maxWidth: 560, closeDisabled: false },
+  { maxWidth: 560, closeDisabled: false, description: undefined },
 )
 
 const emit = defineEmits<{ close: [] }>()
 
-function requestClose() {
-  if (!props.closeDisabled) emit('close')
+function onOpenChange(open: boolean) {
+  if (!open && !props.closeDisabled) emit('close')
 }
 
-/** Открыт ли поверх окна список, календарь или меню из Reka UI (UiSelect, UiDatePicker…). */
-function popupOpen() {
-  return Boolean(document.querySelector('[data-reka-popper-content-wrapper]'))
+function guard(e: Event) {
+  if (props.closeDisabled) e.preventDefault()
 }
-
-// Esc и клик по подложке сначала закрывают открытый список, а не всё окно.
-let pointerDownWithPopup = false
-function onBackdropPointerDown() {
-  pointerDownWithPopup = popupOpen()
-}
-
-function onBackdropClick() {
-  if (pointerDownWithPopup) return
-  requestClose()
-}
-
-function onKeydown(e: KeyboardEvent) {
-  if (e.key !== 'Escape' || e.defaultPrevented || popupOpen()) return
-  requestClose()
-}
-
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
-  <div class="modal-backdrop" role="dialog" aria-modal="true" :aria-label="title" @pointerdown.self="onBackdropPointerDown" @click.self="onBackdropClick">
-    <div class="modal" :style="{ width: `min(calc(100vw - 48px), ${maxWidth}px)` }">
-      <div class="modal-header">
-        <h2 class="modal-title">{{ title }}</h2>
-        <ModalCloseButton :disabled="closeDisabled" @click="requestClose" />
-      </div>
-      <div class="modal-body">
+  <Dialog :open="true" @update:open="onOpenChange">
+    <DialogContent
+      class="ui-dialog"
+      :style="{ maxWidth: `min(calc(100vw - 2rem), ${maxWidth}px)` }"
+      @escape-key-down="guard"
+      @pointer-down-outside="guard"
+      @interact-outside="guard"
+    >
+      <DialogHeader>
+        <DialogTitle>{{ title }}</DialogTitle>
+        <DialogDescription :class="{ 'sr-only': !description }">{{ description || title }}</DialogDescription>
+      </DialogHeader>
+      <div class="ui-dialog-body">
         <slot />
       </div>
-      <div v-if="$slots.actions" class="modal-actions">
+      <DialogFooter v-if="$slots.actions">
         <slot name="actions" />
-      </div>
-    </div>
-  </div>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
-
-<style scoped>
-/* Dialog shadcn-vue: rounded-lg, border, shadow-lg, p-6, заголовок text-lg semibold,
-   кнопки справа с зазором 8px. Шапка и низ остаются на месте при прокрутке тела. */
-.modal-backdrop {
-  z-index: 1000;
-  padding: 24px;
-}
-
-.modal {
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-  overflow: hidden;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-}
-
-.modal-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-md);
-  padding: 20px 24px 0;
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--text-primary);
-}
-
-.modal-body {
-  padding: 16px 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 16px 24px 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-@media (max-width: 640px) {
-  .modal-backdrop {
-    padding: 16px;
-  }
-
-  .modal-header {
-    padding: 16px 16px 0;
-  }
-
-  .modal-body {
-    padding: 12px 16px 16px;
-  }
-
-  .modal-actions {
-    padding: 12px 16px 16px;
-  }
-}
-</style>

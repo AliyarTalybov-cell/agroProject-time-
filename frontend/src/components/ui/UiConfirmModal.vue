@@ -1,11 +1,17 @@
 <script setup lang="ts">
 /**
  * Подтверждение действия (в первую очередь удаления) вместо window.confirm —
- * см. ui-navigation-consistency.mdc. Эталон — «Удалить место хранения?»
- * в StorageLocationsPage.
+ * AlertDialog из shadcn-vue: закрывается только кнопками, не кликом мимо.
  */
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/shadcn/alert-dialog'
 import UiButton from './UiButton.vue'
-import UiModal from './UiModal.vue'
 
 withDefaults(
   defineProps<{
@@ -25,28 +31,28 @@ withDefaults(
   },
 )
 
-defineEmits<{ confirm: []; cancel: [] }>()
+const emit = defineEmits<{ confirm: []; cancel: [] }>()
+
+function onOpenChange(open: boolean) {
+  if (!open) emit('cancel')
+}
 </script>
 
 <template>
-  <UiModal :title="title" :max-width="460" :close-disabled="busy" @close="$emit('cancel')">
-    <p class="ui-confirm-text">
-      <slot>{{ text }}</slot>
-    </p>
-    <template #actions>
-      <UiButton :disabled="busy" @click="$emit('cancel')">Отмена</UiButton>
-      <UiButton :variant="danger ? 'danger' : 'primary'" :disabled="busy" @click="$emit('confirm')">
-        {{ busy ? busyLabel : confirmLabel }}
-      </UiButton>
-    </template>
-  </UiModal>
+  <AlertDialog :open="true" @update:open="onOpenChange">
+    <AlertDialogContent class="ui-dialog" @escape-key-down="(e: Event) => busy && e.preventDefault()">
+      <AlertDialogHeader>
+        <AlertDialogTitle>{{ title }}</AlertDialogTitle>
+        <AlertDialogDescription>
+          <slot>{{ text }}</slot>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <UiButton :disabled="busy" @click="emit('cancel')">Отмена</UiButton>
+        <UiButton :variant="danger ? 'danger' : 'primary'" :disabled="busy" @click="emit('confirm')">
+          {{ busy ? busyLabel : confirmLabel }}
+        </UiButton>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>
-
-<style scoped>
-.ui-confirm-text {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.45;
-}
-</style>

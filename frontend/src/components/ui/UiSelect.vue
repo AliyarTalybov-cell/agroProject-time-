@@ -1,27 +1,21 @@
 <script setup lang="ts" generic="T">
 /**
- * Выпадающий список — Select из shadcn-vue на Reka UI: кнопка h-9 с шевроном,
- * всплывающий список с галочкой у выбранного, управление с клавиатуры.
+ * Выпадающий список — Select из shadcn-vue.
  *
  *   <UiSelect v-model="cropKey" :options="[{ value: '', label: 'Все культуры' }, ...]" />
  *
- * Значения опций — любые (строка, число, null, ''): внутри Reka получает номер
+ * Значения опций — любые (строка, число, null, ''): внутри Select получает номер
  * опции, наружу уходит исходное значение, поэтому замена нативного <select>
  * не меняет тип v-model. Событие `change` — как у нативного select, после выбора.
  */
 import { computed, getCurrentInstance, ref, watch } from 'vue'
 import {
+  Select,
   SelectContent,
-  SelectIcon,
   SelectItem,
-  SelectItemIndicator,
-  SelectItemText,
-  SelectPortal,
-  SelectRoot,
   SelectTrigger,
   SelectValue,
-  SelectViewport,
-} from 'reka-ui'
+} from '@/components/ui/shadcn/select'
 
 export interface UiSelectOption<V> {
   value: V
@@ -35,10 +29,9 @@ const props = withDefaults(
     options: UiSelectOption<T>[]
     placeholder?: string
     disabled?: boolean
-    /** sm — h-8, как SelectTrigger size="sm". */
     size?: 'default' | 'sm'
     ariaLabel?: string
-    /** Растянуть кнопку на всю ширину контейнера (поля формы). */
+    /** Растянуть кнопку на всю ширину контейнера. */
     block?: boolean
   }>(),
   { placeholder: 'Выберите', disabled: false, size: 'default', ariaLabel: undefined, block: false },
@@ -47,9 +40,7 @@ const props = withDefaults(
 defineOptions({ inheritAttrs: false })
 
 // Атрибут scoped-стилей страницы, где стоит компонент: кнопка получает его, как
-// получил бы нативный select/input, и стили страницы по её классу продолжают
-// действовать (ширина в форме, отступы). Корень компонента — без обёртки, поэтому
-// Vue сам его не проставляет.
+// получил бы нативный select, и стили страницы по её классу продолжают действовать.
 const parentScope = getCurrentInstance()?.vnode.scopeId
 const scopeAttrs = parentScope ? { [parentScope]: '' } : {}
 
@@ -69,13 +60,12 @@ const selectedIndex = computed(() => {
 })
 
 // Пока список открыт, Reka блокирует клики по странице (pointer-events: none на
-// body). Бывает, что после закрытия блокировка остаётся — и страница перестаёт
-// реагировать на клики. Снимаем её сами, если других всплывающих окон нет.
+// body); если после закрытия блокировка осталась — снимаем её.
 const open = ref(false)
 watch(open, (isOpen) => {
   if (isOpen) return
   setTimeout(() => {
-    if (!document.querySelector('[data-reka-popper-content-wrapper]') && document.body.style.pointerEvents === 'none') {
+    if (!document.querySelector('[data-reka-popper-content-wrapper], [role="dialog"][data-state="open"]') && document.body.style.pointerEvents === 'none') {
       document.body.style.pointerEvents = ''
     }
   }, 250)
@@ -90,37 +80,19 @@ function onSelect(key: unknown) {
 </script>
 
 <template>
-  <SelectRoot v-model:open="open" :model-value="selectedIndex" :disabled="disabled" @update:model-value="onSelect">
+  <Select v-model:open="open" :model-value="selectedIndex" :disabled="disabled" @update:model-value="onSelect">
     <SelectTrigger
       v-bind="{ ...$attrs, ...scopeAttrs }"
-      class="ui-select-trigger"
-      :class="{ 'ui-select-trigger--sm': size === 'sm', 'ui-select-trigger--block': block }"
+      :size="size"
+      :class="{ 'w-full': block }"
       :aria-label="ariaLabel"
     >
-      <SelectValue class="ui-select-value" :placeholder="placeholder" />
-      <SelectIcon as-child>
-        <svg class="ui-select-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-      </SelectIcon>
+      <SelectValue :placeholder="placeholder" />
     </SelectTrigger>
-    <SelectPortal>
-      <SelectContent class="ui-popover ui-select-content" position="popper" :side-offset="4">
-        <SelectViewport class="ui-select-viewport">
-          <SelectItem
-            v-for="(o, i) in options"
-            :key="i"
-            :value="String(i)"
-            :disabled="o.disabled"
-            class="ui-select-item"
-          >
-            <SelectItemText>{{ o.label }}</SelectItemText>
-            <span class="ui-select-item-check">
-              <SelectItemIndicator>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
-              </SelectItemIndicator>
-            </span>
-          </SelectItem>
-        </SelectViewport>
-      </SelectContent>
-    </SelectPortal>
-  </SelectRoot>
+    <SelectContent position="popper" class="max-h-80">
+      <SelectItem v-for="(o, i) in options" :key="i" :value="String(i)" :disabled="o.disabled">
+        {{ o.label }}
+      </SelectItem>
+    </SelectContent>
+  </Select>
 </template>

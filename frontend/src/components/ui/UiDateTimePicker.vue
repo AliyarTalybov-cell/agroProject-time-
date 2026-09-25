@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
- * Дата и время — как пример «Date and Time picker» из shadcn-vue: календарь
- * (UiDatePicker) и рядом поле времени.
+ * Дата и время — пример «Date and Time picker» из shadcn-vue: Date Picker и
+ * рядом Input type="time".
  *
  *   <UiDateTimePicker v-model="form.docDate" />
  *
- * v-model — строка 'ГГГГ-ММ-ДДTЧЧ:ММ' (как value у <input type="datetime-local">),
- * поэтому замена нативного поля не меняет данные формы.
+ * v-model — строка 'ГГГГ-ММ-ДДTЧЧ:ММ' (как value у <input type="datetime-local">).
  */
 import { computed } from 'vue'
+import { Input } from '@/components/ui/shadcn/input'
 import UiDatePicker from './UiDatePicker.vue'
 
 const props = withDefaults(
@@ -26,23 +26,23 @@ function setDate(d: string) {
   emit('update:modelValue', `${d}T${timePart.value || '00:00'}`)
 }
 
-function setTime(e: Event) {
-  const t = (e.target as HTMLInputElement).value
+function setTime(v: string | number) {
+  const t = String(v)
   if (!datePart.value || !t) return
   emit('update:modelValue', `${datePart.value}T${t}`)
 }
 </script>
 
 <template>
-  <div class="ui-datetime">
-    <UiDatePicker :model-value="datePart" :disabled="disabled" :clearable="false" class="ui-datetime-date" @update:model-value="setDate" />
-    <input
+  <div class="grid grid-cols-[minmax(0,1fr)_7rem] gap-2">
+    <UiDatePicker :model-value="datePart" :disabled="disabled" :clearable="false" block @update:model-value="setDate" />
+    <Input
       type="time"
-      class="ui-form-input ui-datetime-time"
-      :value="timePart"
+      :model-value="timePart"
       :disabled="disabled || !datePart"
       aria-label="Время"
-      @change="setTime"
+      class="appearance-none bg-background tabular-nums [&::-webkit-calendar-picker-indicator]:hidden"
+      @update:model-value="setTime"
     />
   </div>
 </template>

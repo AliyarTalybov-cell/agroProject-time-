@@ -75,7 +75,7 @@
   --muted-bg: #f4f4f5;
   --input-border: #e4e4e7;
   --input-bg: transparent;
-  --ring: color-mix(in srgb, var(--accent-green) 50%, transparent);
+  --ui-ring: color-mix(in srgb, var(--accent-green) 50%, transparent);
 }
 
 /* ——— Тёмная тема ——— */
@@ -137,7 +137,7 @@
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  --ring: color-mix(in srgb, #5f8f6a 55%, transparent);
+  --ui-ring: color-mix(in srgb, #5f8f6a 55%, transparent);
 }
 
 /* Единая тёмная палитра для всех экранов/модалок */
@@ -698,7 +698,7 @@ a {
 
 .nav-item:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--ring);
+  box-shadow: 0 0 0 2px var(--ui-ring);
 }
 
 .nav-item-icon {

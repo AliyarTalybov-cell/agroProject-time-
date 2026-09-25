@@ -1,0 +1,158 @@
+/* ——— shadcn-vue: тема и утилиты Tailwind ———
+   Компоненты лежат в components/ui/shadcn (ставятся CLI shadcn-vue, стиль new-york).
+
+   Как подключено, чтобы ничего не сломать на старых экранах и карте:
+   - глобальный сброс Tailwind (preflight) НЕ подключён; минимальный сброс
+     действует только на элементы с data-slot — их ставят сами компоненты shadcn;
+   - утилиты собираются только из components/ui (source(none) + @source), поэтому
+     классы вроде «hidden» или «flex» на старых страницах не оживают;
+   - тёмная тема — по нашему [data-theme='dark'] на <html>;
+   - цвета — палитра Zinc из shadcn, основной цвет — наш зелёный #2d5a3d. */
+
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@import 'tw-animate-css';
+
+@source '../components/ui';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #2d5a3d;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #2d5a3d;
+  --radius: 0.625rem;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #09090b;
+  --sidebar-primary: #2d5a3d;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #2d5a3d;
+}
+
+[data-theme='dark'] {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --primary: #3d6b4a;
+  --primary-foreground: #fafafa;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #5f8f6a;
+  --sidebar: #18181b;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #5f8f6a;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #5f8f6a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Сброс только для элементов компонентов shadcn (у них всегда есть data-slot):
+   то, что в оригинале делает preflight Tailwind для всей страницы. */
+@layer base {
+  [data-slot],
+  [data-slot]::before,
+  [data-slot]::after {
+    box-sizing: border-box;
+    border: 0 solid var(--color-border);
+    margin: 0;
+    padding: 0;
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+
+  :where(button, input, select, textarea)[data-slot] {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+  }
+
+  :where(button)[data-slot] {
+    appearance: button;
+    cursor: pointer;
+  }
+
+  :where(h1, h2, h3, h4, h5, h6)[data-slot] {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  :where(ul, ol)[data-slot] {
+    list-style: none;
+  }
+
+  [data-slot] > svg,
+  svg[data-slot] {
+    display: block;
+    flex-shrink: 0;
+  }
+}
