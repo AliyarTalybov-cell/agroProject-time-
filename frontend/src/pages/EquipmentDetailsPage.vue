@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { Button } from '@/components/ui/shadcn/button'
 import { CalendarIcon, ChevronDownIcon, ChevronLeftIcon, CircleCheckIcon, CircleQuestionMarkIcon, ClipboardCheckIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, LeafIcon, PenLineIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon, WrenchIcon } from '@lucide/vue'
 import ImagePreviewDialog from '@/components/ui/dialogs/ImagePreviewDialog.vue'
@@ -847,49 +848,7 @@ onMounted(refreshAll)
             </li>
           </ul>
 
-          <div v-if="historyTotalFiltered > 0" class="equipment-task-pagination">
-            <span class="equipment-task-pagination-info">
-              Показано {{ historyPaginationStart }}–{{ historyPaginationEnd }} из {{ historyTotalFiltered }}
-            </span>
-            <div class="equipment-task-pagination-right">
-              <div class="equipment-task-pagination-nav">
-                <button
-                  type="button"
-                  class="equipment-task-pagination-arrow"
-                  :disabled="historyPage <= 1"
-                  aria-label="Предыдущая страница"
-                  @click="historyPage = historyPage - 1"
-                >
-                  &lt;
-                </button>
-                <template v-for="(p, i) in historyPageNumbers" :key="p === 'ellipsis' ? `e-${i}` : p">
-                  <button
-                    v-if="p !== 'ellipsis'"
-                    type="button"
-                    class="equipment-task-pagination-num"
-                    :class="{ 'equipment-task-pagination-num--active': p === historyPage }"
-                    @click="goHistoryPage(p)"
-                  >
-                    {{ p }}
-                  </button>
-                  <span v-else class="equipment-task-pagination-ellipsis">…</span>
-                </template>
-                <button
-                  type="button"
-                  class="equipment-task-pagination-arrow"
-                  :disabled="historyPage >= historyTotalPages"
-                  aria-label="Следующая страница"
-                  @click="historyPage = historyPage + 1"
-                >
-                  &gt;
-                </button>
-              </div>
-              <label class="equipment-task-pagination-size">
-                <span class="equipment-task-pagination-size-label">На странице</span>
-                <UiSelect v-model="historyPageSize" :options="[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]" class="equipment-task-pagination-select" />
-              </label>
-            </div>
-          </div>
+          <UiPagination v-if="historyTotalFiltered > 0" :page="historyPage" :page-size="historyPageSize" :total="historyTotalFiltered" @update:page="goHistoryPage" @update:page-size="(n) => (historyPageSize = n)" />
         </template>
       </section>
     </template>

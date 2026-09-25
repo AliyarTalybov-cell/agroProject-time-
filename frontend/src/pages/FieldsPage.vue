@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
@@ -1764,63 +1765,7 @@ onMounted(async () => {
       </div>
       </div>
 
-      <div
-        v-show="activeTab === 'fields' && totalFiltered > 0"
-        class="fields-pagination"
-      >
-        <p class="fields-pagination-info">
-          Показано
-          <span class="fields-pagination-num">
-            {{ totalFiltered ? (currentPage - 1) * pageSize + 1 : 0 }}
-          </span>
-          –
-          <span class="fields-pagination-num">
-            {{ totalFiltered ? Math.min(currentPage * pageSize, totalFiltered) : 0 }}
-          </span>
-          из
-          <span class="fields-pagination-num">
-            {{ totalFiltered }}
-          </span>
-        </p>
-        <div class="fields-pagination-right">
-          <nav class="fields-pagination-nav" aria-label="Пагинация">
-            <button
-              type="button"
-              class="fields-page-btn fields-page-btn--edge"
-              :disabled="currentPage <= 1"
-              aria-label="Предыдущая страница"
-              @click="setPage(currentPage - 1)"
-            >
-              &lt;
-            </button>
-            <template v-for="(p, i) in paginationPages" :key="p === '...' ? `ellipsis-${i}` : p">
-              <button
-                v-if="p !== '...'"
-                type="button"
-                class="fields-page-btn"
-                :class="{ 'fields-page-btn--active': p === currentPage }"
-                @click="setPage(p as number)"
-              >
-                {{ p }}
-              </button>
-              <span v-else class="fields-page-ellipsis">…</span>
-            </template>
-            <button
-              type="button"
-              class="fields-page-btn fields-page-btn--edge"
-              :disabled="currentPage >= totalPages"
-              aria-label="Следующая страница"
-              @click="setPage(currentPage + 1)"
-            >
-              &gt;
-            </button>
-          </nav>
-          <label class="fields-pagination-size">
-            <span class="fields-pagination-size-label">На странице</span>
-            <UiSelect v-model="pageSize" :options="[5, 10, 20, 50].map((n) => ({ value: n, label: String(n) }))" class="fields-pagination-select" @change="onPageSizeChange" />
-          </label>
-        </div>
-      </div>
+      <UiPagination v-show="activeTab === 'fields' && totalFiltered > 0" :page="currentPage" :page-size="pageSize" :total="totalFiltered" @update:page="setPage" @update:page-size="(n) => { pageSize = n; onPageSizeChange() }" />
 
       <div v-show="activeTab === 'downtime-reasons'" class="fields-tab-panel">
         <div v-if="isSupabaseConfigured()" class="refs-card card">
@@ -1863,29 +1808,7 @@ onMounted(async () => {
                 </tbody>
               </table>
             </div>
-            <div v-if="downtimeReasons.length > 0" class="refs-pagination">
-              <div class="refs-pagination-left">
-                <p class="refs-pagination-info">
-                  Показано от <span class="refs-pagination-num">{{ (refsPageReasons - 1) * refsPageSize + 1 }}</span> до <span class="refs-pagination-num">{{ Math.min(refsPageReasons * refsPageSize, downtimeReasons.length) }}</span> из <span class="refs-pagination-num">{{ downtimeReasons.length }}</span>
-                </p>
-                <label class="refs-pagination-size">
-                  Строк на странице:
-                  <UiSelect v-model="refsPageSize" :options="REFS_PAGE_SIZE_OPTIONS.map((n) => ({ value: n, label: String(n) }))" class="refs-pagination-select" @change="onRefsPageSizeChange" />
-                </label>
-              </div>
-              <nav class="refs-pagination-nav" aria-label="Пагинация">
-                <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageReasons <= 1" aria-label="Предыдущая страница" @click="setRefsPageReasons(refsPageReasons - 1)">
-                  <ChevronLeftIcon :size="16" />
-                </button>
-                <template v-for="(p, i) in refsPaginationPages(totalPagesReasons, refsPageReasons)" :key="p === '...' ? `reasons-ellipsis-${i}` : p">
-                  <button v-if="p !== '...'" type="button" class="refs-page-btn" :class="{ 'refs-page-btn--active': p === refsPageReasons }" @click="setRefsPageReasons(p as number)">{{ p }}</button>
-                  <span v-else class="refs-page-ellipsis">…</span>
-                </template>
-                <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageReasons >= totalPagesReasons" aria-label="Следующая страница" @click="setRefsPageReasons(refsPageReasons + 1)">
-                  <ChevronRightIcon :size="16" />
-                </button>
-              </nav>
-            </div>
+            <UiPagination v-if="downtimeReasons.length > 0" :page="refsPageReasons" :page-size="refsPageSize" :total="downtimeReasons.length" :page-size-options="REFS_PAGE_SIZE_OPTIONS" @update:page="setRefsPageReasons" @update:page-size="(n) => { refsPageSize = n; onRefsPageSizeChange() }" />
           </div>
         </div>
         <p v-else class="refs-no-supabase">Подключите Supabase для управления справочниками.</p>
@@ -1926,29 +1849,7 @@ onMounted(async () => {
                 </tbody>
               </table>
             </div>
-            <div v-if="workOperations.length > 0" class="refs-pagination">
-              <div class="refs-pagination-left">
-                <p class="refs-pagination-info">
-                  Показано от <span class="refs-pagination-num">{{ (refsPageOperations - 1) * refsPageSize + 1 }}</span> до <span class="refs-pagination-num">{{ Math.min(refsPageOperations * refsPageSize, workOperations.length) }}</span> из <span class="refs-pagination-num">{{ workOperations.length }}</span>
-                </p>
-                <label class="refs-pagination-size">
-                  Строк на странице:
-                  <UiSelect v-model="refsPageSize" :options="REFS_PAGE_SIZE_OPTIONS.map((n) => ({ value: n, label: String(n) }))" class="refs-pagination-select" @change="onRefsPageSizeChange" />
-                </label>
-              </div>
-              <nav class="refs-pagination-nav" aria-label="Пагинация">
-                <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageOperations <= 1" aria-label="Предыдущая страница" @click="setRefsPageOperations(refsPageOperations - 1)">
-                  <ChevronLeftIcon :size="16" />
-                </button>
-                <template v-for="(p, i) in refsPaginationPages(totalPagesOperations, refsPageOperations)" :key="p === '...' ? `ops-ellipsis-${i}` : p">
-                  <button v-if="p !== '...'" type="button" class="refs-page-btn" :class="{ 'refs-page-btn--active': p === refsPageOperations }" @click="setRefsPageOperations(p as number)">{{ p }}</button>
-                  <span v-else class="refs-page-ellipsis">…</span>
-                </template>
-                <button type="button" class="refs-page-btn refs-page-btn--edge" :disabled="refsPageOperations >= totalPagesOperations" aria-label="Следующая страница" @click="setRefsPageOperations(refsPageOperations + 1)">
-                  <ChevronRightIcon :size="16" />
-                </button>
-              </nav>
-            </div>
+            <UiPagination v-if="workOperations.length > 0" :page="refsPageOperations" :page-size="refsPageSize" :total="workOperations.length" :page-size-options="REFS_PAGE_SIZE_OPTIONS" @update:page="setRefsPageOperations" @update:page-size="(n) => { refsPageSize = n; onRefsPageSizeChange() }" />
           </div>
         </div>
         <p v-else class="refs-no-supabase">Подключите Supabase для управления справочниками.</p>

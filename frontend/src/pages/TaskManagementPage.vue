@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
@@ -1269,49 +1270,7 @@ function statusClass(s: Status) {
         </table>
       </div>
     </div>
-    <div v-show="!tasksLoading && totalFiltered > 0" class="task-pagination">
-      <span class="task-pagination-info">
-        Показано {{ paginationStart }}–{{ paginationEnd }} из {{ totalFiltered }}
-      </span>
-      <div class="task-pagination-right">
-        <div class="task-pagination-nav">
-          <button
-            type="button"
-            class="task-pagination-arrow"
-            :disabled="currentPage <= 1"
-            aria-label="Предыдущая страница"
-            @click="currentPage = currentPage - 1"
-          >
-            &lt;
-          </button>
-          <template v-for="(p, i) in pageNumbers" :key="p === 'ellipsis' ? `e-${i}` : p">
-            <button
-              v-if="p !== 'ellipsis'"
-              type="button"
-              class="task-pagination-num"
-              :class="{ 'task-pagination-num--active': p === currentPage }"
-              @click="goToPage(p)"
-            >
-              {{ p }}
-            </button>
-            <span v-else class="task-pagination-ellipsis">…</span>
-          </template>
-          <button
-            type="button"
-            class="task-pagination-arrow"
-            :disabled="currentPage >= totalPages"
-            aria-label="Следующая страница"
-            @click="currentPage = currentPage + 1"
-          >
-            &gt;
-          </button>
-        </div>
-        <label class="task-pagination-size">
-          <span class="task-filter-select-label">На странице</span>
-          <UiSelect v-model="pageSize" :options="[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]" class="task-filter-select task-pagination-select" />
-        </label>
-      </div>
-    </div>
+    <UiPagination v-show="!tasksLoading && totalFiltered > 0" :page="currentPage" :page-size="pageSize" :total="totalFiltered" @update:page="goToPage" @update:page-size="(n) => (pageSize = n)" />
 
     <!-- Окно новой / редактируемой задачи — UiModal (Dialog shadcn) -->
     <UiModal

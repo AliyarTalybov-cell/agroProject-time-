@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
@@ -887,43 +888,7 @@ async function exportToPdf() {
         </table>
       </div>
 
-      <div v-if="totalCount > 0" class="equipment-pagination">
-        <span class="equipment-pagination-info">
-          Показано {{ paginationStart }}-{{ paginationEnd }} из {{ totalCount }}
-        </span>
-        <div class="equipment-pagination-btns">
-          <button
-            type="button"
-            class="equipment-page-btn"
-            :disabled="currentPage <= 1"
-            aria-label="Предыдущая страница"
-            @click="goToPage(currentPage - 1)"
-          >
-            &lt;
-          </button>
-          <template v-for="(p, i) in pageNumbers" :key="p === 'ellipsis' ? `e-${i}` : p">
-            <button
-              v-if="p !== 'ellipsis'"
-              type="button"
-              class="equipment-page-btn"
-              :class="{ 'equipment-page-btn--active': p === currentPage }"
-              @click="goToPage(p)"
-            >
-              {{ p }}
-            </button>
-            <span v-else class="equipment-pagination-dots">…</span>
-          </template>
-          <button
-            type="button"
-            class="equipment-page-btn"
-            :disabled="currentPage >= totalPages"
-            aria-label="Следующая страница"
-            @click="goToPage(currentPage + 1)"
-          >
-            &gt;
-          </button>
-        </div>
-      </div>
+      <UiPagination v-if="totalCount > 0" :page="currentPage" :page-size="PAGE_SIZE" :total="totalCount" hide-size @update:page="goToPage" />
     </div>
 
     <div v-show="activeTab === 'implements'" class="equipment-list-card card-rounded">
@@ -1020,49 +985,7 @@ async function exportToPdf() {
         </table>
       </div>
 
-      <div v-if="implementsTotal > 0" class="equipment-pagination">
-        <span class="equipment-pagination-info">
-          Показано {{ implementsPageStart }}-{{ implementsPageEnd }} из {{ implementsTotal }}
-        </span>
-        <div class="equipment-pagination-right">
-          <label class="equipment-pagination-size">
-            <span class="equipment-pagination-size-label">На странице</span>
-            <UiSelect v-model="implementsPageSize" :options="[...(IMPLEMENTS_PAGE_SIZE_OPTIONS).map((size) => ({ value: size, label: String(size) }))]" class="equipment-pagination-select" />
-          </label>
-          <div class="equipment-pagination-btns">
-            <button
-              type="button"
-              class="equipment-page-btn"
-              :disabled="implementsPage <= 1"
-              aria-label="Предыдущая страница"
-              @click="goToImplementsPage(implementsPage - 1)"
-            >
-              &lt;
-            </button>
-            <template v-for="(p, i) in implementsPageNumbers" :key="p === 'ellipsis' ? `impl-e-${i}` : p">
-              <button
-                v-if="p !== 'ellipsis'"
-                type="button"
-                class="equipment-page-btn"
-                :class="{ 'equipment-page-btn--active': p === implementsPage }"
-                @click="goToImplementsPage(p)"
-              >
-                {{ p }}
-              </button>
-              <span v-else class="equipment-pagination-dots">…</span>
-            </template>
-            <button
-              type="button"
-              class="equipment-page-btn"
-              :disabled="implementsPage >= implementsTotalPages"
-              aria-label="Следующая страница"
-              @click="goToImplementsPage(implementsPage + 1)"
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
+      <UiPagination v-if="implementsTotal > 0" :page="implementsPage" :page-size="implementsPageSize" :total="implementsTotal" :page-size-options="IMPLEMENTS_PAGE_SIZE_OPTIONS" @update:page="goToImplementsPage" @update:page-size="(n) => (implementsPageSize = n)" />
     </div>
   </section>
 </template>

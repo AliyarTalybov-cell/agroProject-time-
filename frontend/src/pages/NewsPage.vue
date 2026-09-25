@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { Button } from '@/components/ui/shadcn/button'
 import { PlusIcon } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
@@ -83,27 +84,7 @@ onMounted(() => void loadData())
         <p class="news-card-date">{{ formatDate(post.published_at) }}</p>
       </article>
     </div>
-    <div v-if="!loading && !error && total > 0" class="news-pagination page-enter-item">
-      <div class="news-pagination-info">
-        Показано {{ posts.length }} из {{ total }}
-      </div>
-      <div class="news-pagination-right">
-        <div class="news-pagination-nav">
-          <button type="button" class="news-pagination-arrow" :disabled="page <= 1" @click="setPage(page - 1)">‹</button>
-          <button
-            v-for="n in totalPages"
-            :key="`news-page-${n}`"
-            type="button"
-            class="news-pagination-num"
-            :class="{ 'news-pagination-num--active': n === page }"
-            @click="setPage(n)"
-          >
-            {{ n }}
-          </button>
-          <button type="button" class="news-pagination-arrow" :disabled="page >= totalPages" @click="setPage(page + 1)">›</button>
-        </div>
-      </div>
-    </div>
+    <UiPagination v-if="!loading && !error && total > 0" :page="page" :page-size="pageSize" :total="total" hide-size @update:page="setPage" />
   </section>
 </template>
 

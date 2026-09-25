@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Button } from '@/components/ui/shadcn/button'
 import { CalendarIcon, MailIcon, PhoneIcon, PlusIcon, SearchIcon, SlidersVerticalIcon } from '@lucide/vue'
@@ -249,47 +250,7 @@ function openEmployee(e: EmployeeRow) {
           </div>
         </article>
       </div>
-      <div v-if="!loading && total > 0" class="emp-pagination">
-        <span class="emp-pagination-info">Показано {{ pageStart }}–{{ pageEnd }} из {{ total }}</span>
-        <div class="emp-pagination-right">
-          <label class="emp-pagination-size">
-            <span class="emp-pagination-size-label">На странице</span>
-            <UiSelect v-model="pageSize" :options="[{ value: 5, label: '5' }, { value: 8, label: '8' }, { value: 12, label: '12' }, { value: 24, label: '24' }, { value: 48, label: '48' }]" class="emp-pagination-select" aria-label="На странице" />
-          </label>
-          <div class="emp-pagination-btns">
-            <button
-              type="button"
-              class="emp-pagination-arrow"
-              :disabled="page <= 1"
-              aria-label="Предыдущая страница"
-              @click="goPage(page - 1)"
-            >
-              &lt;
-            </button>
-            <template v-for="(p, i) in pageNumbers" :key="p === 'ellipsis' ? `ep-${i}` : p">
-              <button
-                v-if="p !== 'ellipsis'"
-                type="button"
-                class="emp-pagination-num"
-                :class="{ 'emp-pagination-num--active': p === page }"
-                @click="goPage(p)"
-              >
-                {{ p }}
-              </button>
-              <span v-else class="emp-pagination-dots">…</span>
-            </template>
-            <button
-              type="button"
-              class="emp-pagination-arrow"
-              :disabled="page >= totalPages"
-              aria-label="Следующая страница"
-              @click="goPage(page + 1)"
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
+      <UiPagination v-if="!loading && total > 0" :page="page" :page-size="pageSize" :total="total" :page-size-options="[5, 8, 12, 24, 48]" @update:page="goPage" @update:page-size="(n) => (pageSize = n)" />
     </div>
 
     <EmployeeCreateModal

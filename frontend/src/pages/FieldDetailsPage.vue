@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
@@ -1157,49 +1158,7 @@ watch(
             </li>
           </ul>
 
-          <div v-if="historyTotalFiltered > 0" class="field-history-pagination">
-            <span class="field-history-pagination-info">
-              Показано {{ historyPaginationStart }}–{{ historyPaginationEnd }} из {{ historyTotalFiltered }}
-            </span>
-            <div class="field-history-pagination-right">
-              <div class="field-history-pagination-nav">
-                <button
-                  type="button"
-                  class="field-history-pagination-arrow"
-                  :disabled="historyPage <= 1"
-                  aria-label="Предыдущая страница"
-                  @click="historyPage = historyPage - 1"
-                >
-                  &lt;
-                </button>
-                <template v-for="(p, i) in historyPageNumbers" :key="p === 'ellipsis' ? `e-${i}` : p">
-                  <button
-                    v-if="p !== 'ellipsis'"
-                    type="button"
-                    class="field-history-pagination-num"
-                    :class="{ 'field-history-pagination-num--active': p === historyPage }"
-                    @click="goHistoryPage(p)"
-                  >
-                    {{ p }}
-                  </button>
-                  <span v-else class="field-history-pagination-ellipsis">…</span>
-                </template>
-                <button
-                  type="button"
-                  class="field-history-pagination-arrow"
-                  :disabled="historyPage >= historyTotalPages"
-                  aria-label="Следующая страница"
-                  @click="historyPage = historyPage + 1"
-                >
-                  &gt;
-                </button>
-              </div>
-              <label class="field-history-pagination-size">
-                <span class="field-history-pagination-size-label">На странице</span>
-                <UiSelect v-model="historyPageSize" :options="[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]" class="field-history-pagination-select" />
-              </label>
-            </div>
-          </div>
+          <UiPagination v-if="historyTotalFiltered > 0" :page="historyPage" :page-size="historyPageSize" :total="historyTotalFiltered" @update:page="goHistoryPage" @update:page-size="(n) => (historyPageSize = n)" />
         </template>
       </section>
     </template>

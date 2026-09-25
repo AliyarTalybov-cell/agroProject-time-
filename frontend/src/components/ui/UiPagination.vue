@@ -22,9 +22,11 @@ const props = withDefaults(
     page: number
     pageSize: number
     total: number
-    pageSizeOptions?: number[]
+    pageSizeOptions?: readonly number[]
+    /** Без выбора «На странице» (размер страницы фиксирован). */
+    hideSize?: boolean
   }>(),
-  { pageSizeOptions: () => [5, 10, 20, 50] },
+  { pageSizeOptions: () => [5, 10, 20, 50], hideSize: false },
 )
 
 const emit = defineEmits<{
@@ -74,7 +76,7 @@ function setSize(size: number) {
           <PaginationNext size="icon" aria-label="Следующая страница"><ChevronRightIcon /></PaginationNext>
         </PaginationContent>
       </Pagination>
-      <label class="text-muted-foreground flex items-center gap-2">
+      <label v-if="!hideSize" class="text-muted-foreground flex items-center gap-2">
         <span class="whitespace-nowrap">На странице</span>
         <UiSelect
           :model-value="pageSize"

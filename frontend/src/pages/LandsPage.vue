@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
@@ -3827,54 +3828,7 @@ onMounted(() => void reloadAll())
           <p v-if="!lands.length && landsSearch.trim()" class="lands-muted">По вашему запросу ничего не найдено.</p>
           <p v-else-if="!lands.length" class="lands-muted">Пока нет созданных земель.</p>
 
-          <footer v-if="landsTotal > 0" class="fields-pagination">
-            <p class="fields-pagination-info">
-              Показано
-              <span class="fields-pagination-num">{{ landsPageStart }}</span>
-              –
-              <span class="fields-pagination-num">{{ landsPageEnd }}</span>
-              из
-              <span class="fields-pagination-num">{{ landsTotal }}</span>
-            </p>
-            <div class="fields-pagination-right">
-              <nav class="fields-pagination-nav" aria-label="Пагинация">
-                <button
-                  type="button"
-                  class="fields-page-btn fields-page-btn--edge"
-                  :disabled="landsPage <= 1"
-                  aria-label="Предыдущая страница"
-                  @click="setLandsPage(landsPage - 1)"
-                >
-                  &lt;
-                </button>
-                <template v-for="(p, i) in landsPageNumbers" :key="p === 'ellipsis' ? `lands-e-${i}` : p">
-                  <button
-                    v-if="p !== 'ellipsis'"
-                    type="button"
-                    class="fields-page-btn"
-                    :class="{ 'fields-page-btn--active': p === landsPage }"
-                    @click="setLandsPage(p as number)"
-                  >
-                    {{ p }}
-                  </button>
-                  <span v-else class="fields-page-ellipsis">…</span>
-                </template>
-                <button
-                  type="button"
-                  class="fields-page-btn fields-page-btn--edge"
-                  :disabled="landsPage >= landsTotalPages"
-                  aria-label="Следующая страница"
-                  @click="setLandsPage(landsPage + 1)"
-                >
-                  &gt;
-                </button>
-              </nav>
-              <label class="fields-pagination-size">
-                <span class="fields-pagination-size-label">На странице</span>
-                <UiSelect v-model="landsPageSize" :options="[10, 25, 50].map((n) => ({ value: n, label: String(n) }))" class="fields-pagination-select" @change="onLandsPageSizeChange" />
-              </label>
-            </div>
-          </footer>
+          <UiPagination v-if="landsTotal > 0" :page="landsPage" :page-size="landsPageSize" :total="landsTotal" :page-size-options="[10, 25, 50]" @update:page="setLandsPage" @update:page-size="(n) => { landsPageSize = n; onLandsPageSizeChange() }" />
         </template>
 
         <template v-else-if="landsRootTab === 'melioration'">
@@ -3972,54 +3926,7 @@ onMounted(() => void reloadAll())
               </tbody>
             </table>
           </div>
-          <footer v-if="meliorationTotal > 0" class="fields-pagination">
-            <p class="fields-pagination-info">
-              Показано
-              <span class="fields-pagination-num">{{ meliorationPageStart }}</span>
-              –
-              <span class="fields-pagination-num">{{ meliorationPageEnd }}</span>
-              из
-              <span class="fields-pagination-num">{{ meliorationTotal }}</span>
-            </p>
-            <div class="fields-pagination-right">
-              <nav class="fields-pagination-nav" aria-label="Пагинация мелиорации">
-                <button
-                  type="button"
-                  class="fields-page-btn fields-page-btn--edge"
-                  :disabled="meliorationPage <= 1"
-                  aria-label="Предыдущая страница"
-                  @click="setMeliorationPage(meliorationPage - 1)"
-                >
-                  &lt;
-                </button>
-                <template v-for="(p, i) in meliorationPageNumbers" :key="p === 'ellipsis' ? `mel-e-${i}` : p">
-                  <button
-                    v-if="p !== 'ellipsis'"
-                    type="button"
-                    class="fields-page-btn"
-                    :class="{ 'fields-page-btn--active': p === meliorationPage }"
-                    @click="setMeliorationPage(p as number)"
-                  >
-                    {{ p }}
-                  </button>
-                  <span v-else class="fields-page-ellipsis">…</span>
-                </template>
-                <button
-                  type="button"
-                  class="fields-page-btn fields-page-btn--edge"
-                  :disabled="meliorationPage >= meliorationTotalPages"
-                  aria-label="Следующая страница"
-                  @click="setMeliorationPage(meliorationPage + 1)"
-                >
-                  &gt;
-                </button>
-              </nav>
-              <label class="fields-pagination-size">
-                <span class="fields-pagination-size-label">На странице</span>
-                <UiSelect v-model="meliorationPageSize" :options="[10, 25, 50].map((n) => ({ value: n, label: String(n) }))" class="fields-pagination-select" @change="onMeliorationPageSizeChange" />
-              </label>
-            </div>
-          </footer>
+          <UiPagination v-if="meliorationTotal > 0" :page="meliorationPage" :page-size="meliorationPageSize" :total="meliorationTotal" :page-size-options="[10, 25, 50]" @update:page="setMeliorationPage" @update:page-size="(n) => { meliorationPageSize = n; onMeliorationPageSizeChange() }" />
         </template>
         <template v-else-if="landsRootTab === 'land-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
