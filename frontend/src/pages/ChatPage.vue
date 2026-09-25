@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
+import ChatGroupDialog from '@/components/ui/dialogs/ChatGroupDialog.vue'
+import ChatDmDialog from '@/components/ui/dialogs/ChatDmDialog.vue'
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { loadEmployees, searchEmployees, type EmployeeRow } from '@/lib/employeesSupabase'
 import UiTrashIcon from '@/components/UiTrashIcon.vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import {
   type AvatarTone,
@@ -1473,63 +1475,27 @@ onUnmounted(() => {
       </template>
     </section>
 
-    <!-- Модалка: личный диалог -->
-    <div v-if="dmModalOpen" class="chat-page__modal-backdrop" role="dialog" aria-modal="true" aria-label="Новое сообщение" @click.self="dmModalOpen = false">
-      <div class="chat-page__modal" @click.stop>
-        <div class="chat-page__modal-head">
-          <h2 class="chat-page__modal-title">Кому написать</h2>
-          <ModalCloseButton @click="dmModalOpen = false" />
-        </div>
-        <input v-model="dmSearch" type="search" class="chat-page__modal-search" placeholder="Поиск по сотрудникам…" autocomplete="off" />
-        <div class="chat-page__modal-list">
-          <p v-if="dmLoading" class="chat-page__empty">Поиск…</p>
-          <button
-            v-for="row in dmResults"
-            :key="row.id"
-            type="button"
-            class="chat-page__modal-row"
-            @click="pickDmPeer(row)"
-          >
-            <span class="chat-page__modal-row-name">{{ row.display_name?.trim() || row.email }}</span>
-            <span class="chat-page__modal-row-meta">{{ row.position || row.role || '—' }}</span>
-          </button>
-          <p v-if="!dmLoading && !dmResults.length" class="chat-page__empty">Никого не найдено</p>
-        </div>
-      </div>
-    </div>
+    <!-- Личный диалог — Dialog + Command shadcn -->
+    <ChatDmDialog
+      v-if="dmModalOpen"
+      v-model:search="dmSearch"
+      :results="dmResults"
+      :loading="dmLoading"
+      @close="dmModalOpen = false"
+      @pick="pickDmPeer"
+    />
 
-    <!-- Модалка: группа (только руководитель) -->
-    <div
+    <!-- Новая команда (только руководитель) — Dialog shadcn -->
+    <ChatGroupDialog
       v-if="groupModalOpen"
-      class="chat-page__modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Новая команда"
-      @click.self="groupModalOpen = false"
-    >
-      <div class="chat-page__modal" @click.stop>
-        <div class="chat-page__modal-head">
-          <h2 class="chat-page__modal-title">Новая команда</h2>
-          <ModalCloseButton @click="groupModalOpen = false" />
-        </div>
-        <label class="chat-page__modal-label">Название</label>
-        <input v-model="groupTitle" type="text" class="chat-page__modal-input" placeholder="Например: Бригада поля №3" />
-        <p class="chat-page__modal-hint">Выберите участников (вы будете добавлены автоматически).</p>
-        <div class="chat-page__modal-list chat-page__modal-list--scroll">
-          <label v-for="row in groupEmployees" :key="row.id" class="chat-page__check-row">
-            <input type="checkbox" :checked="groupSelected.has(row.id)" @change="toggleGroupMember(row.id)" />
-            <span>{{ row.display_name?.trim() || row.email }}</span>
-            <span class="chat-page__modal-row-meta">{{ row.position || '' }}</span>
-          </label>
-        </div>
-        <div class="chat-page__modal-footer">
-          <button type="button" class="chat-page__toolbar-btn" :disabled="groupBusy" @click="groupModalOpen = false">Отмена</button>
-          <button type="button" class="chat-page__toolbar-btn chat-page__toolbar-btn--primary" :disabled="groupBusy" @click="submitGroup">
-            {{ groupBusy ? 'Создание…' : 'Создать' }}
-          </button>
-        </div>
-      </div>
-    </div>
+      v-model:title="groupTitle"
+      :employees="groupEmployees"
+      :selected="groupSelected"
+      :busy="groupBusy"
+      @close="groupModalOpen = false"
+      @toggle="toggleGroupMember"
+      @submit="submitGroup"
+    />
 
     <Teleport to="body">
       <Transition name="chat-ctx">
@@ -1556,28 +1522,16 @@ onUnmounted(() => {
       </Transition>
     </Teleport>
 
-    <div
+    <UiConfirmModal
       v-if="deleteMessageModalOpen"
-      class="chat-page__modal-backdrop"
-      role="alertdialog"
-      aria-modal="true"
-      aria-labelledby="chat-delete-msg-title"
-      @click.self="tryCloseDeleteMessageModal"
+      title="Удалить сообщение?"
+      :busy="deleteMessageBusy"
+      @cancel="tryCloseDeleteMessageModal"
+      @confirm="confirmDeleteMessage"
     >
-      <div class="chat-page__modal chat-page__modal--sm" @click.stop>
-        <h2 id="chat-delete-msg-title" class="chat-page__modal-title">Удалить сообщение?</h2>
-        <p class="chat-page__modal-text">
-          Это действие нельзя отменить.
-          <template v-if="deleteMessageTarget?.attachment"> Вложенный файл будет удалён навсегда.</template>
-        </p>
-        <div class="chat-page__modal-footer">
-          <button type="button" class="chat-page__toolbar-btn" :disabled="deleteMessageBusy" @click="tryCloseDeleteMessageModal">Отмена</button>
-          <button type="button" class="chat-page__toolbar-btn chat-page__toolbar-btn--danger" :disabled="deleteMessageBusy" @click="confirmDeleteMessage">
-            {{ deleteMessageBusy ? 'Удаление…' : 'Удалить' }}
-          </button>
-        </div>
-      </div>
-    </div>
+      Это действие нельзя отменить.
+      <template v-if="deleteMessageTarget?.attachment"> Вложенный файл будет удалён навсегда.</template>
+    </UiConfirmModal>
   </div>
 </template>
 

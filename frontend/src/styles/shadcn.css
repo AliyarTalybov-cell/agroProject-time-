@@ -157,6 +157,41 @@
     list-style: none;
   }
 
+  /* Кнопки и поля, которые мы сами ставим внутрь окон, панелей и всплывающих
+     слоёв shadcn (списки выбора в окнах, строки-кнопки и т. п.), — без
+     браузерного оформления, как под preflight. У старых классов страниц свои
+     стили вне слоёв — они по-прежнему сильнее. */
+  :where(
+      [data-slot='dialog-content'],
+      [data-slot='alert-dialog-content'],
+      [data-slot='sheet-content'],
+      [data-slot='popover-content'],
+      [data-slot='card'],
+      .tw-scope
+    )
+    :where(button, input, select, textarea) {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border: 0 solid var(--color-border);
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  :where(
+      [data-slot='dialog-content'],
+      [data-slot='alert-dialog-content'],
+      [data-slot='sheet-content'],
+      [data-slot='popover-content'],
+      [data-slot='card'],
+      .tw-scope
+    )
+    :where(button) {
+    cursor: pointer;
+  }
+
   [data-slot] > svg,
   svg[data-slot] {
     display: block;

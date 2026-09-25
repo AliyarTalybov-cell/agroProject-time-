@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ImagePreviewDialog from '@/components/ui/dialogs/ImagePreviewDialog.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -981,19 +982,12 @@ onMounted(refreshAll)
       </section>
     </template>
 
-    <teleport to="body">
-      <div v-if="documentPreviewOpen && documentPreview" class="doc-preview-backdrop" role="dialog" aria-modal="true" aria-label="Предпросмотр документа" @click.self="closeDocumentPreview">
-        <div class="doc-preview-modal">
-          <div class="doc-preview-head">
-            <div class="doc-preview-title">{{ documentPreview.name }}</div>
-            <button type="button" class="doc-preview-close" aria-label="Закрыть предпросмотр" @click="closeDocumentPreview">×</button>
-          </div>
-          <div class="doc-preview-body">
-            <img :src="documentPreview.url" :alt="documentPreview.name" class="doc-preview-image" />
-          </div>
-        </div>
-      </div>
-    </teleport>
+    <ImagePreviewDialog
+      v-if="documentPreviewOpen && documentPreview"
+      :name="documentPreview.name"
+      :url="documentPreview.url"
+      @close="closeDocumentPreview"
+    />
   </div>
 </template>
 
