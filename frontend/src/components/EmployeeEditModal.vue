@@ -502,10 +502,10 @@ watch(
 }
 .eem-input {
   width: 100%;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-xl);
-  padding: 12px 14px;
-  font-size: 0.9375rem;
+  padding: 7px 14px;
+  font-size: 0.875rem;
   background: var(--bg-elevated);
   color: var(--text-primary);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;

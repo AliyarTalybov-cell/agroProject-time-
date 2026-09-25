@@ -392,11 +392,12 @@ onMounted(() => {
   height: var(--control-h);
   padding: 0 10px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--toolbar-form-surface-border);
-  background: var(--toolbar-form-surface);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
   color: var(--text-primary);
   font-size: 0.875rem;
   min-width: 160px;
+  box-shadow: var(--shadow-xs);
 }
 
 .fields-search-wrap {
@@ -420,12 +421,13 @@ onMounted(() => {
 .fields-search-input {
   width: 100%;
   height: var(--control-h);
-  border: 1px solid var(--toolbar-form-surface-border);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-md);
-  background: var(--toolbar-form-surface);
+  background: var(--input-bg);
   color: var(--text-primary);
   padding: 0 12px 0 34px;
   font-size: 0.93rem;
+  box-shadow: var(--shadow-xs);
 }
 
 .fields-search-input::placeholder {
@@ -849,8 +851,9 @@ onMounted(() => {
 .fields-page-btn--edge {
   width: 36px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-xs);
 }
 
 .fields-page-btn--active {
@@ -885,11 +888,12 @@ onMounted(() => {
   min-width: 72px;
   padding: 0 28px 0 10px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
+  box-shadow: var(--shadow-xs);
 }
 
 @media (max-width: 900px) {

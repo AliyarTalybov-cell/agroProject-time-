@@ -1133,12 +1133,13 @@ async function confirmDeleteAccount() {
 
 .profile-input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  padding: 7px 12px;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
-  font-size: 0.9375rem;
-  background: var(--bg-panel-hover);
+  font-size: 0.875rem;
+  background: var(--input-bg);
   color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 .profile-input:focus {

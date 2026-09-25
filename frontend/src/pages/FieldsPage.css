@@ -204,11 +204,12 @@
   width: 100%;
   padding: 8px 12px 8px 40px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   transition: border-color 0.2s ease, outline 0.2s ease;
+  box-shadow: var(--shadow-xs);
 }
 .fields-search-input::placeholder {
   color: var(--text-secondary);
@@ -229,13 +230,14 @@
   gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: #fafafa;
+  border: 1px solid var(--input-border);
+  background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
+  box-shadow: var(--shadow-xs);
 }
 .fields-export-btn:hover:not(:disabled) {
   background: var(--bg-panel-hover);
@@ -379,7 +381,7 @@
   min-width: 120px;
   padding: 6px 28px 6px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -389,6 +391,7 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
+  box-shadow: var(--shadow-xs);
 }
 .fields-responsible-select:hover {
   border-color: var(--accent-green);
@@ -496,10 +499,11 @@
   max-width: 100%;
   padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
   font-size: 0.85rem;
+  box-shadow: var(--shadow-xs);
 }
 .search-input input::placeholder {
   color: var(--text-secondary);
@@ -642,8 +646,9 @@
 .fields-page-btn--edge {
   width: 36px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-xs);
 }
 .fields-page-btn--active {
   background: rgba(76, 175, 80, 0.15);
@@ -673,12 +678,13 @@
   min-width: 72px;
   padding: 0 28px 0 10px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
 }
 
 /* Кнопки действий — в один ряд, один размер */
@@ -1141,10 +1147,11 @@
 }
 .refs-input {
   padding: 8px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   font-size: 0.9rem;
   min-width: 160px;
+  box-shadow: var(--shadow-xs);
 }
 .refs-input--wide {
   flex: 1;
@@ -1152,11 +1159,12 @@
 }
 .refs-select {
   padding: 8px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   font-size: 0.9rem;
   background: var(--bg-panel);
   color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
 }
 .refs-btn {
   padding: 8px 16px;
@@ -1246,11 +1254,12 @@
 .refs-pagination-select {
   padding: 4px 8px;
   font-size: 0.875rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   background: var(--bg-panel);
   color: var(--text-primary);
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
 }
 .refs-pagination-select:focus {
   outline: none;
@@ -1522,13 +1531,13 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 38px;
-  padding: 9px 11px;
+  padding: 7px 11px;
   font-size: .93rem;
   line-height: 1.4;
   color: var(--text-primary);
   font-family: inherit;
   border-radius: 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-panel);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1716,11 +1725,12 @@
   gap: 4px;
 }
 .modal-input {
-  padding: 10px 12px;
+  padding: 7px 12px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-panel);
   width: 100%;
+  box-shadow: var(--shadow-xs);
 }
 .modal-input--readonly {
   opacity: 0.8;

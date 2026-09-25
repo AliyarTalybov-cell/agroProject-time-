@@ -1300,13 +1300,14 @@ watch(
   gap: 8px;
   padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid var(--topbar-border);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
+  box-shadow: var(--shadow-xs);
 }
 .field-details-edit-btn:hover {
   background: var(--bg-panel);
@@ -1445,11 +1446,12 @@ watch(
 .field-details-edit-select {
   padding: 8px 10px;
   border-radius: 6px;
-  border: 1px solid var(--topbar-border);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
   color: var(--text-primary);
   font-size: 0.9rem;
   font-family: inherit;
+  box-shadow: var(--shadow-xs);
 }
 .field-details-edit-textarea {
   resize: vertical;
@@ -1471,11 +1473,12 @@ watch(
 .field-details-scheme-btn {
   padding: 8px 14px;
   border-radius: 6px;
-  border: 1px solid var(--topbar-border);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
 }
 .field-details-scheme-btn:hover:not(:disabled) {
   background: var(--bg-panel);
@@ -1495,12 +1498,13 @@ watch(
 .field-details-cancel-btn {
   padding: 10px 18px;
   border-radius: 8px;
-  border: 1px solid var(--topbar-border);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
 }
 .field-details-cancel-btn:hover {
   background: var(--bg-panel);
@@ -1674,8 +1678,8 @@ watch(
   gap: 8px;
   padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid var(--topbar-border);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.9rem;
   font-weight: 500;
@@ -2067,9 +2071,10 @@ watch(
   padding: 0 28px 0 10px;
   border-radius: var(--radius-md);
   font-size: 0.875rem;
-  border: 1px solid var(--border-color);
-  background: var(--bg-base);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
   color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 @media (max-width: 900px) {

@@ -101,7 +101,9 @@
 .lands-overview-item { border:1px solid var(--border-color); border-radius:10px; padding:8px 10px; background:#fff; display:flex; flex-direction:column; gap:2px; }
 .lands-overview-item > span { font-size:.75rem; color:var(--text-secondary); }
 .lands-overview-item > strong { font-size:.9rem; color:var(--text-primary); font-weight:500; }
-.lands-passport-input { width:100%; border:1px solid var(--border-color); border-radius:8px; padding:7px 9px; font-size:.88rem; color:var(--text-primary); background:#fff; }
+.lands-passport-input { width:100%; border: 1px solid var(--input-border); border-radius:8px; padding:7px 9px; font-size:.88rem; color:var(--text-primary); background:#fff;
+  box-shadow: var(--shadow-xs);
+}
 .lands-table-top { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
 .lands-table-tools { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap; width:100%; }
 .lands-table-tools .lands-search { flex: 0 1 620px; width: min(620px, 100%); min-width: 260px; max-width: 620px; margin: 0; }
@@ -187,7 +189,9 @@
 .lands-address-candidates { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
 .lands-address-candidates--details { max-width: min(680px, 100%); }
 .lands-address-candidates-label { font-size:.82rem; font-weight:600; color:var(--text-secondary); }
-.lands-address-candidates-select { width:100%; border:1px solid var(--border-color); border-radius:9px; padding:8px 10px; background:#fff; color:var(--text-primary); }
+.lands-address-candidates-select { width:100%; border: 1px solid var(--input-border); border-radius:9px; padding:8px 10px; background:#fff; color:var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
 .lands-map-head { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-bottom:1px solid var(--border-color); background:#fff; flex-wrap:wrap; }
 .lands-map-title { font-size:.84rem; font-weight:600; color:var(--text-primary); }
 .lands-map-switch { display:flex; border:1px solid var(--border-color); border-radius:9px; overflow:hidden; }
@@ -797,7 +801,9 @@
   display: inline-flex;
   align-items: center;
 }
-.lands-field input, .lands-field textarea, .lands-field select { border:1px solid var(--border-color); border-radius:10px; padding:9px 11px; font-size:.93rem; background:#fff; color:var(--text-primary); }
+.lands-field input, .lands-field textarea, .lands-field select { border: 1px solid var(--input-border); border-radius:10px; padding: 7px 11px; font-size:.93rem; background:#fff; color:var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
 .lands-form-grid--mel { align-items: end; }
 
 /* Тёмный фон полей и одноколоночная сетка на узком экране на странице заданы

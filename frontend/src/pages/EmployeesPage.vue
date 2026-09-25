@@ -378,10 +378,10 @@ function openEmployee(e: EmployeeRow) {
 
 .emp-filter-select {
   min-width: 220px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-xl);
-  padding: 10px 12px;
-  font-size: 0.9375rem;
+  padding: 7px 12px;
+  font-size: 0.875rem;
   background: #fff;
   color: var(--text-primary);
   appearance: none;
@@ -389,6 +389,7 @@ function openEmployee(e: EmployeeRow) {
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 38px;
+  box-shadow: var(--shadow-xs);
 }
 .emp-filter-select:focus {
   outline: none;
@@ -414,12 +415,13 @@ function openEmployee(e: EmployeeRow) {
 
 .emp-search-input {
   width: 100%;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-xl);
   padding: 10px 12px 10px 40px;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   background: #fff;
   color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 [data-theme='dark'] .emp-search-input {
@@ -812,12 +814,13 @@ function openEmployee(e: EmployeeRow) {
   min-width: 72px;
   height: var(--control-h);
   padding: 0 28px 0 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-md);
-  background: #fafafa;
+  background: var(--input-bg);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
+  box-shadow: var(--shadow-xs);
 }
 
 [data-theme='dark'] .emp-pagination-select {

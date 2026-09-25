@@ -506,10 +506,10 @@ onMounted(async () => {
 .news-field textarea,
 .news-select {
   width: 100%;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.9375rem;
+  padding: 7px 12px;
+  font-size: 0.875rem;
   font-weight: 400;
   color: var(--text-primary);
   background: var(--bg-elevated);

@@ -636,12 +636,13 @@ function onPageSizeChange(size: number) {
 .fields-search-input {
   width: 100%;
   height: var(--control-h);
-  border: 1px solid var(--toolbar-form-surface-border);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-md);
-  background: var(--toolbar-form-surface);
+  background: var(--input-bg);
   color: var(--text-primary);
   padding: 0 12px 0 34px;
   font-size: 0.93rem;
+  box-shadow: var(--shadow-xs);
 }
 
 .fields-search-input::placeholder {
@@ -985,11 +986,12 @@ function onPageSizeChange(size: number) {
   min-height: 38px;
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   line-height: 1.4;
+  box-shadow: var(--shadow-xs);
 }
 
 .task-form-input:focus,

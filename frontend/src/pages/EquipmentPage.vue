@@ -1309,13 +1309,14 @@ async function exportToPdf() {
 }
 
 .equipment-input {
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  padding: 7px 12px;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
-  font-size: 0.9375rem;
-  background: #fafafa;
+  font-size: 0.875rem;
+  background: var(--input-bg);
   color: var(--text-primary);
   transition: border-color 0.2s, background-color 0.2s;
+  box-shadow: var(--shadow-xs);
 }
 
 .equipment-input:hover {
@@ -1375,9 +1376,11 @@ async function exportToPdf() {
 }
 
 .equipment-btn-clear {
-  background: #e5e7eb;
-  color: #4b5563;
+  background: var(--bg-panel);
+  color: var(--text-primary);
   border-color: #d1d5db;
+  border: 1px solid var(--input-border);
+  box-shadow: var(--shadow-xs);
 }
 
 .equipment-btn-clear:hover {
@@ -1406,8 +1409,6 @@ async function exportToPdf() {
 .equipment-btn-save:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #9ca3af;
-  border-color: #9ca3af;
 }
 
 .equipment-btn-save .equipment-btn-icon {
@@ -1495,12 +1496,13 @@ async function exportToPdf() {
 
 .equipment-search-input {
   padding: 10px 12px 10px 38px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   min-width: 240px;
-  background: #fafafa;
+  background: var(--input-bg);
   color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 [data-theme='dark'] .equipment-search-input {
@@ -1512,14 +1514,15 @@ async function exportToPdf() {
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
-  background: #fafafa;
+  background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
+  box-shadow: var(--shadow-xs);
 }
 
 .equipment-export-btn:hover:not(:disabled) {
@@ -1816,11 +1819,12 @@ async function exportToPdf() {
 
 .equipment-pagination-select {
   padding: 7px 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
-  background: #fafafa;
+  background: var(--input-bg);
   color: var(--text-primary);
   font-size: 0.875rem;
+  box-shadow: var(--shadow-xs);
 }
 
 [data-theme='dark'] .equipment-pagination-select {
@@ -1830,12 +1834,13 @@ async function exportToPdf() {
 .equipment-page-btn {
   min-width: 36px;
   padding: 8px 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  background: var(--bg-base);
+  background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 0.875rem;
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
 }
 
 .equipment-page-btn:hover:not(:disabled) {
