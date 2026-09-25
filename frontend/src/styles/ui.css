@@ -1496,3 +1496,9 @@ select:is(
 .ui-datetime-time::-webkit-calendar-picker-indicator {
   display: none;
 }
+
+/* Даты в фильтре задач (TaskManagementPage) — UiDatePicker; правило общее,
+   потому что кнопка календаря рендерится вне scoped-области страницы. */
+.task-filter-date {
+  width: 136px;
+}

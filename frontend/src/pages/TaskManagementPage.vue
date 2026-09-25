@@ -3,7 +3,7 @@ import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
-import CalendarPopover from '@/components/CalendarPopover.vue'
+import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import {
   isSupabaseConfigured,
   loadProfiles,
@@ -1109,9 +1109,9 @@ function statusClass(s: Status) {
           <UiSelect v-model="filterStatus" :options="[{ value: '', label: 'Все статусы' }, ...(statusColumns).map((col) => ({ value: col.key, label: String(col.title) }))]" class="task-filter-pill task-filter-pill--select" title="Статус" />
           <div class="task-filter-dates">
             <span class="task-filter-date-label">С</span>
-            <CalendarPopover v-model="dateFromInput" placeholder="Дата с" />
+            <UiDatePicker v-model="dateFromInput" placeholder="Дата с" class="task-filter-date" />
             <span class="task-filter-date-label">По</span>
-            <CalendarPopover v-model="dateToInput" placeholder="Дата по" />
+            <UiDatePicker v-model="dateToInput" placeholder="Дата по" class="task-filter-date" />
             <button type="button" class="task-filter-tab task-filter-apply-dates" @click="applyDateFilter">
               Применить
             </button>

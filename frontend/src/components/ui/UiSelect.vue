@@ -9,7 +9,7 @@
  * опции, наружу уходит исходное значение, поэтому замена нативного <select>
  * не меняет тип v-model. Событие `change` — как у нативного select, после выбора.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, getCurrentInstance, ref, watch } from 'vue'
 import {
   SelectContent,
   SelectIcon,
@@ -45,6 +45,13 @@ const props = withDefaults(
 )
 
 defineOptions({ inheritAttrs: false })
+
+// Атрибут scoped-стилей страницы, где стоит компонент: кнопка получает его, как
+// получил бы нативный select/input, и стили страницы по её классу продолжают
+// действовать (ширина в форме, отступы). Корень компонента — без обёртки, поэтому
+// Vue сам его не проставляет.
+const parentScope = getCurrentInstance()?.vnode.scopeId
+const scopeAttrs = parentScope ? { [parentScope]: '' } : {}
 
 const emit = defineEmits<{ 'update:modelValue': [value: T]; change: [value: T] }>()
 
@@ -85,7 +92,7 @@ function onSelect(key: unknown) {
 <template>
   <SelectRoot v-model:open="open" :model-value="selectedIndex" :disabled="disabled" @update:model-value="onSelect">
     <SelectTrigger
-      v-bind="$attrs"
+      v-bind="{ ...$attrs, ...scopeAttrs }"
       class="ui-select-trigger"
       :class="{ 'ui-select-trigger--sm': size === 'sm', 'ui-select-trigger--block': block }"
       :aria-label="ariaLabel"

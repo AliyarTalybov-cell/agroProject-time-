@@ -9,7 +9,7 @@
  * v-model — строка 'ГГГГ-ММ-ДД' или '' (как value у <input type="date">),
  * поэтому замена нативного поля не меняет данные формы.
  */
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, getCurrentInstance, ref, shallowRef, watch } from 'vue'
 import { type DateValue, parseDate, today, getLocalTimeZone } from '@internationalized/date'
 import {
   CalendarCell,
@@ -45,6 +45,13 @@ const props = withDefaults(
 )
 
 defineOptions({ inheritAttrs: false })
+
+// Атрибут scoped-стилей страницы, где стоит компонент: кнопка получает его, как
+// получил бы нативный select/input, и стили страницы по её классу продолжают
+// действовать (ширина в форме, отступы). Корень компонента — без обёртки, поэтому
+// Vue сам его не проставляет.
+const parentScope = getCurrentInstance()?.vnode.scopeId
+const scopeAttrs = parentScope ? { [parentScope]: '' } : {}
 
 const emit = defineEmits<{ 'update:modelValue': [value: string]; change: [value: string] }>()
 
@@ -112,7 +119,7 @@ function setYear(e: Event) {
 <template>
   <PopoverRoot v-model:open="open">
     <PopoverTrigger
-      v-bind="$attrs"
+      v-bind="{ ...$attrs, ...scopeAttrs }"
       type="button"
       class="ui-date-trigger"
       :class="{ 'ui-date-trigger--block': block, 'is-empty': !label }"
