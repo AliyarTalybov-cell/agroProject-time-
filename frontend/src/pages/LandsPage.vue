@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
 import { ChevronLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon } from '@lucide/vue'
@@ -3692,22 +3694,22 @@ onMounted(() => void reloadAll())
   <section class="lands-page">
     <header class="lands-top page-enter-item">
       <div class="lands-top-text">
-        <button v-if="isDetailsMode" type="button" class="lands-back-btn" @click="goToRegistry" aria-label="Назад к списку земель">
+        <Button variant="outline" v-if="isDetailsMode" type="button" class="lands-back-btn" @click="goToRegistry" aria-label="Назад к списку земель">
           <ChevronLeftIcon :size="20" />
           Назад к списку земель
-        </button>
+        </Button>
         <p v-if="!isDetailsMode" class="lands-subtitle">{{ landsListSubtitle }}</p>
       </div>
       <div class="lands-top-actions">
-        <button
+        <Button variant="outline"
           v-if="isDetailsMode && selectedLand && !landInlineEditOpen"
           type="button"
           class="lands-edit-btn"
           @click="startInlineEdit()"
         >
           Редактировать участок
-        </button>
-        <button
+        </Button>
+        <Button variant="outline"
           v-if="isDetailsMode && selectedLand && landInlineEditOpen"
           type="button"
           class="lands-edit-btn"
@@ -3715,8 +3717,8 @@ onMounted(() => void reloadAll())
           @click="closeLandEditor"
         >
           Отменить редактирование
-        </button>
-        <button v-if="!isDetailsMode && landsRootTab === 'registry'" type="button" class="lands-create-btn lands-btn--add" @click="openCreateLand">Новая земля</button>
+        </Button>
+        <Button variant="default" v-if="!isDetailsMode && landsRootTab === 'registry'" type="button" class="lands-create-btn lands-btn--add" @click="openCreateLand">Новая земля</Button>
       </div>
     </header>
 
@@ -3766,7 +3768,7 @@ onMounted(() => void reloadAll())
           <div class="lands-table-top">
             <h2>Реестр земель</h2>
             <div class="lands-table-tools">
-              <input v-model.trim="landsSearch" class="lands-search" type="text" placeholder="Поиск по адресу или кадастровому номеру..." />
+              <Input v-model.trim="landsSearch" class="lands-search" type="text" placeholder="Поиск по адресу или кадастровому номеру..." />
               <div class="lands-export-btns">
                 <button
                   type="button"
@@ -3898,7 +3900,7 @@ onMounted(() => void reloadAll())
                 Excel
               </button>
             </div>
-            <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openMeliorationModal">Добавить</button>
+            <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openMeliorationModal">Добавить</Button>
           </div>
           <div class="lands-table-wrap lands-table-wrap--melioration">
             <table class="lands-table" v-card-table>
@@ -3957,9 +3959,9 @@ onMounted(() => void reloadAll())
                   </template>
                   <td @click.stop>
                     <div class="lands-item-actions">
-                      <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openMeliorationEditModal(entry)">
+                      <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openMeliorationEditModal(entry)">
                         <PencilIcon :size="17" :stroke-width="2.1" />
-                      </button>
+                      </Button>
                       <UiDeleteButton size="sm" @click="requestDeleteMelioration(entry.id)" />
                     </div>
                   </td>
@@ -4035,18 +4037,18 @@ onMounted(() => void reloadAll())
           <div v-if="landRefsTab === 'land-types'" class="lands-ref-block">
             <h2>Типы земли</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newLandTypeName" class="lands-search" type="text" placeholder="Например: Пашня, Залежь" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandTypeName.trim()" @click="addLandType">
+              <Input v-model="newLandTypeName" class="lands-search" type="text" placeholder="Например: Пашня, Залежь" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandTypeName.trim()" @click="addLandType">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="type in landTypes" :key="type.id" class="lands-list-plain-item">
                 <span>{{ type.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandType(type)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandType(type)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandType(type.id)" />
                 </div>
               </div>
@@ -4056,18 +4058,18 @@ onMounted(() => void reloadAll())
           <div v-else-if="landRefsTab === 'land-categories'" class="lands-ref-block">
             <h2>Категории земли</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newLandCategoryName" class="lands-search" type="text" placeholder="Например: Земли сельскохозяйственного назначения" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandCategoryName.trim()" @click="addLandCategory">
+              <Input v-model="newLandCategoryName" class="lands-search" type="text" placeholder="Например: Земли сельскохозяйственного назначения" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandCategoryName.trim()" @click="addLandCategory">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="category in landCategories" :key="category.id" class="lands-list-plain-item">
                 <span>{{ category.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandCategory(category)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandCategory(category)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandCategory(category.id)" />
                 </div>
               </div>
@@ -4077,18 +4079,18 @@ onMounted(() => void reloadAll())
           <div v-else class="lands-ref-block">
             <h2>Использование участка</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newLandActualUseOptionName" class="lands-search" type="text" placeholder="Например: Используется" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandActualUseOptionName.trim()" @click="addLandActualUseOption">
+              <Input v-model="newLandActualUseOptionName" class="lands-search" type="text" placeholder="Например: Используется" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandActualUseOptionName.trim()" @click="addLandActualUseOption">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="option in actualUseOptions" :key="option.id" class="lands-list-plain-item">
                 <span>{{ option.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandUsageOption(option)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandUsageOption(option)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandUsage(option.id)" />
                 </div>
               </div>
@@ -4101,18 +4103,18 @@ onMounted(() => void reloadAll())
           <div class="lands-ref-block">
             <h2>Справочники СХ культур</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newCropLabel" class="lands-search" type="text" placeholder="Например: Пшеница" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newCropLabel.trim()" @click="addCropRef">
+              <Input v-model="newCropLabel" class="lands-search" type="text" placeholder="Например: Пшеница" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newCropLabel.trim()" @click="addCropRef">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in crops" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.label }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteCropRef(row.id)" />
                 </div>
               </div>
@@ -4136,18 +4138,18 @@ onMounted(() => void reloadAll())
           <div v-if="meliorationRefsTab === 'types'" class="lands-ref-block">
             <h2>Типы мелиорации</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newMeliorationTypeName" class="lands-search" type="text" placeholder="Например: Оросительная" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationTypeName.trim()" @click="addMeliorationTypeRef">
+              <Input v-model="newMeliorationTypeName" class="lands-search" type="text" placeholder="Например: Оросительная" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationTypeName.trim()" @click="addMeliorationTypeRef">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in landMeliorationTypes" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationTypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationTypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationType(row.id)" />
                 </div>
               </div>
@@ -4157,18 +4159,18 @@ onMounted(() => void reloadAll())
           <div v-else-if="meliorationRefsTab === 'subtypes'" class="lands-ref-block">
             <h2>Виды мелиорации</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newMeliorationSubtypeName" class="lands-search" type="text" placeholder="Например: Осушительная" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationSubtypeName.trim()" @click="addMeliorationSubtypeRef">
+              <Input v-model="newMeliorationSubtypeName" class="lands-search" type="text" placeholder="Например: Осушительная" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationSubtypeName.trim()" @click="addMeliorationSubtypeRef">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in landMeliorationSubtypes" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationSubtypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationSubtypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationSubtype(row.id)" />
                 </div>
               </div>
@@ -4178,18 +4180,18 @@ onMounted(() => void reloadAll())
           <div v-else class="lands-ref-block">
             <h2>Типы мероприятий</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newMeliorationEventTypeName" class="lands-search" type="text" placeholder="Например: Реконструкция" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationEventTypeName.trim()" @click="addMeliorationEventTypeRef">
+              <Input v-model="newMeliorationEventTypeName" class="lands-search" type="text" placeholder="Например: Реконструкция" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationEventTypeName.trim()" @click="addMeliorationEventTypeRef">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in landMeliorationEventTypes" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationEventTypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationEventTypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationEventType(row.id)" />
                 </div>
               </div>
@@ -4210,18 +4212,18 @@ onMounted(() => void reloadAll())
           <div v-if="equipmentRefsTab === 'types'" class="lands-ref-block">
             <h2>Тип техники</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newEquipmentTypeName" class="lands-search" type="text" placeholder="Например: Трактор" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newEquipmentTypeName.trim()" @click="addEquipmentTypeReference">
+              <Input v-model="newEquipmentTypeName" class="lands-search" type="text" placeholder="Например: Трактор" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newEquipmentTypeName.trim()" @click="addEquipmentTypeReference">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in equipmentTypeRefs" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentTypeReference(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentTypeReference(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteEquipmentType(row.id)" />
                 </div>
               </div>
@@ -4231,18 +4233,18 @@ onMounted(() => void reloadAll())
           <div v-else class="lands-ref-block">
             <h2>Состояние техники</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newEquipmentConditionName" class="lands-search" type="text" placeholder="Например: Требует ТО" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newEquipmentConditionName.trim()" @click="addEquipmentConditionReference">
+              <Input v-model="newEquipmentConditionName" class="lands-search" type="text" placeholder="Например: Требует ТО" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newEquipmentConditionName.trim()" @click="addEquipmentConditionReference">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in equipmentConditionRowsForDisplay" :key="row.code" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentConditionReference(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentConditionReference(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteEquipmentCondition(row.code)" />
                 </div>
               </div>
@@ -4260,18 +4262,18 @@ onMounted(() => void reloadAll())
           <div class="lands-ref-block">
             <h2>Муниципальные образования</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newFieldMunicipalityName" class="lands-search" type="text" placeholder="Например: Новотроицкий сельсовет" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newFieldMunicipalityName.trim()" @click="addFieldMunicipalityReference">
+              <Input v-model="newFieldMunicipalityName" class="lands-search" type="text" placeholder="Например: Новотроицкий сельсовет" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newFieldMunicipalityName.trim()" @click="addFieldMunicipalityReference">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in fieldMunicipalityRefs" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editFieldMunicipalityReference(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editFieldMunicipalityReference(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteFieldMunicipality(row.id)" />
                 </div>
               </div>
@@ -4289,18 +4291,18 @@ onMounted(() => void reloadAll())
           <div class="lands-ref-block">
             <h2>Типы севооборота</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newCropRotationTypeName" class="lands-search" type="text" placeholder="Например: Полевой" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newCropRotationTypeName.trim()" @click="addCropRotationTypeRef">
+              <Input v-model="newCropRotationTypeName" class="lands-search" type="text" placeholder="Например: Полевой" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newCropRotationTypeName.trim()" @click="addCropRotationTypeRef">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in cropRotationTypeRefs" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRotationTypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRotationTypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteCropRotationType(row.id)" />
                 </div>
               </div>
@@ -4330,18 +4332,18 @@ onMounted(() => void reloadAll())
           <div v-if="storageRefsTab === 'types'" class="lands-ref-block">
             <h2>Типы мест хранения</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newStorageLocationTypeName" class="lands-search" type="text" placeholder="Например: Элеватор" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageLocationTypeName.trim()" @click="addStorageLocationTypeRef">
+              <Input v-model="newStorageLocationTypeName" class="lands-search" type="text" placeholder="Например: Элеватор" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageLocationTypeName.trim()" @click="addStorageLocationTypeRef">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in storageLocationTypeRefs" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationTypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationTypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteStorageLocationType(row.id)" />
                 </div>
               </div>
@@ -4352,22 +4354,22 @@ onMounted(() => void reloadAll())
             <h2>Статусы мест хранения</h2>
             <p class="lands-muted lands-ref-hint">Статус с признаком «не используется» визуально выделяет неактивные места в реестре.</p>
             <div class="lands-ref-add-row lands-ref-add-row--wrap">
-              <input v-model="newStorageLocationStatusName" class="lands-search" type="text" placeholder="Например: На ремонте" />
+              <Input v-model="newStorageLocationStatusName" class="lands-search" type="text" placeholder="Например: На ремонте" />
               <label class="lands-checkbox-inline">
                 <Checkbox v-model="newStorageLocationStatusMarksInactive" />
                 <span>Не используется (неактивно)</span>
               </label>
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageLocationStatusName.trim()" @click="addStorageLocationStatusRef">
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageLocationStatusName.trim()" @click="addStorageLocationStatusRef">
                 Добавить
-              </button>
+              </Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in storageLocationStatusRefs" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}<template v-if="row.marks_inactive"> — не используется</template></span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationStatusRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationStatusRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteStorageLocationStatus(row.id)" />
                 </div>
               </div>
@@ -4419,16 +4421,16 @@ onMounted(() => void reloadAll())
           <div v-if="rightsRefsTab === 'ownership-forms'" class="lands-ref-block">
             <h2>Формы собственности</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newOwnershipFormName" class="lands-search" type="text" placeholder="Например: Частная собственность" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newOwnershipFormName.trim()" @click="addOwnershipForm">Добавить</button>
+              <Input v-model="newOwnershipFormName" class="lands-search" type="text" placeholder="Например: Частная собственность" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newOwnershipFormName.trim()" @click="addOwnershipForm">Добавить</Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in landRightOwnershipForms" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editOwnershipForm(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editOwnershipForm(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteOwnershipForm(row.id)" />
                 </div>
               </div>
@@ -4438,16 +4440,16 @@ onMounted(() => void reloadAll())
           <div v-else-if="rightsRefsTab === 'right-types'" class="lands-ref-block">
             <h2>Виды прав</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newRightTypeName" class="lands-search" type="text" placeholder="Например: Аренда земельных участков" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newRightTypeName.trim()" @click="addRightTypeRef">Добавить</button>
+              <Input v-model="newRightTypeName" class="lands-search" type="text" placeholder="Например: Аренда земельных участков" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newRightTypeName.trim()" @click="addRightTypeRef">Добавить</Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in landRightTypes" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightTypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightTypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightType(row.id)" />
                 </div>
               </div>
@@ -4457,16 +4459,16 @@ onMounted(() => void reloadAll())
           <div v-else-if="rightsRefsTab === 'document-types'" class="lands-ref-block">
             <h2>Типы подтверждающих документов</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newRightDocumentTypeName" class="lands-search" type="text" placeholder="Например: Договор аренды" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newRightDocumentTypeName.trim()" @click="addRightDocumentTypeRef">Добавить</button>
+              <Input v-model="newRightDocumentTypeName" class="lands-search" type="text" placeholder="Например: Договор аренды" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newRightDocumentTypeName.trim()" @click="addRightDocumentTypeRef">Добавить</Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in landRightDocumentTypes" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightDocumentTypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightDocumentTypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightDocumentType(row.id)" />
                 </div>
               </div>
@@ -4476,16 +4478,16 @@ onMounted(() => void reloadAll())
           <div v-else-if="rightsRefsTab === 'holder-types'" class="lands-ref-block">
             <h2>Виды правообладания</h2>
             <div class="lands-ref-add-row">
-              <input v-model="newHolderTypeName" class="lands-search" type="text" placeholder="Например: Юридическое лицо" />
-              <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newHolderTypeName.trim()" @click="addHolderTypeRef">Добавить</button>
+              <Input v-model="newHolderTypeName" class="lands-search" type="text" placeholder="Например: Юридическое лицо" />
+              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newHolderTypeName.trim()" @click="addHolderTypeRef">Добавить</Button>
             </div>
             <div class="lands-list-plain">
               <div v-for="row in landRightHolderTypes" :key="row.id" class="lands-list-plain-item">
                 <span>{{ row.name }}</span>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editHolderTypeRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editHolderTypeRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteHolderType(row.id)" />
                 </div>
               </div>
@@ -4495,22 +4497,22 @@ onMounted(() => void reloadAll())
           <div v-else class="lands-ref-block">
             <h2>Правообладатели</h2>
             <div class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field"><span>Наименование</span><input v-model="newHolderName" type="text" /></label>
+              <label class="lands-field"><span>Наименование</span><Input v-model="newHolderName" type="text" /></label>
               <label class="lands-field">
                 <span>Вид правообладания</span>
                 <UiSelect v-model="newHolderTypeId" :options="[{ value: '', label: '—' }, ...(landRightHolderTypes).map((t) => ({ value: t.id, label: String(t.name) }))]" />
               </label>
             </div>
             <div class="lands-form-grid">
-              <label class="lands-field"><span>ИНН</span><input v-model="newHolderInn" type="text" /></label>
-              <label class="lands-field"><span>КПП</span><input v-model="newHolderKpp" type="text" /></label>
+              <label class="lands-field"><span>ИНН</span><Input v-model="newHolderInn" type="text" /></label>
+              <label class="lands-field"><span>КПП</span><Input v-model="newHolderKpp" type="text" /></label>
             </div>
             <div class="lands-form-grid">
-              <label class="lands-field"><span>ОГРН</span><input v-model="newHolderOgrn" type="text" /></label>
+              <label class="lands-field"><span>ОГРН</span><Input v-model="newHolderOgrn" type="text" /></label>
               <div class="lands-field lands-field--inline-end">
-                <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newHolderName.trim()" @click="addRightHolderRef">
+                <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newHolderName.trim()" @click="addRightHolderRef">
                   {{ editingHolderId ? 'Сохранить' : 'Добавить' }}
-                </button>
+                </Button>
               </div>
             </div>
             <div class="lands-list-plain">
@@ -4522,9 +4524,9 @@ onMounted(() => void reloadAll())
                   </div>
                 </div>
                 <div class="lands-item-actions">
-                  <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightHolderRef(row)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightHolderRef(row)">
                     <PencilIcon :size="17" :stroke-width="2.1" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightHolder(row.id)" />
                 </div>
               </div>
@@ -4563,17 +4565,17 @@ onMounted(() => void reloadAll())
             </div>
             <div class="lands-overview-item">
               <span>Регион</span>
-              <input v-if="landInlineEditOpen" v-model.trim="form.region" class="lands-passport-input" type="text" />
+              <Input v-if="landInlineEditOpen" v-model.trim="form.region" class="lands-passport-input" type="text" />
               <strong v-else>{{ selectedLand.region || '—' }}</strong>
             </div>
             <div class="lands-overview-item">
               <span>Адрес</span>
-              <input v-if="landInlineEditOpen" v-model.trim="form.address" class="lands-passport-input" type="text" />
+              <Input v-if="landInlineEditOpen" v-model.trim="form.address" class="lands-passport-input" type="text" />
               <strong v-else>{{ selectedLand.address || '—' }}</strong>
             </div>
             <div class="lands-overview-item">
               <span>Площадь, га</span>
-              <input v-if="landInlineEditOpen" v-model.number="form.area" class="lands-passport-input" type="number" min="0" step="0.01" />
+              <Input v-if="landInlineEditOpen" v-model.number="form.area" class="lands-passport-input" type="number" min="0" step="0.01" />
               <strong v-else>{{ Number(selectedLand.area || 0).toFixed(2) }}</strong>
             </div>
             <div class="lands-overview-item">
@@ -4590,7 +4592,7 @@ onMounted(() => void reloadAll())
             </div>
             <div class="lands-overview-item">
               <span>Кадастровый номер</span>
-              <input v-if="landInlineEditOpen" v-model.trim="form.cadastralNumber" class="lands-passport-input" type="text" />
+              <Input v-if="landInlineEditOpen" v-model.trim="form.cadastralNumber" class="lands-passport-input" type="text" />
               <strong v-else>{{ selectedLand.cadastral_number || '—' }}</strong>
             </div>
             <div class="lands-overview-item">
@@ -4599,14 +4601,14 @@ onMounted(() => void reloadAll())
             </div>
             <div class="lands-overview-item">
               <span>Геолокация</span>
-              <input v-if="landInlineEditOpen" v-model.trim="form.geolocation" class="lands-passport-input" type="text" />
+              <Input v-if="landInlineEditOpen" v-model.trim="form.geolocation" class="lands-passport-input" type="text" />
               <strong v-else>{{ selectedLand.center_lat != null && selectedLand.center_lon != null ? `${selectedLand.center_lat}, ${selectedLand.center_lon}` : '—' }}</strong>
             </div>
           </div>
           <div class="lands-actions lands-actions--map">
-            <button type="button" class="lands-btn" @click="showDetailsMap = !showDetailsMap">
+            <Button variant="outline" type="button" class="lands-btn" @click="showDetailsMap = !showDetailsMap">
               {{ showDetailsMap ? 'Скрыть карту' : 'Показать карту' }}
-            </button>
+            </Button>
           </div>
           <div v-if="showDetailsMap" class="lands-map-wrap">
             <div v-if="landInlineEditOpen" class="lands-map-head">
@@ -4637,9 +4639,9 @@ onMounted(() => void reloadAll())
               @polygonChange="onPolygonChange"
             />
             <div v-if="landInlineEditOpen" class="lands-map-actions">
-              <button type="button" class="lands-mini-btn" :disabled="resolvingAddress" @click="detectAddressFromMap">
+              <Button variant="outline" size="sm" type="button" class="lands-mini-btn" :disabled="resolvingAddress" @click="detectAddressFromMap">
                 {{ resolvingAddress ? 'Определяем адрес...' : 'Определить адрес по карте' }}
-              </button>
+              </Button>
               <span class="lands-muted">
                 <template v-if="mapGeometryMode === 'polygon'">Можно менять контур — площадь и адрес обновятся автоматически.</template>
                 <template v-else>Можно перемещать точку участка и подтягивать адрес по карте.</template>
@@ -4703,11 +4705,11 @@ onMounted(() => void reloadAll())
           <div v-else class="lands-form-grid">
             <label class="lands-field">
               <span>Общая площадь по документам, га</span>
-              <input v-model.number="form.documentAreaHa" type="number" min="0" step="0.01" />
+              <Input v-model.number="form.documentAreaHa" type="number" min="0" step="0.01" />
             </label>
             <label class="lands-field">
               <span>Площадь земельного участка, га</span>
-              <input v-model.number="form.area" type="number" min="0" step="0.01" />
+              <Input v-model.number="form.area" type="number" min="0" step="0.01" />
             </label>
           </div>
           <div v-if="landInlineEditOpen" class="lands-form-grid">
@@ -4724,7 +4726,7 @@ onMounted(() => void reloadAll())
             </label>
             <label class="lands-field">
               <span>Площадь сельхозугодий, га</span>
-              <input v-model.number="form.agriLandAreaHa" type="number" min="0" step="0.01" />
+              <Input v-model.number="form.agriLandAreaHa" type="number" min="0" step="0.01" />
             </label>
           </div>
           <div v-if="landInlineEditOpen" class="lands-form-grid">
@@ -4753,11 +4755,11 @@ onMounted(() => void reloadAll())
           <div v-if="landInlineEditOpen" class="lands-form-grid">
             <label class="lands-field">
               <span>Фактически орошаемая площадь, га</span>
-              <input v-model.number="form.irrigatedAreaHa" type="number" min="0" step="0.01" />
+              <Input v-model.number="form.irrigatedAreaHa" type="number" min="0" step="0.01" />
             </label>
             <label class="lands-field">
               <span>Фактически осушаемая площадь, га</span>
-              <input v-model.number="form.drainedAreaHa" type="number" min="0" step="0.01" />
+              <Input v-model.number="form.drainedAreaHa" type="number" min="0" step="0.01" />
             </label>
           </div>
           <div v-if="landInlineEditOpen" class="lands-form-grid">
@@ -4773,16 +4775,16 @@ onMounted(() => void reloadAll())
             </label>
             <label class="lands-field">
               <span>Иные сведения об использовании</span>
-              <input v-model.trim="form.otherUseInfo" type="text" />
+              <Input v-model.trim="form.otherUseInfo" type="text" />
             </label>
           </div>
           <div v-if="landInlineEditOpen" class="lands-actions lands-actions--end">
-            <button type="button" class="lands-btn lands-btn--save" :disabled="saving" @click="saveLand">
+            <Button variant="default" type="button" class="lands-btn lands-btn--save" :disabled="saving" @click="saveLand">
               Сохранить сведения
-            </button>
-            <button type="button" class="lands-btn lands-btn--danger" :disabled="saving" @click="requestDeleteCurrentLand">
+            </Button>
+            <Button variant="destructive" type="button" class="lands-btn lands-btn--danger" :disabled="saving" @click="requestDeleteCurrentLand">
               Удалить участок
-            </button>
+            </Button>
           </div>
         </template>
 
@@ -4861,7 +4863,7 @@ onMounted(() => void reloadAll())
             <div class="lands-form-grid">
               <label class="lands-field">
                 <span>Номер</span>
-                <input v-model.number="form.number" type="number" min="1" />
+                <Input v-model.number="form.number" type="number" min="1" />
               </label>
               <label class="lands-field">
                 <span class="lands-label-with-help">
@@ -4889,17 +4891,17 @@ onMounted(() => void reloadAll())
               </label>
               <label class="lands-field">
                 <span>Регион</span>
-                <input v-model.trim="form.region" type="text" />
+                <Input v-model.trim="form.region" type="text" />
               </label>
             </div>
             <div class="lands-form-grid">
               <label class="lands-field">
                 <span>Площадь, га</span>
-                <input v-model.number="form.area" type="number" min="0" step="0.01" />
+                <Input v-model.number="form.area" type="number" min="0" step="0.01" />
               </label>
               <label class="lands-field">
                 <span>Кадастровый номер</span>
-                <input v-model.trim="form.cadastralNumber" type="text" />
+                <Input v-model.trim="form.cadastralNumber" type="text" />
               </label>
             </div>
             <div class="lands-form-grid">
@@ -4915,16 +4917,16 @@ onMounted(() => void reloadAll())
             <div class="lands-form-grid">
               <label class="lands-field">
                 <span>Геолокация (широта, долгота)</span>
-                <input v-model.trim="form.geolocation" type="text" placeholder="53.195878, 45.018316" />
+                <Input v-model.trim="form.geolocation" type="text" placeholder="53.195878, 45.018316" />
               </label>
               <label class="lands-field">
                 <span>Площадь по документам, га (ручной ввод)</span>
-                <input v-model.number="form.documentAreaHa" type="number" min="0" step="0.01" />
+                <Input v-model.number="form.documentAreaHa" type="number" min="0" step="0.01" />
               </label>
             </div>
             <label class="lands-field">
               <span>Адрес</span>
-              <input v-model.trim="form.address" type="text" placeholder="Адрес или ориентир" />
+              <Input v-model.trim="form.address" type="text" placeholder="Адрес или ориентир" />
             </label>
             <div v-if="addressCandidatesLoading || addressCandidates.length" class="lands-address-candidates">
               <span class="lands-address-candidates-label">Варианты адреса по геометрии</span>
@@ -4958,9 +4960,9 @@ onMounted(() => void reloadAll())
                 @polygonChange="onPolygonChange"
               />
               <div class="lands-map-actions">
-                <button type="button" class="lands-mini-btn" :disabled="resolvingAddress" @click="detectAddressFromMap">
+                <Button variant="outline" size="sm" type="button" class="lands-mini-btn" :disabled="resolvingAddress" @click="detectAddressFromMap">
                   {{ resolvingAddress ? 'Определяем адрес...' : 'Определить адрес по карте' }}
-                </button>
+                </Button>
                 <span class="lands-muted">
                   <template v-if="mapGeometryMode === 'polygon'">Нарисуйте контур и завершите — адрес и площадь обновятся автоматически.</template>
                   <template v-else>Кликните по карте и нажмите кнопку, чтобы подставить адрес.</template>

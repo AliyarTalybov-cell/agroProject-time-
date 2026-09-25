@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { CylinderIcon, HouseIcon, PlusIcon, SearchIcon, SunIcon, WarehouseIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -239,12 +240,12 @@ onMounted(() => {
             </div>
             </div>
             <div class="warehouse-card-actions">
-              <button type="button" class="warehouse-card-btn warehouse-card-btn--move" :disabled="w.tons <= 0" @click.stop="dialog = { kind: 'transfer', locationId: w.id }">
+              <Button variant="outline" type="button" class="warehouse-card-btn warehouse-card-btn--move" :disabled="w.tons <= 0" @click.stop="dialog = { kind: 'transfer', locationId: w.id }">
                 Перемещение
-              </button>
-              <button type="button" class="warehouse-card-btn warehouse-card-btn--intake" @click.stop="dialog = { kind: 'intake', locationId: w.id }">
+              </Button>
+              <Button variant="outline" type="button" class="warehouse-card-btn warehouse-card-btn--intake" @click.stop="dialog = { kind: 'intake', locationId: w.id }">
                 Приёмка зерна
-              </button>
+              </Button>
             </div>
           </article>
         </div>

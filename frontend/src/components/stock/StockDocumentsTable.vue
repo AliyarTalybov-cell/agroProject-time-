@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 /**
  * Таблица складских документов: журнал операций, история склада и партии.
  * Строка раскрывается — движения по партиям и ячейкам, транспорт, документы,
@@ -169,7 +170,7 @@ function toggle(id: string) {
               </td>
               <td class="ui-num">{{ d.amount != null ? formatRub(d.amount) : '' }}</td>
               <td class="stock-doc-actions" @click.stop>
-                <button v-if="canCancel(d)" type="button" class="stock-doc-cancel" @click="cancelling = d">Отменить</button>
+                <Button variant="outline" size="sm" v-if="canCancel(d)" type="button" class="stock-doc-cancel" @click="cancelling = d">Отменить</Button>
               </td>
             </tr>
             <tr v-if="expanded === d.id" class="stock-doc-details">

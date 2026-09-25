@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { ActivityIcon, CheckIcon, CloudIcon, CloudRainIcon, CopyIcon, DropletIcon, EyeIcon, GaugeIcon, LeafIcon, MapPinIcon, SunIcon, SunriseIcon, ThermometerIcon, WindIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
@@ -618,7 +619,7 @@ const weatherMapFieldMarkers = computed(() => {
           aria-label="Выбор города"
           @update:model-value="(v) => setCity(String(v))"
         />
-        <button type="button" class="weather-refresh-btn" aria-label="Обновить" @click="refresh">Обновить</button>
+        <Button variant="default" type="button" class="weather-refresh-btn" aria-label="Обновить" @click="refresh">Обновить</Button>
       </div>
     </header>
 

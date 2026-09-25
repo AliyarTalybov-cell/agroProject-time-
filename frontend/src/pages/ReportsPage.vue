@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { ClockIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
@@ -982,7 +983,7 @@ onUnmounted(() => {
     <div v-if="supabaseStatus === 'error'" class="supabase-strip page-enter-item">
       <template v-if="supabaseStatus === 'error'">
         Ошибка: {{ supabaseError }}
-        <button type="button" class="dash-link-btn" @click="checkSupabase">Повторить</button>
+        <Button variant="ghost" size="sm" type="button" class="dash-link-btn" @click="checkSupabase">Повторить</Button>
       </template>
     </div>
 
@@ -1008,10 +1009,10 @@ onUnmounted(() => {
             <UiDatePicker v-model="dateTo" class="dash-date-input" /></label>
         </div>
       </div>
-      <button type="button" class="dash-refresh" :disabled="loading" @click="loadDashboard">
+      <Button variant="default" type="button" class="dash-refresh" :disabled="loading" @click="loadDashboard">
         <span class="dash-refresh-icon" aria-hidden="true">↻</span>
         {{ loading ? 'Загрузка…' : 'Обновить данные' }}
-      </button>
+      </Button>
     </div>
 
     <div class="dash-kpis page-enter-item" style="--enter-delay: 80ms">
@@ -1383,41 +1384,41 @@ onUnmounted(() => {
       <template v-else-if="operationStatsSummaries.length">
         <div class="dash-ops-sort-bar" role="toolbar" aria-label="Сортировка сводки по сотрудникам">
           <span class="dash-ops-sort-bar-label">Сортировка</span>
-          <button
+          <Button variant="ghost" size="sm"
             type="button"
             :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'employee' }]"
             @click="setOperationStatsSort('employee')"
           >
             Сотрудник <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('employee') }}</span>
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost" size="sm"
             type="button"
             :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'operation' }]"
             @click="setOperationStatsSort('operation')"
           >
             Число операций <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('operation') }}</span>
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost" size="sm"
             type="button"
             :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'field' }]"
             @click="setOperationStatsSort('field')"
           >
             Полей задействовано <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('field') }}</span>
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost" size="sm"
             type="button"
             :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'duration' }]"
             @click="setOperationStatsSort('duration')"
           >
             Всего времени <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('duration') }}</span>
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost" size="sm"
             type="button"
             :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'ended' }]"
             @click="setOperationStatsSort('ended')"
           >
             Последняя операция <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('ended') }}</span>
-          </button>
+          </Button>
         </div>
 
         <div class="dash-ops-accordion">
@@ -1502,7 +1503,7 @@ onUnmounted(() => {
                 "
                 class="dash-ops-detail-more"
               >
-                <button
+                <Button variant="outline" size="sm"
                   type="button"
                   class="dash-ops-detail-more-btn"
                   :disabled="!!operationStatsDetailLoadingMore[g.key]"
@@ -1513,7 +1514,7 @@ onUnmounted(() => {
                       ? 'Загрузка…'
                       : `Показать ещё ${Math.min(OPERATION_DETAIL_PAGE_SIZE, operationDetailRemaining(g.key))}`
                   }}
-                </button>
+                </Button>
                 <span class="dash-ops-detail-more-meta dash-muted">
                   Показано {{ operationStatsDetailByEmployee[g.key]?.length ?? 0 }} из
                   {{ operationStatsDetailTotalByEmployee[g.key] ?? 0 }}
@@ -1524,27 +1525,27 @@ onUnmounted(() => {
         </div>
 
         <div v-if="operationStatsTotalPages > 1" class="dash-ops-pager">
-          <button
+          <Button variant="outline" size="sm"
             type="button"
             class="dash-ops-pager-btn"
             :disabled="operationStatsPage <= 1 || operationStatsListLoading"
             @click="goOperationStatsPage(-1)"
           >
             Назад
-          </button>
+          </Button>
           <span class="dash-ops-pager-meta">
             Страница {{ operationStatsPage }} из {{ operationStatsTotalPages }}
             <span class="dash-ops-pager-dot" aria-hidden="true">·</span>
             всего в периоде: {{ operationStatsTotal }}
           </span>
-          <button
+          <Button variant="outline" size="sm"
             type="button"
             class="dash-ops-pager-btn"
             :disabled="operationStatsPage >= operationStatsTotalPages || operationStatsListLoading"
             @click="goOperationStatsPage(1)"
           >
             Вперёд
-          </button>
+          </Button>
         </div>
       </template>
       <p v-else-if="!operationStatsListLoading" class="dash-empty dash-ops-empty">

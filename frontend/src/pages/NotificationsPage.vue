@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { CalendarIcon, ClipboardListIcon } from '@lucide/vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import {
@@ -260,7 +261,7 @@ onMounted(() => {
         Не прочитано
         <span v-if="unreadCount > 0" class="notifications-tab-badge">{{ unreadCount }}</span>
       </button>
-      <button
+      <Button variant="outline"
         v-if="unreadCount > 0"
         type="button"
         class="notifications-read-all-btn"
@@ -268,7 +269,7 @@ onMounted(() => {
         @click="markAllAsRead"
       >
         {{ markAllBusy ? 'Обновление...' : 'Прочитать все' }}
-      </button>
+      </Button>
     </div>
 
     <section class="notifications-card">
@@ -298,7 +299,7 @@ onMounted(() => {
                   {{ item.title }}
                   <span v-if="!item.isRead" class="notification-item-dot" aria-hidden="true"></span>
                 </h3>
-                <button
+                <Button variant="ghost" size="sm"
                   v-if="!item.isRead"
                   type="button"
                   class="notification-item-read-btn"
@@ -306,7 +307,7 @@ onMounted(() => {
                   @click="markOneAsRead(item.id)"
                 >
                   Отметить как прочитано
-                </button>
+                </Button>
               </div>
               <p class="notification-item-body">
                 <template v-if="isTaskDirectLinkType(item.type)">
@@ -334,7 +335,7 @@ onMounted(() => {
         </section>
 
         <div class="notifications-load-more-wrap">
-          <button
+          <Button variant="outline"
             v-if="hasMore"
             type="button"
             class="notifications-load-more"
@@ -342,7 +343,7 @@ onMounted(() => {
             @click="loadMore"
           >
             {{ loadingMore ? 'Загрузка...' : 'Загрузить еще' }}
-          </button>
+          </Button>
         </div>
       </template>
       <div v-else class="notifications-empty">

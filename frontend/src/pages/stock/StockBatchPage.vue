@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { ChevronLeftIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Карточка партии: происхождение, качество, где лежит, операции, история. */
@@ -158,10 +160,10 @@ async function saveEdit() {
 <template>
   <section class="ui-page">
     <div class="ui-page-inner">
-      <button type="button" class="ui-back-btn" aria-label="Назад к списку партий" @click="router.push('/grain/batches')">
+      <Button variant="outline" type="button" class="ui-back-btn" aria-label="Назад к списку партий" @click="router.push('/grain/batches')">
         <ChevronLeftIcon :size="16" />
         Назад к списку партий
-      </button>
+      </Button>
 
       <div v-if="loading" class="ui-loading"><UiLoadingBar /></div>
       <p v-else-if="error && !batch" class="ui-alert ui-alert--error">{{ error }}</p>
@@ -201,12 +203,12 @@ async function saveEdit() {
           </div>
 
           <div class="batch-actions">
-            <button type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'transfer' }">Перемещение</button>
-            <button v-for="o in OUTGOING" :key="o.type" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'outgoing', type: o.type }">
+            <Button variant="outline" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'transfer' }">Перемещение</Button>
+            <Button variant="outline" v-for="o in OUTGOING" :key="o.type" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'outgoing', type: o.type }">
               {{ o.label }}
-            </button>
-            <button type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'processing' }">Подработка</button>
-            <button type="button" class="ui-soft-btn" @click="openEdit">Изменить данные партии</button>
+            </Button>
+            <Button variant="outline" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'processing' }">Подработка</Button>
+            <Button variant="outline" type="button" class="ui-soft-btn" @click="openEdit">Изменить данные партии</Button>
           </div>
         </section>
 
@@ -251,11 +253,11 @@ async function saveEdit() {
           <div class="ui-form-row ui-form-row--three">
             <div class="ui-form-field">
               <label class="ui-form-label">Сорт</label>
-              <input v-model.trim="edit.variety" class="ui-form-input" />
+              <Input v-model.trim="edit.variety" class="ui-form-input" />
             </div>
             <div class="ui-form-field">
               <label class="ui-form-label">Урожай года</label>
-              <input v-model.trim="edit.harvestYear" inputmode="numeric" class="ui-form-input" />
+              <Input v-model.trim="edit.harvestYear" inputmode="numeric" class="ui-form-input" />
             </div>
             <div class="ui-form-field">
               <label class="ui-form-label ui-form-label--with-help">Назначение
@@ -267,25 +269,25 @@ async function saveEdit() {
           <div class="ui-form-row ui-form-row--two">
             <div class="ui-form-field">
               <label class="ui-form-label">Партия во ФГИС «Зерно» №</label>
-              <input v-model.trim="edit.fgis" class="ui-form-input" />
+              <Input v-model.trim="edit.fgis" class="ui-form-input" />
             </div>
             <div class="ui-form-field">
               <label class="ui-form-label">Класс</label>
-              <input v-model.trim="edit.class" class="ui-form-input" placeholder="Например: 3" />
+              <Input v-model.trim="edit.class" class="ui-form-input" placeholder="Например: 3" />
             </div>
           </div>
           <div class="ui-form-row ui-form-row--three">
             <div class="ui-form-field">
               <label class="ui-form-label">Протеин, %</label>
-              <input v-model.trim="edit.protein" inputmode="decimal" class="ui-form-input" />
+              <Input v-model.trim="edit.protein" inputmode="decimal" class="ui-form-input" />
             </div>
             <div class="ui-form-field">
               <label class="ui-form-label">Клейковина, %</label>
-              <input v-model.trim="edit.gluten" inputmode="decimal" class="ui-form-input" />
+              <Input v-model.trim="edit.gluten" inputmode="decimal" class="ui-form-input" />
             </div>
             <div class="ui-form-field">
               <label class="ui-form-label">Натура, г/л</label>
-              <input v-model.trim="edit.nature" inputmode="decimal" class="ui-form-input" />
+              <Input v-model.trim="edit.nature" inputmode="decimal" class="ui-form-input" />
             </div>
           </div>
           <div class="ui-form-field">

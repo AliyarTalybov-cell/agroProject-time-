@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Button } from '@/components/ui/shadcn/button'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, nextTick, onMounted, ref } from 'vue'
@@ -308,7 +311,7 @@ onMounted(async () => {
   <section class="news-editor">
     <header class="news-editor-top">
       <h1 class="page-title">{{ pageTitle }}</h1>
-      <button type="button" class="news-editor-back" @click="goBack">Отмена</button>
+      <Button variant="ghost" size="sm" type="button" class="news-editor-back" @click="goBack">Отмена</Button>
     </header>
 
     <p class="news-editor-hint">
@@ -319,12 +322,12 @@ onMounted(async () => {
     <form class="news-editor-form" @submit.prevent="savePost">
       <label class="news-field">
         <span>Заголовок</span>
-        <input v-model.trim="form.title" type="text" maxlength="160" placeholder="Например: Агропромкомплектация готовится к посевной кампании - 2026" />
+        <Input v-model.trim="form.title" type="text" maxlength="160" placeholder="Например: Агропромкомплектация готовится к посевной кампании - 2026" />
       </label>
 
       <label class="news-field">
         <span>Короткое описание</span>
-        <input v-model.trim="form.excerpt" type="text" maxlength="220" placeholder="Короткая подводка для карточки новости" />
+        <Input v-model.trim="form.excerpt" type="text" maxlength="220" placeholder="Короткая подводка для карточки новости" />
       </label>
 
       <label class="news-field">
@@ -335,7 +338,7 @@ onMounted(async () => {
       <div class="news-grid-two">
         <label class="news-field">
           <span>URL обложки</span>
-          <input v-model.trim="form.coverImageUrl" type="url" placeholder="https://..." />
+          <Input v-model.trim="form.coverImageUrl" type="url" placeholder="https://..." />
           <div class="news-upload-row">
             <label class="news-upload-btn">
               <input type="file" accept="image/*" :disabled="uploadingCover || saving || publishing || loading" @change="onCoverFilePick" />
@@ -352,53 +355,52 @@ onMounted(async () => {
       <div class="news-field">
         <span>Основной текст новости</span>
         <div class="news-editor-toolbar">
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('bold')">
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('bold')">
             Ж
-          </button>
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('italic')">
+          </Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('italic')">
             К
-          </button>
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('insertUnorderedList')">
+          </Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('insertUnorderedList')">
             • Список
-          </button>
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('formatBlock')">
+          </Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('formatBlock')">
             Цитата
-          </button>
-          <button type="button" class="news-toolbar-btn" :disabled="uploadingBodyImage || saving || publishing || loading" @click="triggerBodyImagePicker">
+          </Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="uploadingBodyImage || saving || publishing || loading" @click="triggerBodyImagePicker">
             {{ uploadingBodyImage ? 'Загрузка фото...' : 'Фото в текст' }}
-          </button>
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="toggleHtmlInsertPanel">
+          </Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="toggleHtmlInsertPanel">
             Вставить HTML контент
-          </button>
+          </Button>
           <input ref="bodyImageInput" type="file" accept="image/*" class="news-hidden-input" :disabled="uploadingBodyImage || saving || publishing || loading" @change="onBodyImagePick" />
         </div>
         <div v-if="showHtmlInsertPanel" class="news-html-insert-panel">
-          <textarea
+          <Textarea
             v-model="htmlInsertDraft"
             class="news-html-insert-textarea"
             rows="6"
-            placeholder="<h2>Заголовок</h2><p>Текст...</p><img src='https://...'>"
-          ></textarea>
+            placeholder="<h2>Заголовок</h2><p>Текст...</p><img src='https://...'>" />
           <div class="news-html-insert-actions">
-            <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="insertHtmlContent">
+            <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="insertHtmlContent">
               Вставить HTML
-            </button>
-            <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="toggleHtmlInsertPanel">
+            </Button>
+            <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="toggleHtmlInsertPanel">
               Закрыть
-            </button>
+            </Button>
           </div>
         </div>
         <div class="news-image-size-row">
           <span>{{ hasSelectedImage ? 'Размер выбранного фото:' : 'Размер нового фото:' }}</span>
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('100')">
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('100')">
             100%
-          </button>
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('75')">
+          </Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('75')">
             75%
-          </button>
-          <button type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('50')">
+          </Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('50')">
             50%
-          </button>
+          </Button>
         </div>
         <div
           ref="contentEditor"
@@ -425,13 +427,13 @@ onMounted(async () => {
       </label>
 
       <div class="news-editor-actions">
-        <button type="button" class="news-editor-btn news-editor-btn--ghost" :disabled="saving || publishing || loading" @click="goBack">Отмена</button>
-        <button type="submit" class="news-editor-btn news-editor-btn--primary" :disabled="saving || publishing || loading">
+        <Button variant="outline" type="button" class="news-editor-btn news-editor-btn--ghost" :disabled="saving || publishing || loading" @click="goBack">Отмена</Button>
+        <Button variant="default" type="submit" class="news-editor-btn news-editor-btn--primary" :disabled="saving || publishing || loading">
           {{ saving ? 'Сохранение...' : 'Сохранить новость' }}
-        </button>
-        <button type="button" class="news-editor-btn news-editor-btn--publish" :disabled="saving || publishing || loading" @click="publishPost">
+        </Button>
+        <Button variant="outline" type="button" class="news-editor-btn news-editor-btn--publish" :disabled="saving || publishing || loading" @click="publishPost">
           {{ publishing ? 'Публикация...' : 'Опубликовать' }}
-        </button>
+        </Button>
       </div>
     </form>
   </section>

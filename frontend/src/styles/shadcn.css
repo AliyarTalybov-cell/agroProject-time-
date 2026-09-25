@@ -4,8 +4,9 @@
    Как подключено, чтобы ничего не сломать на старых экранах и карте:
    - глобальный сброс Tailwind (preflight) НЕ подключён; минимальный сброс
      действует только на элементы с data-slot — их ставят сами компоненты shadcn;
-   - утилиты собираются только из components/ui (source(none) + @source), поэтому
-     классы вроде «hidden» или «flex» на старых страницах не оживают;
+   - утилиты собираются из src (@source); старые классы страниц с утилитами
+     не совпадают — проверено перед включением;
+   - все старые стили — в нижнем слое legacy, классы shadcn сильнее;
    - тёмная тема — по нашему [data-theme='dark'] на <html>;
    - цвета — палитра Zinc из shadcn, основной цвет — наш зелёный #2d5a3d. */
 
@@ -16,17 +17,9 @@
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @import 'tw-animate-css';
 
-@source '../components/ui';
-
-/* Файлы, полностью переведённые на shadcn: в них классы Tailwind уже свои,
-   старых классов страницы нет, поэтому их можно сканировать. */
-@source '../components/EmployeeCreateModal.vue';
-@source '../components/EmployeeEditModal.vue';
-@source '../components/UserAvatar.vue';
-@source '../components/AppBackendModal.vue';
-@source '../components/RefFieldHelp.vue';
-@source '../components/UiLoadingBar.vue';
-@source '../components/UiDeleteButton.vue';
+/* Сканируется весь src: старые классы страниц с утилитами Tailwind не
+   совпадают (проверено), а в шаблонах страниц можно писать классы Tailwind. */
+@source '../';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 

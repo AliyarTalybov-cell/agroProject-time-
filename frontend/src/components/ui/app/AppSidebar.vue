@@ -7,7 +7,7 @@
  *
  * Пункты и их порядок — прежние (ui-navigation-consistency.mdc).
  */
-import { computed, reactive, watch, type Component } from 'vue'
+import { computed, reactive, ref, watch, type Component } from 'vue'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import {
   ArchiveIcon,
@@ -166,6 +166,7 @@ const sections: { label?: string; entries: NavEntry[] }[] = [
 
 // раскрытые разделы: раздел открытой страницы раскрыт сам, свернуть можно вручную
 const open = reactive<Record<string, boolean>>({})
+const userMenuOpen = ref(false)
 function groupActive(g: NavGroup) {
   return g.items.some((i) => i.active())
 }
@@ -174,6 +175,7 @@ watch(
   () => {
     for (const s of sections) for (const e of s.entries) if (isGroup(e) && groupActive(e)) open[e.key] = true
     if (isMobile.value) setOpenMobile(false)
+    userMenuOpen.value = false
   },
   { immediate: true },
 )
@@ -264,7 +266,7 @@ function goFirst(g: NavGroup) {
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
-          <DropdownMenu>
+          <DropdownMenu v-model:open="userMenuOpen">
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton size="lg" class="data-[state=open]:bg-sidebar-accent" :tooltip="userName">
                 <UserAvatar class="bg-primary text-primary-foreground size-8 rounded-lg text-xs font-semibold" :url="userAvatarUrl" :initials="userInitials" />

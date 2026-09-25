@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -97,12 +98,12 @@ async function save() {
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Масса до, т *</label>
-        <input v-model.trim="form.before" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.before" inputmode="decimal" class="ui-form-input" />
         <p v-if="source" class="ui-form-hint">В ячейке {{ formatTons(source.available) }}</p>
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Масса после, т *</label>
-        <input v-model.trim="form.after" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.after" inputmode="decimal" class="ui-form-input" />
         <p v-if="loss != null && loss > 0" class="ui-form-hint">Усушка и отходы {{ formatTons(loss, 3) }}</p>
       </div>
     </div>
@@ -110,15 +111,15 @@ async function save() {
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Влажность, %</label>
-        <input v-model.trim="form.moisture" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.moisture" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Сорная примесь, %</label>
-        <input v-model.trim="form.weed" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.weed" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Зерновая примесь, %</label>
-        <input v-model.trim="form.grainImpurity" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.grainImpurity" inputmode="decimal" class="ui-form-input" />
       </div>
     </div>
     <div class="ui-form-field">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { CalendarIcon, ChevronDownIcon, ChevronLeftIcon, CircleCheckIcon, CircleQuestionMarkIcon, ClipboardCheckIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, LeafIcon, PenLineIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon, WrenchIcon } from '@lucide/vue'
 import ImagePreviewDialog from '@/components/ui/dialogs/ImagePreviewDialog.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -466,10 +467,10 @@ onMounted(refreshAll)
 <template>
   <div class="field-details page-enter-item">
     <div class="field-details-header">
-      <button type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку техники">
+      <Button variant="ghost" size="sm" type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку техники">
         <ChevronLeftIcon :size="20" />
         Назад к списку техники
-      </button>
+      </Button>
     </div>
 
     <div v-if="loading" class="field-details-grid">
@@ -480,7 +481,7 @@ onMounted(refreshAll)
 
     <div v-else-if="error" class="field-details-card field-details-card--left" role="alert">
       <p class="field-details-error">{{ error }}</p>
-      <button type="button" class="field-details-btn" @click="goBack">Вернуться к списку</button>
+      <Button variant="outline" type="button" class="field-details-btn" @click="goBack">Вернуться к списку</Button>
     </div>
 
     <template v-else-if="equipment">
@@ -600,9 +601,9 @@ onMounted(refreshAll)
                 aria-hidden="true"
                 @change="onDocumentFileChange"
               />
-              <button type="button" class="field-details-upload-btn" :disabled="documentUploading" @click="triggerDocumentUpload">
+              <Button variant="outline" size="sm" type="button" class="field-details-upload-btn" :disabled="documentUploading" @click="triggerDocumentUpload">
                 {{ documentUploading ? 'Загрузка…' : '+ Добавить документ' }}
-              </button>
+              </Button>
             </div>
             <div v-if="documents.length" class="equipment-documents-list">
               <div v-for="doc in documents" :key="doc.id" class="equipment-documents-item">
@@ -657,9 +658,9 @@ onMounted(refreshAll)
               aria-hidden="true"
               @change="onPhotoFileChange"
             />
-            <button type="button" class="field-details-upload-btn" :disabled="photoUploading" @click="triggerPhotoUpload">
+            <Button variant="outline" size="sm" type="button" class="field-details-upload-btn" :disabled="photoUploading" @click="triggerPhotoUpload">
               {{ photoUploading ? 'Загрузка…' : '+ Добавить фото' }}
-            </button>
+            </Button>
           </div>
 
           <div class="field-details-main-media">

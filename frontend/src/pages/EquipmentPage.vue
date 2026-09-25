@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { CheckIcon, DownloadIcon, FileTextIcon, MenuIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -633,53 +635,48 @@ async function exportToPdf() {
       <div class="equipment-form-grid">
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-brand">Марка <span class="equipment-required-star">*</span></label>
-          <input
+          <Input
             id="eq-brand"
             v-model="form.brand"
             type="text"
             class="equipment-input"
-            placeholder="Например: Камаз"
-          />
+            placeholder="Например: Камаз" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-plate">Гос. номер <span class="equipment-required-star">*</span></label>
-          <input
+          <Input
             id="eq-plate"
             v-model="form.license_plate"
             type="text"
             class="equipment-input"
-            placeholder="A 123 AA 77"
-          />
+            placeholder="A 123 AA 77" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-factory-number">Заводской номер (VIN/PIN)</label>
-          <input
+          <Input
             id="eq-factory-number"
             v-model="form.factory_number"
             type="text"
             class="equipment-input"
-            placeholder="Например: XTA12345678901234"
-          />
+            placeholder="Например: XTA12345678901234" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-epsm-psm">ЭПСМ/ПСМ (Паспорт самоходной машины)</label>
-          <input
+          <Input
             id="eq-epsm-psm"
             v-model="form.epsm_psm"
             type="text"
             class="equipment-input"
-            placeholder="Например: ПСМ 12 345678"
-          />
+            placeholder="Например: ПСМ 12 345678" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-model">Модель</label>
-          <input
+          <Input
             id="eq-model"
             v-model="form.model"
             type="text"
             class="equipment-input"
-            placeholder="Например: 8R 340"
-          />
+            placeholder="Например: 8R 340" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label equipment-label--with-help" for="eq-type">
@@ -694,35 +691,32 @@ async function exportToPdf() {
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-svr-number">СВР (Номер свидетельства о регистрации)</label>
-          <input
+          <Input
             id="eq-svr-number"
             v-model="form.svr_number"
             type="text"
             class="equipment-input"
-            placeholder="Например: 1234567890"
-          />
+            placeholder="Например: 1234567890" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-reg-cert">Свидетельство о регистрации (номер)</label>
-          <input
+          <Input
             id="eq-reg-cert"
             v-model="form.registration_certificate"
             type="text"
             class="equipment-input"
-            placeholder="Например: АА 000000"
-          />
+            placeholder="Например: АА 000000" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-year">Год выпуска</label>
-          <input
+          <Input
             id="eq-year"
             v-model.number="form.year"
             type="number"
             class="equipment-input"
             placeholder="YYYY"
             min="1900"
-            max="2100"
-          />
+            max="2100" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-reg-date">Дата регистрации</label>
@@ -734,13 +728,12 @@ async function exportToPdf() {
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-purpose">Назначение / Культура</label>
-          <input
+          <Input
             id="eq-purpose"
             v-model="form.purpose_crop"
             type="text"
             class="equipment-input"
-            placeholder="Например: Уборка пшеницы"
-          />
+            placeholder="Например: Уборка пшеницы" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-implement">Орудие</label>
@@ -763,22 +756,21 @@ async function exportToPdf() {
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="eq-notes">Примечания</label>
-          <input
+          <Input
             id="eq-notes"
             v-model="form.notes"
             type="text"
             class="equipment-input"
-            placeholder="Дополнительная информация"
-          />
+            placeholder="Дополнительная информация" />
         </div>
       </div>
 
       <div class="equipment-form-actions">
-        <button type="button" class="equipment-btn equipment-btn-clear" @click="clearForm">
+        <Button variant="outline" type="button" class="equipment-btn equipment-btn-clear" @click="clearForm">
           <UiTrashIcon class="equipment-btn-icon" aria-hidden="true" />
           Очистить
-        </button>
-        <button
+        </Button>
+        <Button variant="default"
           type="button"
           class="equipment-btn equipment-btn-save"
           :disabled="saving || !form.brand.trim() || !form.license_plate.trim()"
@@ -786,7 +778,7 @@ async function exportToPdf() {
         >
           <CheckIcon class="equipment-btn-icon" />
           Сохранить технику
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -874,7 +866,7 @@ async function exportToPdf() {
               </td>
               <td class="equipment-td-actions">
                 <div class="equipment-actions">
-                  <button
+                  <Button variant="ghost" size="icon-sm"
                     type="button"
                     class="equipment-action-btn"
                     aria-label="Редактировать"
@@ -882,7 +874,7 @@ async function exportToPdf() {
                     @click="startEdit(row)"
                   >
                     <PencilIcon class="equipment-action-icon" :size="18" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" @click="removeEquipment(row)" />
                 </div>
               </td>
@@ -957,11 +949,11 @@ async function exportToPdf() {
       <div class="equipment-form-grid equipment-form-grid--implements">
         <div class="equipment-form-field">
           <label class="equipment-label" for="impl-name">Название <span class="equipment-required-star">*</span></label>
-          <input id="impl-name" v-model="implementForm.name" type="text" class="equipment-input" placeholder="Например: Плуг ПЛН-5-35" />
+          <Input id="impl-name" v-model="implementForm.name" type="text" class="equipment-input" placeholder="Например: Плуг ПЛН-5-35" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="impl-purpose">Предназначение</label>
-          <input id="impl-purpose" v-model="implementForm.purpose" type="text" class="equipment-input" placeholder="Например: Вспашка почвы" />
+          <Input id="impl-purpose" v-model="implementForm.purpose" type="text" class="equipment-input" placeholder="Например: Вспашка почвы" />
         </div>
         <div class="equipment-form-field">
           <label class="equipment-label" for="impl-condition">Состояние</label>
@@ -969,18 +961,18 @@ async function exportToPdf() {
         </div>
         <div class="equipment-form-field equipment-form-field--full">
           <label class="equipment-label" for="impl-description">Описание</label>
-          <input id="impl-description" v-model="implementForm.description" type="text" class="equipment-input" placeholder="Дополнительная информация по орудию" />
+          <Input id="impl-description" v-model="implementForm.description" type="text" class="equipment-input" placeholder="Дополнительная информация по орудию" />
         </div>
       </div>
       <div class="equipment-form-actions equipment-form-actions--implements">
-        <button type="button" class="equipment-btn equipment-btn-clear" @click="clearImplementForm">
+        <Button variant="outline" type="button" class="equipment-btn equipment-btn-clear" @click="clearImplementForm">
           <UiTrashIcon class="equipment-btn-icon" aria-hidden="true" />
           Очистить
-        </button>
-        <button type="button" class="equipment-btn equipment-btn-save" :disabled="implementsSaving || !implementForm.name.trim()" @click="saveImplement">
+        </Button>
+        <Button variant="default" type="button" class="equipment-btn equipment-btn-save" :disabled="implementsSaving || !implementForm.name.trim()" @click="saveImplement">
           <CheckIcon class="equipment-btn-icon" />
           {{ editingImplementId ? 'Сохранить изменения' : 'Добавить орудие' }}
-        </button>
+        </Button>
       </div>
 
       <div v-if="implementsLoading" class="equipment-loading" role="status" aria-live="polite">
@@ -1007,7 +999,7 @@ async function exportToPdf() {
               </td>
               <td class="equipment-td-actions">
                 <div class="equipment-actions">
-                  <button
+                  <Button variant="ghost" size="icon-sm"
                     type="button"
                     class="equipment-action-btn"
                     aria-label="Редактировать орудие"
@@ -1015,7 +1007,7 @@ async function exportToPdf() {
                     @click="startEditImplement(row)"
                   >
                     <PencilIcon class="equipment-action-icon" :size="18" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" @click="removeImplement(row)" />
                 </div>
               </td>

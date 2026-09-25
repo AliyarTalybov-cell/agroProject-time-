@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { BoxIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -359,10 +361,10 @@ function onPageSizeChange(size: number) {
         <div class="fields-header-text">
           <p class="fields-subtitle">Склады, силосы, тока и бурты для хранения зерна</p>
         </div>
-        <button class="fields-add-btn" type="button" @click="openCreateModal">
+        <Button variant="default" class="fields-add-btn" type="button" @click="openCreateModal">
           <PlusIcon class="fields-add-btn-icon" />
           Добавить место хранения
-        </button>
+        </Button>
       </header>
 
       <section class="fields-card">
@@ -419,9 +421,9 @@ function onPageSizeChange(size: number) {
               </td>
               <td class="storage-td-actions" @click.stop>
                 <div class="fields-actions-row">
-                  <button type="button" class="fields-action-btn" aria-label="Редактировать" title="Редактировать" @click="openEditModal(place)">
+                  <Button variant="ghost" size="icon-sm" type="button" class="fields-action-btn" aria-label="Редактировать" title="Редактировать" @click="openEditModal(place)">
                     <PencilIcon :size="18" />
-                  </button>
+                  </Button>
                   <UiDeleteButton size="sm" class="storage-delete-btn" @click="requestDeletePlace(place.id)" />
                 </div>
               </td>
@@ -436,10 +438,10 @@ function onPageSizeChange(size: number) {
         </div>
         <h3>Нет мест хранения</h3>
         <p>Добавьте первый склад или ток для начала работы</p>
-        <button type="button" class="fields-add-btn" @click="openCreateModal">
+        <Button variant="default" type="button" class="fields-add-btn" @click="openCreateModal">
           <PlusIcon class="fields-add-btn-icon" />
           Добавить место хранения
-        </button>
+        </Button>
       </div>
 
       <UiPagination
@@ -462,7 +464,7 @@ function onPageSizeChange(size: number) {
         <div class="task-form-row task-form-row--design">
           <div class="task-form-field">
             <label class="task-form-label">Название *</label>
-            <input v-model.trim="form.name" type="text" class="task-form-input task-form-input--title" placeholder="Например: Склад А" />
+            <Input v-model.trim="form.name" type="text" class="task-form-input task-form-input--title" placeholder="Например: Склад А" />
           </div>
         </div>
 
@@ -484,21 +486,20 @@ function onPageSizeChange(size: number) {
         <div class="task-form-row task-form-row--design">
           <div class="task-form-field">
             <label class="task-form-label">Адрес *</label>
-            <input v-model.trim="form.address" type="text" class="task-form-input" placeholder="Укажите адрес места хранения" />
+            <Input v-model.trim="form.address" type="text" class="task-form-input" placeholder="Укажите адрес места хранения" />
           </div>
         </div>
 
         <div class="task-form-row task-form-row--design">
           <div class="task-form-field">
             <label class="task-form-label">Вместительность, т *</label>
-            <input
+            <Input
               v-model.trim="form.capacityTons"
               type="text"
               inputmode="decimal"
               class="task-form-input"
               placeholder="Например: 2500 или 120,5"
-              autocomplete="off"
-            />
+              autocomplete="off" />
             <p class="storage-field-hint">Номинальная масса зерна, которую можно разместить (тонны).</p>
           </div>
         </div>
@@ -506,7 +507,7 @@ function onPageSizeChange(size: number) {
         <div class="task-form-row task-form-row--design">
           <div class="task-form-field">
             <label class="task-form-label">Код ФГИС Зерно (необязательно)</label>
-            <input v-model.trim="form.fgisCode" type="text" class="task-form-input" placeholder="Можно оставить пустым" />
+            <Input v-model.trim="form.fgisCode" type="text" class="task-form-input" placeholder="Можно оставить пустым" />
           </div>
         </div>
         <template #actions>

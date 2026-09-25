@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { PlusIcon, SearchIcon, Trash2Icon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Справочник контрагентов: покупатели и поставщики зерна. */
@@ -77,17 +79,17 @@ async function confirmDelete() {
       <header class="ui-page-header">
         <p class="ui-page-subtitle">Покупатели и поставщики зерна и семян. Выбираются при продаже и закупке.</p>
         <div class="ui-header-actions">
-          <button type="button" class="ui-add-btn" @click="editing = 'new'">
+          <Button variant="default" type="button" class="ui-add-btn" @click="editing = 'new'">
             <PlusIcon />
             Добавить контрагента
-          </button>
+          </Button>
         </div>
       </header>
       <section class="ui-card">
         <div class="ui-toolbar">
           <label class="ui-search">
             <SearchIcon />
-            <input v-model="search" type="search" placeholder="Название, ИНН, контакт" />
+            <Input v-model="search" type="search" placeholder="Название, ИНН, контакт" class="pl-9" />
           </label>
           <UiSelect v-model="kind" :options="[{ value: '', label: 'Все' }, { value: 'buyer', label: 'Покупатели' }, { value: 'supplier', label: 'Поставщики' }]" class="ui-filter-select" aria-label="Роль" />
         </div>
@@ -119,9 +121,9 @@ async function confirmDelete() {
                     <div class="ui-muted ui-small">{{ [r.phone, r.email].filter(Boolean).join(' · ') }}</div>
                   </td>
                   <td class="cp-actions" @click.stop>
-                    <button v-if="isManager" type="button" class="cp-del" aria-label="Удалить контрагента" title="Удалить" @click="deleting = r">
+                    <Button variant="ghost" size="icon-sm" v-if="isManager" type="button" class="cp-del text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Удалить контрагента" title="Удалить" @click="deleting = r">
                       <Trash2Icon :size="18" />
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               </tbody>

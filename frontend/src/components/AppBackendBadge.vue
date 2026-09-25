@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { TriangleAlertIcon } from '@lucide/vue'
 withDefaults(
   defineProps<{
@@ -16,7 +17,7 @@ const emit = defineEmits<{
   <div class="db-badge" role="status" aria-live="polite">
     <TriangleAlertIcon class="db-badge__icon" :size="14" aria-hidden="true" />
     <span class="db-badge__text">Нет связи с БД</span>
-    <button
+    <Button variant="ghost" size="icon-sm"
       type="button"
       class="db-badge__retry"
       :class="{ 'db-badge__retry--spin': checking }"
@@ -25,7 +26,7 @@ const emit = defineEmits<{
       @click="emit('retry')"
     >
       ↻
-    </button>
+    </Button>
   </div>
 </template>
 

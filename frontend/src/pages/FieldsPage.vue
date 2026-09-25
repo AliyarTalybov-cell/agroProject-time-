@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, FileTextIcon, PaperclipIcon, PencilIcon, PlusIcon, SearchIcon, UploadIcon } from '@lucide/vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -1558,7 +1560,7 @@ onMounted(async () => {
         <div class="fields-header-text">
           <p v-show="activeTab === 'fields'" class="fields-subtitle">Реестр сельскохозяйственных угодий и назначение ответственных</p>
         </div>
-        <button
+        <Button variant="default"
           v-show="activeTab === 'fields'"
           class="fields-add-btn"
           :class="{ 'fields-add-btn--highlight': highlightAddField }"
@@ -1567,7 +1569,7 @@ onMounted(async () => {
         >
           <PlusIcon class="fields-add-btn-icon" />
           Добавить поле
-        </button>
+        </Button>
       </header>
 
       <nav class="fields-tabs page-enter-item" aria-label="Разделы">
@@ -1617,7 +1619,7 @@ onMounted(async () => {
             <thead>
               <tr>
                 <th scope="col" class="fields-th-name" :aria-sort="fieldsAriaSort('name')">
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
                     aria-label="Сортировать по внутреннему названию"
@@ -1625,10 +1627,10 @@ onMounted(async () => {
                   >
                     Внутреннее название
                     <span v-if="fieldsSortMark('name')" class="fields-th-sort-mark">{{ fieldsSortMark('name') }}</span>
-                  </button>
+                  </Button>
                 </th>
                 <th scope="col" class="fields-th-cadastral" :aria-sort="fieldsAriaSort('cadastralNumber')">
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
                     aria-label="Сортировать по кадастровому номеру"
@@ -1636,11 +1638,11 @@ onMounted(async () => {
                   >
                     Кадастровый №
                     <span v-if="fieldsSortMark('cadastralNumber')" class="fields-th-sort-mark">{{ fieldsSortMark('cadastralNumber') }}</span>
-                  </button>
+                  </Button>
                 </th>
                 <th scope="col" class="fields-th-efis">№ ПОЛЯ ЕФИС ЗСН</th>
                 <th scope="col" class="fields-th-area" :aria-sort="fieldsAriaSort('area')">
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn fields-th-sort-btn--end"
                     aria-label="Сортировать по площади"
@@ -1648,10 +1650,10 @@ onMounted(async () => {
                   >
                     Площадь (га)
                     <span v-if="fieldsSortMark('area')" class="fields-th-sort-mark">{{ fieldsSortMark('area') }}</span>
-                  </button>
+                  </Button>
                 </th>
                 <th scope="col" class="fields-th-crop" :aria-sort="fieldsAriaSort('crop')">
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
                     aria-label="Сортировать по культуре"
@@ -1659,10 +1661,10 @@ onMounted(async () => {
                   >
                     Культура
                     <span v-if="fieldsSortMark('crop')" class="fields-th-sort-mark">{{ fieldsSortMark('crop') }}</span>
-                  </button>
+                  </Button>
                 </th>
                 <th scope="col" class="fields-th-land" :aria-sort="fieldsAriaSort('land')">
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
                     aria-label="Сортировать по типу земли"
@@ -1670,10 +1672,10 @@ onMounted(async () => {
                   >
                     Тип земли
                     <span v-if="fieldsSortMark('land')" class="fields-th-sort-mark">{{ fieldsSortMark('land') }}</span>
-                  </button>
+                  </Button>
                 </th>
                 <th scope="col" class="fields-th-location" :aria-sort="fieldsAriaSort('location')">
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
                     aria-label="Сортировать по описанию места"
@@ -1681,12 +1683,12 @@ onMounted(async () => {
                   >
                     Описание
                     <span v-if="fieldsSortMark('location')" class="fields-th-sort-mark">{{ fieldsSortMark('location') }}</span>
-                  </button>
+                  </Button>
                 </th>
                 <th scope="col">Муниципальное образование</th>
                 <th scope="col">Регион</th>
                 <th scope="col" class="fields-th-responsible" :aria-sort="fieldsAriaSort('responsible')">
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
                     aria-label="Сортировать по ответственному"
@@ -1694,7 +1696,7 @@ onMounted(async () => {
                   >
                     Ответственный
                     <span v-if="fieldsSortMark('responsible')" class="fields-th-sort-mark">{{ fieldsSortMark('responsible') }}</span>
-                  </button>
+                  </Button>
                 </th>
                 <th scope="col" class="fields-th-actions">Действия</th>
               </tr>
@@ -1744,9 +1746,9 @@ onMounted(async () => {
                     <span v-else class="fields-action-btn fields-action-btn--disabled" title="Нет схемы" aria-label="Нет схемы">
                       <PaperclipIcon :size="18" />
                     </span>
-                    <button type="button" class="fields-action-btn" aria-label="Редактировать" title="Редактировать" @click="openEditField(f)">
+                    <Button variant="ghost" size="icon-sm" type="button" class="fields-action-btn" aria-label="Редактировать" title="Редактировать" @click="openEditField(f)">
                       <PencilIcon :size="18" />
-                    </button>
+                    </Button>
                     <UiDeleteButton size="sm" @click="openDeleteConfirm(f)" />
                   </div>
                 </td>
@@ -1826,10 +1828,10 @@ onMounted(async () => {
           <div v-if="refsError" class="refs-error">{{ refsError }}</div>
           <div class="refs-block">
             <div class="refs-add-row">
-              <input v-model="newReasonLabel" type="text" placeholder="Название (например: Поломка гидравлики)" class="refs-input" />
-              <input v-model="newReasonDesc" type="text" placeholder="Описание (необязательно)" class="refs-input refs-input--wide" />
+              <Input v-model="newReasonLabel" type="text" placeholder="Название (например: Поломка гидравлики)" class="refs-input" />
+              <Input v-model="newReasonDesc" type="text" placeholder="Описание (необязательно)" class="refs-input refs-input--wide" />
               <UiSelect v-model="newReasonCategory" :options="(Object.keys(CATEGORY_LABELS) as DowntimeCategory[]).map((key) => ({ value: key, label: CATEGORY_LABELS[key] }))" class="refs-select" />
-              <button type="button" class="refs-btn" :disabled="refsLoading || !newReasonLabel.trim()" @click="addReason">Добавить</button>
+              <Button variant="default" type="button" class="refs-btn" :disabled="refsLoading || !newReasonLabel.trim()" @click="addReason">Добавить</Button>
             </div>
             <div class="refs-table-wrap">
               <table class="refs-table" v-card-table>
@@ -1895,8 +1897,8 @@ onMounted(async () => {
           <div v-if="refsError" class="refs-error">{{ refsError }}</div>
           <div class="refs-block">
             <div class="refs-add-row">
-              <input v-model="newOperationName" type="text" placeholder="Название (например: Пахота, Посев)" class="refs-input refs-input--wide" />
-              <button type="button" class="refs-btn" :disabled="refsLoading || !newOperationName.trim()" @click="addOperation">Добавить</button>
+              <Input v-model="newOperationName" type="text" placeholder="Название (например: Пахота, Посев)" class="refs-input refs-input--wide" />
+              <Button variant="default" type="button" class="refs-btn" :disabled="refsLoading || !newOperationName.trim()" @click="addOperation">Добавить</Button>
             </div>
             <div class="refs-table-wrap">
               <table class="refs-table" v-card-table>
@@ -1962,37 +1964,35 @@ onMounted(async () => {
             <div class="modal-form-section">
               <label class="modal-field modal-field--full">
                 <span class="modal-label">Название поля <span class="modal-label-required">*</span></span>
-                <input
+                <Input
                   v-model="newFieldName"
                   type="text"
                   class="modal-input"
-                  placeholder="Например: Поле №12 – Пшеница"
-                />
+                  placeholder="Например: Поле №12 – Пшеница" />
               </label>
             </div>
             <div class="modal-form-section modal-form-section--grid">
               <label class="modal-field">
                 <span class="modal-label">Кадастровый номер <span class="modal-label-opt">(опц.)</span></span>
-                <input v-model="newFieldCadastral" type="text" class="modal-input" placeholder="XX:XX:XXXXXXX:XX" />
+                <Input v-model="newFieldCadastral" type="text" class="modal-input" placeholder="XX:XX:XXXXXXX:XX" />
               </label>
               <label class="modal-field">
                 <span class="modal-label">№ ПОЛЯ ЕФИС ЗСН <span class="modal-label-opt">(опц.)</span></span>
-                <input v-model="newFieldEfisZsn" type="text" class="modal-input" placeholder="Например: EFIS-000123" />
+                <Input v-model="newFieldEfisZsn" type="text" class="modal-input" placeholder="Например: EFIS-000123" />
               </label>
             </div>
             <div class="modal-form-section modal-form-section--grid">
               <label class="modal-field">
                 <span class="modal-label">Площадь, га <span class="modal-label-required">*</span></span>
                 <div class="modal-input-wrap modal-input-wrap--suffix">
-                  <input
+                  <Input
                     v-model.number="newFieldArea"
                     type="number"
                     min="0"
                     step="0.01"
                     class="modal-input"
                     placeholder="0.00"
-                    @input="onFieldAreaManualInput"
-                  />
+                    @input="onFieldAreaManualInput" />
                   <span class="modal-input-suffix">га</span>
                 </div>
                 <span v-if="newFieldGeometryMode === 'polygon' && newFieldAreaAuto != null" class="field-geometry-area-hint">
@@ -2003,13 +2003,12 @@ onMounted(async () => {
             <div class="modal-form-section">
               <label class="modal-field modal-field--full">
                 <span class="modal-label">Адрес <span class="modal-label-opt">(опц.)</span></span>
-                <input
+                <Input
                   v-model="newFieldAddress"
                   type="text"
                   class="modal-input"
                   placeholder="Например: Московская обл., Раменский р-н, д. Вялки"
-                  @input="onFieldAddressInput"
-                />
+                  @input="onFieldAddressInput" />
                 <div v-if="newFieldAddressCandidates.length" class="field-address-candidates">
                   <span class="field-address-candidates-label">Варианты адреса по контуру</span>
                   <UiSelect v-model="selectedAddressCandidate" :options="newFieldAddressCandidates.map((a) => ({ value: a, label: a }))" class="modal-select field-address-candidates-select" @change="onAddressCandidateChange" />
@@ -2089,7 +2088,7 @@ onMounted(async () => {
               </label>
               <label class="modal-field">
                 <span class="modal-label">Год посева</span>
-                <input v-model.number="newFieldSowingYear" type="number" class="modal-input" min="2000" :max="new Date().getFullYear() + 2" />
+                <Input v-model.number="newFieldSowingYear" type="number" class="modal-input" min="2000" :max="new Date().getFullYear() + 2" />
               </label>
               <label class="modal-field">
                 <span class="modal-label">Ответственный</span>
@@ -2108,7 +2107,7 @@ onMounted(async () => {
               </label>
               <label class="modal-field">
                 <span class="modal-label">Регион</span>
-                <input v-model="newFieldRegion" type="text" class="modal-input" placeholder="Например: Ростовская область" />
+                <Input v-model="newFieldRegion" type="text" class="modal-input" placeholder="Например: Ростовская область" />
               </label>
             </div>
             <div class="modal-form-section">
@@ -2125,12 +2124,11 @@ onMounted(async () => {
             <div class="modal-form-section modal-form-section--grid">
               <label class="modal-field">
                 <span class="modal-label">Геолокация <span class="modal-label-opt">(опц.)</span></span>
-                <input
+                <Input
                   v-model="newFieldGeo"
                   type="text"
                   class="modal-input"
-                  placeholder="Например: 55.7558, 37.6173"
-                />
+                  placeholder="Например: 55.7558, 37.6173" />
               </label>
               <label class="modal-field modal-field--full">
                 <span class="modal-label">Доп. информация <span class="modal-label-opt">(опц.)</span></span>

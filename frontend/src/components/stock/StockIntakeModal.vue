@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -241,11 +242,11 @@ function num(v: number | null | undefined, digits = 2): string {
       <div class="ui-form-row ui-form-row--three">
         <div class="ui-form-field">
           <label class="ui-form-label">Сорт</label>
-          <input v-model.trim="form.variety" class="ui-form-input" placeholder="Например: Скипетр" />
+          <Input v-model.trim="form.variety" class="ui-form-input" placeholder="Например: Скипетр" />
         </div>
         <div class="ui-form-field">
           <label class="ui-form-label">Урожай года</label>
-          <input v-model.trim="form.harvestYear" inputmode="numeric" class="ui-form-input" />
+          <Input v-model.trim="form.harvestYear" inputmode="numeric" class="ui-form-input" />
         </div>
         <div class="ui-form-field">
           <label class="ui-form-label ui-form-label--with-help">Назначение
@@ -261,15 +262,15 @@ function num(v: number | null | undefined, digits = 2): string {
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Брутто (машина с грузом), т</label>
-        <input v-model.trim="form.grossTruck" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.grossTruck" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Тара, т</label>
-        <input v-model.trim="form.tare" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.tare" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Масса зерна, т *</label>
-        <input v-model.trim="form.mass" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.mass" inputmode="decimal" class="ui-form-input" />
       </div>
     </div>
 
@@ -277,29 +278,29 @@ function num(v: number | null | undefined, digits = 2): string {
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Влажность, % *</label>
-        <input v-model.trim="form.moisture" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.moisture" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Сорная примесь, %</label>
-        <input v-model.trim="form.weed" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.weed" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Зерновая примесь, %</label>
-        <input v-model.trim="form.grainImpurity" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.grainImpurity" inputmode="decimal" class="ui-form-input" />
       </div>
     </div>
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Натура, г/л</label>
-        <input v-model.trim="form.nature" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.nature" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Клейковина, %</label>
-        <input v-model.trim="form.gluten" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.gluten" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Протеин, %</label>
-        <input v-model.trim="form.protein" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.protein" inputmode="decimal" class="ui-form-input" />
       </div>
     </div>
 
@@ -322,31 +323,31 @@ function num(v: number | null | undefined, digits = 2): string {
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Госномер машины</label>
-        <input v-model.trim="form.vehiclePlate" class="ui-form-input" placeholder="А123ВС46" />
+        <Input v-model.trim="form.vehiclePlate" class="ui-form-input" placeholder="А123ВС46" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Водитель</label>
-        <input v-model.trim="form.driverName" class="ui-form-input" />
+        <Input v-model.trim="form.driverName" class="ui-form-input" />
       </div>
     </div>
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">ТТН / накладная №</label>
-        <input v-model.trim="form.waybillNumber" class="ui-form-input" />
+        <Input v-model.trim="form.waybillNumber" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">СДИЗ № (ФГИС «Зерно»)</label>
-        <input v-model.trim="form.sdizNumber" class="ui-form-input" />
+        <Input v-model.trim="form.sdizNumber" class="ui-form-input" />
       </div>
       <div v-if="form.mode === 'new'" class="ui-form-field">
         <label class="ui-form-label">Партия во ФГИС №</label>
-        <input v-model.trim="form.fgisBatchNumber" class="ui-form-input" />
+        <Input v-model.trim="form.fgisBatchNumber" class="ui-form-input" />
       </div>
     </div>
     <div v-if="form.origin === 'purchase'" class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Цена за тонну, ₽</label>
-        <input v-model.trim="form.pricePerTon" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.pricePerTon" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Сумма</label>

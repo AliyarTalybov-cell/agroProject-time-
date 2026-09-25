@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
 import { CheckIcon, ChevronDownIcon, PlusIcon, SaveIcon, XIcon } from '@lucide/vue'
@@ -1525,7 +1526,7 @@ function addField() {
                   >
                     {{ priorityLabel(t.priority) }}
                   </span>
-                  <button
+                  <Button variant="default"
                     type="button"
                     class="mechanic-task-run-btn"
                     :disabled="!!workStartedAt || !!active"
@@ -1533,7 +1534,7 @@ function addField() {
                     @click="startOperationByTask(t)"
                   >
                     В работу
-                  </button>
+                  </Button>
                 </div>
               </li>
             </ul>
@@ -1607,7 +1608,7 @@ function addField() {
               <div v-if="issueReportFile" class="mechanic-dispatcher-file-pill">
                 <span class="mechanic-dispatcher-file-name">{{ issueReportFile.name }}</span>
                 <span class="mechanic-dispatcher-file-size">{{ formatIssueFileSize(issueReportFile.size) }}</span>
-                <button type="button" class="mechanic-dispatcher-file-remove" @click="removeIssueFile"><XIcon :size="16" aria-label="Убрать файл" /></button>
+                <Button variant="ghost" size="icon-sm" type="button" class="mechanic-dispatcher-file-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" @click="removeIssueFile"><XIcon :size="16" aria-label="Убрать файл" /></Button>
               </div>
               <input
                 ref="issueFileInputRef"
@@ -1625,7 +1626,7 @@ function addField() {
                 >
                   <SaveIcon aria-hidden="true" :size="20" />
                 </button>
-                <button
+                <Button variant="default"
                   type="button"
                   class="mechanic-dispatcher-send"
                   :disabled="!issueCanSubmit || issueReportBusy"
@@ -1633,7 +1634,7 @@ function addField() {
                 >
                   <span class="mechanic-dispatcher-send-msg" aria-hidden="true"></span>
                   <span class="mechanic-dispatcher-send-text">{{ issueReportBusy ? 'Отправка...' : 'Отправить диспетчеру' }}</span>
-                </button>
+                </Button>
               </div>
               <p v-if="issueReportError" class="mechanic-dispatcher-error">{{ issueReportError }}</p>
               <p v-else-if="issueReportSuccess" class="mechanic-dispatcher-success">{{ issueReportSuccess }}</p>
@@ -1713,7 +1714,7 @@ function addField() {
           <UiButton size="lg" :disabled="issueReportBusy" @click="closeIssueDispatcherPicker">
             Отмена
           </UiButton>
-          <button
+          <Button variant="default"
             type="button"
             class="mechanic-dispatcher-send modal-issue-submit"
             :disabled="issueReportBusy || !issueCanSendNow"
@@ -1721,7 +1722,7 @@ function addField() {
           >
             <span class="mechanic-dispatcher-send-msg" aria-hidden="true"></span>
             <span class="mechanic-dispatcher-send-text">{{ issueReportBusy ? 'Отправка...' : 'Отправить' }}</span>
-          </button>
+          </Button>
         </div>
       </div>
     </UiModal>

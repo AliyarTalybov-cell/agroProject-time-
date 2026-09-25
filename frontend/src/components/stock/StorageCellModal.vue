@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Ячейка склада. Тип — из справочника «Типы мест хранения» (силос, бункер, секция…). */
 import { computed, onMounted, ref } from 'vue'
@@ -65,7 +66,7 @@ async function save() {
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Название *</label>
-        <input v-model.trim="form.name" class="ui-form-input" placeholder="Например: Силос 3" />
+        <Input v-model.trim="form.name" class="ui-form-input" placeholder="Например: Силос 3" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Тип *
@@ -77,7 +78,7 @@ async function save() {
     </div>
     <div class="ui-form-field">
       <label class="ui-form-label">Вместимость, т</label>
-      <input v-model.trim="form.capacity" inputmode="decimal" class="ui-form-input" placeholder="Можно не указывать" />
+      <Input v-model.trim="form.capacity" inputmode="decimal" class="ui-form-input" placeholder="Можно не указывать" />
       <p class="ui-form-hint">Если указана, принять больше не получится.</p>
     </div>
     <p v-if="error" class="ui-form-error">{{ error }}</p>

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Button } from '@/components/ui/shadcn/button'
 import { BriefcaseIcon, CameraIcon, CheckIcon, CircleAlertIcon, InfoIcon, LoaderCircleIcon, LockIcon, MailIcon, PhoneIcon } from '@lucide/vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -575,28 +578,28 @@ async function confirmDeleteAccount() {
           <div class="profile-form-grid">
             <div class="profile-field">
               <label class="profile-label" for="pf-first">Имя</label>
-              <input id="pf-first" v-model="profileForm.firstName" type="text" class="profile-input" placeholder="Имя" />
+              <Input id="pf-first" v-model="profileForm.firstName" type="text" class="profile-input" placeholder="Имя" />
             </div>
             <div class="profile-field">
               <label class="profile-label" for="pf-last">Фамилия</label>
-              <input id="pf-last" v-model="profileForm.lastName" type="text" class="profile-input" placeholder="Фамилия" />
+              <Input id="pf-last" v-model="profileForm.lastName" type="text" class="profile-input" placeholder="Фамилия" />
             </div>
             <div class="profile-field">
               <label class="profile-label" for="pf-patronymic">Отчество (необязательно)</label>
-              <input id="pf-patronymic" v-model="profileForm.patronymic" type="text" class="profile-input" placeholder="Отчество" />
+              <Input id="pf-patronymic" v-model="profileForm.patronymic" type="text" class="profile-input" placeholder="Отчество" />
             </div>
             <div class="profile-field profile-field--full">
               <label class="profile-label" for="pf-email">Электронная почта</label>
               <div class="profile-input-wrap">
                 <MailIcon class="profile-input-icon" />
-                <input id="pf-email" v-model="profileForm.email" type="email" class="profile-input" placeholder="email@example.com" />
+                <Input id="pf-email" v-model="profileForm.email" type="email" class="profile-input" placeholder="email@example.com" />
               </div>
             </div>
             <div class="profile-field profile-field--full">
               <label class="profile-label" for="pf-phone">Номер телефона</label>
               <div class="profile-input-wrap">
                 <PhoneIcon class="profile-input-icon" />
-                <input id="pf-phone" v-model="profileForm.phone" type="tel" class="profile-input" placeholder="+7 (___) ___-__-__" />
+                <Input id="pf-phone" v-model="profileForm.phone" type="tel" class="profile-input" placeholder="+7 (___) ___-__-__" />
               </div>
             </div>
             <div class="profile-field">
@@ -616,14 +619,14 @@ async function confirmDeleteAccount() {
             </div>
             <div class="profile-field profile-field--full">
               <label class="profile-label" for="pf-info">Дополнительная информация</label>
-              <textarea id="pf-info" v-model="profileForm.additionalInfo" class="profile-input profile-textarea" rows="3" placeholder="Краткая информация о себе или обязанностях"></textarea>
+              <Textarea id="pf-info" v-model="profileForm.additionalInfo" class="profile-input profile-textarea" rows="3" placeholder="Краткая информация о себе или обязанностях" />
             </div>
           </div>
 
           <div class="profile-form-actions">
-            <button type="button" class="profile-btn profile-btn--primary" :disabled="saving" @click="openSaveConfirmModal">
+            <Button variant="default" type="button" class="profile-btn profile-btn--primary" :disabled="saving" @click="openSaveConfirmModal">
               {{ saving ? 'Сохранение…' : 'Сохранить изменения' }}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -641,47 +644,44 @@ async function confirmDeleteAccount() {
             <div class="profile-form-grid">
               <div class="profile-field profile-field--full">
                 <label class="profile-label" for="pw-current">Текущий пароль</label>
-                <input
+                <Input
                   id="pw-current"
                   v-model="passwordForm.currentPassword"
                   type="password"
                   class="profile-input"
                   placeholder="Введите текущий пароль"
-                  autocomplete="current-password"
-                />
+                  autocomplete="current-password" />
               </div>
               <div class="profile-field profile-field--full">
                 <label class="profile-label" for="pw-new">Новый пароль</label>
-                <input
+                <Input
                   id="pw-new"
                   v-model="passwordForm.newPassword"
                   type="password"
                   class="profile-input"
                   placeholder="Не менее 6 символов"
-                  autocomplete="new-password"
-                />
+                  autocomplete="new-password" />
               </div>
               <div class="profile-field profile-field--full">
                 <label class="profile-label" for="pw-confirm">Подтвердите новый пароль</label>
-                <input
+                <Input
                   id="pw-confirm"
                   v-model="passwordForm.confirmPassword"
                   type="password"
                   class="profile-input"
                   placeholder="Повторите новый пароль"
-                  autocomplete="new-password"
-                />
+                  autocomplete="new-password" />
               </div>
             </div>
             <div class="profile-form-actions">
-              <button
+              <Button variant="default"
                 type="button"
                 class="profile-btn profile-btn--primary"
                 :disabled="changingPassword || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword"
                 @click="changePassword"
               >
                 {{ changingPassword ? 'Сохранение…' : 'Изменить пароль' }}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -690,9 +690,9 @@ async function confirmDeleteAccount() {
             <p class="profile-form-section-desc">
               Аккаунт будет удалён без возможности восстановления. Связи с пользователем в задачах, полях и журналах будут очищены автоматически.
             </p>
-            <button type="button" class="profile-btn profile-btn--danger" :disabled="deletingAccount" @click="openDeleteAccountModal">
+            <Button variant="destructive" type="button" class="profile-btn profile-btn--danger" :disabled="deletingAccount" @click="openDeleteAccountModal">
               {{ deletingAccount ? 'Удаление…' : 'Удалить аккаунт' }}
-            </button>
+            </Button>
           </div>
         </div>
 

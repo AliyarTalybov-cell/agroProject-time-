@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Button } from '@/components/ui/shadcn/button'
 import UiPersonPicker from '@/components/ui/UiPersonPicker.vue'
 import { CirclePlusIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -1156,10 +1159,10 @@ function statusClass(s: Status) {
             Excel
           </button>
         </div>
-        <button type="button" class="task-btn-create" @click="openCreate">
+        <Button variant="default" type="button" class="task-btn-create" @click="openCreate">
           <PlusIcon class="task-header-icon task-btn-create-icon" />
           Создать задачу
-        </button>
+        </Button>
       </div>
     </header>
 
@@ -1172,41 +1175,41 @@ function statusClass(s: Status) {
           <thead>
             <tr>
               <th class="task-list-cell-num">
-                <button type="button" class="task-list-sort-btn" @click="setListSort('number')">
+                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('number')">
                   №
                   <span class="task-list-sort-indicator">{{ sortIndicator('number') === 'asc' ? '↑' : sortIndicator('number') === 'desc' ? '↓' : '↕' }}</span>
-                </button>
+                </Button>
               </th>
               <th>
-                <button type="button" class="task-list-sort-btn" @click="setListSort('title')">
+                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('title')">
                   Название задачи
                   <span class="task-list-sort-indicator">{{ sortIndicator('title') === 'asc' ? '↑' : sortIndicator('title') === 'desc' ? '↓' : '↕' }}</span>
-                </button>
+                </Button>
               </th>
               <th class="task-list-cell-desc-header">Описание</th>
               <th>
-                <button type="button" class="task-list-sort-btn" @click="setListSort('assignee')">
+                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('assignee')">
                   Исполнитель
                   <span class="task-list-sort-indicator">{{ sortIndicator('assignee') === 'asc' ? '↑' : sortIndicator('assignee') === 'desc' ? '↓' : '↕' }}</span>
-                </button>
+                </Button>
               </th>
               <th>
-                <button type="button" class="task-list-sort-btn" @click="setListSort('priority')">
+                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('priority')">
                   Приоритет
                   <span class="task-list-sort-indicator">{{ sortIndicator('priority') === 'asc' ? '↑' : sortIndicator('priority') === 'desc' ? '↓' : '↕' }}</span>
-                </button>
+                </Button>
               </th>
               <th>
-                <button type="button" class="task-list-sort-btn" @click="setListSort('dueDate')">
+                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('dueDate')">
                   Срок
                   <span class="task-list-sort-indicator">{{ sortIndicator('dueDate') === 'asc' ? '↑' : sortIndicator('dueDate') === 'desc' ? '↓' : '↕' }}</span>
-                </button>
+                </Button>
               </th>
               <th>
-                <button type="button" class="task-list-sort-btn" @click="setListSort('status')">
+                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('status')">
                   Статус
                   <span class="task-list-sort-indicator">{{ sortIndicator('status') === 'asc' ? '↑' : sortIndicator('status') === 'desc' ? '↓' : '↕' }}</span>
-                </button>
+                </Button>
               </th>
             </tr>
           </thead>
@@ -1324,13 +1327,12 @@ function statusClass(s: Status) {
               <div class="modal-body">
                 <label class="modal-field modal-field--design">
                   <span class="modal-label modal-label--design">Название задачи</span>
-                  <input
+                  <Input
                     v-model="form.title"
                     type="text"
                     class="modal-input modal-input--design modal-input--title task-form-input"
                     placeholder="Введите название..."
-                    :maxlength="TASK_TITLE_MAX"
-                  />
+                    :maxlength="TASK_TITLE_MAX" />
                   <div class="task-form-counter">{{ form.title.length }}/{{ TASK_TITLE_MAX }}</div>
                 </label>
                 <div class="modal-grid-2">
@@ -1374,7 +1376,7 @@ function statusClass(s: Status) {
                         :initials="profileById(uid) ? participantInitials(profileById(uid)!) : '?'"
                       />
                       <span class="modal-chip-label">{{ profileById(uid) ? profileLabel(profileById(uid)!) : uid }}</span>
-                      <button type="button" class="modal-chip-remove" aria-label="Убрать" @click="removeParticipant(uid)">×</button>
+                      <Button variant="ghost" size="icon-sm" type="button" class="modal-chip-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать" @click="removeParticipant(uid)">×</Button>
                     </div>
                   </div>
                 </div>
@@ -1385,12 +1387,11 @@ function statusClass(s: Status) {
                 <div class="modal-grid-2">
                   <label class="modal-field modal-field--design">
                     <span class="modal-label modal-label--design">Срок выполнения</span>
-                    <input
+                    <Input
                       v-model="form.dueDate"
                       type="text"
                       class="modal-input modal-input--design task-form-input task-form-input--date"
-                      placeholder="ДД.ММ.ГГГГ"
-                    />
+                      placeholder="ДД.ММ.ГГГГ" />
                   </label>
                   <label class="modal-field modal-field--design">
                     <span class="modal-label modal-label--design">Тип работ</span>
@@ -1399,22 +1400,21 @@ function statusClass(s: Status) {
                 </div>
                 <label class="modal-field modal-field--design">
                   <span class="modal-label modal-label--design">Описание и инструкции</span>
-                  <textarea
+                  <Textarea
                     v-model="form.description"
                     class="modal-textarea modal-textarea--design task-form-textarea"
                     placeholder="Добавьте подробности для исполнителя..."
                     rows="4"
-                    :maxlength="TASK_DESCRIPTION_MAX"
-                  ></textarea>
+                    :maxlength="TASK_DESCRIPTION_MAX" />
                   <div class="task-form-counter">{{ form.description.length }}/{{ TASK_DESCRIPTION_MAX }}</div>
                 </label>
                 <div class="modal-field modal-field--design">
                   <div class="task-file-section">
                     <div class="task-file-section-head">
                       <span class="modal-label modal-label--design">Прикрепленные файлы</span>
-                      <button type="button" class="task-file-add-btn" :disabled="fileUploading" @click="triggerCreateFileInput">
+                      <Button variant="outline" size="sm" type="button" class="task-file-add-btn" :disabled="fileUploading" @click="triggerCreateFileInput">
                         {{ fileUploading ? 'Загрузка...' : 'Добавить файлы' }}
-                      </button>
+                      </Button>
                     </div>
                     <div v-if="pendingCreateFiles.length" class="task-files-grid">
                       <div v-for="file in pendingCreateFiles" :key="file.id" class="task-file-card">
@@ -1555,9 +1555,9 @@ function statusClass(s: Status) {
               <div class="task-detail-desc-wrap">
                 <div class="task-file-section-head">
                   <span class="task-detail-label">Файлы задачи</span>
-                  <button type="button" class="task-file-add-btn" :disabled="fileUploading" @click="triggerDetailFileInput">
+                  <Button variant="outline" size="sm" type="button" class="task-file-add-btn" :disabled="fileUploading" @click="triggerDetailFileInput">
                     {{ fileUploading ? 'Загрузка...' : 'Добавить файлы' }}
-                  </button>
+                  </Button>
                 </div>
                 <div v-if="taskFiles.length" class="task-files-grid">
                   <a
@@ -1651,14 +1651,14 @@ function statusClass(s: Status) {
           <section class="task-chat">
             <div class="task-chat-header">
               <h3 class="task-chat-title">Обсуждение задачи</h3>
-              <button
+              <Button variant="ghost" size="sm"
                 type="button"
                 class="task-chat-toggle"
                 :disabled="commentsLoading || !taskComments.length"
                 @click="isTaskChatExpanded = !isTaskChatExpanded"
               >
                 {{ isTaskChatExpanded ? 'Скрыть' : 'Показать все' }}
-              </button>
+              </Button>
             </div>
             <div v-if="commentsLoading" class="task-chat-loading">
               <UiLoadingBar size="compact" />
@@ -1687,16 +1687,15 @@ function statusClass(s: Status) {
               {{ taskComments.length ? `Комментариев: ${taskComments.length}` : 'Пока нет комментариев. Напишите первый.' }}
             </div>
             <form class="task-chat-input-row" @submit.prevent="submitComment">
-              <textarea
+              <Textarea
                 v-model="newCommentMessage"
                 class="task-chat-input"
                 rows="2"
-                placeholder="Напишите комментарий для исполнителя..."
-              ></textarea>
-              <button type="submit" class="task-chat-send" :class="{ 'task-chat-send--loading': isSendingComment }" :disabled="!newCommentMessage.trim() || isSendingComment">
+                placeholder="Напишите комментарий для исполнителя..." />
+              <Button variant="default" type="submit" class="task-chat-send" :class="{ 'task-chat-send--loading': isSendingComment }" :disabled="!newCommentMessage.trim() || isSendingComment">
                 <span v-if="!isSendingComment">Отправить</span>
                 <UiLoadingBar v-else size="micro" hide-label class="task-chat-send-loader" />
-              </button>
+              </Button>
             </form>
           </section>
       </div>

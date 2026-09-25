@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -57,7 +58,7 @@ defineEmits<{
         </label>
         <label v-else-if="tab === 'forest'" class="lands-field">
           <span>Год создания</span>
-          <input v-model.number="form.forestYearCreated" type="number" min="1900" step="1" />
+          <Input v-model.number="form.forestYearCreated" type="number" min="1900" step="1" />
         </label>
         <label v-else class="lands-field">
           <span class="lands-label-with-help">
@@ -85,7 +86,7 @@ defineEmits<{
         </label>
         <label class="lands-field">
           <span>Кадастровый номер земельного участка</span>
-          <input v-model.trim="form.cadastralNumber" type="text" />
+          <Input v-model.trim="form.cadastralNumber" type="text" />
         </label>
       </div>
       <div v-if="tab === 'systems'" class="lands-form-grid lands-form-grid--mel">
@@ -95,31 +96,31 @@ defineEmits<{
         </label>
         <label class="lands-field">
           <span>Площадь орошаемых (осушаемых) земель, га</span>
-          <input v-model.number="form.areaHa" type="number" min="0" step="0.01" />
+          <Input v-model.number="form.areaHa" type="number" min="0" step="0.01" />
         </label>
       </div>
       <label v-if="tab === 'systems'" class="lands-field">
         <span>Описание мелиоративной системы и местоположения</span>
-        <input v-model.trim="form.descriptionLocation" type="text" />
+        <Input v-model.trim="form.descriptionLocation" type="text" />
       </label>
 
       <div v-if="tab === 'forest'" class="lands-form-grid lands-form-grid--mel">
         <label class="lands-field">
           <span>Площадь МЗЛН, га</span>
-          <input v-model.number="form.areaHa" type="number" min="0" step="0.01" />
+          <Input v-model.number="form.areaHa" type="number" min="0" step="0.01" />
         </label>
         <label class="lands-field">
           <span>Кадастровый номер земельного участка</span>
-          <input v-model.trim="form.cadastralNumber" type="text" />
+          <Input v-model.trim="form.cadastralNumber" type="text" />
         </label>
       </div>
       <label v-if="tab === 'forest'" class="lands-field">
         <span>Количественные, качественные характеристики</span>
-        <input v-model.trim="form.forestCharacteristics" type="text" />
+        <Input v-model.trim="form.forestCharacteristics" type="text" />
       </label>
       <label v-if="tab === 'forest'" class="lands-field">
         <span>Информация о реконструкции насаждений</span>
-        <input v-model.trim="form.reconstructionInfo" type="text" />
+        <Input v-model.trim="form.reconstructionInfo" type="text" />
       </label>
 
       <div v-if="tab === 'events'" class="lands-form-grid lands-form-grid--mel">
@@ -129,12 +130,12 @@ defineEmits<{
         </label>
         <label class="lands-field">
           <span>Площадь земельного участка, га</span>
-          <input v-model.number="form.areaHa" type="number" min="0" step="0.01" />
+          <Input v-model.number="form.areaHa" type="number" min="0" step="0.01" />
         </label>
       </div>
       <label v-if="tab === 'events'" class="lands-field">
         <span>Согласование проектов мелиорации</span>
-        <input v-model.trim="form.projectApproval" type="text" />
+        <Input v-model.trim="form.projectApproval" type="text" />
       </label>
     </div>
   <template #actions>

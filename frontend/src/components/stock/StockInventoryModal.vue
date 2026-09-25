@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -83,7 +84,7 @@ async function save() {
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Акт №</label>
-        <input v-model.trim="actNumber" class="ui-form-input" />
+        <Input v-model.trim="actNumber" class="ui-form-input" />
       </div>
     </div>
 
@@ -97,7 +98,7 @@ async function save() {
           <tr v-for="r in rows" :key="r.batchId">
             <td class="ui-strong">{{ r.code }}</td>
             <td class="ui-num">{{ formatTons(r.book, 3) }}</td>
-            <td class="ui-num"><input v-model.trim="actual[r.batchId]" inputmode="decimal" class="ui-form-input inv-input" /></td>
+            <td class="ui-num"><Input v-model.trim="actual[r.batchId]" inputmode="decimal" class="ui-form-input inv-input" /></td>
             <td class="ui-num" :class="{ 'ui-plus': (diff(r.batchId, r.book) ?? 0) > 0, 'ui-minus': (diff(r.batchId, r.book) ?? 0) < 0 }">
               {{ diff(r.batchId, r.book) == null ? '—' : formatTons(diff(r.batchId, r.book), 3) }}
             </td>

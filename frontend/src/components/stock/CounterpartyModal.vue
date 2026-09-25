@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Контрагент: покупатель и/или поставщик зерна. */
@@ -52,7 +53,7 @@ async function save() {
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Название *</label>
-        <input v-model.trim="form.name" class="ui-form-input" placeholder="ООО «Агроторг»" />
+        <Input v-model.trim="form.name" class="ui-form-input" placeholder="ООО «Агроторг»" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Роль *</label>
@@ -62,31 +63,31 @@ async function save() {
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">ИНН</label>
-        <input v-model.trim="form.inn" inputmode="numeric" class="ui-form-input" />
+        <Input v-model.trim="form.inn" inputmode="numeric" class="ui-form-input" />
         <p v-if="!innOk" class="ui-form-hint" style="color: var(--danger-red)">10 или 12 цифр</p>
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">КПП</label>
-        <input v-model.trim="form.kpp" inputmode="numeric" class="ui-form-input" />
+        <Input v-model.trim="form.kpp" inputmode="numeric" class="ui-form-input" />
         <p v-if="!kppOk" class="ui-form-hint" style="color: var(--danger-red)">9 цифр</p>
       </div>
     </div>
     <div class="ui-form-field">
       <label class="ui-form-label">Адрес</label>
-      <input v-model.trim="form.address" class="ui-form-input" />
+      <Input v-model.trim="form.address" class="ui-form-input" />
     </div>
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
         <label class="ui-form-label">Контактное лицо</label>
-        <input v-model.trim="form.contact_person" class="ui-form-input" />
+        <Input v-model.trim="form.contact_person" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Телефон</label>
-        <input v-model.trim="form.phone" type="tel" class="ui-form-input" />
+        <Input v-model.trim="form.phone" type="tel" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Почта</label>
-        <input v-model.trim="form.email" type="email" class="ui-form-input" />
+        <Input v-model.trim="form.email" type="email" class="ui-form-input" />
       </div>
     </div>
     <div class="ui-form-field">

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { PencilIcon } from '@lucide/vue'
 /**
  * Простой справочник складского учёта во вкладке «Справочники хранения»:
@@ -125,17 +127,17 @@ async function confirmDelete() {
     <p class="lands-muted lands-ref-hint">{{ hint }}</p>
     <p v-if="error" class="lands-error">{{ error }}</p>
     <div class="lands-ref-add-row">
-      <input v-model="newLabel" class="lands-search" type="text" :placeholder="placeholder" @keydown.enter="add" />
-      <button type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="busy || !newLabel.trim()" @click="add">Добавить</button>
+      <Input v-model="newLabel" class="lands-search" type="text" :placeholder="placeholder" @keydown.enter="add" />
+      <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="busy || !newLabel.trim()" @click="add">Добавить</Button>
     </div>
     <div class="lands-list-plain">
       <div v-for="row in rows" :key="row.id" class="lands-list-plain-item" :class="{ 'stock-ref--hidden': !row.active }">
         <span>{{ row.label }}<template v-if="!row.active"> — скрыто</template></span>
         <div class="lands-item-actions">
-          <button type="button" class="stock-ref-toggle" :disabled="busy" @click="toggleActive(row)">{{ row.active ? 'Скрыть' : 'Показать' }}</button>
-          <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Переименовать" title="Переименовать" @click="startEdit(row)">
+          <Button variant="outline" size="sm" type="button" class="stock-ref-toggle" :disabled="busy" @click="toggleActive(row)">{{ row.active ? 'Скрыть' : 'Показать' }}</Button>
+          <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Переименовать" title="Переименовать" @click="startEdit(row)">
             <PencilIcon :size="17" :stroke-width="2.1" />
-          </button>
+          </Button>
           <UiDeleteButton v-if="isManager" size="sm" :disabled="busy" @click="deleting = row" />
         </div>
       </div>
@@ -146,7 +148,7 @@ async function confirmDelete() {
       <UiModal v-if="editing" :title="title" :max-width="460" :close-disabled="busy" @close="editing = null">
         <div class="ui-form-field">
           <label class="ui-form-label">Название *</label>
-          <input v-model="editLabel" class="ui-form-input" @keydown.enter="saveEdit" />
+          <Input v-model="editLabel" class="ui-form-input" @keydown.enter="saveEdit" />
         </div>
         <template #actions>
           <UiButton :disabled="busy" @click="editing = null">Отмена</UiButton>

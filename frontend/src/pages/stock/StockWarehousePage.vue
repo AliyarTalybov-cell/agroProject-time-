@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { ChevronLeftIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 /**
  * Карточка склада на складском журнале: ячейки и что в них лежит, операции,
@@ -127,10 +128,10 @@ function openBatch(batchId: string) {
 <template>
   <section class="ui-page">
     <div class="ui-page-inner">
-      <button type="button" class="ui-back-btn" aria-label="Назад к списку складов" @click="router.push('/warehouses')">
+      <Button variant="outline" type="button" class="ui-back-btn" aria-label="Назад к списку складов" @click="router.push('/warehouses')">
         <ChevronLeftIcon :size="16" />
         Назад к списку складов
-      </button>
+      </Button>
 
       <div v-if="loading" class="ui-loading"><UiLoadingBar /></div>
       <p v-else-if="error && !warehouse" class="ui-alert ui-alert--error">{{ error }}</p>
@@ -169,16 +170,16 @@ function openBatch(batchId: string) {
           </div>
 
           <div class="wh-actions">
-            <button type="button" class="ui-add-btn" @click="dialog = { kind: 'intake' }">
+            <Button variant="default" type="button" class="ui-add-btn" @click="dialog = { kind: 'intake' }">
               <PlusIcon />
               Приёмка
-            </button>
-            <button type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'transfer' }">Перемещение</button>
-            <button v-for="o in OUTGOING" :key="o.type" type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'outgoing', type: o.type }">
+            </Button>
+            <Button variant="outline" type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'transfer' }">Перемещение</Button>
+            <Button variant="outline" v-for="o in OUTGOING" :key="o.type" type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'outgoing', type: o.type }">
               {{ o.label }}
-            </button>
-            <button type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'processing' }">Подработка</button>
-            <button type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'inventory' }">Инвентаризация</button>
+            </Button>
+            <Button variant="outline" type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'processing' }">Подработка</Button>
+            <Button variant="outline" type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'inventory' }">Инвентаризация</Button>
           </div>
         </section>
 
@@ -195,7 +196,7 @@ function openBatch(batchId: string) {
           <div v-if="tab === 'cells'" class="wh-panel">
             <div class="ui-toolbar wh-panel-toolbar">
               <span class="ui-muted">В одной ячейке — одна культура. Разные культуры кладите в разные ячейки.</span>
-              <button type="button" class="ui-soft-btn" @click="dialog = { kind: 'cell', cell: null }">+ Ячейка</button>
+              <Button variant="outline" type="button" class="ui-soft-btn" @click="dialog = { kind: 'cell', cell: null }">+ Ячейка</Button>
             </div>
             <div class="ui-table-wrap">
               <table class="ui-table wh-cells" v-card-table>
@@ -236,10 +237,10 @@ function openBatch(batchId: string) {
                       </div>
                     </td>
                     <td class="wh-cell-actions">
-                      <button type="button" class="wh-icon-btn" aria-label="Изменить ячейку" title="Изменить" @click="dialog = { kind: 'cell', cell: c }">
+                      <Button variant="ghost" size="icon-sm" type="button" class="wh-icon-btn" aria-label="Изменить ячейку" title="Изменить" @click="dialog = { kind: 'cell', cell: c }">
                         <PencilIcon :size="18" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button variant="ghost" size="icon-sm"
                         v-if="c.kind !== 'main' && c.tons === 0"
                         type="button"
                         class="wh-icon-btn wh-icon-btn--danger"
@@ -248,7 +249,7 @@ function openBatch(batchId: string) {
                         @click="dialog = { kind: 'delete-cell', cell: c }"
                       >
                         <Trash2Icon :size="18" />
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 </tbody>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { FileIcon, XIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -51,12 +53,12 @@ defineEmits<{
       <div class="lands-owner-mode-section">
         <div class="lands-owner-mode-label">Правообладатель</div>
         <div class="lands-owner-mode-toggle" role="group" aria-label="Режим ввода правообладателя">
-          <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'reference' }" @click="form.holderMode = 'reference'">
+          <Button variant="outline" size="sm" type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'reference' }" @click="form.holderMode = 'reference'">
             Выбрать из справочника
-          </button>
-          <button type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'manual' }" @click="form.holderMode = 'manual'">
+          </Button>
+          <Button variant="outline" size="sm" type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'manual' }" @click="form.holderMode = 'manual'">
             Ввести вручную
-          </button>
+          </Button>
         </div>
       </div>
       <div v-if="form.holderMode === 'reference'" class="lands-form-grid">
@@ -70,7 +72,7 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>Наименование *</span>
-          <input v-model.trim="form.holderName" type="text" placeholder="СПК «Урожайный»" />
+          <Input v-model.trim="form.holderName" type="text" placeholder="СПК «Урожайный»" />
         </label>
         <label class="lands-field">
           <span>Вид правообладания</span>
@@ -80,24 +82,24 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>ИНН *</span>
-          <input v-model.trim="form.holderInn" type="text" />
+          <Input v-model.trim="form.holderInn" type="text" />
         </label>
         <label class="lands-field">
           <span>КПП</span>
-          <input v-model.trim="form.holderKpp" type="text" />
+          <Input v-model.trim="form.holderKpp" type="text" />
         </label>
       </div>
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>ОГРН *</span>
-          <input v-model.trim="form.holderOgrn" type="text" />
+          <Input v-model.trim="form.holderOgrn" type="text" />
         </label>
         <div />
       </div>
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>Кадастровый номер *</span>
-          <input v-model.trim="form.cadastralNumber" type="text" />
+          <Input v-model.trim="form.cadastralNumber" type="text" />
         </label>
         <label class="lands-field">
           <span class="lands-label-with-help">
@@ -158,9 +160,9 @@ defineEmits<{
                   </div>
                   <span class="lands-docs-preview-name">{{ fileLabelFromUrl(link) }}</span>
                 </a>
-                <button type="button" class="lands-docs-remove-btn" title="Удалить файл" aria-label="Удалить файл" :disabled="uploading || saving" @click="$emit('remove-file', link)">
+                <Button variant="ghost" size="icon-sm" type="button" class="lands-docs-remove-btn text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Удалить файл" aria-label="Удалить файл" :disabled="uploading || saving" @click="$emit('remove-file', link)">
                   <XIcon :size="14" :stroke-width="2.3" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -178,11 +180,11 @@ defineEmits<{
       <div class="lands-form-grid">
         <label class="lands-field">
           <span>Документ (наименование)</span>
-          <input v-model.trim="form.documentName" type="text" />
+          <Input v-model.trim="form.documentName" type="text" />
         </label>
         <label class="lands-field">
           <span>Номер документа</span>
-          <input v-model.trim="form.documentNumber" type="text" />
+          <Input v-model.trim="form.documentNumber" type="text" />
         </label>
       </div>
       <div class="lands-form-grid">
@@ -192,7 +194,7 @@ defineEmits<{
         </label>
         <label class="lands-field">
           <span>Примечание</span>
-          <input v-model.trim="form.notes" type="text" />
+          <Input v-model.trim="form.notes" type="text" />
         </label>
       </div>
       <div class="lands-form-grid">

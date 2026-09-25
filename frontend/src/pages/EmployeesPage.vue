@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { CalendarIcon, MailIcon, PhoneIcon, PlusIcon, SearchIcon, SlidersVerticalIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -179,10 +180,10 @@ function openEmployee(e: EmployeeRow) {
           <UiSelect v-model="positionFilter" :options="[{ value: '', label: 'Должность: все' }, ...(positions).map((p) => ({ value: p.name, label: String(p.name) }))]" class="emp-filter-select" aria-label="Фильтр по должности" />
         </div>
 
-        <button type="button" class="emp-btn emp-btn--primary" :disabled="!canManage" @click="createOpen = true">
+        <Button variant="default" type="button" class="emp-btn emp-btn--primary" :disabled="!canManage" @click="createOpen = true">
           <PlusIcon class="emp-btn-icon" />
           Добавить
-        </button>
+        </Button>
       </div>
     </header>
 

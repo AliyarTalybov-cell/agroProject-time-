@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { FileSpreadsheetIcon, FileTextIcon, PencilIcon } from '@lucide/vue'
 /**
  * Вкладка «Севооборот» карточки участка.
@@ -51,9 +52,9 @@ defineEmits<{
                 Excel
               </button>
             </div>
-            <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="$emit('create')">
+            <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" @click="$emit('create')">
               Добавить
-            </button>
+            </Button>
           </div>
         </div>
         <div v-if="items.length" class="lands-list-plain">
@@ -91,9 +92,9 @@ defineEmits<{
               </div>
             </div>
             <div class="lands-item-actions">
-              <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="$emit('edit', rotation)">
+              <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="$emit('edit', rotation)">
                 <PencilIcon :size="18" />
-              </button>
+              </Button>
               <UiDeleteButton size="sm" @click="$emit('remove', rotation.id)" />
             </div>
           </div>

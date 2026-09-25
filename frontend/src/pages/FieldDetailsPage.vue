@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { Building2Icon, CalendarIcon, ChevronLeftIcon, CircleQuestionMarkIcon, Clock4Icon, ClockIcon, FileIcon, FileTextIcon, HomeIcon, LayersIcon, LayoutGridIcon, MapPinIcon, PencilIcon, SproutIcon, TractorIcon, UploadIcon, UserIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -622,10 +625,10 @@ watch(
 <template>
   <div class="field-details">
     <div class="field-details-header">
-      <button type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку полей">
+      <Button variant="ghost" size="sm" type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку полей">
         <ChevronLeftIcon :size="20" />
         К списку полей
-      </button>
+      </Button>
     </div>
 
     <div v-if="loading" class="field-details-grid">
@@ -636,7 +639,7 @@ watch(
 
     <div v-else-if="error" class="field-details-card field-details-card--left">
       <p class="field-details-error">{{ error }}</p>
-      <button type="button" class="field-details-btn" @click="goBack">Вернуться к списку</button>
+      <Button variant="outline" type="button" class="field-details-btn" @click="goBack">Вернуться к списку</Button>
     </div>
 
     <template v-else-if="field">
@@ -657,7 +660,7 @@ watch(
               </p>
             </div>
             <div class="field-details-actions">
-              <button
+              <Button variant="outline"
                 type="button"
                 class="field-details-edit-btn"
                 @click="startEditing"
@@ -666,7 +669,7 @@ watch(
               >
                 <PencilIcon :size="18" />
                 Редактировать
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -801,22 +804,22 @@ watch(
             <div class="field-details-edit-grid">
               <label class="field-details-edit-field field-details-edit-field--full">
                 <span class="field-details-edit-label">Название <span class="field-details-edit-required">*</span></span>
-                <input v-model="editForm.name" type="text" class="field-details-edit-input" required placeholder="Название поля" />
+                <Input v-model="editForm.name" type="text" class="field-details-edit-input" required placeholder="Название поля" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Площадь, га <span class="field-details-edit-required">*</span></span>
-                <input v-model.number="editForm.area" type="number" class="field-details-edit-input" min="0" step="0.01" required @input="onEditAreaInput" />
+                <Input v-model.number="editForm.area" type="number" class="field-details-edit-input" min="0" step="0.01" required @input="onEditAreaInput" />
                 <span v-if="editForm.geometry_mode === 'polygon' && editFieldAreaAuto != null" class="field-details-geometry-area-hint">
                   Авто по контуру: {{ editFieldAreaAuto }} га
                 </span>
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Кадастровый номер</span>
-                <input v-model="editForm.cadastral_number" type="text" class="field-details-edit-input" placeholder="XX:XX:XXXXXXX:XX" />
+                <Input v-model="editForm.cadastral_number" type="text" class="field-details-edit-input" placeholder="XX:XX:XXXXXXX:XX" />
               </label>
               <label class="field-details-edit-field field-details-edit-field--full">
                 <span class="field-details-edit-label">Адрес</span>
-                <input v-model="editForm.address" type="text" class="field-details-edit-input" placeholder="Адрес" @input="onEditAddressInput" />
+                <Input v-model="editForm.address" type="text" class="field-details-edit-input" placeholder="Адрес" @input="onEditAddressInput" />
                 <div v-if="editAddressCandidates.length" class="field-details-address-candidates">
                   <span class="field-details-address-candidates-label">Варианты адреса по контуру</span>
                   <UiSelect
@@ -872,11 +875,11 @@ watch(
               </div>
               <label class="field-details-edit-field field-details-edit-field--full">
                 <span class="field-details-edit-label">Описание местоположения</span>
-                <textarea v-model="editForm.location_description" class="field-details-edit-textarea" rows="2" placeholder="Описание границ"></textarea>
+                <Textarea v-model="editForm.location_description" class="field-details-edit-textarea" rows="2" placeholder="Описание границ" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Геолокация</span>
-                <input v-model="editForm.geolocation" type="text" class="field-details-edit-input" placeholder="Например: 55.7558, 37.6173" />
+                <Input v-model="editForm.geolocation" type="text" class="field-details-edit-input" placeholder="Например: 55.7558, 37.6173" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label field-details-edit-label--with-help">
@@ -891,11 +894,11 @@ watch(
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Регион</span>
-                <input v-model="editForm.region" type="text" class="field-details-edit-input" placeholder="Например: Ростовская область" />
+                <Input v-model="editForm.region" type="text" class="field-details-edit-input" placeholder="Например: Ростовская область" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">№ ПОЛЯ ЕФИС ЗСН</span>
-                <input v-model="editForm.efis_zsn_number" type="text" class="field-details-edit-input" placeholder="Например: EFIS-000123" />
+                <Input v-model="editForm.efis_zsn_number" type="text" class="field-details-edit-input" placeholder="Например: EFIS-000123" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label field-details-edit-label--with-help">
@@ -928,7 +931,7 @@ watch(
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Год посева</span>
-                <input v-model.number="editForm.sowing_year" type="number" class="field-details-edit-input" min="2000" :max="new Date().getFullYear() + 2" />
+                <Input v-model.number="editForm.sowing_year" type="number" class="field-details-edit-input" min="2000" :max="new Date().getFullYear() + 2" />
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Ответственный</span>
@@ -936,12 +939,11 @@ watch(
               </label>
               <label class="field-details-edit-field field-details-edit-field--full">
                 <span class="field-details-edit-label">Доп. информация</span>
-                <textarea
+                <Textarea
                   v-model="editForm.extra_info"
                   class="field-details-edit-textarea"
                   rows="3"
-                  placeholder="Любые заметки о поле, особенностях, рекомендациях и т.п."
-                ></textarea>
+                  placeholder="Любые заметки о поле, особенностях, рекомендациях и т.п." />
               </label>
             </div>
             <div class="field-details-edit-scheme">
@@ -955,28 +957,28 @@ watch(
                 @change="onSchemeFileChange"
               />
               <div class="field-details-scheme-row">
-                <button type="button" class="field-details-scheme-btn" :disabled="schemeUploading" @click="triggerSchemeUpload">
+                <Button variant="outline" size="sm" type="button" class="field-details-scheme-btn" :disabled="schemeUploading" @click="triggerSchemeUpload">
                   {{ schemeUploading ? 'Загрузка…' : 'Загрузить схему' }}
-                </button>
+                </Button>
                 <UiDeleteButton v-if="editForm.scheme_file_url" size="xs" @click="clearScheme" />
                 <span v-if="editForm.scheme_file_url" class="field-details-scheme-hint">Схема прикреплена</span>
               </div>
             </div>
             <div class="field-details-edit-actions">
-              <button
+              <Button variant="outline"
                 type="button"
                 class="field-details-cancel-btn"
                 @click="cancelEditing"
               >
                 Отмена
-              </button>
-              <button
+              </Button>
+              <Button variant="default"
                 type="submit"
                 class="field-details-save-btn"
                 :disabled="saving"
               >
                 {{ saving ? 'Сохранение…' : 'Сохранить' }}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -995,7 +997,7 @@ watch(
               aria-hidden="true"
               @change="onPhotoFileChange"
             />
-            <button
+            <Button variant="outline" size="sm"
               type="button"
               class="field-details-upload-btn"
               :disabled="photoUploading"
@@ -1003,7 +1005,7 @@ watch(
             >
               <UploadIcon :size="18" />
               {{ photoUploading ? 'Загрузка…' : 'Загрузить фото' }}
-            </button>
+            </Button>
           </div>
 
           <div class="field-details-main-media">

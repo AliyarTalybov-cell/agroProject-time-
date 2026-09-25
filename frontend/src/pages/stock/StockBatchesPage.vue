@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { PlusIcon, SearchIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -140,10 +142,10 @@ function onIntakeDone() {
       <header class="ui-page-header">
         <p class="ui-page-subtitle">Партии зерна по всем складам. Остатки из журнала операций — те же, что в карточках складов.</p>
         <div class="ui-header-actions">
-          <button type="button" class="ui-add-btn" @click="intakeOpen = true">
+          <Button variant="default" type="button" class="ui-add-btn" @click="intakeOpen = true">
             <PlusIcon />
             Приёмка зерна
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -151,7 +153,7 @@ function onIntakeDone() {
         <div class="ui-toolbar">
           <label class="ui-search">
             <SearchIcon />
-            <input v-model="search" type="search" placeholder="№ партии, сорт, поле, поставщик, № ФГИС" />
+            <Input v-model="search" type="search" placeholder="№ партии, сорт, поле, поставщик, № ФГИС" class="pl-9" />
           </label>
           <UiSelect v-model="statusFilter" :options="statusOptions" aria-label="Статус" class="ui-filter-select" />
           <UiSelect v-model="cropFilter" :options="cropSelectOptions" aria-label="Культура" class="ui-filter-select" />
@@ -164,7 +166,7 @@ function onIntakeDone() {
         <div v-else-if="!filtered.length" class="ui-empty">
           <h3>Партий не найдено</h3>
           <p>Измените фильтры или проведите приёмку зерна.</p>
-          <button type="button" class="ui-soft-btn" @click="resetFilters">Сбросить фильтры</button>
+          <Button variant="outline" type="button" class="ui-soft-btn" @click="resetFilters">Сбросить фильтры</Button>
         </div>
         <template v-else>
           <div class="ui-table-wrap">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { PencilIcon } from '@lucide/vue'
 /**
  * Вкладка «Землепользователи» карточки участка.
@@ -33,9 +34,9 @@ defineEmits<{
 <template>
         <h2>Землепользователи</h2>
         <div class="lands-actions lands-actions--crop">
-          <button type="button" class="lands-btn lands-btn--save lands-btn--add" @click="$emit('create')">
+          <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" @click="$emit('create')">
             Добавить
-          </button>
+          </Button>
         </div>
         <div v-if="items.length" class="lands-list-plain">
           <div v-for="user in items" :key="user.id" class="lands-list-plain-item lands-list-plain-item--stack">
@@ -80,9 +81,9 @@ defineEmits<{
               </div>
             </div>
             <div class="lands-item-actions">
-              <button type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="$emit('edit', user)">
+              <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="$emit('edit', user)">
                 <PencilIcon :size="18" />
-              </button>
+              </Button>
               <UiDeleteButton size="sm" @click="$emit('remove', user.id)" />
             </div>
           </div>

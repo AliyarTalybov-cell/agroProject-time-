@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { PlusIcon } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -66,10 +67,10 @@ onMounted(() => void loadData())
 <template>
   <section class="news-page">
     <header class="news-header news-header--actions-only page-enter-item">
-      <button v-if="isManager" type="button" class="news-add-btn" @click="openCreate">
+      <Button variant="default" v-if="isManager" type="button" class="news-add-btn" @click="openCreate">
         <PlusIcon class="news-add-btn-icon" />
         Добавить новость
-      </button>
+      </Button>
     </header>
     <div v-if="loading" class="news-loading"><UiLoadingBar /></div>
     <p v-else-if="error" class="news-empty">{{ error }}</p>

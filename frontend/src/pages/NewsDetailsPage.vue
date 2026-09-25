@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { ChevronLeftIcon, ChevronRightIcon, PenLineIcon, Trash2Icon, XIcon } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -130,17 +131,17 @@ onMounted(() => void loadData())
 <template>
   <section class="news-details">
     <div class="news-details-top">
-      <button type="button" class="news-back-btn" @click="goBack" aria-label="Назад к новостям">
+      <Button variant="outline" type="button" class="news-back-btn" @click="goBack" aria-label="Назад к новостям">
         <ChevronLeftIcon class="news-back-btn-icon" :size="22" />
         Назад к новостям
-      </button>
+      </Button>
       <div v-if="isManager && post" class="news-details-actions">
-        <button type="button" class="news-icon-btn" aria-label="Редактировать новость" title="Редактировать" @click="openEdit">
+        <Button variant="ghost" size="icon-sm" type="button" class="news-icon-btn" aria-label="Редактировать новость" title="Редактировать" @click="openEdit">
           <PenLineIcon :size="18" />
-        </button>
-        <button type="button" class="news-icon-btn news-icon-btn--danger" aria-label="Удалить новость" title="Удалить" @click="removePost">
+        </Button>
+        <Button variant="ghost" size="icon-sm" type="button" class="news-icon-btn news-icon-btn--danger" aria-label="Удалить новость" title="Удалить" @click="removePost">
           <Trash2Icon :size="18" />
-        </button>
+        </Button>
       </div>
     </div>
 

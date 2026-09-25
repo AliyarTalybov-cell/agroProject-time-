@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -107,33 +108,33 @@ async function save() {
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Масса, т *</label>
-        <input v-model.trim="form.tons" inputmode="decimal" class="ui-form-input" />
+        <Input v-model.trim="form.tons" inputmode="decimal" class="ui-form-input" />
         <p v-if="source" class="ui-form-hint">Доступно {{ formatTons(source.available) }}</p>
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Потери в пути, т</label>
-        <input v-model.trim="form.loss" inputmode="decimal" class="ui-form-input" placeholder="0" />
+        <Input v-model.trim="form.loss" inputmode="decimal" class="ui-form-input" placeholder="0" />
         <p v-if="arrives != null && loss > 0" class="ui-form-hint">Придёт {{ formatTons(arrives) }}</p>
       </div>
     </div>
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Госномер машины</label>
-        <input v-model.trim="form.vehiclePlate" class="ui-form-input" />
+        <Input v-model.trim="form.vehiclePlate" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">Водитель</label>
-        <input v-model.trim="form.driverName" class="ui-form-input" />
+        <Input v-model.trim="form.driverName" class="ui-form-input" />
       </div>
     </div>
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">ТТН / накладная №</label>
-        <input v-model.trim="form.waybillNumber" class="ui-form-input" />
+        <Input v-model.trim="form.waybillNumber" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label">СДИЗ №</label>
-        <input v-model.trim="form.sdizNumber" class="ui-form-input" />
+        <Input v-model.trim="form.sdizNumber" class="ui-form-input" />
       </div>
     </div>
     <div class="ui-form-field">

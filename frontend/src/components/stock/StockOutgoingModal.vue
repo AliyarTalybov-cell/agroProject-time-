@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { XIcon } from '@lucide/vue'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -179,16 +181,16 @@ async function save() {
     <p class="ui-form-section-title">Из каких партий</p>
     <div v-for="(line, i) in lines" :key="i" class="stock-line">
       <UiSelect v-model="line.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Партия в ячейке" class="ui-form-select" />
-      <input v-model.trim="line.tons" inputmode="decimal" class="ui-form-input stock-line-tons" placeholder="т" />
-      <button v-if="lines.length > 1" type="button" class="stock-line-remove" aria-label="Убрать строку" @click="removeLine(i)">
+      <Input v-model.trim="line.tons" inputmode="decimal" class="ui-form-input stock-line-tons" placeholder="т" />
+      <Button variant="ghost" size="icon-sm" v-if="lines.length > 1" type="button" class="stock-line-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать строку" @click="removeLine(i)">
         <XIcon :size="16" />
-      </button>
+      </Button>
       <p v-if="parsedLines[i].over" class="ui-form-hint stock-line-hint">
         Больше остатка: доступно {{ formatTons(parsedLines[i].src?.available) }}
       </p>
     </div>
     <div class="stock-lines-footer">
-      <button v-if="sources.length > lines.length" type="button" class="ui-soft-btn" @click="addLine">+ Ещё партия</button>
+      <Button variant="outline" v-if="sources.length > lines.length" type="button" class="ui-soft-btn" @click="addLine">+ Ещё партия</Button>
       <span class="ui-strong">Итого {{ formatTons(totalTons) }}</span>
     </div>
     <p v-if="duplicate" class="ui-form-error">Одна и та же партия в ячейке выбрана дважды.</p>
@@ -197,7 +199,7 @@ async function save() {
       <div class="ui-form-row ui-form-row--three">
         <div class="ui-form-field">
           <label class="ui-form-label">Цена за тонну, ₽</label>
-          <input v-model.trim="form.pricePerTon" inputmode="decimal" class="ui-form-input" />
+          <Input v-model.trim="form.pricePerTon" inputmode="decimal" class="ui-form-input" />
         </div>
         <div class="ui-form-field">
           <label class="ui-form-label">Сумма</label>
@@ -205,7 +207,7 @@ async function save() {
         </div>
         <div class="ui-form-field">
           <label class="ui-form-label">Вес у покупателя, т</label>
-          <input v-model.trim="form.buyerNet" inputmode="decimal" class="ui-form-input" />
+          <Input v-model.trim="form.buyerNet" inputmode="decimal" class="ui-form-input" />
         </div>
       </div>
     </template>
@@ -214,26 +216,26 @@ async function save() {
       <div class="ui-form-row ui-form-row--two">
         <div class="ui-form-field">
           <label class="ui-form-label">Госномер машины</label>
-          <input v-model.trim="form.vehiclePlate" class="ui-form-input" />
+          <Input v-model.trim="form.vehiclePlate" class="ui-form-input" />
         </div>
         <div class="ui-form-field">
           <label class="ui-form-label">Водитель</label>
-          <input v-model.trim="form.driverName" class="ui-form-input" />
+          <Input v-model.trim="form.driverName" class="ui-form-input" />
         </div>
       </div>
     </template>
     <div class="ui-form-row ui-form-row--two">
       <div v-if="type !== 'writeoff'" class="ui-form-field">
         <label class="ui-form-label">ТТН / накладная №</label>
-        <input v-model.trim="form.waybillNumber" class="ui-form-input" />
+        <Input v-model.trim="form.waybillNumber" class="ui-form-input" />
       </div>
       <div v-if="type === 'sale'" class="ui-form-field">
         <label class="ui-form-label">СДИЗ № (ФГИС «Зерно»)</label>
-        <input v-model.trim="form.sdizNumber" class="ui-form-input" />
+        <Input v-model.trim="form.sdizNumber" class="ui-form-input" />
       </div>
       <div v-if="type === 'writeoff'" class="ui-form-field">
         <label class="ui-form-label">Акт №</label>
-        <input v-model.trim="form.actNumber" class="ui-form-input" />
+        <Input v-model.trim="form.actNumber" class="ui-form-input" />
       </div>
     </div>
     <div class="ui-form-field">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Окно добавления и правки записи севооборота. Разметка перенесена из
@@ -57,7 +58,7 @@ function canSave(): boolean {
         <div class="lands-form-grid">
           <label class="lands-field">
             <span>Сезон *</span>
-            <input v-model.trim="form.season" type="text" placeholder="Например: 2026" />
+            <Input v-model.trim="form.season" type="text" placeholder="Например: 2026" />
           </label>
           <label class="lands-field">
             <span class="lands-label-with-help">
@@ -89,21 +90,21 @@ function canSave(): boolean {
         <div class="lands-form-grid">
           <label class="lands-field">
             <span>Площадь для выращивания сельхозкультур, га *</span>
-            <input v-model.number="form.areaForCropsHa" type="number" min="0" step="0.01" />
+            <Input v-model.number="form.areaForCropsHa" type="number" min="0" step="0.01" />
           </label>
           <label class="lands-field">
             <span>Площадь с улучшенными характеристиками, га</span>
-            <input v-model.number="form.areaWithImprovedProductsHa" type="number" min="0" step="0.01" />
+            <Input v-model.number="form.areaWithImprovedProductsHa" type="number" min="0" step="0.01" />
           </label>
         </div>
         <div class="lands-form-grid">
           <label class="lands-field">
             <span>Площадь для органической продукции, га</span>
-            <input v-model.number="form.areaForOrganicHa" type="number" min="0" step="0.01" />
+            <Input v-model.number="form.areaForOrganicHa" type="number" min="0" step="0.01" />
           </label>
           <label class="lands-field">
             <span>Площадь для селекции и семеноводства, га</span>
-            <input v-model.number="form.areaForSelectionSeedHa" type="number" min="0" step="0.01" />
+            <Input v-model.number="form.areaForSelectionSeedHa" type="number" min="0" step="0.01" />
           </label>
         </div>
         <label class="lands-field">
@@ -112,7 +113,7 @@ function canSave(): boolean {
         </label>
         <label class="lands-field">
           <span>Масса произведенной сельхозкультуры, т</span>
-          <input v-model.number="form.producedCropMassTons" type="number" min="0" step="0.01" />
+          <Input v-model.number="form.producedCropMassTons" type="number" min="0" step="0.01" />
         </label>
       </div>
     <template #actions>

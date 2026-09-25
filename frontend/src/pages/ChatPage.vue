@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { ArrowRightIcon, CheckIcon, FileIcon, RefreshCcwIcon, SaveIcon, SearchIcon, SendIcon } from '@lucide/vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import ChatGroupDialog from '@/components/ui/dialogs/ChatGroupDialog.vue'
@@ -874,8 +875,8 @@ onUnmounted(() => {
     <section class="chat-page__list" aria-label="Диалоги">
       <div class="chat-page__list-head">
         <div v-if="configured" class="chat-page__toolbar">
-          <button type="button" class="chat-page__toolbar-btn chat-page__toolbar-btn--anim" @click="openDmModal">Написать</button>
-          <button
+          <Button variant="outline" size="sm" type="button" class="chat-page__toolbar-btn chat-page__toolbar-btn--anim" @click="openDmModal">Написать</Button>
+          <Button variant="outline" size="sm"
             type="button"
             class="chat-page__toolbar-btn chat-page__toolbar-btn--refresh chat-page__toolbar-btn--icon"
             :disabled="refreshBusy || listLoading"
@@ -884,8 +885,8 @@ onUnmounted(() => {
             @click="refreshChat"
           >
             <RefreshCcwIcon class="chat-page__toolbar-refresh-svg" :class="{ 'chat-page__toolbar-refresh-svg--spin': refreshBusy }" aria-hidden="true" :size="18" />
-          </button>
-          <button
+          </Button>
+          <Button variant="default"
             v-if="isManager"
             type="button"
             class="chat-page__toolbar-btn chat-page__toolbar-btn--primary chat-page__toolbar-btn--anim"
@@ -894,7 +895,7 @@ onUnmounted(() => {
           >
             <span class="chat-page__toolbar-label chat-page__toolbar-label--full">Новая команда</span>
             <span class="chat-page__toolbar-label chat-page__toolbar-label--short" aria-hidden="true">Команда</span>
-          </button>
+          </Button>
         </div>
         <div class="chat-page__search-wrap">
           <span class="chat-page__search-icon" aria-hidden="true">
@@ -1008,7 +1009,7 @@ onUnmounted(() => {
       <template v-else>
         <header class="chat-page__thread-head">
           <!-- From Uiverse.io by xopc333 — назад к списку (адаптировано под тему) -->
-          <button
+          <Button variant="ghost" size="icon-sm"
             v-if="isMobileChatLayout && mobileChatPanel === 'thread'"
             type="button"
             class="chat-page__mobile-back-btn"
@@ -1023,7 +1024,7 @@ onUnmounted(() => {
                 <ArrowRightIcon />
               </span>
             </div>
-          </button>
+          </Button>
           <div class="chat-page__thread-user">
             <button
               v-if="active.kind === 'group'"
@@ -1077,7 +1078,7 @@ onUnmounted(() => {
             </div>
           </div>
           <div class="chat-page__thread-actions">
-            <button
+            <Button variant="ghost" size="icon-sm"
               type="button"
               class="chat-page__icon-btn"
               title="Обновить переписку"
@@ -1086,7 +1087,7 @@ onUnmounted(() => {
               @click="refreshChat"
             >
               <RefreshCcwIcon class="chat-page__thread-refresh-ico" :class="{ 'chat-page__thread-refresh-ico--spin': refreshBusy }" aria-hidden="true" :size="20" />
-            </button>
+            </Button>
           </div>
         </header>
 
@@ -1151,7 +1152,7 @@ onUnmounted(() => {
               @touchcancel.passive="onThreadBackSwipeTouchCancel"
             >
               <div v-if="hasMoreOlderMessages" class="chat-page__load-older-wrap">
-                <button
+                <Button variant="ghost" size="sm"
                   type="button"
                   class="chat-page__load-older"
                   :disabled="olderLoading"
@@ -1159,7 +1160,7 @@ onUnmounted(() => {
                 >
                   <span v-if="olderLoading" class="chat-page__spinner chat-page__spinner--sm" aria-hidden="true" />
                   {{ olderLoading ? 'Загрузка…' : 'Ранее сообщения' }}
-                </button>
+                </Button>
               </div>
 
               <div class="chat-page__date-pill-wrap">
@@ -1306,9 +1307,9 @@ onUnmounted(() => {
               />
               <div v-if="pendingAttachment" class="chat-page__pending-file" role="status">
                 <span class="chat-page__pending-file-name" :title="pendingAttachment.name">{{ pendingAttachment.name }}</span>
-                <button type="button" class="chat-page__pending-file-remove" aria-label="Убрать файл" :disabled="attachBusy" @click="clearPendingAttachment">
+                <Button variant="ghost" size="icon-sm" type="button" class="chat-page__pending-file-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать файл" :disabled="attachBusy" @click="clearPendingAttachment">
                   ×
-                </button>
+                </Button>
               </div>
               <div class="chat-page__composer" :class="{ 'chat-page__composer--busy': attachBusy }">
             <!-- From Uiverse.io by ilkhoeri — иконка «документ» для вложения -->

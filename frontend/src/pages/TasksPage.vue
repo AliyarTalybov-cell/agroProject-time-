@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import UiPersonPicker from '@/components/ui/UiPersonPicker.vue'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/shadcn/radio-group'
@@ -1949,10 +1951,10 @@ async function confirmDeleteTask() {
           <ToggleGroupItem value="b2" class="px-3">Месяц</ToggleGroupItem>
           <ToggleGroupItem value="b3" class="px-3">Расписание</ToggleGroupItem>
         </ToggleGroup>
-        <button type="button" class="calendar-add-btn" @click="openNewTaskModal()">
+        <Button variant="default" type="button" class="calendar-add-btn" @click="openNewTaskModal()">
           <PlusIcon class="calendar-add-btn-icon" />
           Создать событие
-        </button>
+        </Button>
       </div>
     </header>
 
@@ -1964,25 +1966,25 @@ async function confirmDeleteTask() {
       <Transition name="mini-calendar-slide">
       <section v-if="isDayView" class="calendar-card calendar-card-left">
         <div class="calendar-month-header">
-          <button
+          <Button variant="outline" size="icon-sm"
             type="button"
             class="month-nav-btn"
             aria-label="Предыдущий месяц"
             @click="prevMonth"
           >
             ‹
-          </button>
+          </Button>
           <div class="month-label">
             {{ currentMonthLabel }}
           </div>
-          <button
+          <Button variant="outline" size="icon-sm"
             type="button"
             class="month-nav-btn"
             aria-label="Следующий месяц"
             @click="nextMonth"
           >
             ›
-          </button>
+          </Button>
         </div>
 
         <div class="calendar-grid">
@@ -2150,9 +2152,9 @@ async function confirmDeleteTask() {
         </div>
         <div v-else-if="isMonthView" class="month-view-wrap">
           <div class="month-view-header">
-            <button type="button" class="month-nav-btn" aria-label="Предыдущий месяц" @click="prevMonth">‹</button>
+            <Button variant="outline" size="icon-sm" type="button" class="month-nav-btn" aria-label="Предыдущий месяц" @click="prevMonth">‹</Button>
             <div class="month-label">{{ currentMonthLabel }}</div>
-            <button type="button" class="month-nav-btn" aria-label="Следующий месяц" @click="nextMonth">›</button>
+            <Button variant="outline" size="icon-sm" type="button" class="month-nav-btn" aria-label="Следующий месяц" @click="nextMonth">›</Button>
           </div>
           <div class="month-view-grid">
             <div v-for="day in weekdaysShort" :key="`m-${day}`" class="month-view-weekday">{{ day }}</div>
@@ -2398,13 +2400,12 @@ async function confirmDeleteTask() {
           <div class="modal-body">
             <label class="modal-field modal-field--design">
               <span class="modal-label modal-label--design">Название события</span>
-              <input
+              <Input
                 v-model="taskTitle"
                 type="text"
                 class="modal-input modal-input--design modal-input--title"
                 placeholder="Введите название..."
-                required
-              />
+                required />
             </label>
 
             <label class="modal-field modal-field--design">
@@ -2429,7 +2430,7 @@ async function confirmDeleteTask() {
                   <div class="modal-deadline-time-range modal-deadline-time-range--single">
                     <div class="modal-deadline-time-start">
                       <ClockIcon class="modal-input-icon" :size="18" aria-hidden="true" />
-                      <input v-model="taskStartTime" type="time" class="modal-input modal-input--design modal-input--with-icon" />
+                      <Input v-model="taskStartTime" type="time" class="modal-input modal-input--design modal-input--with-icon pl-9" />
                     </div>
                   </div>
                 </div>
@@ -2444,7 +2445,7 @@ async function confirmDeleteTask() {
                   <div class="modal-deadline-time-range modal-deadline-time-range--single">
                     <div class="modal-deadline-time-start">
                       <ClockIcon class="modal-input-icon" :size="18" aria-hidden="true" />
-                      <input v-model="taskEndTime" type="time" class="modal-input modal-input--design modal-input--with-icon" />
+                      <Input v-model="taskEndTime" type="time" class="modal-input modal-input--design modal-input--with-icon pl-9" />
                     </div>
                   </div>
                 </div>
@@ -2463,14 +2464,13 @@ async function confirmDeleteTask() {
                 <UiSelect v-model="taskRepeatRule" :options="[{ value: 'none', label: 'Не повторяется' }, { value: 'daily', label: 'Каждый день' }, { value: 'weekly', label: 'Каждую неделю' }, { value: 'monthly', label: 'Каждый месяц' }, { value: 'yearly', label: 'Каждый год' }]" class="modal-input modal-input--design modal-select modal-select--design" />
                 <template v-if="taskRepeatRule !== 'none'">
                   <span class="repeat-inline-label">каждые</span>
-                  <input
+                  <Input
                     v-model.number="taskRepeatEvery"
                     type="number"
                     min="1"
                     max="365"
                     class="modal-input modal-input--design repeat-every-input"
-                    :disabled="false"
-                  />
+                    :disabled="false" />
                 </template>
                 </div>
                 <Transition name="repeat-reveal">
@@ -2500,14 +2500,13 @@ async function confirmDeleteTask() {
                     <RadioGroupItem value="after" />
                     <span>После</span>
                     <span class="repeat-end-inline">
-                      <input
+                      <Input
                         v-model.number="taskRepeatCount"
                         type="number"
                         min="1"
                         max="500"
                         class="modal-input modal-input--design repeat-count-input"
-                        :disabled="taskRepeatEndMode !== 'after'"
-                      />
+                        :disabled="taskRepeatEndMode !== 'after'" />
                       <span>повторений</span>
                     </span>
                   </label>
@@ -2565,7 +2564,7 @@ async function confirmDeleteTask() {
                     class="modal-chip-status"
                     :class="`modal-chip-status--${assigneeStatusForModal(uid)}`"
                   >{{ assigneeStatusLabel(assigneeStatusForModal(uid)) }}</span>
-                  <button type="button" class="modal-chip-remove" aria-label="Убрать" @click="removeAssignee(uid)">×</button>
+                  <Button variant="ghost" size="icon-sm" type="button" class="modal-chip-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать" @click="removeAssignee(uid)">×</Button>
                 </div>
               </div>
             </div>
@@ -2577,22 +2576,22 @@ async function confirmDeleteTask() {
                   {{ taskParticipationLabel(editingTaskId) }}
                 </span>
                 <div v-if="currentTaskParticipationStatus === 'pending'" class="participation-actions">
-                  <button type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="setMyParticipationStatus('declined')">
+                  <Button variant="outline" type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="setMyParticipationStatus('declined')">
                     Отклонить
-                  </button>
-                  <button type="button" class="modal-btn modal-btn--design" @click="setMyParticipationStatus('accepted')">
+                  </Button>
+                  <Button variant="default" type="button" class="modal-btn modal-btn--design" @click="setMyParticipationStatus('accepted')">
                     Принять
-                  </button>
+                  </Button>
                 </div>
                 <div v-else-if="currentTaskParticipationStatus === 'accepted'" class="participation-actions">
-                  <button type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="setMyParticipationStatus('declined')">
+                  <Button variant="outline" type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="setMyParticipationStatus('declined')">
                     Отказаться
-                  </button>
+                  </Button>
                 </div>
                 <div v-else-if="currentTaskParticipationStatus === 'declined'" class="participation-actions">
-                  <button type="button" class="modal-btn modal-btn--design" @click="setMyParticipationStatus('accepted')">
+                  <Button variant="default" type="button" class="modal-btn modal-btn--design" @click="setMyParticipationStatus('accepted')">
                     Принять снова
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

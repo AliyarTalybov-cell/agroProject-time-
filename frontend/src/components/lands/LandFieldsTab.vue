@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/shadcn/button'
 import { ExternalLinkIcon, FileSpreadsheetIcon, FileTextIcon, Trash2Icon } from '@lucide/vue'
 /**
  * Вкладка «Поля» карточки участка.
@@ -82,12 +83,12 @@ defineEmits<{
                 <td class="lands-field-description">{{ field.location_description || '—' }}</td>
                 <td @click.stop>
                   <div class="lands-item-actions">
-                    <button type="button" class="lands-action-btn" aria-label="Открыть поле" title="Открыть поле" @click="$emit('open-field', field.id)">
+                    <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn" aria-label="Открыть поле" title="Открыть поле" @click="$emit('open-field', field.id)">
                       <ExternalLinkIcon :size="17" :stroke-width="2.1" />
-                    </button>
-                    <button v-if="inlineEditOpen" type="button" class="lands-action-btn lands-action-btn--danger" aria-label="Отвязать поле" title="Отвязать поле" @click="$emit('unlink', field.id)">
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" v-if="inlineEditOpen" type="button" class="lands-action-btn lands-action-btn--danger text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Отвязать поле" title="Отвязать поле" @click="$emit('unlink', field.id)">
                       <Trash2Icon :size="17" :stroke-width="2.1" />
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
