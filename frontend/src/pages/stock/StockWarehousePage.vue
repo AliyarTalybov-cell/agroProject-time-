@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Button } from '@/components/ui/shadcn/button'
 import { ChevronLeftIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
@@ -139,7 +140,7 @@ function openBatch(batchId: string) {
       <p v-else-if="!warehouse" class="ui-alert">Склад не найден.</p>
 
       <template v-else>
-        <section class="ui-card wh-head">
+        <Card class="ui-card wh-head gap-0">
           <div class="wh-title-row">
             <div>
               <h2 class="wh-title">{{ warehouse.name }}</h2>
@@ -182,11 +183,11 @@ function openBatch(batchId: string) {
             <Button variant="outline" type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'processing' }">Подработка</Button>
             <Button variant="outline" type="button" class="ui-soft-btn" :disabled="!hasStock" @click="dialog = { kind: 'inventory' }">Инвентаризация</Button>
           </div>
-        </section>
+        </Card>
 
         <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>
 
-        <section class="ui-card">
+        <Card class="ui-card gap-0">
           <Tabs :model-value="tab">
             <TabsList>
               <TabsTrigger value="cells" @click="tab = 'cells'">Ячейки и партии</TabsTrigger>
@@ -263,7 +264,7 @@ function openBatch(batchId: string) {
           <div v-else class="wh-panel">
             <StockDocumentsTable :documents="documents" :scope-location-id="warehouse.id" @changed="load" />
           </div>
-        </section>
+        </Card>
       </template>
     </div>
 

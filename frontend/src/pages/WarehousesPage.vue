@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Button } from '@/components/ui/shadcn/button'
 import { CylinderIcon, HouseIcon, PlusIcon, SearchIcon, SunIcon, WarehouseIcon } from '@lucide/vue'
@@ -143,7 +144,7 @@ onMounted(() => {
         </RouterLink>
       </header>
 
-      <section class="fields-card">
+      <Card class="fields-card gap-0">
         <div class="fields-toolbar">
           <InputGroup class="fields-search-wrap max-w-sm">
             <InputGroupAddon>
@@ -195,10 +196,10 @@ onMounted(() => {
         </div>
 
         <div v-else class="warehouse-grid">
-          <article
+          <Card
             v-for="w in pagedRows"
             :key="w.id"
-            class="warehouse-card"
+            class="warehouse-card gap-0"
             :class="{ 'warehouse-card--inactive': w.inactive }"
           >
             <div
@@ -248,7 +249,7 @@ onMounted(() => {
                 Приёмка зерна
               </Button>
             </div>
-          </article>
+          </Card>
         </div>
 
         <UiPagination
@@ -258,7 +259,7 @@ onMounted(() => {
           :total="filteredRows.length"
           :page-size-options="[4, 8, 12]"
         />
-      </section>
+      </Card>
     </div>
 
     <teleport to="body">

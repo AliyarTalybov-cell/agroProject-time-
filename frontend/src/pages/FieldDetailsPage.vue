@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
@@ -633,19 +634,19 @@ watch(
     </div>
 
     <div v-if="loading" class="field-details-grid">
-      <div class="field-details-card field-details-card--left field-details-card--loading">
+      <Card class="field-details-card field-details-card--left field-details-card--loading gap-0">
         <UiLoadingBar size="md" />
-      </div>
+      </Card>
     </div>
 
-    <div v-else-if="error" class="field-details-card field-details-card--left">
+    <Card v-else-if="error" class="field-details-card field-details-card--left gap-0">
       <p class="field-details-error">{{ error }}</p>
       <Button variant="outline" type="button" class="field-details-btn" @click="goBack">Вернуться к списку</Button>
-    </div>
+    </Card>
 
     <template v-else-if="field">
       <div class="field-details-grid">
-        <div class="field-details-card field-details-card--left">
+        <Card class="field-details-card field-details-card--left gap-0">
           <div class="field-details-title-row">
             <span class="field-details-title-icon" aria-hidden="true">
               <LayoutGridIcon :size="24" />
@@ -982,9 +983,9 @@ watch(
               </Button>
             </div>
           </form>
-        </div>
+        </Card>
 
-        <div class="field-details-card field-details-card--right">
+        <Card class="field-details-card field-details-card--right gap-0">
           <div class="field-details-media-header">
             <div>
               <h2 class="field-details-media-title">Медиафайлы и схемы поля</h2>
@@ -1084,10 +1085,10 @@ watch(
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <section class="field-details-card field-history-section">
+      <Card class="field-details-card field-history-section gap-0">
         <div class="field-details-media-header">
           <div>
             <h2 class="field-details-media-title">История взаимодействия с полем</h2>
@@ -1160,7 +1161,7 @@ watch(
 
           <UiPagination v-if="historyTotalFiltered > 0" :page="historyPage" :page-size="historyPageSize" :total="historyTotalFiltered" @update:page="goHistoryPage" @update:page-size="(n) => (historyPageSize = n)" />
         </template>
-      </section>
+      </Card>
     </template>
   </div>
 </template>

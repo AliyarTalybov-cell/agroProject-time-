@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Журнал складских операций по всем складам с фильтрами по виду и датам. */
@@ -68,7 +69,7 @@ watch(page, () => void load())
           Все складские операции. Нажмите на строку, чтобы увидеть движения, транспорт и документы. Ошибочную операцию руководитель отменяет — она не удаляется, а сторнируется.
         </p>
       </header>
-      <section class="ui-card">
+      <Card class="ui-card gap-0">
         <div class="ui-toolbar">
           <UiSelect v-model="group" :options="TYPE_GROUPS.map((g, i) => ({ value: i, label: g.label }))" aria-label="Вид операции" />
           <label class="journal-date">
@@ -86,7 +87,7 @@ watch(page, () => void load())
           <StockDocumentsTable :documents="rows" empty-text="Операций по фильтру нет." @changed="load" />
           <UiPagination v-if="total > 0" v-model:page="page" v-model:page-size="pageSize" :total="total" :page-size-options="[10, 20, 50]" />
         </template>
-      </section>
+      </Card>
     </div>
   </section>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
@@ -368,7 +369,7 @@ function onPageSizeChange(size: number) {
         </Button>
       </header>
 
-      <section class="fields-card">
+      <Card class="fields-card gap-0">
       <div v-if="!isSupabaseConfigured()" class="storage-alert" role="status">
         Supabase не настроен. Добавьте `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` в `frontend/.env.local`.
       </div>
@@ -455,7 +456,7 @@ function onPageSizeChange(size: number) {
         @update:page="setPage"
         @update:page-size="onPageSizeChange"
       />
-    </section>
+    </Card>
 
     <teleport to="body">
       <UiModal

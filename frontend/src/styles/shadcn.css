@@ -127,9 +127,14 @@
   [data-slot]::after {
     box-sizing: border-box;
     border: 0 solid var(--color-border);
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+
+  /* Отступы обнуляем только там, где они есть у браузера по умолчанию: у
+     контейнеров (Card и т. п.) отступы старых классов страниц сохраняются. */
+  :where(button, input, select, textarea, ul, ol, p, h1, h2, h3, h4, h5, h6, hr, figure, dl, dd, blockquote, fieldset)[data-slot] {
     margin: 0;
     padding: 0;
-    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
   }
 
   :where(button, input, select, textarea)[data-slot] {
@@ -171,14 +176,10 @@
      слоёв shadcn (списки выбора в окнах, строки-кнопки и т. п.), — без
      браузерного оформления, как под preflight. У старых классов страниц свои
      стили вне слоёв — они по-прежнему сильнее. */
-  :where(
-      [data-slot='dialog-content'],
-      [data-slot='alert-dialog-content'],
-      [data-slot='sheet-content'],
-      [data-slot='popover-content'],
-      [data-slot='card'],
-      .tw-scope
-    )
+  /* Свои кнопки/поля внутри новых компонентов (строки списков в окнах и т. п.)
+     — без браузерного оформления. Включается классом tw-scope на корне
+     компонента; старая вёрстка страниц внутри окон и карточек не затрагивается. */
+  :where(.tw-scope)
     :where(button, input, select, textarea) {
     font: inherit;
     letter-spacing: inherit;
@@ -190,14 +191,7 @@
     padding: 0;
   }
 
-  :where(
-      [data-slot='dialog-content'],
-      [data-slot='alert-dialog-content'],
-      [data-slot='sheet-content'],
-      [data-slot='popover-content'],
-      [data-slot='card'],
-      .tw-scope
-    )
+  :where(.tw-scope)
     :where(button) {
     cursor: pointer;
   }

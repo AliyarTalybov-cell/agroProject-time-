@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
@@ -785,7 +786,7 @@ async function exportToPdf() {
     </div>
 
     <!-- Список техники -->
-    <div v-show="activeTab === 'equipment'" class="equipment-list-card card-rounded">
+    <Card v-show="activeTab === 'equipment'" class="equipment-list-card card-rounded gap-0">
       <div class="equipment-list-header">
         <h2 class="equipment-list-title">
           <MenuIcon class="equipment-section-icon" />
@@ -889,9 +890,9 @@ async function exportToPdf() {
       </div>
 
       <UiPagination v-if="totalCount > 0" :page="currentPage" :page-size="PAGE_SIZE" :total="totalCount" hide-size @update:page="goToPage" />
-    </div>
+    </Card>
 
-    <div v-show="activeTab === 'implements'" class="equipment-list-card card-rounded">
+    <Card v-show="activeTab === 'implements'" class="equipment-list-card card-rounded gap-0">
       <div class="equipment-list-header">
         <h2 class="equipment-list-title">
           <PlusIcon class="equipment-section-icon" />
@@ -986,7 +987,7 @@ async function exportToPdf() {
       </div>
 
       <UiPagination v-if="implementsTotal > 0" :page="implementsPage" :page-size="implementsPageSize" :total="implementsTotal" :page-size-options="IMPLEMENTS_PAGE_SIZE_OPTIONS" @update:page="goToImplementsPage" @update:page-size="(n) => (implementsPageSize = n)" />
-    </div>
+    </Card>
   </section>
 </template>
 

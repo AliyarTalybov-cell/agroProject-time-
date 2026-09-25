@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
@@ -1588,7 +1589,7 @@ onMounted(async () => {
       </Tabs>
 
       <div v-show="activeTab === 'fields'" class="fields-tab-panel">
-      <div class="fields-card">
+      <Card class="fields-card gap-0">
         <div class="fields-toolbar">
           <InputGroup class="fields-search-wrap max-w-sm">
             <InputGroupAddon>
@@ -1762,7 +1763,7 @@ onMounted(async () => {
           </table>
         </div>
 
-      </div>
+      </Card>
       </div>
 
       <UiPagination v-show="activeTab === 'fields' && totalFiltered > 0" :page="currentPage" :page-size="pageSize" :total="totalFiltered" @update:page="setPage" @update:page-size="(n) => { pageSize = n; onPageSizeChange() }" />

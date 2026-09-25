@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
@@ -481,7 +482,7 @@ async function confirmDeleteAccount() {
     <div class="profile-layout">
       <!-- Левая колонка: карточка пользователя и активность -->
       <aside class="profile-card-aside">
-        <div class="profile-user-card card-rounded">
+        <Card class="profile-user-card card-rounded gap-0">
           <div class="profile-avatar-wrap">
             <button
               type="button"
@@ -523,7 +524,7 @@ async function confirmDeleteAccount() {
             <CheckIcon :size="14" />
             {{ roleLabel }}
           </div>
-        </div>
+        </Card>
 
         <div class="profile-contact-block card-rounded">
           <h3 class="profile-block-title">Контактная информация</h3>
@@ -559,7 +560,7 @@ async function confirmDeleteAccount() {
       </aside>
 
       <!-- Правая колонка: форма -->
-      <div class="profile-form-area card-rounded">
+      <Card class="profile-form-area card-rounded gap-0">
         <Tabs :model-value="activeTab">
           <TabsList>
             <TabsTrigger value="personal" @click="activeTab = 'personal'">Личные данные</TabsTrigger>
@@ -595,14 +596,14 @@ async function confirmDeleteAccount() {
               <label class="profile-label" for="pf-email">Электронная почта</label>
               <div class="profile-input-wrap">
                 <MailIcon class="profile-input-icon" />
-                <Input id="pf-email" v-model="profileForm.email" type="email" class="profile-input" placeholder="email@example.com" />
+                <Input id="pf-email" v-model="profileForm.email" type="email" class="profile-input pl-9" placeholder="email@example.com" />
               </div>
             </div>
             <div class="profile-field profile-field--full">
               <label class="profile-label" for="pf-phone">Номер телефона</label>
               <div class="profile-input-wrap">
                 <PhoneIcon class="profile-input-icon" />
-                <Input id="pf-phone" v-model="profileForm.phone" type="tel" class="profile-input" placeholder="+7 (___) ___-__-__" />
+                <Input id="pf-phone" v-model="profileForm.phone" type="tel" class="profile-input pl-9" placeholder="+7 (___) ___-__-__" />
               </div>
             </div>
             <div class="profile-field">
@@ -704,7 +705,7 @@ async function confirmDeleteAccount() {
           <p class="profile-form-section-desc">Настройте способ и частоту уведомлений.</p>
           <p class="profile-placeholder">Раздел в разработке.</p>
         </div>
-      </div>
+      </Card>
     </div>
   </section>
 

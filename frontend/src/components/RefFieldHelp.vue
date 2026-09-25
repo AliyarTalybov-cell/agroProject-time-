@@ -30,7 +30,7 @@ withDefaults(
     >
       <CircleHelpIcon class="size-4" />
     </PopoverTrigger>
-    <PopoverContent class="w-72 text-sm" align="start" @click.stop>
+    <PopoverContent class="tw-scope w-72 text-sm" align="start" @click.stop>
       <p class="text-muted-foreground leading-snug font-normal normal-case">{{ text }}</p>
       <RouterLink :to="to" class="text-primary mt-2 inline-flex items-center gap-1 text-sm font-medium hover:underline">
         {{ linkLabel }}

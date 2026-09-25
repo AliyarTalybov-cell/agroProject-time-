@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { ChevronLeftIcon } from '@lucide/vue'
@@ -170,7 +171,7 @@ async function saveEdit() {
       <p v-else-if="!batch" class="ui-alert">Партия не найдена.</p>
 
       <template v-else>
-        <section class="ui-card batch-head">
+        <Card class="ui-card batch-head gap-0">
           <div class="batch-title-row">
             <div>
               <h2 class="batch-title">{{ batch.code }} · {{ batch.cropLabel }}</h2>
@@ -210,10 +211,10 @@ async function saveEdit() {
             <Button variant="outline" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'processing' }">Подработка</Button>
             <Button variant="outline" type="button" class="ui-soft-btn" @click="openEdit">Изменить данные партии</Button>
           </div>
-        </section>
+        </Card>
 
         <div class="batch-grid">
-          <section class="ui-card">
+          <Card class="ui-card gap-0">
             <h3 class="ui-card-title">Где лежит</h3>
             <p v-if="!placements.length" class="ui-muted">Партия полностью израсходована.</p>
             <ul v-else class="batch-list">
@@ -222,8 +223,8 @@ async function saveEdit() {
                 <span class="ui-num ui-strong">{{ formatTons(p.tons) }}</span>
               </li>
             </ul>
-          </section>
-          <section class="ui-card">
+          </Card>
+          <Card class="ui-card gap-0">
             <h3 class="ui-card-title">Качество</h3>
             <p v-if="!qualityRows.length" class="ui-muted">Показатели не внесены.</p>
             <dl v-else class="batch-dl">
@@ -233,13 +234,13 @@ async function saveEdit() {
               </template>
             </dl>
             <p v-if="batch.comment" class="ui-muted batch-comment">{{ batch.comment }}</p>
-          </section>
+          </Card>
         </div>
 
-        <section class="ui-card">
+        <Card class="ui-card gap-0">
           <h3 class="ui-card-title">История партии</h3>
           <StockDocumentsTable :documents="documents" :scope-batch-id="batch.id" @changed="load" />
-        </section>
+        </Card>
       </template>
     </div>
 

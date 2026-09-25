@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Input } from '@/components/ui/shadcn/input'
@@ -3728,7 +3729,7 @@ onMounted(() => void reloadAll())
     <div v-if="loading"><UiLoadingBar /></div>
 
     <div v-else class="lands-content">
-      <section v-if="!isDetailsMode" class="lands-card page-enter-item">
+      <Card v-if="!isDetailsMode" class="lands-card page-enter-item gap-0">
         <div class="lands-tabs lands-tabs--top">
           <template v-if="landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs'">
             <button type="button" class="lands-tab-btn" :class="{ 'is-active': landsRootTab === 'rights-refs' }" @click="landsRootTab = 'rights-refs'">
@@ -4454,9 +4455,9 @@ onMounted(() => void reloadAll())
             </div>
           </div>
         </template>
-      </section>
+      </Card>
 
-      <section v-if="isDetailsMode" class="lands-card page-enter-item">
+      <Card v-if="isDetailsMode" class="lands-card page-enter-item gap-0">
         <template v-if="selectedLand">
           <h2>Паспорт участка</h2>
           <div class="lands-overview-grid">
@@ -4777,7 +4778,7 @@ onMounted(() => void reloadAll())
           />
         </template>
         <p v-else class="lands-muted">Участок не найден или не выбран.</p>
-      </section>
+      </Card>
     </div>
 
     <teleport to="body">

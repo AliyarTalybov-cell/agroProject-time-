@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Button } from '@/components/ui/shadcn/button'
@@ -204,10 +205,10 @@ function openEmployee(e: EmployeeRow) {
       </div>
 
       <div v-else class="emp-grid">
-        <article
+        <Card
           v-for="e in employees"
           :key="e.id"
-          class="emp-card"
+          class="emp-card gap-0"
           :class="{ 'emp-card--readonly': !canManage }"
           :tabindex="canManage ? 0 : -1"
           @click="openEmployee(e)"
@@ -248,7 +249,7 @@ function openEmployee(e: EmployeeRow) {
             </div>
             <span class="emp-badge" :class="roleClass(e.role)">{{ roleLabel(e.role) }}</span>
           </div>
-        </article>
+        </Card>
       </div>
       <UiPagination v-if="!loading && total > 0" :page="page" :page-size="pageSize" :total="total" :page-size-options="[5, 8, 12, 24, 48]" @update:page="goPage" @update:page-size="(n) => (pageSize = n)" />
     </div>

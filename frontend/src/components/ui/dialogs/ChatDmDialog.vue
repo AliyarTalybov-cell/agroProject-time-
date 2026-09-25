@@ -24,7 +24,7 @@ function name(row: EmployeeRow) {
       <Search class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
       <Input v-model="search" type="search" placeholder="Поиск по сотрудникам…" class="pl-9" autocomplete="off" autofocus />
     </div>
-    <ScrollArea class="h-72 rounded-lg border">
+    <ScrollArea class="tw-scope h-72 rounded-lg border">
       <div class="grid p-1">
         <button
           v-for="row in results"

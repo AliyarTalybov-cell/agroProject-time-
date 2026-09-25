@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { PlusIcon, SearchIcon } from '@lucide/vue'
@@ -149,7 +150,7 @@ function onIntakeDone() {
         </div>
       </header>
 
-      <section class="ui-card">
+      <Card class="ui-card gap-0">
         <div class="ui-toolbar">
           <label class="ui-search">
             <SearchIcon />
@@ -212,7 +213,7 @@ function onIntakeDone() {
           </div>
           <UiPagination v-model:page="page" v-model:page-size="pageSize" :total="filtered.length" :page-size-options="[10, 20, 50, 100]" />
         </template>
-      </section>
+      </Card>
     </div>
 
     <teleport to="body">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Button } from '@/components/ui/shadcn/button'
 import { CalendarIcon, ChevronDownIcon, ChevronLeftIcon, CircleCheckIcon, CircleQuestionMarkIcon, ClipboardCheckIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, LeafIcon, PenLineIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon, WrenchIcon } from '@lucide/vue'
@@ -475,19 +476,19 @@ onMounted(refreshAll)
     </div>
 
     <div v-if="loading" class="field-details-grid">
-      <div class="field-details-card field-details-card--left field-details-card--loading">
+      <Card class="field-details-card field-details-card--left field-details-card--loading gap-0">
         <UiLoadingBar size="md" />
-      </div>
+      </Card>
     </div>
 
-    <div v-else-if="error" class="field-details-card field-details-card--left" role="alert">
+    <Card v-else-if="error" class="field-details-card field-details-card--left gap-0" role="alert">
       <p class="field-details-error">{{ error }}</p>
       <Button variant="outline" type="button" class="field-details-btn" @click="goBack">Вернуться к списку</Button>
-    </div>
+    </Card>
 
     <template v-else-if="equipment">
       <div class="field-details-grid">
-        <div class="field-details-card field-details-card--left">
+        <Card class="field-details-card field-details-card--left gap-0">
           <div class="field-details-title-row">
             <span class="field-details-title-icon" aria-hidden="true">
               <TruckIcon :size="22" />
@@ -642,9 +643,9 @@ onMounted(refreshAll)
               <p class="field-details-notes-text">{{ equipment.notes }}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div class="field-details-card field-details-card--right">
+        <Card class="field-details-card field-details-card--right gap-0">
           <div class="field-details-media-header">
             <div>
               <h2 class="field-details-media-title">Фото</h2>
@@ -708,10 +709,10 @@ onMounted(refreshAll)
             </div>
           </div>
           <div v-else class="field-details-muted" style="padding-top: 12px;">Пока нет фото.</div>
-        </div>
+        </Card>
       </div>
 
-      <section class="field-details-card equipment-history-section">
+      <Card class="field-details-card equipment-history-section gap-0">
         <div class="field-details-media-header">
           <div>
             <h2 class="field-details-media-title">История взаимодействия</h2>
@@ -850,7 +851,7 @@ onMounted(refreshAll)
 
           <UiPagination v-if="historyTotalFiltered > 0" :page="historyPage" :page-size="historyPageSize" :total="historyTotalFiltered" @update:page="goHistoryPage" @update:page-size="(n) => (historyPageSize = n)" />
         </template>
-      </section>
+      </Card>
     </template>
 
     <ImagePreviewDialog

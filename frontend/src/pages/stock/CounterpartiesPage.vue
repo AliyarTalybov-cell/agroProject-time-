@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from '@/components/ui/shadcn/card'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { PlusIcon, SearchIcon, Trash2Icon } from '@lucide/vue'
@@ -85,7 +86,7 @@ async function confirmDelete() {
           </Button>
         </div>
       </header>
-      <section class="ui-card">
+      <Card class="ui-card gap-0">
         <div class="ui-toolbar">
           <label class="ui-search">
             <SearchIcon />
@@ -131,7 +132,7 @@ async function confirmDelete() {
           </div>
           <UiPagination v-model:page="page" v-model:page-size="pageSize" :total="filtered.length" :page-size-options="[10, 20, 50]" />
         </template>
-      </section>
+      </Card>
     </div>
     <teleport to="body">
       <CounterpartyModal v-if="editing" :counterparty="editing === 'new' ? null : editing" @close="editing = null" @done="onSaved" />

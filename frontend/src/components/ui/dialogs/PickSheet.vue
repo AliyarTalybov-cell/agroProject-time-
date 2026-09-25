@@ -24,7 +24,7 @@ const open = defineModel<boolean>('open', { required: true })
         <SheetDescription>{{ label }}</SheetDescription>
         <SheetTitle class="text-lg">{{ title }}</SheetTitle>
       </SheetHeader>
-      <ScrollArea class="min-h-0 flex-1 px-4 pb-4">
+      <ScrollArea class="tw-scope min-h-0 flex-1 px-4 pb-4">
         <div class="grid gap-2">
           <button
             v-for="item in items"
