@@ -1199,7 +1199,9 @@ select:is(
 
 /* Тело старых окон внутри UiModal: свой отступ и прокрутка у них больше не
    нужны — это делает тело Dialog. */
-.ui-dialog-body > [class*='modal-body'] {
+.ui-dialog-body > [class*='modal-body'],
+.ui-dialog-body .modal-body,
+.ui-dialog-body .modal-form-fieldset {
   padding: 0 !important;
   max-height: none !important;
   overflow: visible !important;

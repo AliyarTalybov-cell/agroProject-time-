@@ -2925,3 +2925,12 @@
     width: 100%;
   }
 }
+
+/* Окна задач теперь — UiModal (Dialog shadcn). Обёртки .modal-tm-form /
+   .modal-tm-detail внутри окна держат переменные и правила полей, как раньше. */
+.modal-tm-form,
+.modal-tm-detail {
+  --agro: var(--accent-green);
+  --agro-dark: var(--accent-green-hover);
+  --agro-light: color-mix(in srgb, var(--accent-green) 24%, transparent);
+}

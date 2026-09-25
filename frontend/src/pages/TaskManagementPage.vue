@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiButton from '@/components/ui/UiButton.vue'
+import UiModal from '@/components/ui/UiModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -34,7 +36,6 @@ import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { downloadDelimited, escapeHtml, openPdfInNewTab, renderTablePdfFitPage } from '@/lib/tableExport'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
-import ModalCloseButton from '@/components/ModalCloseButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
 
@@ -1320,32 +1321,15 @@ function statusClass(s: Status) {
       </div>
     </div>
 
-    <!-- Modal: New Task (оформление как модалка календаря) -->
-    <Teleport to="body">
-      <div v-if="showCreateModal" class="task-modal-backdrop tm-modal-backdrop" @click.self="closeCreate">
-        <div class="modal modal-tm-form" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" @click.stop>
-          <form class="modal-form modal-form--design" @submit.prevent="createTask">
-            <div class="modal-header modal-header--design">
-              <div class="modal-header-main">
-                <div class="modal-icon modal-icon--design" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                    <path d="M9 12h6" />
-                    <path d="M9 16h6" />
-                  </svg>
-                </div>
-                <div class="modal-header-text">
-                  <h2 id="task-modal-title" class="modal-title modal-title--design">
-                    {{ editingTaskId ? 'Редактирование задачи' : 'Новая задача' }}
-                  </h2>
-                  <p v-if="editingTaskId" class="modal-task-id modal-task-id--design">
-                    № {{ getTaskNumber(editingTaskId) }}
-                  </p>
-                </div>
-              </div>
-              <ModalCloseButton @click="closeCreate" />
-            </div>
+    <!-- Окно новой / редактируемой задачи — UiModal (Dialog shadcn) -->
+    <UiModal
+      v-if="showCreateModal"
+      :title="editingTaskId ? 'Редактирование задачи' : 'Новая задача'"
+      :description="editingTaskId ? `№ ${getTaskNumber(editingTaskId)}` : undefined"
+      :max-width="672"
+      @close="closeCreate"
+    >
+      <form id="task-create-form" class="modal-tm-form modal-form--design" @submit.prevent="createTask">
             <fieldset class="modal-form-fieldset">
               <div class="modal-body">
                 <label class="modal-field modal-field--design">
@@ -1515,41 +1499,25 @@ function statusClass(s: Status) {
                   </div>
                 </div>
               </div>
-              <div class="modal-actions modal-actions--design">
-                <div class="modal-actions-right">
-                  <button type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="closeCreate">Отмена</button>
-                  <button type="submit" class="modal-btn modal-btn--design" :disabled="!form.title.trim() || isSavingTask">
-                    {{ isSavingTask ? 'Сохранение...' : (editingTaskId ? 'Сохранить изменения' : 'Создать задачу') }}
-                  </button>
-                </div>
-              </div>
             </fieldset>
-          </form>
-        </div>
-      </div>
-    </Teleport>
+      </form>
+      <template #actions>
+        <UiButton @click="closeCreate">Отмена</UiButton>
+        <UiButton variant="primary" type="submit" form="task-create-form" :disabled="!form.title.trim() || isSavingTask">
+          {{ isSavingTask ? 'Сохранение...' : (editingTaskId ? 'Сохранить изменения' : 'Создать задачу') }}
+        </UiButton>
+      </template>
+    </UiModal>
 
-    <!-- Modal: Task detail -->
-    <Teleport to="body">
-      <div v-if="selectedTask" class="task-modal-backdrop tm-modal-backdrop" @click.self="closeTask">
-        <div class="modal modal-tm-detail task-modal--detail" role="dialog" aria-labelledby="task-detail-title" @click.stop>
-          <div class="modal-header modal-header--design">
-            <div class="modal-header-main">
-              <div class="modal-icon modal-icon--design" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                  <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                  <path d="M9 12h6" />
-                  <path d="M9 16h6" />
-                </svg>
-              </div>
-              <div class="modal-header-text">
-                <h2 id="task-detail-header-title" class="modal-title modal-title--design">Задача</h2>
-                <p class="modal-task-id modal-task-id--design">№ {{ getTaskNumber(selectedTask.id) }}</p>
-              </div>
-            </div>
-            <ModalCloseButton @click="closeTask" />
-          </div>
+    <!-- Карточка задачи — UiModal (Dialog shadcn) -->
+    <UiModal
+      v-if="selectedTask"
+      title="Задача"
+      :description="`№ ${getTaskNumber(selectedTask.id)}`"
+      :max-width="940"
+      @close="closeTask"
+    >
+      <div class="modal-tm-detail task-detail-body">
           <p v-if="taskModalError" class="tm-error tm-error--modal" role="alert">{{ taskModalError }}</p>
           <div class="task-detail-layout">
             <div v-if="isMetaInitialLoading" class="task-detail-loading-overlay" aria-hidden="true">
@@ -1795,22 +1763,13 @@ function statusClass(s: Status) {
               </button>
             </form>
           </section>
-          <div class="modal-actions modal-actions--design task-detail-actions">
-            <div v-if="canDeleteSelectedTask" class="task-detail-del-wrap">
-              <UiDeleteButton size="md" @click="deleteTask" />
-            </div>
-            <div class="modal-actions-right">
-              <button type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="openEdit">
-                Редактировать
-              </button>
-              <button type="button" class="modal-btn modal-btn--design" @click="closeTask">
-                Закрыть
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
-    </Teleport>
+      <template #actions>
+        <UiButton v-if="canDeleteSelectedTask" variant="danger" class="sm:mr-auto" @click="deleteTask">Удалить</UiButton>
+        <UiButton @click="openEdit">Редактировать</UiButton>
+        <UiButton variant="primary" @click="closeTask">Закрыть</UiButton>
+      </template>
+    </UiModal>
 
     <UiSuccessModal
       :open="successModalOpen"
