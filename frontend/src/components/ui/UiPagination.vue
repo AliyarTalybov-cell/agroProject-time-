@@ -116,7 +116,7 @@ function onSizeChange(e: Event) {
   justify-content: space-between;
   gap: var(--space-md);
   margin-top: var(--space-md);
-  padding: var(--space-md) var(--space-lg) 0;
+  padding: var(--space-md) 4px 0;
   border-top: 1px solid var(--border-color);
   min-height: 40px;
 }
@@ -152,13 +152,13 @@ function onSizeChange(e: Event) {
   height: 36px;
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 
 .fields-page-btn:disabled {
@@ -168,19 +168,16 @@ function onSizeChange(e: Event) {
 
 .fields-page-btn--edge {
   width: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-base);
 }
 
 .fields-page-btn--active {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: rgba(76, 175, 80, 0.5);
-  color: var(--text-primary);
+  border-color: var(--input-border);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-xs);
 }
 
 .fields-page-btn:hover:not(:disabled):not(.fields-page-btn--active) {
-  background: var(--bg-panel-hover);
+  background: var(--muted-bg);
 }
 
 .fields-page-ellipsis {
@@ -205,12 +202,12 @@ function onSizeChange(e: Event) {
   height: 36px;
   min-width: 72px;
   padding: 0 28px 0 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
   color: var(--text-primary);
   font-size: 0.875rem;
-  font-weight: 500;
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
 }
 

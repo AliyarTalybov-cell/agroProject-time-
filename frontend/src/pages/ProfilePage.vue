@@ -773,7 +773,7 @@ async function confirmDeleteAccount() {
 .profile-page-title {
   margin: 0 0 4px 0;
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -1342,11 +1342,11 @@ async function confirmDeleteAccount() {
 .profile-confirm-modal {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   padding: var(--space-xl);
   max-width: 400px;
   width: 100%;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-confirm-modal--danger {

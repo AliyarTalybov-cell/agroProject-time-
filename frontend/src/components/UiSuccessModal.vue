@@ -44,12 +44,12 @@ function close() {
 
 .ui-success-modal {
   width: min(92vw, 460px);
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   padding: 26px 24px 22px;
   text-align: center;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
   animation: uiSuccessModalIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -73,7 +73,7 @@ function close() {
 .success-modal-title {
   margin: 0;
   font-size: 1.2rem;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -87,12 +87,12 @@ function close() {
 .success-modal-btn {
   margin-top: 18px;
   min-width: 140px;
-  height: 42px;
-  border-radius: 12px;
+  height: var(--control-h);
+  border-radius: var(--radius-md);
   border: 1px solid var(--accent-green);
   background: var(--accent-green);
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
 }

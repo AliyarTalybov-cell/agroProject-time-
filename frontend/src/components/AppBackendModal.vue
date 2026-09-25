@@ -52,9 +52,9 @@ const emit = defineEmits<{
   max-width: 420px;
   background: var(--bg-elevated, #fff);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: var(--space-xl);
-  box-shadow: var(--shadow-card, 0 18px 48px rgba(0, 0, 0, 0.22));
+  box-shadow: var(--shadow-sm);
 }
 
 .backend-modal__header {
@@ -68,10 +68,10 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--control-h);
+  height: var(--control-h);
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: var(--danger-red, #b91c1c);
   background: color-mix(in srgb, var(--danger-red, #b91c1c) 12%, transparent);
 }
@@ -80,7 +80,7 @@ const emit = defineEmits<{
   margin: 0;
   flex: 1;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -108,9 +108,9 @@ const emit = defineEmits<{
 }
 
 .backend-modal__retry {
-  height: 40px;
+  height: var(--control-h);
   padding: 0 20px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--accent-green);
   background: var(--accent-green);
   color: #fff;

@@ -182,10 +182,10 @@ watch(
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
   background: var(--bg-elevated);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
 }
 
 [data-theme='dark'] .emp-modal {
@@ -241,7 +241,7 @@ watch(
 .emp-label {
   display: block;
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 8px;
 }
@@ -249,7 +249,7 @@ watch(
 .emp-input {
   width: 100%;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   padding: 12px 14px;
   font-size: 0.9375rem;
   background: var(--bg-elevated);
@@ -299,7 +299,7 @@ watch(
 }
 .emp-role-card {
   border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   padding: 14px 16px;
   background: var(--bg-elevated);
   cursor: pointer;
@@ -324,7 +324,7 @@ watch(
   pointer-events: none;
 }
 .emp-role-title {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 2px;
 }
@@ -347,7 +347,7 @@ watch(
 }
 
 .emp-btn {
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   padding: 11px 20px;
   font-size: 0.9375rem;
   font-weight: 600;

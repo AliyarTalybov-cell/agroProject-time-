@@ -75,7 +75,7 @@ withDefaults(
     Roboto,
     sans-serif;
   letter-spacing: 1px;
-  font-weight: 700;
+  font-weight: 600;
   color: #fff;
   filter: drop-shadow(2px 2px 0 var(--lb-text-shadow));
   pointer-events: none;

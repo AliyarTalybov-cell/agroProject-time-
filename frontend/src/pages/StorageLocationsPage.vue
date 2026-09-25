@@ -568,9 +568,9 @@ function onPageSizeChange(size: number) {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 38px;
+  height: var(--control-h);
   border: 1px solid var(--accent-green);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--accent-green);
   color: #fff;
   padding: 0 14px;
@@ -602,8 +602,8 @@ function onPageSizeChange(size: number) {
 .fields-card {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
   padding: 12px;
 }
 
@@ -635,9 +635,9 @@ function onPageSizeChange(size: number) {
 
 .fields-search-input {
   width: 100%;
-  height: 38px;
+  height: var(--control-h);
   border: 1px solid var(--toolbar-form-surface-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--toolbar-form-surface);
   color: var(--text-primary);
   padding: 0 12px 0 34px;
@@ -663,7 +663,7 @@ function onPageSizeChange(size: number) {
 .fields-table-wrap {
   overflow: visible;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   position: relative;
   z-index: 1;
 }
@@ -688,9 +688,7 @@ function onPageSizeChange(size: number) {
 
 .fields-table th {
   font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -974,10 +972,8 @@ function onPageSizeChange(size: number) {
 
 .task-form-label {
   display: block;
-  font-size: 0.64rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
   margin-bottom: 5px;
   line-height: 1.3;

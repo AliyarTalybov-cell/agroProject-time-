@@ -56,19 +56,22 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </template>
 
 <style scoped>
+/* Dialog shadcn-vue: rounded-lg, border, shadow-lg, p-6, заголовок text-lg semibold,
+   кнопки справа с зазором 8px. Шапка и низ остаются на месте при прокрутке тела. */
 .modal-backdrop {
   z-index: 1000;
   padding: 24px;
 }
 
 .modal {
+  display: flex;
+  flex-direction: column;
   max-height: 90vh;
-  overflow-y: auto;
-  background: #fff;
+  overflow: hidden;
+  background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
-  overscroll-behavior: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-header {
@@ -76,29 +79,49 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid var(--border-color);
+  padding: 20px 24px 0;
 }
 
 .modal-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--text-primary);
 }
 
 .modal-body {
-  padding: 12px 16px 14px;
+  padding: 16px 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 16px 24px 20px;
   border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    padding: 16px;
+  }
+
+  .modal-header {
+    padding: 16px 16px 0;
+  }
+
+  .modal-body {
+    padding: 12px 16px 16px;
+  }
+
+  .modal-actions {
+    padding: 12px 16px 16px;
+  }
 }
 </style>

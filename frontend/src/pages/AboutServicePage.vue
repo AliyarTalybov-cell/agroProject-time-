@@ -306,9 +306,7 @@ const marqueeParts = [
 
 .about-landing__meta {
   font-family: var(--ab-font-mono);
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
   color: var(--ab-meta);
 }
 
@@ -783,11 +781,9 @@ const marqueeParts = [
 
 .about-contact__title {
   margin: 0 0 6px;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-family: var(--ab-font-mono);
   font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--ab-meta);
 }
 

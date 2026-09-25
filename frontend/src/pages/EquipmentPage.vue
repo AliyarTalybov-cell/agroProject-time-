@@ -1625,11 +1625,9 @@ async function exportToPdf() {
 }
 
 .equipment-table th {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
   background: #fafafa;
 }
 

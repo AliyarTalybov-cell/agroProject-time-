@@ -207,10 +207,8 @@ onUnmounted(() => {
   align-self: flex-start;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--warning-orange);
   background: color-mix(in srgb, var(--warning-orange) 16%, transparent);
 }

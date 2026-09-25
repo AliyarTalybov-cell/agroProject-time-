@@ -275,10 +275,10 @@ watch(
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
   background: var(--bg-elevated);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
 }
 [data-theme='dark'] .eem-modal {
   background: var(--bg-elevated);
@@ -291,7 +291,7 @@ watch(
 }
 .eem-msg {
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   border: 1px solid transparent;
   margin-bottom: 16px;
   font-size: 0.9375rem;
@@ -377,7 +377,7 @@ watch(
 }
 .eem-meta-label {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 .eem-meta-value {
@@ -496,14 +496,14 @@ watch(
 .eem-label {
   display: block;
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 8px;
 }
 .eem-input {
   width: 100%;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   padding: 12px 14px;
   font-size: 0.9375rem;
   background: var(--bg-elevated);
@@ -569,7 +569,7 @@ watch(
   gap: 12px;
 }
 .eem-btn {
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   padding: 11px 20px;
   font-size: 0.9375rem;
   font-weight: 600;
@@ -613,17 +613,17 @@ watch(
 .eem-confirm-modal {
   width: 100%;
   max-width: 420px;
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
   background: var(--bg-elevated);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
   padding: 20px;
 }
 [data-theme='dark'] .eem-confirm-modal {
   background: var(--bg-elevated);
 }
 .eem-confirm-title {
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 8px;
 }

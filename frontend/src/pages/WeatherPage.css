@@ -55,8 +55,6 @@
   gap: 8px;
   font-size: 0.875rem;
   opacity: 0.85;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .weather-hero-city {
@@ -759,9 +757,7 @@
   margin: 0;
   color: var(--text-primary);
   font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .weather-page-title p {
@@ -964,9 +960,7 @@
   margin-bottom: 16px;
   color: #334155;
   font-size: 0.875rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .weather-page :deep(.weather-indicators-grid) {
@@ -1020,11 +1014,9 @@
 }
 
 .weather-page :deep(.weather-indicator-label) {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 700;
+  font-weight: 500;
   color: #94a3b8;
   line-height: 1.1;
   grid-area: label;
@@ -1234,10 +1226,8 @@
 .weather-agro-card-label,
 .weather-air-label,
 .weather-history-label {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .weather-agro-card-value,
@@ -1349,9 +1339,7 @@
   align-items: baseline;
   margin: 0 0 8px;
   font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .weather-insight-panel .weather-block-subtitle {
@@ -1489,9 +1477,8 @@
   background: #ecfdf5;
   color: #059669;
   border: 1px solid #bbf7d0;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .weather-air-metrics {
@@ -1529,10 +1516,8 @@
 
 .weather-air-metrics b {
   color: #94a3b8;
-  font-size: 0.58rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .weather-air-metrics strong {
@@ -2025,11 +2010,9 @@
 
 .weather-forecast5-alert {
   margin-top: 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--danger-red);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   line-height: 1.3;
 }
 
@@ -2192,9 +2175,7 @@
 }
 
 .weather-param-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   margin-bottom: 4px;
 }
@@ -2314,9 +2295,7 @@
 /* Макетный размер шрифтов/иконок для блока рекомендаций */
 .weather-recommendations .weather-block-title {
   font-size: 0.875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
   margin: 0 0 8px;
 }
 

@@ -431,7 +431,7 @@ onMounted(() => {
 .notifications-card {
   background: var(--bg-panel);
   border: 1px solid color-mix(in srgb, var(--border-color) 86%, transparent);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 12px;
   display: grid;
   gap: 8px;
@@ -466,14 +466,14 @@ onMounted(() => {
   background: color-mix(in srgb, var(--bg-panel) 92%, #fff);
   color: var(--text-secondary);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: lowercase;
   padding: 6px 14px;
 }
 
 .notification-item {
   border: 1px solid color-mix(in srgb, var(--border-color) 86%, transparent);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--bg-panel);
   padding: 11px 14px;
   display: grid;
@@ -528,7 +528,7 @@ onMounted(() => {
   color: var(--text-primary);
   font-size: 1.16rem;
   line-height: 1.2;
-  font-weight: 700;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -571,7 +571,7 @@ onMounted(() => {
 
 .notification-task-link {
   color: color-mix(in srgb, var(--agro) 86%, #2f4733);
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -599,7 +599,7 @@ onMounted(() => {
 
 .notifications-empty {
   border: 1px dashed color-mix(in srgb, var(--border-color) 86%, transparent);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   color: var(--text-secondary);
   padding: 14px;
 }

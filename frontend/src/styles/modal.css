@@ -356,3 +356,82 @@
   }
 }
 
+
+/* ——— Окна в стиле Dialog shadcn-vue: скругление 10px, тень shadow-lg ———
+   Для всех окон из реестра выше, в обеих темах. Тёмный фон окна — как у
+   карточек (bg-panel), без полупрозрачных подложек шапки и низа. */
+:is(
+  .modal,
+  .task-modal,
+  .lands-modal,
+  .chat-page__modal,
+  .app-modal,
+  .emp-modal,
+  .eem-modal,
+  .eem-confirm-modal,
+  .fields-confirm-modal,
+  .profile-confirm-modal,
+  .modal-confirm
+) {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+[data-theme='dark'] :is(
+  .modal,
+  .task-modal,
+  .lands-modal,
+  .chat-page__modal,
+  .app-modal,
+  .emp-modal,
+  .eem-modal,
+  .eem-confirm-modal,
+  .fields-confirm-modal,
+  .profile-confirm-modal,
+  .modal-confirm
+) {
+  background: var(--bg-panel) !important;
+}
+
+[data-theme='dark'] :where(
+  .modal-header,
+  .modal-body,
+  .modal-head,
+  .modal-title-row,
+  .task-modal-header,
+  .lands-modal-head,
+  .app-modal-header,
+  .modal-actions,
+  .task-modal-footer,
+  .lands-modal-actions,
+  .app-modal-footer,
+  .profile-confirm-actions
+) {
+  background: transparent !important;
+}
+
+[data-theme='dark'] :where(
+  .modal,
+  .modal-calendar,
+  .task-modal,
+  .lands-modal,
+  .chat-page__modal,
+  .app-modal,
+  .emp-modal,
+  .eem-modal,
+  .eem-confirm-modal,
+  .fields-confirm-modal,
+  .profile-confirm-modal,
+  .modal-confirm
+) :is(input, select, textarea, .input) {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+}
+
+:root {
+  --modal-backdrop: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] {
+  --modal-backdrop: rgba(0, 0, 0, 0.7);
+}

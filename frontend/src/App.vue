@@ -8,7 +8,6 @@ import AppBackendBadge from '@/components/AppBackendBadge.vue'
 import AppBackendModal from '@/components/AppBackendModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import ModalCloseButton from '@/components/ModalCloseButton.vue'
-import NavStatusHint from '@/components/NavStatusHint.vue'
 import { chatTotalUnread, refreshChatTotalUnread } from '@/lib/chatSupabase'
 import { countMyUnreadNotifications } from '@/lib/notificationsSupabase'
 import { startActivityHeartbeat, stopActivityHeartbeat } from '@/lib/activityHeartbeat'
@@ -110,6 +109,14 @@ const warehousesNavExpanded = ref(
 const grainNavExpanded = ref(
   route.path.startsWith('/grain'),
 )
+
+// Раздел открытой страницы раскрыт, как в Sidebar shadcn: при прямом заходе по
+// ссылке маршрут известен не сразу, поэтому раскрываем по его изменению.
+// Свернуть раздел вручную можно по-прежнему, другие разделы не трогаем.
+watch(landsSectionActive, (on) => { if (on) landsNavExpanded.value = true }, { immediate: true })
+watch(warehousesSectionActive, (on) => { if (on) warehousesNavExpanded.value = true }, { immediate: true })
+watch(grainSectionActive, (on) => { if (on) grainNavExpanded.value = true }, { immediate: true })
+watch(referencesNavActive, (on) => { if (on) settingsNavExpanded.value = true }, { immediate: true })
 
 function toggleLandsNavSubmenu() {
   landsNavExpanded.value = !landsNavExpanded.value
@@ -369,7 +376,6 @@ watch(
                   </svg>
                 </span>
                 <span class="nav-item-label">Склады</span>
-                <NavStatusHint text="Раздел «Склады» ещё не завершён — функционал и логика будут дорабатываться." />
                 <svg class="nav-group-chevron" :class="{ 'is-open': warehousesNavExpanded, 'is-active': warehousesSectionActive }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <ul class="nav-submenu">
@@ -417,7 +423,6 @@ watch(
                   </svg>
                 </span>
                 <span class="nav-item-label">Учёт зерна</span>
-                <NavStatusHint text="Раздел «Учёт зерна» ещё не завершён — функционал и логика будут дорабатываться." />
                 <svg class="nav-group-chevron" :class="{ 'is-open': grainNavExpanded, 'is-active': grainSectionActive }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <ul class="nav-submenu">
@@ -501,7 +506,7 @@ watch(
         </div>
 
         <div class="nav-section nav-section-secondary">
-          <div class="nav-section-label">ОПЕРАЦИИ</div>
+          <div class="nav-section-label">Операции</div>
           <ul class="nav-menu">
             <li>
               <RouterLink class="nav-item" to="/mechanic">
@@ -515,7 +520,7 @@ watch(
         </div>
 
         <div class="nav-section nav-section-secondary">
-          <div class="nav-section-label">СВЯЗЬ</div>
+          <div class="nav-section-label">Связь</div>
           <ul class="nav-menu">
             <li>
               <RouterLink class="nav-item" to="/employees">
@@ -557,7 +562,7 @@ watch(
         </div>
 
         <div class="nav-section nav-section-secondary">
-          <div class="nav-section-label">НАСТРОЙКИ</div>
+          <div class="nav-section-label">Настройки</div>
           <ul class="nav-menu">
             <li class="nav-item-group" :class="{ 'nav-item-group--open': settingsNavExpanded }">
               <button

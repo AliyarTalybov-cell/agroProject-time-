@@ -47,10 +47,10 @@
   align-items: center;
   justify-content: center;
   min-width: 36px;
-  height: 36px;
+  height: var(--control-h);
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -91,10 +91,10 @@
   white-space: nowrap;
 }
 .fields-pagination-select {
-  height: 36px;
+  height: var(--control-h);
   min-width: 72px;
   padding: 0 28px 0 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-panel);
   color: var(--text-primary);

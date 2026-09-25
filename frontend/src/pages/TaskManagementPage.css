@@ -42,8 +42,8 @@
 
 /* Единая высота и стиль элементов шапки задач */
 .task-header {
-  --task-control-h: 38px;
-  --task-control-radius: 10px;
+  --task-control-h: var(--control-h);
+  --task-control-radius: var(--radius-md);
   --task-control-fs: 0.875rem;
   display: flex;
   flex-wrap: wrap;
@@ -72,10 +72,21 @@
   gap: var(--space-sm);
 }
 
+/* «Все задачи / На мне» — Tabs shadcn */
 .task-filter-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
+  display: inline-flex;
+  align-items: center;
+  height: var(--task-control-h);
+  padding: 3px;
+  border-radius: var(--radius-lg);
+  background: var(--muted-bg);
+}
+
+.task-filter-tabs .task-filter-tab {
+  height: 100%;
+  padding: 0 12px;
+  border-color: transparent;
+  border-radius: var(--radius-md);
 }
 
 .task-filter-tab,
@@ -83,11 +94,12 @@
   height: var(--task-control-h);
   display: inline-flex;
   align-items: center;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--border-color);
-  background: transparent;
-  color: var(--text-secondary);
+  padding: 0 12px;
+  border-radius: var(--task-control-radius);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
   font-size: var(--task-control-fs);
   font-weight: 500;
   cursor: pointer;
@@ -132,8 +144,8 @@
 }
 
 .task-filter-apply-dates:hover {
-  background: var(--accent-green-hover);
-  border-color: var(--accent-green-hover);
+  background: color-mix(in srgb, var(--accent-green) 90%, black);
+  border-color: transparent;
   color: #fff;
 }
 
@@ -142,10 +154,18 @@
   cursor: not-allowed;
 }
 
-.task-filter-tab:hover:not(.task-filter-tab--active),
-.task-filter-pill:hover:not(:disabled) {
-  background: var(--sidebar-hover-bg);
+.task-filter-tabs .task-filter-tab {
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-secondary);
+}
+
+.task-filter-tab:hover:not(.task-filter-tab--active) {
   color: var(--text-primary);
+}
+
+.task-filter-pill:hover:not(:disabled) {
+  background: var(--muted-bg);
 }
 
 /* Поиск по номеру — отдельный блок справа */
@@ -154,10 +174,11 @@
   align-items: center;
   gap: 8px;
   height: var(--task-control-h);
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
+  padding: 0 12px;
+  border-radius: var(--task-control-radius);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  box-shadow: var(--shadow-xs);
 }
 
 .task-search-icon {
@@ -206,15 +227,15 @@
   cursor: not-allowed;
 }
 
-.task-filter-tab--active {
-  background: var(--accent-green);
-  border-color: var(--accent-green);
-  color: #fff;
+.task-filter-tabs .task-filter-tab--active {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
-[data-theme='dark'] .task-filter-tab--active {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: #fff;
+[data-theme='dark'] .task-filter-tabs .task-filter-tab--active {
+  background: var(--input-bg);
+  border-color: var(--input-border);
 }
 
 .task-btn-create {
@@ -361,10 +382,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--control-h);
+  height: var(--control-h);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-base);
   color: var(--text-primary);
   font-size: 1rem;
@@ -388,10 +409,10 @@
   align-items: center;
   justify-content: center;
   min-width: 36px;
-  height: 36px;
+  height: var(--control-h);
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -443,9 +464,9 @@
 
 .task-pagination-select {
   min-width: 72px;
-  height: 36px;
+  height: var(--control-h);
   padding: 0 28px 0 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -453,10 +474,8 @@
 .task-pill {
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   max-width: 100%;
@@ -510,7 +529,7 @@
 .task-list-wrap {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
 }
 
@@ -529,10 +548,8 @@
 .task-list-table th {
   padding: 11px 16px;
   text-align: left;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
 }
@@ -783,9 +800,9 @@
   display: flex;
   flex-direction: column;
   background: var(--bg-panel);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-sm);
   animation: taskModalIn 0.25s ease;
 }
 
@@ -854,9 +871,9 @@
 }
 
 .modal-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--radius-md);
   background: rgba(61, 92, 64, 0.12);
   display: flex;
   align-items: center;
@@ -877,16 +894,14 @@
 }
 
 .modal-title--design {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .modal-task-id {
   margin: 0;
   font-size: 0.75rem;
   color: var(--text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: 500;
 }
 
 /* .modal-close styles are in global.css */
@@ -899,10 +914,8 @@
 }
 
 .modal-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  font-weight: 500;
   line-height: 1.3;
   color: var(--text-secondary);
 }
@@ -1045,9 +1058,9 @@
 }
 
 .modal-btn-ghost.modal-btn-ghost--design {
-  height: 40px;
+  height: var(--control-h);
   padding: 0 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-panel);
   color: var(--text-secondary);
@@ -1063,15 +1076,15 @@
 }
 
 .modal-btn.modal-btn--design {
-  height: 40px;
+  height: var(--control-h);
   padding: 0 18px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   background: var(--accent-green);
   color: #fff;
   -webkit-text-fill-color: #fff;
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1130,7 +1143,7 @@
   gap: 4px;
   padding: 4px 8px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--accent-green);
   background: transparent;
   border: none;
@@ -1494,10 +1507,8 @@
 
 .task-form-label {
   display: block;
-  font-size: 0.64rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
   margin-bottom: 5px;
   line-height: 1.3;
@@ -1594,14 +1605,14 @@
 }
 
 .task-file-add-btn {
-  height: 36px;
+  height: var(--control-h);
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-panel);
   color: var(--text-secondary);
   font-size: 0.76rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1627,11 +1638,11 @@
   min-height: 58px;
   padding: 10px;
   border: 1px dashed var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   background: transparent;
   color: var(--text-secondary);
   font-size: 0.76rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   text-align: center;
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
@@ -1679,12 +1690,12 @@
 }
 
 .task-file-icon-box {
-  width: 34px;
-  height: 34px;
+  width: var(--control-h);
+  height: var(--control-h);
   flex-shrink: 0;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1714,7 +1725,7 @@
 .task-file-name {
   display: block;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1829,18 +1840,16 @@
 
 .task-detail-card {
   background: var(--bg-panel);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 14px 16px;
   border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .task-detail-card-title {
   margin: 0 0 10px;
   font-size: 0.76rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
@@ -1987,7 +1996,7 @@
 .task-chat-title {
   margin: 0;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -2000,14 +2009,14 @@
 }
 
 .task-chat-toggle {
-  height: 36px;
+  height: var(--control-h);
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-panel);
   color: var(--text-secondary);
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
@@ -2145,7 +2154,7 @@
   color: #fff;
   -webkit-text-fill-color: #fff;
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   min-height: 44px;
@@ -2194,7 +2203,7 @@
 .task-detail-title {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   line-height: 1.2;
   max-width: 100%;
@@ -2226,10 +2235,8 @@
 
 .task-detail-label {
   display: block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
   margin-bottom: 4px;
   line-height: 1.3;
@@ -2477,7 +2484,7 @@
   .task-list-wrap {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--radius-xl);
     overflow: hidden;
   }
 
@@ -2588,8 +2595,8 @@
     width: 100%;
     min-width: 0;
     flex: none;
-    height: 40px;
-    border-radius: 10px;
+    height: var(--control-h);
+    border-radius: var(--radius-md);
     border-color: var(--toolbar-form-surface-border);
     background: var(--toolbar-form-surface);
   }
@@ -2724,11 +2731,11 @@
   .task-list-row {
     grid-template-columns: 1fr;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--radius-xl);
     background: var(--bg-panel);
     margin-bottom: var(--space-sm);
     padding: 6px 0;
-    box-shadow: 0 1px 2px rgba(15, 23, 18, 0.04);
+    box-shadow: var(--shadow-sm);
   }
 
   .task-list-table tbody tr.task-list-row:hover {
@@ -2760,17 +2767,15 @@
     content: attr(data-label);
     display: block;
     margin-bottom: 5px;
-    font-size: 0.64rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 500;
     color: var(--text-secondary);
   }
 
   .task-list-cell-num {
     text-align: left;
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-primary);
     white-space: nowrap;
   }

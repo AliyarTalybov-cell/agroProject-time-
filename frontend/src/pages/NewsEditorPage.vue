@@ -455,9 +455,9 @@ onMounted(async () => {
   flex-wrap: wrap;
 }
 .news-editor-back {
-  height: 40px;
+  height: var(--control-h);
   padding: 0 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-panel);
   color: var(--text-primary);
@@ -484,12 +484,12 @@ onMounted(async () => {
 .news-editor-form {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
   min-width: 0;
 }
 .news-field {
@@ -667,10 +667,10 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 34px;
+  height: var(--control-h);
   padding: 0 12px;
   border: 1px solid var(--border-color);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -687,8 +687,8 @@ onMounted(async () => {
   display: none;
 }
 .news-editor-btn {
-  height: 40px;
-  border-radius: 10px;
+  height: var(--control-h);
+  border-radius: var(--radius-md);
   padding: 0 14px;
   font-size: 0.875rem;
   font-weight: 600;

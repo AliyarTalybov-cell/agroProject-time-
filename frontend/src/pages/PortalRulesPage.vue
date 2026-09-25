@@ -60,8 +60,8 @@
   width: min(920px, 100%);
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
   padding: clamp(20px, 4vw, 34px);
 }
 

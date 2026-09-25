@@ -153,10 +153,10 @@ onMounted(() => void loadData())
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--control-h);
+  height: var(--control-h);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-base);
   color: var(--text-primary);
   font-size: 1rem;
@@ -177,10 +177,10 @@ onMounted(() => void loadData())
   align-items: center;
   justify-content: center;
   min-width: 36px;
-  height: 36px;
+  height: var(--control-h);
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-primary);
   font-size: 0.875rem;

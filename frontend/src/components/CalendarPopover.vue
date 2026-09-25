@@ -326,7 +326,7 @@ onUnmounted(() => window.removeEventListener('resize', updatePosition))
 
 .calendar-popover-title {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -369,7 +369,7 @@ onUnmounted(() => window.removeEventListener('resize', updatePosition))
 .calendar-popover-weekday {
   text-align: center;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -409,7 +409,7 @@ onUnmounted(() => window.removeEventListener('resize', updatePosition))
 
 .calendar-popover-cell--selected {
   background: rgba(0, 0, 0, 0.1);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 [data-theme='dark'] .calendar-popover-cell--selected {

@@ -2978,7 +2978,7 @@ html[data-theme='dark'] .calendar-page .month-view-wrap,
 html[data-theme='dark'] .calendar-page .schedule-view-wrap {
   background: color-mix(in srgb, var(--bg-base) 88%, #0d1512);
   border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
 }
 
 html[data-theme='dark'] .calendar-page .day-events-grid,

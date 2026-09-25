@@ -175,7 +175,7 @@ onUnmounted(() => {
   color: var(--text-secondary);
   background: transparent;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -215,7 +215,7 @@ onUnmounted(() => {
   margin-top: 0;
   font-size: 12px;
   line-height: 1.45;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--accent-green);
   text-decoration: none;
 }

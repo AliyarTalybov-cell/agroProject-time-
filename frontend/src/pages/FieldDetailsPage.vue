@@ -1263,9 +1263,9 @@ watch(
 
 .field-details-card {
   background: var(--bg-panel);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--topbar-border);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
   padding: 24px;
 }
 .field-details-card--left {
@@ -1417,10 +1417,8 @@ watch(
 }
 .field-details-view-map-title {
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 .field-details-view-map-coords {
   font-size: 0.75rem;
@@ -1550,7 +1548,7 @@ watch(
 .field-details-name {
   margin: 0 0 4px;
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
@@ -1621,10 +1619,8 @@ watch(
 }
 .field-details-notes-label {
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 .field-details-notes-text {
   margin: 4px 0 0;
@@ -1657,7 +1653,7 @@ watch(
 .field-details-media-title {
   margin: 0 0 4px;
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 .field-details-media-subtitle {
@@ -1871,7 +1867,7 @@ watch(
 
 .field-history-item {
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   background: var(--bg-panel);
   padding: 12px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1897,9 +1893,9 @@ watch(
 }
 
 .field-history-op-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--radius-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1910,7 +1906,7 @@ watch(
 
 .field-history-title {
   font-size: 0.95rem;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -1923,7 +1919,7 @@ watch(
 
 .field-history-duration {
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -1946,10 +1942,8 @@ watch(
 }
 
 .field-history-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
@@ -1973,7 +1967,7 @@ watch(
   background: rgba(76, 175, 80, 0.15);
   color: var(--text-primary);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   max-width: 100%;
   white-space: nowrap;
@@ -2018,10 +2012,10 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--control-h);
+  height: var(--control-h);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-base);
   color: var(--text-primary);
   font-size: 1rem;
@@ -2038,10 +2032,10 @@ watch(
   align-items: center;
   justify-content: center;
   min-width: 36px;
-  height: 36px;
+  height: var(--control-h);
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -2069,9 +2063,9 @@ watch(
 
 .field-history-pagination-select {
   min-width: 72px;
-  height: 36px;
+  height: var(--control-h);
   padding: 0 28px 0 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   border: 1px solid var(--border-color);
   background: var(--bg-base);

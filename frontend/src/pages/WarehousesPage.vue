@@ -313,9 +313,9 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 38px;
+  height: var(--control-h);
   border: 1px solid var(--accent-green);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--accent-green);
   color: #fff;
   padding: 0 14px;
@@ -349,8 +349,8 @@ onMounted(() => {
 .fields-card {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
   padding: 12px;
 }
 
@@ -383,17 +383,15 @@ onMounted(() => {
 }
 
 .warehouse-filter-text {
-  font-size: 0.64rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .warehouse-filter-select {
-  height: 38px;
+  height: var(--control-h);
   padding: 0 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--toolbar-form-surface-border);
   background: var(--toolbar-form-surface);
   color: var(--text-primary);
@@ -421,9 +419,9 @@ onMounted(() => {
 
 .fields-search-input {
   width: 100%;
-  height: 38px;
+  height: var(--control-h);
   border: 1px solid var(--toolbar-form-surface-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--toolbar-form-surface);
   color: var(--text-primary);
   padding: 0 12px 0 34px;
@@ -510,10 +508,10 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--toolbar-form-surface-border);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   background: var(--toolbar-form-surface);
   padding: 0;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   overflow: hidden;
 }
@@ -567,9 +565,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--accent-green) 12%, transparent);
   color: var(--accent-green);
 }
@@ -623,7 +621,7 @@ onMounted(() => {
 .warehouse-card-title {
   margin: 0 0 4px;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   line-height: 1.25;
 }
@@ -695,16 +693,14 @@ onMounted(() => {
 }
 
 .warehouse-card-metric-label {
-  font-size: 0.62rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .warehouse-card-metric-value {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -753,8 +749,8 @@ onMounted(() => {
 
 .warehouse-card-btn {
   width: 100%;
-  height: 38px;
-  border-radius: 10px;
+  height: var(--control-h);
+  border-radius: var(--radius-md);
   font-family: inherit;
   font-size: 0.875rem;
   font-weight: 600;
@@ -833,10 +829,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   min-width: 36px;
-  height: 36px;
+  height: var(--control-h);
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -885,10 +881,10 @@ onMounted(() => {
 }
 
 .fields-pagination-select {
-  height: 36px;
+  height: var(--control-h);
   min-width: 72px;
   padding: 0 28px 0 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-panel);
   color: var(--text-primary);
