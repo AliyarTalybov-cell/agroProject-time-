@@ -15,6 +15,7 @@ import AppSidebar from '@/components/ui/app/AppSidebar.vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/shadcn/sidebar'
 import { Separator } from '@/components/ui/shadcn/separator'
 import { Button } from '@/components/ui/shadcn/button'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/shadcn/breadcrumb'
 import { chatTotalUnread, refreshChatTotalUnread } from '@/lib/chatSupabase'
 import { countMyUnreadNotifications } from '@/lib/notificationsSupabase'
 import { startActivityHeartbeat, stopActivityHeartbeat } from '@/lib/activityHeartbeat'
@@ -57,6 +58,20 @@ const pageTitle = computed(() => {
     }
   }
   return (route.meta?.title as string) || 'Обзор'
+})
+
+/** Родительский раздел для внутренних страниц — первое звено Breadcrumb в шапке. */
+const breadcrumbParent = computed<{ label: string; to: string } | null>(() => {
+  const map: Record<string, { label: string; to: string }> = {
+    'land-details': { label: 'Земельные участки', to: '/lands' },
+    'field-details': { label: 'Поля', to: '/fields' },
+    'warehouse-cell': { label: 'Склады', to: '/warehouses' },
+    'grain-batch': { label: 'Партии', to: '/grain/batches' },
+    'equipment-details': { label: 'Техника', to: '/equipment' },
+    'news-details': { label: 'Новости', to: '/news' },
+    'news-edit': { label: 'Новости', to: '/news' },
+  }
+  return map[String(route.name ?? '')] ?? null
 })
 
 const dashboardHomeActive = computed(
@@ -298,7 +313,20 @@ watch(
       <header class="app-topbar">
         <SidebarTrigger class="-ml-1" />
         <Separator orientation="vertical" class="app-topbar-sep" />
-        <h1 class="app-topbar-title">{{ pageTitle }}</h1>
+        <Breadcrumb v-if="breadcrumbParent" class="min-w-0">
+          <BreadcrumbList>
+            <BreadcrumbItem class="hidden sm:inline-flex">
+              <BreadcrumbLink as-child>
+                <RouterLink :to="breadcrumbParent.to">{{ breadcrumbParent.label }}</RouterLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator class="hidden sm:inline-flex" />
+            <BreadcrumbItem>
+              <BreadcrumbPage class="truncate font-semibold">{{ pageTitle }}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <h1 v-else class="app-topbar-title">{{ pageTitle }}</h1>
         <div class="app-topbar-right">
           <Button
             variant="ghost"
