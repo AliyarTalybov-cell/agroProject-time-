@@ -23,6 +23,7 @@
 @source '../components/EmployeeEditModal.vue';
 @source '../components/UserAvatar.vue';
 @source '../components/AppBackendModal.vue';
+@source '../components/RefFieldHelp.vue';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
@@ -154,7 +155,7 @@
   }
 
   a[data-slot],
-  :where([data-slot='sidebar'], [data-slot='dropdown-menu-content'], [data-slot='breadcrumb']) a {
+  :where([data-slot='sidebar'], [data-slot='dropdown-menu-content'], [data-slot='breadcrumb'], [data-slot='popover-content'], [data-slot='dialog-content'], [data-slot='card']) a {
     color: inherit;
     text-decoration: inherit;
   }

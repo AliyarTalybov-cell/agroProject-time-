@@ -84,7 +84,7 @@ function onSelect(key: unknown) {
     <SelectTrigger
       v-bind="{ ...$attrs, ...scopeAttrs }"
       :size="size"
-      :class="{ 'w-full': block }"
+      :class="block ? 'w-full' : 'w-auto'"
       :aria-label="ariaLabel"
     >
       <SelectValue :placeholder="placeholder" />

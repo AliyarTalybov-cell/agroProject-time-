@@ -285,8 +285,11 @@ body {
   }
 }
 
-a {
-  color: inherit;
+/* В слое base, чтобы цвета ссылок из классов Tailwind (shadcn) могли его перебить. */
+@layer base {
+  a {
+    color: inherit;
+  }
 }
 
 .app-layout {
