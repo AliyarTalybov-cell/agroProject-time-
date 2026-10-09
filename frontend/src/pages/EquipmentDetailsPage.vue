@@ -3,7 +3,7 @@ import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Button } from '@/components/ui/shadcn/button'
-import { CalendarIcon, ChevronDownIcon, ChevronLeftIcon, CircleCheckIcon, CircleQuestionMarkIcon, ClipboardCheckIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, LeafIcon, PenLineIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon, WrenchIcon } from '@lucide/vue'
+import { CalendarIcon, ChevronDownIcon, CircleCheckIcon, CircleQuestionMarkIcon, ClipboardCheckIcon, PlusIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, LeafIcon, PenLineIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon, WrenchIcon } from '@lucide/vue'
 import ImagePreviewDialog from '@/components/ui/dialogs/ImagePreviewDialog.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -465,16 +465,16 @@ async function onDeleteDocument(document: EquipmentDocumentRow) {
 }
 
 onMounted(refreshAll)
+
+/** Дата из базы «ГГГГ-ММ-ДД» — по-русски «ДД.ММ.ГГГГ». */
+function formatIsoDate(value: string | null | undefined): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '')
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : value || '—'
+}
 </script>
 
 <template>
   <div class="field-details page-enter-item">
-    <div class="field-details-header">
-      <Button variant="ghost" size="sm" type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку техники">
-        <ChevronLeftIcon :size="20" />
-        Назад к списку техники
-      </Button>
-    </div>
 
     <div v-if="loading" class="field-details-grid">
       <Card class="field-details-card field-details-card--left field-details-card--loading gap-0">
@@ -549,7 +549,7 @@ onMounted(refreshAll)
                 <CalendarIcon :size="18" />
               </span>
               <span class="field-details-item-label">Дата регистрации</span>
-              <span class="field-details-item-value">{{ equipment.registration_date || '—' }}</span>
+              <span class="field-details-item-value">{{ formatIsoDate(equipment.registration_date) }}</span>
             </li>
 
             <li class="field-details-item">
@@ -557,7 +557,7 @@ onMounted(refreshAll)
                 <CalendarIcon :size="18" />
               </span>
               <span class="field-details-item-label">Дата снятия с учета</span>
-              <span class="field-details-item-value">{{ equipment.deregistration_date || '—' }}</span>
+              <span class="field-details-item-value">{{ formatIsoDate(equipment.deregistration_date) }}</span>
             </li>
 
             <li class="field-details-item">
@@ -605,7 +605,8 @@ onMounted(refreshAll)
                 @change="onDocumentFileChange"
               />
               <Button variant="outline" size="sm" type="button" class="field-details-upload-btn" :disabled="documentUploading" @click="triggerDocumentUpload">
-                {{ documentUploading ? 'Загрузка…' : '+ Добавить документ' }}
+                <PlusIcon v-if="!documentUploading" />
+                {{ documentUploading ? 'Загрузка…' : 'Добавить документ' }}
               </Button>
             </div>
             <div v-if="documents.length" class="equipment-documents-list">
@@ -662,7 +663,8 @@ onMounted(refreshAll)
               @change="onPhotoFileChange"
             />
             <Button variant="outline" size="sm" type="button" class="field-details-upload-btn" :disabled="photoUploading" @click="triggerPhotoUpload">
-              {{ photoUploading ? 'Загрузка…' : '+ Добавить фото' }}
+              <PlusIcon v-if="!photoUploading" />
+              {{ photoUploading ? 'Загрузка…' : 'Добавить фото' }}
             </Button>
           </div>
 
@@ -678,7 +680,7 @@ onMounted(refreshAll)
                   @error="($event.target as HTMLImageElement).style.display = 'none'"
                 />
               </div>
-              <p class="field-details-main-media-desc">{{ mainMedia.description || '—' }}</p>
+              <p v-if="mainMedia.description" class="field-details-main-media-desc">{{ mainMedia.description }}</p>
               <p class="field-details-main-media-date">
                 <CalendarIcon :size="14" />
                 {{ mainMedia.date ? new Date(mainMedia.date).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }) : '—' }}
