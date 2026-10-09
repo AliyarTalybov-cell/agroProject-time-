@@ -428,6 +428,17 @@ function taskListContextLine(task: Task): string {
   return parts.join(' • ')
 }
 
+/** Просрочена: срок «ДД.ММ.ГГГГ» уже прошёл, а задача не выполнена. */
+function isOverdue(task: Task): boolean {
+  if (task.status === 'done') return false
+  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(task.dueDate?.trim() ?? '')
+  if (!m) return false
+  const due = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]))
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return due < today
+}
+
 function taskListDescriptionFull(task: Task): string {
   const desc = task.description?.trim()
   if (!desc || desc === 'Просрочено') return ''
@@ -827,6 +838,15 @@ async function createTask() {
     const taskId = editingTaskId.value
     const existing = tasks.value.find((x) => x.id === taskId)
     const prevField = existing?.field ?? form.value.field
+    const prev = existing
+      ? {
+          title: existing.title,
+          priority: existing.priority,
+          dueDate: existing.dueDate === '—' ? '' : existing.dueDate,
+          assigneeId: existing.assignee.id ?? null,
+          description: taskListDescriptionFull(existing),
+        }
+      : null
     const prevWorkType = existing?.workType ?? ''
     const assigneeFromList = assigneeId ? assignees.value.find((a) => a.id === assigneeId) : null
     isSavingTask.value = true
@@ -880,6 +900,27 @@ async function createTask() {
           payload: { from: prevWorkType || null, to: form.value.workType || null },
         })
       }
+      if (prev) {
+        const next = {
+          title,
+          priority: form.value.priority,
+          dueDate: form.value.dueDate,
+          assigneeId: isManager.value ? assigneeId : prev.assigneeId,
+          description: form.value.description.trim(),
+        }
+        const changes: [string, unknown, unknown][] = [
+          ['title_changed', prev.title, next.title],
+          ['priority_changed', prev.priority, next.priority],
+          ['due_date_changed', prev.dueDate, next.dueDate],
+          ['assignee_changed', prev.assigneeId, next.assigneeId],
+          ['description_changed', prev.description, next.description],
+        ]
+        await Promise.all(
+          changes
+            .filter(([, from, to]) => (from || null) !== (to || null))
+            .map(([eventType, from, to]) => addTaskEvent({ taskId, userId, eventType, payload: { from: from || null, to: to || null } })),
+        )
+      }
       closeCreate()
       selectedTaskId.value = taskId
       await loadMetaForTask(taskId)
@@ -907,6 +948,7 @@ async function createTask() {
       assigneeId,
       auth.user.value.id,
     )
+    await addTaskEvent({ taskId: createdTask.id, userId: auth.user.value.id, eventType: 'created' })
     // Задача уже создана: сбой загрузки файлов не должен оставить её без участников.
     let filesError = ''
     try {
@@ -1273,12 +1315,12 @@ function sortIcon(key: TaskSortKey) {
               </div>
               <div class="flex items-center justify-between gap-3 text-sm">
                 <span class="flex min-w-0 items-center gap-2">
-                  <UserAvatar class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(task.assignee.id)" :url="avatarUrlByUserId(task.assignee.id)" :initials="task.assignee.initials" />
+                  <UserAvatar v-if="task.assignee.id" class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(task.assignee.id)" :url="avatarUrlByUserId(task.assignee.id)" :initials="task.assignee.initials" />
                   <span class="truncate text-muted-foreground">{{ task.assignee.name }}</span>
                 </span>
                 <span class="flex shrink-0 items-center gap-2">
                   <UiBadge :tone="priorityTone(task.priority)">{{ priorityLabel(task.priority) }}</UiBadge>
-                  <span class="whitespace-nowrap tabular-nums" :class="task.description === 'Просрочено' ? 'text-destructive' : 'text-muted-foreground'">{{ task.dueDate }}</span>
+                  <span class="whitespace-nowrap tabular-nums" :class="isOverdue(task) ? 'text-destructive' : 'text-muted-foreground'">{{ task.dueDate }}</span>
                 </span>
               </div>
             </button>
@@ -1325,14 +1367,14 @@ function sortIcon(key: TaskSortKey) {
                 </TableCell>
                 <TableCell>
                   <div class="flex min-w-0 items-center gap-2">
-                    <UserAvatar class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(task.assignee.id)" :url="avatarUrlByUserId(task.assignee.id)" :initials="task.assignee.initials" />
+                    <UserAvatar v-if="task.assignee.id" class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(task.assignee.id)" :url="avatarUrlByUserId(task.assignee.id)" :initials="task.assignee.initials" />
                     <span class="truncate">{{ task.assignee.name }}</span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <UiBadge :tone="priorityTone(task.priority)">{{ priorityLabel(task.priority) }}</UiBadge>
                 </TableCell>
-                <TableCell class="tabular-nums" :class="task.description === 'Просрочено' ? 'font-medium text-destructive' : ''">
+                <TableCell class="tabular-nums" :class="isOverdue(task) ? 'font-medium text-destructive' : ''">
                   {{ task.dueDate }}
                 </TableCell>
                 <TableCell class="pr-4">
@@ -1483,7 +1525,7 @@ function sortIcon(key: TaskSortKey) {
               <div class="grid gap-1.5">
                 <dt class="text-xs text-muted-foreground">Исполнитель</dt>
                 <dd class="flex min-w-0 items-center gap-2 text-sm">
-                  <UserAvatar class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(selectedTask.assignee.id)" :url="avatarUrlByUserId(selectedTask.assignee.id)" :initials="selectedTask.assignee.initials" />
+                  <UserAvatar v-if="selectedTask.assignee.id" class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(selectedTask.assignee.id)" :url="avatarUrlByUserId(selectedTask.assignee.id)" :initials="selectedTask.assignee.initials" />
                   <span class="truncate">{{ selectedTask.assignee.name }}</span>
                 </dd>
               </div>
@@ -1501,8 +1543,8 @@ function sortIcon(key: TaskSortKey) {
               </div>
               <div class="grid gap-1.5">
                 <dt class="text-xs text-muted-foreground">Срок</dt>
-                <dd class="text-sm tabular-nums" :class="selectedTask.description === 'Просрочено' ? 'font-medium text-destructive' : ''">
-                  до {{ selectedTask.dueDate }}<span v-if="selectedTask.description === 'Просрочено'"> · просрочено</span>
+                <dd class="text-sm tabular-nums" :class="isOverdue(selectedTask) ? 'font-medium text-destructive' : ''">
+                  до {{ selectedTask.dueDate }}<span v-if="isOverdue(selectedTask)"> · просрочено</span>
                 </dd>
               </div>
               <div class="grid gap-1.5">
@@ -1531,8 +1573,8 @@ function sortIcon(key: TaskSortKey) {
 
             <section class="grid gap-2">
               <h3 class="text-sm font-medium">Описание</h3>
-              <p class="whitespace-pre-line text-sm leading-relaxed" :class="selectedTask.description ? '' : 'text-muted-foreground'">
-                {{ selectedTask.description || 'Описание не указано' }}
+              <p class="whitespace-pre-line text-sm leading-relaxed" :class="taskListDescriptionFull(selectedTask) ? '' : 'text-muted-foreground'">
+                {{ taskListDescriptionFull(selectedTask) || 'Описание не указано' }}
               </p>
             </section>
 
@@ -1596,6 +1638,15 @@ function sortIcon(key: TaskSortKey) {
                       ·
                       <template v-if="event.event_type === 'status_changed'">
                         {{ statusTitle((event.payload?.from as Status) || 'todo') }} → {{ statusTitle((event.payload?.to as Status) || 'todo') }}
+                      </template>
+                      <template v-else-if="event.event_type === 'due_date_changed'">
+                        срок {{ (event.payload?.from as string) || 'не задан' }} → {{ (event.payload?.to as string) || 'не задан' }}
+                      </template>
+                      <template v-else-if="event.event_type === 'priority_changed'">
+                        приоритет {{ priorityLabel(event.payload?.from as Priority).toLowerCase() }} → {{ priorityLabel(event.payload?.to as Priority).toLowerCase() }}
+                      </template>
+                      <template v-else-if="event.event_type === 'assignee_changed'">
+                        исполнитель → {{ event.payload?.to ? profileName(event.payload.to as string) : 'без исполнителя' }}
                       </template>
                       <template v-else>{{ taskEventLabel(event.event_type) }}</template>
                     </span>
