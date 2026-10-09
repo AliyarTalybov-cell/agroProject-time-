@@ -18,7 +18,12 @@ function tableOf(el: HTMLElement): HTMLElement | null {
 }
 
 function label(table: HTMLElement) {
-  const heads = Array.from(table.querySelectorAll('thead th')).map((th) => (th as HTMLElement).innerText.trim())
+  // Заголовок только для читалок экрана (.sr-only, например «Действия») подписью не становится.
+  const heads = Array.from(table.querySelectorAll('thead th')).map((th) => {
+    const copy = th.cloneNode(true) as HTMLElement
+    copy.querySelectorAll('.sr-only').forEach((el) => el.remove())
+    return (copy.textContent ?? '').trim()
+  })
   table.querySelectorAll('tbody tr, tfoot tr').forEach((tr) => {
     let col = 0
     for (const cell of Array.from(tr.children) as HTMLElement[]) {
