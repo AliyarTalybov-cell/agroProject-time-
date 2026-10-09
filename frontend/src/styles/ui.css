@@ -549,6 +549,8 @@
 
 .ui-form-section-title {
   margin: 8px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -1163,12 +1165,6 @@ select:is(
   z-index: 1100 !important;
 }
 
-
-/* Даты в фильтре задач (TaskManagementPage) — UiDatePicker; правило общее,
-   потому что кнопка календаря рендерится вне scoped-области страницы. */
-.task-filter-date {
-  width: 136px;
-}
 
 /* ——— UiModal на Dialog shadcn: длинные формы прокручиваются внутри окна,
    заголовок и кнопки остаются на месте ——— */

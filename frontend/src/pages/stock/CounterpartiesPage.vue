@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/shadcn/card'
-import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
-import { PlusIcon, SearchIcon, Trash2Icon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table'
+import { BuildingIcon, PlusIcon, SearchIcon, Trash2Icon } from '@lucide/vue'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Справочник контрагентов: покупатели и поставщики зерна. */
 import { computed, onMounted, ref, watch } from 'vue'
-import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import CounterpartyModal from '@/components/stock/CounterpartyModal.vue'
@@ -75,101 +79,83 @@ async function confirmDelete() {
 </script>
 
 <template>
-  <section class="ui-page">
-    <div class="ui-page-inner">
-      <header class="ui-page-header">
-        <p class="ui-page-subtitle">Покупатели и поставщики зерна и семян. Выбираются при продаже и закупке.</p>
-        <div class="ui-header-actions">
-          <Button variant="default" type="button" class="ui-add-btn" @click="editing = 'new'">
-            <PlusIcon />
-            Добавить контрагента
-          </Button>
-        </div>
-      </header>
-      <Card class="ui-card gap-0">
-        <div class="ui-toolbar">
-          <label class="ui-search">
-            <SearchIcon />
-            <Input v-model="search" type="search" placeholder="Название, ИНН, контакт" class="pl-9" />
-          </label>
-          <UiSelect v-model="kind" :options="[{ value: '', label: 'Все' }, { value: 'buyer', label: 'Покупатели' }, { value: 'supplier', label: 'Поставщики' }]" class="ui-filter-select" aria-label="Роль" />
-        </div>
-        <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>
-        <div v-if="loading" class="ui-loading"><UiLoadingBar /></div>
-        <div v-else-if="!filtered.length" class="ui-empty">
-          <h3>{{ rows.length ? 'Никого не найдено' : 'Контрагентов пока нет' }}</h3>
-          <p>{{ rows.length ? 'Измените поиск.' : 'Добавьте первого покупателя или поставщика.' }}</p>
-        </div>
-        <template v-else>
-          <div class="ui-table-wrap">
-            <table class="ui-table cp-table" v-card-table>
-              <thead>
-                <tr><th>Название</th><th>Роль</th><th>ИНН / КПП</th><th>Контакт</th><th></th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="r in pageRows" :key="r.id" class="ui-list-row" @click="editing = r">
-                  <td>
-                    <span class="ui-list-title">{{ r.name }}</span>
-                    <div v-if="r.address" class="ui-muted ui-small">{{ r.address }}</div>
-                  </td>
-                  <td>
-                    <span class="ui-pill" :class="r.active ? 'ui-pill--green' : ''">{{ counterpartyKindLabel(r.kind) }}</span>
-                    <div v-if="!r.active" class="ui-muted ui-small">не работаем</div>
-                  </td>
-                  <td class="ui-mono">{{ [r.inn, r.kpp].filter(Boolean).join(' / ') || '—' }}</td>
-                  <td>
-                    {{ r.contact_person || '' }}
-                    <div class="ui-muted ui-small">{{ [r.phone, r.email].filter(Boolean).join(' · ') }}</div>
-                  </td>
-                  <td class="cp-actions" @click.stop>
-                    <Button variant="ghost" size="icon-sm" v-if="isManager" type="button" class="cp-del text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Удалить контрагента" title="Удалить" @click="deleting = r">
-                      <Trash2Icon :size="18" />
-                    </Button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <UiPagination v-model:page="page" v-model:page-size="pageSize" :total="filtered.length" :page-size-options="[10, 20, 50]" />
-        </template>
-      </Card>
+  <section class="tw-scope flex flex-col gap-6">
+    <PageToolbar>
+      <InputGroup class="w-full sm:w-72">
+        <InputGroupAddon><SearchIcon /></InputGroupAddon>
+        <InputGroupInput v-model="search" type="search" placeholder="Название, ИНН, контакт" aria-label="Поиск контрагента" />
+      </InputGroup>
+      <div class="w-full sm:w-44">
+        <UiSelect v-model="kind" block aria-label="Роль" :options="[{ value: '', label: 'Все роли' }, { value: 'buyer', label: 'Покупатели' }, { value: 'supplier', label: 'Поставщики' }]" />
+      </div>
+      <template #actions>
+        <Button type="button" @click="editing = 'new'">
+          <PlusIcon />
+          Добавить контрагента
+        </Button>
+      </template>
+    </PageToolbar>
+
+    <Alert v-if="error" variant="destructive">
+      <AlertDescription>{{ error }}</AlertDescription>
+    </Alert>
+
+    <div v-if="loading" class="grid gap-2">
+      <Skeleton v-for="i in 4" :key="i" class="h-12 w-full" />
     </div>
-    <teleport to="body">
-      <CounterpartyModal v-if="editing" :counterparty="editing === 'new' ? null : editing" @close="editing = null" @done="onSaved" />
-      <UiConfirmModal
-        v-if="deleting"
-        :title="`Удалить «${deleting.name}»?`"
-        :busy="deleteBusy"
-        @cancel="deleting = null"
-        @confirm="confirmDelete"
-      />
-    </teleport>
+    <Empty v-else-if="!filtered.length" class="rounded-xl border border-dashed">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><BuildingIcon /></EmptyMedia>
+        <EmptyTitle>{{ rows.length ? 'Никого не найдено' : 'Контрагентов пока нет' }}</EmptyTitle>
+        <EmptyDescription>{{ rows.length ? 'Измените поиск или роль.' : 'Покупатели и поставщики выбираются при продаже и закупке зерна. Добавьте первого.' }}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+    <template v-else>
+      <div class="sm:overflow-hidden sm:rounded-xl sm:border sm:bg-card">
+        <Table v-card-table>
+          <TableHeader class="bg-muted/50">
+            <TableRow>
+              <TableHead class="pl-4">Название</TableHead>
+              <TableHead>Роль</TableHead>
+              <TableHead>ИНН / КПП</TableHead>
+              <TableHead>Контакт</TableHead>
+              <TableHead class="w-12 pr-4"><span class="sr-only">Действия</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="r in pageRows" :key="r.id" class="cursor-pointer" @click="editing = r">
+              <TableCell class="whitespace-normal pl-4">
+                <span class="font-medium">{{ r.name }}</span>
+                <span v-if="r.address" class="block text-xs text-muted-foreground">{{ r.address }}</span>
+              </TableCell>
+              <TableCell>
+                <UiBadge :tone="r.active ? 'primary' : 'neutral'">{{ counterpartyKindLabel(r.kind) }}</UiBadge>
+                <span v-if="!r.active" class="block text-xs text-muted-foreground">не работаем</span>
+              </TableCell>
+              <TableCell class="tabular-nums">{{ [r.inn, r.kpp].filter(Boolean).join(' / ') || '—' }}</TableCell>
+              <TableCell class="whitespace-normal">
+                {{ r.contact_person || '—' }}
+                <span v-if="r.phone || r.email" class="block text-xs text-muted-foreground">{{ [r.phone, r.email].filter(Boolean).join(' · ') }}</span>
+              </TableCell>
+              <TableCell class="pr-4 text-right" @click.stop>
+                <Button v-if="isManager" variant="ghost" size="icon-sm" type="button" class="text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :aria-label="`Удалить «${r.name}»`" @click="deleting = r">
+                  <Trash2Icon />
+                </Button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+      <UiPagination v-model:page="page" v-model:page-size="pageSize" :total="filtered.length" :page-size-options="[10, 20, 50]" />
+    </template>
+
+    <CounterpartyModal v-if="editing" :counterparty="editing === 'new' ? null : editing" @close="editing = null" @done="onSaved" />
+    <UiConfirmModal
+      v-if="deleting"
+      :title="`Удалить «${deleting.name}»?`"
+      :busy="deleteBusy"
+      @cancel="deleting = null"
+      @confirm="confirmDelete"
+    />
   </section>
 </template>
-
-<style scoped>
-@layer legacy {
-.cp-table {
-  min-width: 720px;
-}
-
-.cp-actions {
-  width: 1%;
-}
-
-.cp-del {
-  display: inline-flex;
-  padding: 6px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.cp-del:hover {
-  background: var(--bg-panel-hover);
-  color: var(--danger-red);
-}
-}
-</style>

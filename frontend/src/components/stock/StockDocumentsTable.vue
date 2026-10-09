@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/shadcn/button'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from '@/components/ui/shadcn/empty'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table'
+import { ChevronDownIcon, ScrollTextIcon } from '@lucide/vue'
+import UiBadge, { type UiBadgeTone } from '@/components/ui/UiBadge.vue'
 /**
  * Таблица складских документов: журнал операций, история склада и партии.
  * Строка раскрывается — движения по партиям и ячейкам, транспорт, документы,
@@ -32,17 +36,17 @@ const isManager = computed(() => auth.userRole.value === 'manager')
 const expanded = ref<string | null>(null)
 const cancelling = ref<StockDocument | null>(null)
 
-const DOC_PILL: Record<string, string> = {
-  opening: 'ui-pill',
-  intake: 'ui-pill ui-pill--green',
-  processing: 'ui-pill ui-pill--amber',
-  transfer: 'ui-pill ui-pill--blue',
-  sale: 'ui-pill ui-pill--violet',
-  seeding: 'ui-pill ui-pill--green',
-  consumption: 'ui-pill ui-pill--amber',
-  writeoff: 'ui-pill ui-pill--red',
-  inventory: 'ui-pill',
-  storno: 'ui-pill ui-pill--red',
+const DOC_TONE: Record<string, UiBadgeTone> = {
+  opening: 'neutral',
+  intake: 'success',
+  processing: 'warning',
+  transfer: 'info',
+  sale: 'primary',
+  seeding: 'success',
+  consumption: 'warning',
+  writeoff: 'danger',
+  inventory: 'neutral',
+  storno: 'danger',
 }
 
 function scopedMovements(d: StockDocument) {
@@ -75,8 +79,8 @@ function party(d: StockDocument): string {
   return ''
 }
 
-function batchesOf(d: StockDocument): string {
-  return Array.from(new Set(scopedMovements(d).map((m) => `${m.batchCode} · ${m.cropLabel}`))).join(', ')
+function batchList(d: StockDocument): string[] {
+  return Array.from(new Set(scopedMovements(d).map((m) => `${m.batchCode} · ${m.cropLabel}`)))
 }
 
 function formatDate(iso: string): string {
@@ -133,167 +137,91 @@ function toggle(id: string) {
 </script>
 
 <template>
-  <div>
-    <p v-if="!documents.length" class="ui-muted" style="margin: 8px 0">{{ emptyText ?? 'Операций пока нет.' }}</p>
-    <div v-else class="ui-table-wrap">
-      <table class="ui-table stock-docs" v-card-table>
-        <thead>
-          <tr>
-            <th>Дата</th>
-            <th>Операция</th>
-            <th>Партии</th>
-            <th>Контрагент / поле / куда</th>
-            <th class="ui-num">Масса</th>
-            <th class="ui-num">Сумма</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
+  <div class="tw-scope">
+    <Empty v-if="!documents.length" class="rounded-xl border border-dashed">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><ScrollTextIcon /></EmptyMedia>
+        <EmptyDescription>{{ emptyText ?? 'Операций пока нет.' }}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+    <div v-else class="sm:overflow-hidden sm:rounded-xl sm:border sm:bg-card">
+      <Table v-card-table class="min-w-[56rem]">
+        <TableHeader class="bg-muted/50">
+          <TableRow>
+            <TableHead class="pl-4">Дата</TableHead>
+            <TableHead>Операция</TableHead>
+            <TableHead>Партии</TableHead>
+            <TableHead>Контрагент / поле / куда</TableHead>
+            <TableHead class="text-right">Масса</TableHead>
+            <TableHead class="text-right">Сумма</TableHead>
+            <TableHead class="w-px pr-4"><span class="sr-only">Действия</span></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           <template v-for="d in documents" :key="d.id">
-            <tr class="ui-list-row" :class="{ 'stock-doc--cancelled': d.status === 'cancelled' }" @click="toggle(d.id)">
-              <td class="ui-num">
-                <span class="ui-list-title">{{ formatDate(d.doc_date) }}</span>
-                <div class="ui-muted ui-small">№ {{ d.number }}</div>
-              </td>
-              <td>
-                <span :class="DOC_PILL[d.doc_type] ?? 'ui-pill'">{{ stockDocTypeLabel(d.doc_type) }}</span>
-                <div v-if="d.status === 'cancelled'" class="ui-muted ui-small">отменён</div>
-              </td>
-              <td class="stock-doc-batches">{{ batchesOf(d) }}</td>
-              <td>{{ party(d) }}</td>
-              <td class="ui-num ui-strong">
-                <template v-if="d.doc_type === 'transfer' && !scopeLocationId">{{ formatTons(movedTons(d)) }}</template>
-                <template v-else-if="d.doc_type === 'transfer' && delta(d) === 0">{{ formatTons(movedTons(d)) }}</template>
-                <span v-else :class="delta(d) > 0 ? 'ui-plus' : delta(d) < 0 ? 'ui-minus' : ''">
+            <TableRow class="cursor-pointer" :class="d.status === 'cancelled' ? 'text-muted-foreground' : ''" :aria-expanded="expanded === d.id" @click="toggle(d.id)">
+              <TableCell class="pl-4 tabular-nums">
+                <span class="font-medium" :class="d.status === 'cancelled' ? 'line-through' : 'text-foreground'">{{ formatDate(d.doc_date) }}</span>
+                <span class="block text-xs text-muted-foreground">№ {{ d.number }}</span>
+              </TableCell>
+              <TableCell>
+                <UiBadge :tone="d.status === 'cancelled' ? 'neutral' : DOC_TONE[d.doc_type] ?? 'neutral'">{{ stockDocTypeLabel(d.doc_type) }}</UiBadge>
+                <span v-if="d.status === 'cancelled'" class="block text-xs">отменён</span>
+              </TableCell>
+              <TableCell class="max-w-64 whitespace-normal">
+                <span class="line-clamp-2">{{ batchList(d)[0] ?? '—' }}</span>
+                <span v-if="batchList(d).length > 1" class="block text-xs text-muted-foreground">и ещё {{ batchList(d).length - 1 }}</span>
+              </TableCell>
+              <TableCell class="max-w-64 whitespace-normal">{{ party(d) || '—' }}</TableCell>
+              <TableCell class="text-right font-medium tabular-nums" :class="d.status === 'cancelled' ? 'line-through' : ''">
+                <template v-if="d.doc_type === 'transfer' && (!scopeLocationId || delta(d) === 0)">{{ formatTons(movedTons(d)) }}</template>
+                <span v-else :class="d.status === 'cancelled' ? '' : delta(d) > 0 ? 'text-emerald-700 dark:text-emerald-400' : delta(d) < 0 ? 'text-destructive' : ''">
                   {{ delta(d) > 0 ? '+' : '' }}{{ formatTons(delta(d), 3) }}
                 </span>
-              </td>
-              <td class="ui-num">{{ d.amount != null ? formatRub(d.amount) : '' }}</td>
-              <td class="stock-doc-actions" @click.stop>
-                <Button variant="outline" size="sm" v-if="canCancel(d)" type="button" class="stock-doc-cancel" @click="cancelling = d">Отменить</Button>
-              </td>
-            </tr>
-            <tr v-if="expanded === d.id" class="stock-doc-details">
-              <td colspan="7">
-                <div class="stock-doc-grid">
-                  <div>
-                    <p class="ui-form-section-title">Движения</p>
-                    <ul class="stock-doc-moves">
-                      <li v-for="m in d.movements" :key="m.id">
-                        <span :class="m.delta_tons > 0 ? 'ui-plus' : 'ui-minus'" class="ui-num ui-strong">
+              </TableCell>
+              <TableCell class="text-right tabular-nums">{{ d.amount != null ? formatRub(d.amount) : '—' }}</TableCell>
+              <TableCell class="pr-4" @click.stop>
+                <div class="flex items-center justify-end gap-1">
+                  <Button v-if="canCancel(d)" variant="outline" size="sm" type="button" class="hover:text-destructive" @click="cancelling = d">Отменить</Button>
+                  <Button variant="ghost" size="icon-sm" type="button" :aria-label="expanded === d.id ? 'Свернуть подробности' : 'Показать подробности'" @click="toggle(d.id)">
+                    <ChevronDownIcon class="transition-transform" :class="expanded === d.id ? 'rotate-180' : ''" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+            <TableRow v-if="expanded === d.id" class="bg-muted/30 hover:bg-muted/30">
+              <TableCell colspan="7" class="whitespace-normal px-4 py-4">
+                <div class="grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+                  <section class="grid content-start gap-2">
+                    <h4 class="text-sm font-medium">Движения</h4>
+                    <ul class="grid gap-1.5 text-sm">
+                      <li v-for="m in d.movements" :key="m.id" class="flex gap-3">
+                        <span class="w-20 shrink-0 text-right font-medium tabular-nums" :class="m.delta_tons > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-destructive'">
                           {{ m.delta_tons > 0 ? '+' : '' }}{{ formatTons(m.delta_tons, 3) }}
                         </span>
-                        {{ m.batchCode }} · {{ m.cropLabel }} — {{ m.locationName }}, {{ m.cellName }}
+                        <span class="min-w-0">{{ m.batchCode }} · {{ m.cropLabel }} — {{ m.locationName }}, {{ m.cellName }}</span>
                       </li>
                     </ul>
-                  </div>
-                  <dl v-if="details(d).length" class="stock-doc-dl">
+                  </section>
+                  <dl v-if="details(d).length" class="grid content-start grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
                     <template v-for="item in details(d)" :key="item.label">
-                      <dt>{{ item.label }}</dt>
-                      <dd>{{ item.value }}</dd>
+                      <dt class="text-muted-foreground">{{ item.label }}</dt>
+                      <dd class="break-words">{{ item.value }}</dd>
                     </template>
                   </dl>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           </template>
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
 
-    <teleport to="body">
-      <StockCancelModal
-        v-if="cancelling"
-        :document="cancelling"
-        @close="cancelling = null"
-        @done="cancelling = null; emit('changed')"
-      />
-    </teleport>
+    <StockCancelModal
+      v-if="cancelling"
+      :document="cancelling"
+      @close="cancelling = null"
+      @done="cancelling = null; emit('changed')"
+    />
   </div>
 </template>
-
-<style scoped>
-@layer legacy {
-.stock-docs {
-  min-width: 860px;
-}
-
-.stock-doc-batches {
-  max-width: 260px;
-}
-
-.stock-doc--cancelled td {
-  opacity: 0.55;
-  text-decoration: line-through;
-  text-decoration-color: color-mix(in srgb, var(--text-secondary) 60%, transparent);
-}
-
-.stock-doc--cancelled td:last-child {
-  opacity: 1;
-  text-decoration: none;
-}
-
-.stock-doc-actions {
-  width: 1%;
-  white-space: nowrap;
-}
-
-.stock-doc-cancel {
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
-  color: var(--text-secondary);
-  border-radius: 8px;
-  height: 30px;
-  padding: 0 10px;
-  font-family: inherit;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.stock-doc-cancel:hover {
-  color: var(--danger-red);
-  border-color: color-mix(in srgb, var(--danger-red) 40%, var(--border-color));
-}
-
-.stock-doc-details td {
-  background: var(--bg-base);
-}
-
-.stock-doc-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 16px;
-}
-
-.stock-doc-moves {
-  margin: 6px 0 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stock-doc-dl {
-  margin: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 4px 12px;
-  font-size: 0.85rem;
-}
-
-.stock-doc-dl dt {
-  color: var(--text-secondary);
-}
-
-.stock-doc-dl dd {
-  margin: 0;
-}
-
-@media (max-width: 900px) {
-  .stock-doc-grid {
-    grid-template-columns: 1fr;
-  }
-}
-}
-</style>

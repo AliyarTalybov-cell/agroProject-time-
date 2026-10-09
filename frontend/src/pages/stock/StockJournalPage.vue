@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/shadcn/card'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Журнал складских операций по всем складам с фильтрами по виду и датам. */
 import { onMounted, ref, watch } from 'vue'
-import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import StockDocumentsTable from '@/components/stock/StockDocumentsTable.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
@@ -62,42 +63,30 @@ watch(page, () => void load())
 </script>
 
 <template>
-  <section class="ui-page">
-    <div class="ui-page-inner">
-      <header class="ui-page-header">
-        <p class="ui-page-subtitle">
-          Все складские операции. Нажмите на строку, чтобы увидеть движения, транспорт и документы. Ошибочную операцию руководитель отменяет — она не удаляется, а сторнируется.
-        </p>
-      </header>
-      <Card class="ui-card gap-0">
-        <div class="ui-toolbar">
-          <UiSelect v-model="group" :options="TYPE_GROUPS.map((g, i) => ({ value: i, label: g.label }))" aria-label="Вид операции" />
-          <label class="journal-date">
-            <span class="ui-muted">с</span>
-            <UiDatePicker v-model="dateFrom" :block="false" placeholder="Дата" aria-label="Дата с" />
-          </label>
-          <label class="journal-date">
-            <span class="ui-muted">по</span>
-            <UiDatePicker v-model="dateTo" :block="false" placeholder="Дата" aria-label="Дата по" />
-          </label>
-        </div>
-        <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>
-        <div v-if="loading && !rows.length" class="ui-loading"><UiLoadingBar /></div>
-        <template v-else>
-          <StockDocumentsTable :documents="rows" empty-text="Операций по фильтру нет." @changed="load" />
-          <UiPagination v-if="total > 0" v-model:page="page" v-model:page-size="pageSize" :total="total" :page-size-options="[10, 20, 50]" />
-        </template>
-      </Card>
+  <section class="tw-scope flex flex-col gap-6">
+    <PageToolbar>
+      <div class="w-full sm:w-56">
+        <UiSelect v-model="group" block :options="TYPE_GROUPS.map((g, i) => ({ value: i, label: g.label }))" aria-label="Вид операции" />
+      </div>
+      <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+        <div class="sm:w-36"><UiDatePicker v-model="dateFrom" block clearable placeholder="Дата с" aria-label="Дата с" /></div>
+        <div class="sm:w-36"><UiDatePicker v-model="dateTo" block clearable placeholder="Дата по" aria-label="Дата по" /></div>
+      </div>
+    </PageToolbar>
+
+    <Alert v-if="error" variant="destructive">
+      <AlertDescription>{{ error }}</AlertDescription>
+    </Alert>
+
+    <div v-if="loading && !rows.length" class="grid gap-2">
+      <Skeleton v-for="i in 5" :key="i" class="h-12 w-full" />
     </div>
+    <template v-else>
+      <StockDocumentsTable :documents="rows" empty-text="Операций по фильтру нет." @changed="load" />
+      <UiPagination v-if="total > 0" v-model:page="page" v-model:page-size="pageSize" :total="total" :page-size-options="[10, 20, 50]" />
+      <p class="-mt-2 text-xs text-muted-foreground">
+        Нажмите на строку, чтобы увидеть движения, транспорт и документы. Ошибочную операцию руководитель отменяет: она не удаляется, а сторнируется.
+      </p>
+    </template>
   </section>
 </template>
-
-<style scoped>
-@layer legacy {
-.journal-date {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-}
-</style>

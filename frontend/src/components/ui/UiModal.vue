@@ -51,6 +51,23 @@ function guard(e: Event) {
   if (props.closeDisabled || isInsideOwnedLayer(e)) e.preventDefault()
 }
 
+/**
+ * Фокус при открытии: на компьютере — в текстовое поле, если форма с него начинается,
+ * иначе на само окно. Стандартный фокус на первый элемент подсвечивал селекты и кнопки
+ * как «выбранные», а на телефоне фокус в поле сразу открывает клавиатуру.
+ */
+function onOpenAutoFocus(e: Event) {
+  e.preventDefault()
+  const content = (e.target as HTMLElement | null)?.closest?.('[role="dialog"]') as HTMLElement | null
+  if (!content) return
+  const first = content.querySelector<HTMLElement>(
+    '.ui-dialog-body :is(input:not([type=hidden]):not([type=file]), textarea, select, button, [href], [tabindex]:not([tabindex="-1"])):not([disabled])',
+  )
+  const isTextField = first?.matches('textarea, input:not([type=checkbox]):not([type=radio])')
+  const finePointer = window.matchMedia?.('(pointer: fine)').matches
+  ;(finePointer && isTextField ? first! : content).focus({ preventScroll: true })
+}
+
 function guardEscape(e: Event) {
   if (props.closeDisabled) e.preventDefault()
 }
@@ -59,13 +76,14 @@ function guardEscape(e: Event) {
 <template>
   <Dialog :open="true" @update:open="onOpenChange">
     <DialogContent
-      class="ui-dialog"
+      class="ui-dialog outline-none"
       :style="{ maxWidth: `min(calc(100vw - 2rem), ${maxWidth}px)` }"
+      @open-auto-focus="onOpenAutoFocus"
       @escape-key-down="guardEscape"
       @pointer-down-outside="guard"
       @interact-outside="guard"
     >
-      <DialogHeader class="pr-8">
+      <DialogHeader class="pr-8 text-left">
         <div class="flex items-start gap-2">
           <div class="grid min-w-0 flex-1 gap-2">
             <DialogTitle>{{ title }}</DialogTitle>

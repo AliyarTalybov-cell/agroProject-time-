@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
@@ -456,7 +457,7 @@ async function saveEquipment() {
 }
 
 async function removeEquipment(row: EquipmentRow) {
-  if (!confirm(`Удалить технику «${row.brand}» (${row.license_plate})?`)) return
+  if (!(await askConfirm(`Удалить технику «${row.brand}» (${row.license_plate})?`))) return
   if (!isSupabaseConfigured()) return
   try {
     await deleteEquipment(row.id)
@@ -516,7 +517,7 @@ async function saveImplement() {
 }
 
 async function removeImplement(row: EquipmentImplementRow) {
-  if (!confirm(`Удалить орудие «${row.name}»?`)) return
+  if (!(await askConfirm(`Удалить орудие «${row.name}»?`))) return
   if (!isSupabaseConfigured()) return
   try {
     await deleteEquipmentImplement(row.id)

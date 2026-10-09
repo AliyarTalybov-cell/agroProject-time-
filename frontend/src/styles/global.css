@@ -856,7 +856,8 @@ a {
 
 .main-content-inner {
   flex: 1;
-  padding: 24px 32px;
+  /* Канон: 16px на телефоне, 24px от 768px — одинаково на всех страницах. */
+  padding: 16px;
   overflow-y: auto;
   background: var(--agri-bg);
   transition: background 0.2s ease;
@@ -864,7 +865,7 @@ a {
 
 @media (min-width: 768px) {
   .main-content-inner {
-    padding: 32px;
+    padding: 24px;
   }
 }
 
@@ -1075,9 +1076,6 @@ a {
   .sidebar-brand {
     min-height: 64px;
   }
-  .main-content-inner {
-    padding: 20px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1101,9 +1099,6 @@ a {
     width: 36px;
     height: 36px;
     font-size: 0.75rem;
-  }
-  .main-content-inner {
-    padding: 16px;
   }
   .card {
     padding: var(--space-md);

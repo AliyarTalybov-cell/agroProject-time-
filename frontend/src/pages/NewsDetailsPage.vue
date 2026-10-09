@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { askConfirm } from '@/composables/useConfirm'
 import { Button } from '@/components/ui/shadcn/button'
 import { ChevronLeftIcon, ChevronRightIcon, PenLineIcon, Trash2Icon, XIcon } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
@@ -120,7 +121,7 @@ function openEdit() {
 }
 async function removePost() {
   if (!isSupabaseConfigured()) return
-  if (!confirm('Удалить эту новость?')) return
+  if (!(await askConfirm('Удалить эту новость?'))) return
   await deleteNewsPost(postId.value)
   goBack()
 }

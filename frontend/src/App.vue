@@ -10,6 +10,7 @@ import AppBackendModal from '@/components/AppBackendModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import { Toaster } from '@/components/ui/shadcn/sonner'
 import UiPromptHost from '@/components/ui/UiPromptHost.vue'
+import UiConfirmHost from '@/components/ui/UiConfirmHost.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import AppSidebar from '@/components/ui/app/AppSidebar.vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/shadcn/sidebar'
@@ -357,6 +358,7 @@ watch(
   </SidebarProvider>
   <Toaster position="top-center" />
   <UiPromptHost />
+  <UiConfirmHost />
 </template>
 
 <style scoped>

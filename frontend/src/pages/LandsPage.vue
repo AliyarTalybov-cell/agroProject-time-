@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
@@ -2668,7 +2669,7 @@ async function saveLand() {
 
 async function removeLand(skipConfirm = false) {
   if (!selectedLandId.value || !isSupabaseConfigured()) return
-  if (!skipConfirm && !confirm('Удалить землю? Поля останутся, но будут отвязаны.')) return
+  if (!skipConfirm && !(await askConfirm('Удалить землю?', 'Поля останутся, но будут отвязаны от этой земли.'))) return
   saving.value = true
   error.value = null
   try {

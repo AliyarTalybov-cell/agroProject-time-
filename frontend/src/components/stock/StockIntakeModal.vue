@@ -236,7 +236,7 @@ function num(v: number | null | undefined, digits = 2): string {
           <label class="ui-form-label ui-form-label--with-help">Поставщик *
             <RefFieldHelp text="Нет поставщика? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
           </label>
-          <UiSelect v-model="form.supplierId" :options="[...(refs.suppliers.value).map((s) => ({ value: s.id, label: String(s.name) }))]" placeholder="{{ refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»' }}" class="ui-form-select" />
+          <UiSelect v-model="form.supplierId" :options="[...(refs.suppliers.value).map((s) => ({ value: s.id, label: String(s.name) }))]" :placeholder="refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»'" class="ui-form-select" />
         </div>
       </div>
       <div class="ui-form-row ui-form-row--three">
@@ -311,7 +311,7 @@ function num(v: number | null | undefined, digits = 2): string {
       </div>
       <div class="ui-summary-row">
         <span>Потери на примеси</span>
-        <strong>−{{ num(credited?.impurityLossTons) }} т</strong>
+        <strong>{{ credited?.impurityLossTons ? '−' : '' }}{{ num(credited?.impurityLossTons) }} т</strong>
       </div>
       <div class="ui-summary-row ui-summary-row--total">
         <span>Зачётный вес — пойдёт в остаток</span>

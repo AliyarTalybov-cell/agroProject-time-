@@ -30,7 +30,7 @@ async function save() {
 </script>
 
 <template>
-  <UiModal :title="`Отменить документ «${stockDocTypeLabel(document.doc_type)}» № ${document.number}?`" :max-width="480" :close-disabled="saving" @close="emit('close')">
+  <UiModal :title="`Отменить документ «${stockDocTypeLabel(document.doc_type)}» №\u00a0${document.number.replace(/-/g, '\u2011')}?`" :max-width="480" :close-disabled="saving" @close="emit('close')">
     <p class="ui-muted" style="margin: 0">
       Документ не удаляется: создаётся сторно с обратными движениями, остатки вернутся как было до него.
     </p>

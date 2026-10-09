@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Button } from '@/components/ui/shadcn/button'
@@ -444,7 +445,7 @@ async function onDocumentFileChange(e: Event) {
 }
 
 async function onDeletePhoto(photo: EquipmentPhotoRow) {
-  if (!confirm('Удалить фото?')) return
+  if (!(await askConfirm('Удалить фото?'))) return
   try {
     await deleteEquipmentPhoto(photo.id)
     photos.value = photos.value.filter((p) => p.id !== photo.id)
@@ -454,7 +455,7 @@ async function onDeletePhoto(photo: EquipmentPhotoRow) {
 }
 
 async function onDeleteDocument(document: EquipmentDocumentRow) {
-  if (!confirm('Удалить документ?')) return
+  if (!(await askConfirm('Удалить документ?'))) return
   try {
     await deleteEquipmentDocument(document.id)
     documents.value = documents.value.filter((d) => d.id !== document.id)
