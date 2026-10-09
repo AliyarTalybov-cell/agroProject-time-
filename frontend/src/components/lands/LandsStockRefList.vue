@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
-import { PencilIcon } from '@lucide/vue'
+import RefList from '@/components/ui/RefList.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
 /**
  * Простой справочник складского учёта во вкладке «Справочники хранения»:
- * причины списания, направления расхода, назначения партий. Разметка — как у
- * соседних списков раздела (landsShared.css); переименование — окном проекта,
+ * причины списания, направления расхода, назначения партий. Разметка — общий
+ * список справочника (RefList); переименование — окном проекта,
  * а не prompt(). Значение, на которое уже ссылаются документы, удалить нельзя
  * (держат внешние ключи) — его можно скрыть из списков выбора.
  */
@@ -13,7 +14,6 @@ import { computed, onMounted, ref } from 'vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
-import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import { useAuth } from '@/stores/auth'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
@@ -122,70 +122,46 @@ async function confirmDelete() {
 </script>
 
 <template>
-  <div class="lands-ref-block">
-    <h2>{{ title }}</h2>
-    <p class="lands-muted lands-ref-hint">{{ hint }}</p>
-    <p v-if="error" class="lands-error">{{ error }}</p>
-    <div class="lands-ref-add-row">
-      <Input v-model="newLabel" class="lands-search" type="text" :placeholder="placeholder" @keydown.enter="add" />
-      <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="busy || !newLabel.trim()" @click="add">Добавить</Button>
-    </div>
-    <div class="lands-list-plain">
-      <div v-for="row in rows" :key="row.id" class="lands-list-plain-item" :class="{ 'stock-ref--hidden': !row.active }">
-        <span>{{ row.label }}<template v-if="!row.active"> — скрыто</template></span>
-        <div class="lands-item-actions">
-          <Button variant="outline" size="sm" type="button" class="stock-ref-toggle" :disabled="busy" @click="toggleActive(row)">{{ row.active ? 'Скрыть' : 'Показать' }}</Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Переименовать" title="Переименовать" @click="startEdit(row)">
-            <PencilIcon :size="17" :stroke-width="2.1" />
-          </Button>
-          <UiDeleteButton v-if="isManager" size="sm" :disabled="busy" @click="deleting = row" />
-        </div>
-      </div>
-      <p v-if="!rows.length" class="lands-muted">Пока пусто.</p>
-    </div>
+  <RefList
+    v-model="newLabel"
+    :title="title"
+    :hint="hint"
+    :items="rows"
+    :placeholder="placeholder"
+    :busy="busy"
+    :error="error"
+    :can-remove="isManager"
+    @add="add"
+    @edit="startEdit"
+    @remove="(row) => (deleting = row)"
+  >
+    <template #label="{ item: row }">
+      <span :class="row.active ? '' : 'text-muted-foreground'">{{ row.label }}</span>
+      <span v-if="!row.active" class="ml-2 text-xs text-muted-foreground">скрыто</span>
+    </template>
+    <template #actions="{ item: row }">
+      <Button variant="ghost" size="sm" type="button" class="shrink-0 text-muted-foreground" :disabled="busy" @click="toggleActive(row)">
+        {{ row.active ? 'Скрыть' : 'Показать' }}
+      </Button>
+    </template>
+  </RefList>
 
-    <teleport to="body">
-      <UiModal v-if="editing" :title="title" :max-width="460" :close-disabled="busy" @close="editing = null">
-        <div class="ui-form-field">
-          <label class="ui-form-label">Название *</label>
-          <Input v-model="editLabel" class="ui-form-input" @keydown.enter="saveEdit" />
-        </div>
-        <template #actions>
-          <UiButton :disabled="busy" @click="editing = null">Отмена</UiButton>
-          <UiButton variant="primary" :disabled="busy || !editLabel.trim()" @click="saveEdit">Сохранить</UiButton>
-        </template>
-      </UiModal>
-      <UiConfirmModal
-        v-if="deleting"
-        :title="`Удалить «${deleting.label}»?`"
-        :busy="busy"
-        @cancel="deleting = null"
-        @confirm="confirmDelete"
-      />
-    </teleport>
-  </div>
+  <UiModal v-if="editing" :title="title" :max-width="460" :close-disabled="busy" @close="editing = null">
+    <form id="stock-ref-edit" class="tw-scope grid gap-4" @submit.prevent="saveEdit">
+      <FormField label="Название" for="stock-ref-label" required>
+        <Input id="stock-ref-label" v-model="editLabel" />
+      </FormField>
+    </form>
+    <template #actions>
+      <UiButton :disabled="busy" @click="editing = null">Отмена</UiButton>
+      <UiButton variant="primary" type="submit" form="stock-ref-edit" :disabled="busy || !editLabel.trim()">Сохранить</UiButton>
+    </template>
+  </UiModal>
+  <UiConfirmModal
+    v-if="deleting"
+    :title="`Удалить «${deleting.label}»?`"
+    :busy="busy"
+    @cancel="deleting = null"
+    @confirm="confirmDelete"
+  />
 </template>
-
-<style scoped>
-@layer legacy {
-.stock-ref--hidden span {
-  color: var(--text-secondary);
-}
-
-.stock-ref-toggle {
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
-  color: var(--text-secondary);
-  border-radius: 8px;
-  height: 30px;
-  padding: 0 10px;
-  font-family: inherit;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.stock-ref-toggle:hover:not(:disabled) {
-  color: var(--text-primary);
-}
-}
-</style>

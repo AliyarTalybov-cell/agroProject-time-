@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
-import { ChevronLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon } from '@lucide/vue'
+import { ChevronLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
+import RefList from '@/components/ui/RefList.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
 import { promptText } from '@/composables/usePromptText'
 import UiSelect from '@/components/ui/UiSelect.vue'
 // Общие стили раздела земель — те же, что у вынесенных окон и вкладок.
@@ -3945,93 +3947,63 @@ onMounted(() => void reloadAll())
             </TabsTrigger>
             </TabsList>
           </Tabs>
-          <div v-if="landRefsTab === 'land-types'" class="lands-ref-block">
-            <h2>Типы земли</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newLandTypeName" class="lands-search" type="text" placeholder="Например: Пашня, Залежь" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandTypeName.trim()" @click="addLandType">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="type in landTypes" :key="type.id" class="lands-list-plain-item">
-                <span>{{ type.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandType(type)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandType(type.id)" />
-                </div>
-              </div>
-              <p v-if="!landTypes.length" class="lands-muted">Пока нет типов земли.</p>
-            </div>
-          </div>
-          <div v-else-if="landRefsTab === 'land-categories'" class="lands-ref-block">
-            <h2>Категории земли</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newLandCategoryName" class="lands-search" type="text" placeholder="Например: Земли сельскохозяйственного назначения" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandCategoryName.trim()" @click="addLandCategory">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="category in landCategories" :key="category.id" class="lands-list-plain-item">
-                <span>{{ category.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandCategory(category)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandCategory(category.id)" />
-                </div>
-              </div>
-              <p v-if="!landCategories.length" class="lands-muted">Пока нет категорий земли.</p>
-            </div>
-          </div>
-          <div v-else class="lands-ref-block">
-            <h2>Использование участка</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newLandActualUseOptionName" class="lands-search" type="text" placeholder="Например: Используется" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newLandActualUseOptionName.trim()" @click="addLandActualUseOption">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="option in actualUseOptions" :key="option.id" class="lands-list-plain-item">
-                <span>{{ option.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editLandUsageOption(option)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteLandUsage(option.id)" />
-                </div>
-              </div>
-              <p v-if="!actualUseOptions.length" class="lands-muted">Пока нет вариантов использования участка.</p>
-            </div>
-          </div>
+          <RefList
+            v-if="landRefsTab === 'land-types'"
+            title="Типы земли"
+            v-model="newLandTypeName"
+            :items="landTypes"
+            :get-label="(type) => type.name"
+            placeholder="Например: Пашня, Залежь"
+            :busy="refsLoading"
+            empty-text="Пока нет типов земли."
+            @add="addLandType"
+            @edit="(type) => editLandType(type)"
+            @remove="(type) => requestDeleteLandType(type.id)"
+          >
+          </RefList>
+          <RefList
+            v-else-if="landRefsTab === 'land-categories'"
+            title="Категории земли"
+            v-model="newLandCategoryName"
+            :items="landCategories"
+            :get-label="(category) => category.name"
+            placeholder="Например: Земли сельскохозяйственного назначения"
+            :busy="refsLoading"
+            empty-text="Пока нет категорий земли."
+            @add="addLandCategory"
+            @edit="(category) => editLandCategory(category)"
+            @remove="(category) => requestDeleteLandCategory(category.id)"
+          >
+          </RefList>
+          <RefList
+            v-else
+            title="Использование участка"
+            v-model="newLandActualUseOptionName"
+            :items="actualUseOptions"
+            :get-label="(option) => option.name"
+            placeholder="Например: Используется"
+            :busy="refsLoading"
+            empty-text="Пока нет вариантов использования участка."
+            @add="addLandActualUseOption"
+            @edit="(option) => editLandUsageOption(option)"
+            @remove="(option) => requestDeleteLandUsage(option.id)"
+          >
+          </RefList>
         </template>
         <template v-else-if="landsRootTab === 'crops-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <div class="lands-ref-block">
-            <h2>Справочники СХ культур</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newCropLabel" class="lands-search" type="text" placeholder="Например: Пшеница" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newCropLabel.trim()" @click="addCropRef">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in crops" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.label }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteCropRef(row.id)" />
-                </div>
-              </div>
-              <p v-if="!crops.length" class="lands-muted">Пока нет культур.</p>
-            </div>
-          </div>
+          <RefList
+            title="Справочники СХ культур"
+            v-model="newCropLabel"
+            :items="crops"
+            placeholder="Например: Пшеница"
+            :busy="refsLoading"
+            empty-text="Пока нет культур."
+            @add="addCropRef"
+            @edit="(row) => editCropRef(row)"
+            @remove="(row) => requestDeleteCropRef(row.id)"
+          >
+          </RefList>
         </template>
         <template v-else-if="landsRootTab === 'melioration-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
@@ -4048,69 +4020,48 @@ onMounted(() => void reloadAll())
             </TabsTrigger>
             </TabsList>
           </Tabs>
-          <div v-if="meliorationRefsTab === 'types'" class="lands-ref-block">
-            <h2>Типы мелиорации</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newMeliorationTypeName" class="lands-search" type="text" placeholder="Например: Оросительная" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationTypeName.trim()" @click="addMeliorationTypeRef">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landMeliorationTypes" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationTypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationType(row.id)" />
-                </div>
-              </div>
-              <p v-if="!landMeliorationTypes.length" class="lands-muted">Пока нет типов мелиорации.</p>
-            </div>
-          </div>
-          <div v-else-if="meliorationRefsTab === 'subtypes'" class="lands-ref-block">
-            <h2>Виды мелиорации</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newMeliorationSubtypeName" class="lands-search" type="text" placeholder="Например: Осушительная" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationSubtypeName.trim()" @click="addMeliorationSubtypeRef">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landMeliorationSubtypes" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationSubtypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationSubtype(row.id)" />
-                </div>
-              </div>
-              <p v-if="!landMeliorationSubtypes.length" class="lands-muted">Пока нет видов мелиорации.</p>
-            </div>
-          </div>
-          <div v-else class="lands-ref-block">
-            <h2>Типы мероприятий</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newMeliorationEventTypeName" class="lands-search" type="text" placeholder="Например: Реконструкция" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newMeliorationEventTypeName.trim()" @click="addMeliorationEventTypeRef">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landMeliorationEventTypes" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editMeliorationEventTypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteMeliorationEventType(row.id)" />
-                </div>
-              </div>
-              <p v-if="!landMeliorationEventTypes.length" class="lands-muted">Пока нет типов мероприятий.</p>
-            </div>
-          </div>
+          <RefList
+            v-if="meliorationRefsTab === 'types'"
+            title="Типы мелиорации"
+            v-model="newMeliorationTypeName"
+            :items="landMeliorationTypes"
+            :get-label="(row) => row.name"
+            placeholder="Например: Оросительная"
+            :busy="refsLoading"
+            empty-text="Пока нет типов мелиорации."
+            @add="addMeliorationTypeRef"
+            @edit="(row) => editMeliorationTypeRef(row)"
+            @remove="(row) => requestDeleteMeliorationType(row.id)"
+          >
+          </RefList>
+          <RefList
+            v-else-if="meliorationRefsTab === 'subtypes'"
+            title="Виды мелиорации"
+            v-model="newMeliorationSubtypeName"
+            :items="landMeliorationSubtypes"
+            :get-label="(row) => row.name"
+            placeholder="Например: Осушительная"
+            :busy="refsLoading"
+            empty-text="Пока нет видов мелиорации."
+            @add="addMeliorationSubtypeRef"
+            @edit="(row) => editMeliorationSubtypeRef(row)"
+            @remove="(row) => requestDeleteMeliorationSubtype(row.id)"
+          >
+          </RefList>
+          <RefList
+            v-else
+            title="Типы мероприятий"
+            v-model="newMeliorationEventTypeName"
+            :items="landMeliorationEventTypes"
+            :get-label="(row) => row.name"
+            placeholder="Например: Реконструкция"
+            :busy="refsLoading"
+            empty-text="Пока нет типов мероприятий."
+            @add="addMeliorationEventTypeRef"
+            @edit="(row) => editMeliorationEventTypeRef(row)"
+            @remove="(row) => requestDeleteMeliorationEventType(row.id)"
+          >
+          </RefList>
         </template>
         <template v-else-if="landsRootTab === 'equipment-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
@@ -4124,48 +4075,32 @@ onMounted(() => void reloadAll())
             </TabsTrigger>
             </TabsList>
           </Tabs>
-          <div v-if="equipmentRefsTab === 'types'" class="lands-ref-block">
-            <h2>Тип техники</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newEquipmentTypeName" class="lands-search" type="text" placeholder="Например: Трактор" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newEquipmentTypeName.trim()" @click="addEquipmentTypeReference">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in equipmentTypeRefs" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentTypeReference(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteEquipmentType(row.id)" />
-                </div>
-              </div>
-              <p v-if="!equipmentTypeRefs.length" class="lands-muted">Пока нет типов техники.</p>
-            </div>
-          </div>
-          <div v-else class="lands-ref-block">
-            <h2>Состояние техники</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newEquipmentConditionName" class="lands-search" type="text" placeholder="Например: Требует ТО" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newEquipmentConditionName.trim()" @click="addEquipmentConditionReference">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in equipmentConditionRowsForDisplay" :key="row.code" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editEquipmentConditionReference(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteEquipmentCondition(row.code)" />
-                </div>
-              </div>
-              <p v-if="!equipmentConditionRefs.length" class="lands-muted">Показаны базовые состояния. После применения миграции изменения будут сохраняться в БД.</p>
-            </div>
-          </div>
+          <RefList
+            v-if="equipmentRefsTab === 'types'"
+            title="Тип техники"
+            v-model="newEquipmentTypeName"
+            :items="equipmentTypeRefs"
+            :get-label="(row) => row.name"
+            placeholder="Например: Трактор"
+            :busy="refsLoading"
+            empty-text="Пока нет типов техники."
+            @add="addEquipmentTypeReference"
+            @edit="(row) => editEquipmentTypeReference(row)"
+            @remove="(row) => requestDeleteEquipmentType(row.id)"
+          >
+          </RefList>
+          <RefList
+            v-else
+            title="Состояние техники"
+            v-model="newEquipmentConditionName"
+            :items="equipmentConditionRowsForDisplay.map((r) => ({ ...r, id: r.code }))"
+            :get-label="(row) => row.name"
+            placeholder="Например: Требует ТО"
+            :busy="refsLoading"
+            @add="addEquipmentConditionReference"
+            @edit="(row) => editEquipmentConditionReference(row)"
+            @remove="(row) => requestDeleteEquipmentCondition(row.code)"
+          />
         </template>
         <template v-else-if="landsRootTab === 'field-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
@@ -4176,27 +4111,19 @@ onMounted(() => void reloadAll())
             </TabsTrigger>
             </TabsList>
           </Tabs>
-          <div class="lands-ref-block">
-            <h2>Муниципальные образования</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newFieldMunicipalityName" class="lands-search" type="text" placeholder="Например: Новотроицкий сельсовет" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newFieldMunicipalityName.trim()" @click="addFieldMunicipalityReference">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in fieldMunicipalityRefs" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editFieldMunicipalityReference(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteFieldMunicipality(row.id)" />
-                </div>
-              </div>
-              <p v-if="!fieldMunicipalityRefs.length" class="lands-muted">Пока нет муниципальных образований.</p>
-            </div>
-          </div>
+          <RefList
+            title="Муниципальные образования"
+            v-model="newFieldMunicipalityName"
+            :items="fieldMunicipalityRefs"
+            :get-label="(row) => row.name"
+            placeholder="Например: Новотроицкий сельсовет"
+            :busy="refsLoading"
+            empty-text="Пока нет муниципальных образований."
+            @add="addFieldMunicipalityReference"
+            @edit="(row) => editFieldMunicipalityReference(row)"
+            @remove="(row) => requestDeleteFieldMunicipality(row.id)"
+          >
+          </RefList>
         </template>
         <template v-else-if="landsRootTab === 'crop-rotation-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
@@ -4207,27 +4134,19 @@ onMounted(() => void reloadAll())
             </TabsTrigger>
             </TabsList>
           </Tabs>
-          <div class="lands-ref-block">
-            <h2>Типы севооборота</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newCropRotationTypeName" class="lands-search" type="text" placeholder="Например: Полевой" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newCropRotationTypeName.trim()" @click="addCropRotationTypeRef">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in cropRotationTypeRefs" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editCropRotationTypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteCropRotationType(row.id)" />
-                </div>
-              </div>
-              <p v-if="!cropRotationTypeRefs.length" class="lands-muted">Пока нет типов севооборота.</p>
-            </div>
-          </div>
+          <RefList
+            title="Типы севооборота"
+            v-model="newCropRotationTypeName"
+            :items="cropRotationTypeRefs"
+            :get-label="(row) => row.name"
+            placeholder="Например: Полевой"
+            :busy="refsLoading"
+            empty-text="Пока нет типов севооборота."
+            @add="addCropRotationTypeRef"
+            @edit="(row) => editCropRotationTypeRef(row)"
+            @remove="(row) => requestDeleteCropRotationType(row.id)"
+          >
+          </RefList>
         </template>
         <template v-else-if="landsRootTab === 'storage-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
@@ -4250,53 +4169,41 @@ onMounted(() => void reloadAll())
             </TabsTrigger>
             </TabsList>
           </Tabs>
-          <div v-if="storageRefsTab === 'types'" class="lands-ref-block">
-            <h2>Типы мест хранения</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newStorageLocationTypeName" class="lands-search" type="text" placeholder="Например: Элеватор" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageLocationTypeName.trim()" @click="addStorageLocationTypeRef">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in storageLocationTypeRefs" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationTypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteStorageLocationType(row.id)" />
-                </div>
-              </div>
-              <p v-if="!storageLocationTypeRefs.length" class="lands-muted">Пока нет типов мест хранения.</p>
-            </div>
-          </div>
-          <div v-else-if="storageRefsTab === 'statuses'" class="lands-ref-block">
-            <h2>Статусы мест хранения</h2>
-            <p class="lands-muted lands-ref-hint">Статус с признаком «не используется» визуально выделяет неактивные места в реестре.</p>
-            <div class="lands-ref-add-row lands-ref-add-row--wrap">
-              <Input v-model="newStorageLocationStatusName" class="lands-search" type="text" placeholder="Например: На ремонте" />
-              <label class="lands-checkbox-inline">
-                <Checkbox v-model="newStorageLocationStatusMarksInactive" />
-                <span>Не используется (неактивно)</span>
-              </label>
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newStorageLocationStatusName.trim()" @click="addStorageLocationStatusRef">
-                Добавить
-              </Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in storageLocationStatusRefs" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}<template v-if="row.marks_inactive"> — не используется</template></span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editStorageLocationStatusRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteStorageLocationStatus(row.id)" />
-                </div>
-              </div>
-              <p v-if="!storageLocationStatusRefs.length" class="lands-muted">Пока нет статусов мест хранения.</p>
-            </div>
-          </div>
+          <RefList
+            v-if="storageRefsTab === 'types'"
+            title="Типы мест хранения"
+            v-model="newStorageLocationTypeName"
+            :items="storageLocationTypeRefs"
+            :get-label="(row) => row.name"
+            placeholder="Например: Элеватор"
+            :busy="refsLoading"
+            empty-text="Пока нет типов мест хранения."
+            @add="addStorageLocationTypeRef"
+            @edit="(row) => editStorageLocationTypeRef(row)"
+            @remove="(row) => requestDeleteStorageLocationType(row.id)"
+          >
+          </RefList>
+          <RefList
+            v-else-if="storageRefsTab === 'statuses'"
+            title="Статусы мест хранения"
+            hint="Статус с признаком «не используется» визуально выделяет неактивные места в реестре."
+            v-model="newStorageLocationStatusName"
+            :items="storageLocationStatusRefs"
+            placeholder="Например: На ремонте"
+            :busy="refsLoading"
+            empty-text="Пока нет статусов мест хранения."
+            @add="addStorageLocationStatusRef"
+            @edit="(row) => editStorageLocationStatusRef(row)"
+            @remove="(row) => requestDeleteStorageLocationStatus(row.id)"
+          >
+            <template #add-extra>
+              <label class="flex items-center gap-2 text-sm whitespace-nowrap">
+                            <Checkbox v-model="newStorageLocationStatusMarksInactive" />
+                            <span>Не используется (неактивно)</span>
+                          </label>
+            </template>
+            <template #label="{ item: row }">{{ row.name }}<template v-if="row.marks_inactive"> — не используется</template></template>
+          </RefList>
           <LandsStockRefList
             v-else-if="storageRefsTab === 'writeoff-reasons'"
             table="stock_writeoff_reasons"
@@ -4341,120 +4248,105 @@ onMounted(() => void reloadAll())
             </TabsList>
           </Tabs>
 
-          <div v-if="rightsRefsTab === 'ownership-forms'" class="lands-ref-block">
-            <h2>Формы собственности</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newOwnershipFormName" class="lands-search" type="text" placeholder="Например: Частная собственность" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newOwnershipFormName.trim()" @click="addOwnershipForm">Добавить</Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landRightOwnershipForms" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editOwnershipForm(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteOwnershipForm(row.id)" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <RefList
+            v-if="rightsRefsTab === 'ownership-forms'"
+            title="Формы собственности"
+            v-model="newOwnershipFormName"
+            :items="landRightOwnershipForms"
+            :get-label="(row) => row.name"
+            placeholder="Например: Частная собственность"
+            :busy="refsLoading"
+            @add="addOwnershipForm"
+            @edit="(row) => editOwnershipForm(row)"
+            @remove="(row) => requestDeleteOwnershipForm(row.id)"
+          >
+          </RefList>
 
-          <div v-else-if="rightsRefsTab === 'right-types'" class="lands-ref-block">
-            <h2>Виды прав</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newRightTypeName" class="lands-search" type="text" placeholder="Например: Аренда земельных участков" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newRightTypeName.trim()" @click="addRightTypeRef">Добавить</Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landRightTypes" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightTypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightType(row.id)" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <RefList
+            v-else-if="rightsRefsTab === 'right-types'"
+            title="Виды прав"
+            v-model="newRightTypeName"
+            :items="landRightTypes"
+            :get-label="(row) => row.name"
+            placeholder="Например: Аренда земельных участков"
+            :busy="refsLoading"
+            @add="addRightTypeRef"
+            @edit="(row) => editRightTypeRef(row)"
+            @remove="(row) => requestDeleteRightType(row.id)"
+          >
+          </RefList>
 
-          <div v-else-if="rightsRefsTab === 'document-types'" class="lands-ref-block">
-            <h2>Типы подтверждающих документов</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newRightDocumentTypeName" class="lands-search" type="text" placeholder="Например: Договор аренды" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newRightDocumentTypeName.trim()" @click="addRightDocumentTypeRef">Добавить</Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landRightDocumentTypes" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightDocumentTypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightDocumentType(row.id)" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <RefList
+            v-else-if="rightsRefsTab === 'document-types'"
+            title="Типы подтверждающих документов"
+            v-model="newRightDocumentTypeName"
+            :items="landRightDocumentTypes"
+            :get-label="(row) => row.name"
+            placeholder="Например: Договор аренды"
+            :busy="refsLoading"
+            @add="addRightDocumentTypeRef"
+            @edit="(row) => editRightDocumentTypeRef(row)"
+            @remove="(row) => requestDeleteRightDocumentType(row.id)"
+          >
+          </RefList>
 
-          <div v-else-if="rightsRefsTab === 'holder-types'" class="lands-ref-block">
-            <h2>Виды правообладания</h2>
-            <div class="lands-ref-add-row">
-              <Input v-model="newHolderTypeName" class="lands-search" type="text" placeholder="Например: Юридическое лицо" />
-              <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newHolderTypeName.trim()" @click="addHolderTypeRef">Добавить</Button>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landRightHolderTypes" :key="row.id" class="lands-list-plain-item">
-                <span>{{ row.name }}</span>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editHolderTypeRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteHolderType(row.id)" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <RefList
+            v-else-if="rightsRefsTab === 'holder-types'"
+            title="Виды правообладания"
+            v-model="newHolderTypeName"
+            :items="landRightHolderTypes"
+            :get-label="(row) => row.name"
+            placeholder="Например: Юридическое лицо"
+            :busy="refsLoading"
+            @add="addHolderTypeRef"
+            @edit="(row) => editHolderTypeRef(row)"
+            @remove="(row) => requestDeleteHolderType(row.id)"
+          >
+          </RefList>
 
-          <div v-else class="lands-ref-block">
-            <h2>Правообладатели</h2>
-            <div class="lands-form-grid lands-form-grid--mel">
-              <label class="lands-field"><span>Наименование</span><Input v-model="newHolderName" type="text" /></label>
-              <label class="lands-field">
-                <span>Вид правообладания</span>
-                <UiSelect v-model="newHolderTypeId" :options="[{ value: '', label: '—' }, ...(landRightHolderTypes).map((t) => ({ value: t.id, label: String(t.name) }))]" />
-              </label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field"><span>ИНН</span><Input v-model="newHolderInn" type="text" /></label>
-              <label class="lands-field"><span>КПП</span><Input v-model="newHolderKpp" type="text" /></label>
-            </div>
-            <div class="lands-form-grid">
-              <label class="lands-field"><span>ОГРН</span><Input v-model="newHolderOgrn" type="text" /></label>
-              <div class="lands-field lands-field--inline-end">
-                <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" :disabled="refsLoading || !newHolderName.trim()" @click="addRightHolderRef">
+          <section v-else class="tw-scope grid gap-4">
+            <h2 class="text-base font-semibold">Правообладатели</h2>
+            <form class="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2 sm:p-6" @submit.prevent="addRightHolderRef">
+              <FormField label="Наименование" for="holder-name" required>
+                <Input id="holder-name" v-model="newHolderName" type="text" />
+              </FormField>
+              <FormField label="Вид правообладания">
+                <UiSelect v-model="newHolderTypeId" block aria-label="Вид правообладания" :options="[{ value: '', label: '—' }, ...landRightHolderTypes.map((t) => ({ value: t.id, label: String(t.name) }))]" />
+              </FormField>
+              <FormField label="ИНН" for="holder-inn">
+                <Input id="holder-inn" v-model="newHolderInn" type="text" inputmode="numeric" />
+              </FormField>
+              <FormField label="КПП" for="holder-kpp">
+                <Input id="holder-kpp" v-model="newHolderKpp" type="text" inputmode="numeric" />
+              </FormField>
+              <FormField label="ОГРН" for="holder-ogrn">
+                <Input id="holder-ogrn" v-model="newHolderOgrn" type="text" inputmode="numeric" />
+              </FormField>
+              <div class="flex items-end justify-end">
+                <Button type="submit" :disabled="refsLoading || !newHolderName.trim()">
+                  <PlusIcon v-if="!editingHolderId" />
                   {{ editingHolderId ? 'Сохранить' : 'Добавить' }}
                 </Button>
               </div>
-            </div>
-            <div class="lands-list-plain">
-              <div v-for="row in landRightHolders" :key="row.id" class="lands-list-plain-item lands-list-plain-item--stack">
-                <div>
-                  <strong>{{ row.name }}</strong>
-                  <div class="lands-muted-line">
-                    {{ landRightHolderTypeMap.get(row.holder_type_id || '') || '—' }} · ИНН: {{ row.inn || '—' }} · КПП: {{ row.kpp || '—' }} · ОГРН: {{ row.ogrn || '—' }}
-                  </div>
+            </form>
+            <ul v-if="landRightHolders.length" class="overflow-hidden rounded-xl border bg-card">
+              <li v-for="row in landRightHolders" :key="row.id" class="flex items-center gap-2 border-b py-2 pr-2 pl-4 last:border-b-0">
+                <div class="grid min-w-0 flex-1 gap-0.5">
+                  <span class="text-sm font-medium break-words">{{ row.name }}</span>
+                  <span class="text-xs text-muted-foreground tabular-nums">
+                    {{ landRightHolderTypeMap.get(row.holder_type_id || '') || '—' }} · ИНН {{ row.inn || '—' }} · КПП {{ row.kpp || '—' }} · ОГРН {{ row.ogrn || '—' }}
+                  </span>
                 </div>
-                <div class="lands-item-actions">
-                  <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="editRightHolderRef(row)">
-                    <PencilIcon :size="17" :stroke-width="2.1" />
-                  </Button>
-                  <UiDeleteButton size="sm" :disabled="refsLoading" @click="requestDeleteRightHolder(row.id)" />
-                </div>
-              </div>
-            </div>
-          </div>
+                <Button variant="ghost" size="icon-sm" type="button" class="shrink-0 text-muted-foreground" :aria-label="`Изменить «${row.name}»`" @click="editRightHolderRef(row)">
+                  <PencilIcon />
+                </Button>
+                <Button variant="ghost" size="icon-sm" type="button" class="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :aria-label="`Удалить «${row.name}»`" :disabled="refsLoading" @click="requestDeleteRightHolder(row.id)">
+                  <Trash2Icon />
+                </Button>
+              </li>
+            </ul>
+            <p v-else class="rounded-xl border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">Правообладателей пока нет.</p>
+          </section>
         </template>
       </Card>
 
