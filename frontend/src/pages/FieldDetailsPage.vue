@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Input } from '@/components/ui/shadcn/input'
@@ -592,7 +593,7 @@ async function onPhotoFileChange(e: Event) {
 
 async function removePhoto(id: string) {
   if (!props.id || !isSupabaseConfigured()) return
-  if (!confirm('Удалить это фото поля?')) return
+  if (!(await askConfirm('Удалить это фото поля?'))) return
   try {
     await deleteFieldPhoto(id)
     photos.value = await loadFieldPhotos(props.id)
@@ -604,7 +605,7 @@ async function removePhoto(id: string) {
 async function removeScheme() {
   if (!field.value || !isSupabaseConfigured()) return
   if (!field.value.scheme_file_url) return
-  if (!confirm('Удалить схему поля?')) return
+  if (!(await askConfirm('Удалить схему поля?'))) return
   try {
     await updateField(field.value.id, { scheme_file_url: null })
     await loadData()

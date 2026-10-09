@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * «Добавить» человека в список (участники задачи, ответственные события) —
- * Popover shadcn-vue: кнопка, в окне поиск (Input) и список (ScrollArea) с
+ * Popover shadcn-vue: кнопка, в окне поиск (Input) и список с прокруткой
  * аватарами. Отдаёт выбранного через событие pick; сам список выбранных
  * показывает страница.
  */
@@ -10,7 +10,6 @@ import { CirclePlusIcon, SearchIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/shadcn/button'
 import { Input } from '@/components/ui/shadcn/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/shadcn/popover'
-import { ScrollArea } from '@/components/ui/shadcn/scroll-area'
 import UserAvatar from '@/components/UserAvatar.vue'
 
 export interface PersonOption {
@@ -54,7 +53,7 @@ function pick(id: string) {
         <SearchIcon class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input v-model="q" placeholder="Поиск по имени или email" class="h-10 rounded-none border-0 pl-9 shadow-none focus-visible:ring-0" />
       </div>
-      <ScrollArea class="max-h-64">
+      <div class="max-h-64 overflow-y-auto overscroll-contain">
         <div class="grid p-1">
           <button
             v-for="o in filtered"
@@ -70,7 +69,7 @@ function pick(id: string) {
             {{ allAdded ? allAddedText : emptyText }}
           </p>
         </div>
-      </ScrollArea>
+      </div>
     </PopoverContent>
   </Popover>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { askConfirm } from '@/composables/useConfirm'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
@@ -122,6 +123,11 @@ const pendingCreateFiles = ref<PendingTaskFile[]>([])
 const newCommentMessage = ref('')
 const isSavingTask = ref(false)
 const isTaskChatExpanded = ref(false)
+/** Последние комментарии видны всегда, старые — по «Показать все». */
+const TASK_COMMENTS_PREVIEW = 3
+const visibleTaskComments = computed(() =>
+  isTaskChatExpanded.value ? taskComments.value : taskComments.value.slice(-TASK_COMMENTS_PREVIEW),
+)
 const isSendingComment = ref(false)
 const isMetaInitialLoading = ref(false)
 const participantPickerOpen = ref(false)
@@ -507,6 +513,18 @@ async function uploadPendingFiles(taskId: string) {
     clearPendingCreateFiles()
   }
 }
+
+/** Срок в форме хранится как «ДД.ММ.ГГГГ» (так он лежит в базе), календарь работает с ISO. */
+const formDueDateIso = computed<string>({
+  get: () => {
+    const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(form.value.dueDate.trim())
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : ''
+  },
+  set: (iso) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '')
+    form.value.dueDate = m ? `${m[3]}.${m[2]}.${m[1]}` : ''
+  },
+})
 
 function parseDueDate(dueDate: string): Date | null {
   if (!dueDate || dueDate === '—') return null
@@ -956,6 +974,16 @@ async function removeTaskFileRow(fileRow: TaskFileRow) {
   }
 }
 
+/** История открытой карточки сразу показывает только что записанное событие. */
+async function refreshOpenTaskEvents(taskId: string) {
+  if (selectedTaskId.value !== taskId) return
+  try {
+    taskEvents.value = await loadTaskEvents(taskId)
+  } catch {
+    // История не критична: при ошибке остаётся прежний список.
+  }
+}
+
 async function updateTaskStatus(taskId: string, newStatus: Status) {
   boardError.value = ''
   const t = tasks.value.find((x) => x.id === taskId)
@@ -970,11 +998,15 @@ async function updateTaskStatus(taskId: string, newStatus: Status) {
         eventType: 'status_changed',
         payload: { from: prevStatus, to: newStatus },
       })
+      await refreshOpenTaskEvents(taskId)
     } catch (err) {
       // Откат был и раньше, но молча: карточка возвращалась на место,
       // и это выглядело как промах мышью, а не как отказ сервера.
       if (t && prevStatus !== undefined) t.status = prevStatus
-      boardError.value = formatSupabaseError(err) || 'Не удалось изменить статус задачи'
+      const msg = formatSupabaseError(err) || 'Не удалось изменить статус задачи'
+      // Статус меняют из карточки — ошибка должна быть видна в ней, а не под окном.
+      if (selectedTaskId.value === taskId) taskModalError.value = msg
+      else boardError.value = msg
     }
   }
 }
@@ -998,6 +1030,7 @@ async function submitComment() {
       eventType: 'comment_added',
       payload: { preview: text.slice(0, 140) },
     })
+    await refreshOpenTaskEvents(task.id)
   } catch (err) {
     taskModalError.value = formatSupabaseError(err) || 'Не удалось отправить комментарий'
   } finally {
@@ -1008,7 +1041,7 @@ async function submitComment() {
 async function deleteTask() {
   if (!selectedTaskId.value || !selectedTask.value) return
   if (!canDeleteSelectedTask.value) return
-  if (!confirm('Удалить эту задачу?')) return
+  if (!(await askConfirm('Удалить эту задачу?'))) return
   taskModalError.value = ''
   if (isSupabaseConfigured()) {
     try {
@@ -1193,7 +1226,8 @@ function sortIcon(key: TaskSortKey) {
     </div>
 
     <template v-else>
-      <Empty v-if="!paginatedTasks.length" class="rounded-xl border border-dashed">
+      <template v-if="boardError && !paginatedTasks.length" />
+      <Empty v-else-if="!paginatedTasks.length" class="rounded-xl border border-dashed">
         <EmptyHeader>
           <EmptyMedia variant="icon"><ClipboardListIcon /></EmptyMedia>
           <EmptyTitle>Задач нет</EmptyTitle>
@@ -1343,8 +1377,8 @@ function sortIcon(key: TaskSortKey) {
           <FormField label="Приоритет">
             <UiSelect v-model="form.priority" block :options="[{ value: 'high', label: 'Высокий' }, { value: 'medium', label: 'Средний' }, { value: 'low', label: 'Низкий' }]" />
           </FormField>
-          <FormField label="Срок выполнения" for="task-due">
-            <Input id="task-due" v-model="form.dueDate" type="text" inputmode="numeric" placeholder="ДД.ММ.ГГГГ" />
+          <FormField label="Срок выполнения">
+            <UiDatePicker v-model="formDueDateIso" placeholder="Без срока" clearable block aria-label="Срок выполнения" />
           </FormField>
           <FormField label="Тип работ" wide>
             <UiSelect v-model="form.workType" block :options="[{ value: '', label: 'Не указано' }, ...workTypes.map((w) => ({ value: w, label: String(w) }))]" />
@@ -1560,21 +1594,21 @@ function sortIcon(key: TaskSortKey) {
               Обсуждение<span v-if="taskComments.length" class="ml-1.5 font-normal text-muted-foreground">{{ taskComments.length }}</span>
             </h3>
             <Button
-              v-if="taskComments.length"
+              v-if="taskComments.length > TASK_COMMENTS_PREVIEW"
               variant="ghost"
               size="sm"
               type="button"
               :disabled="commentsLoading"
               @click="isTaskChatExpanded = !isTaskChatExpanded"
             >
-              {{ isTaskChatExpanded ? 'Свернуть' : 'Показать все' }}
+              {{ isTaskChatExpanded ? 'Свернуть' : `Показать все (${taskComments.length})` }}
             </Button>
           </div>
           <div v-if="commentsLoading" class="grid gap-2">
             <Skeleton v-for="i in 2" :key="i" class="h-12 w-full" />
           </div>
-          <ul v-else-if="isTaskChatExpanded && taskComments.length" class="grid gap-4">
-            <li v-for="comment in taskComments" :key="comment.id" class="flex gap-3">
+          <ul v-else-if="taskComments.length" class="grid gap-4">
+            <li v-for="comment in visibleTaskComments" :key="comment.id" class="flex gap-3">
               <UserAvatar class="size-7 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(comment.user_id)" :url="avatarUrlByUserId(comment.user_id)" :initials="profileInitials(comment.user_id)" />
               <div class="grid min-w-0 gap-1">
                 <div class="flex flex-wrap items-baseline gap-x-2 text-sm">

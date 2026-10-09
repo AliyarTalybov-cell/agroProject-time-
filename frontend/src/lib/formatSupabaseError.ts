@@ -2,8 +2,22 @@
  * PostgrestError / AuthError от @supabase/supabase-js часто не являются instanceof Error,
  * из‑за этого в catch теряется текст — показываем message/details/hint.
  */
+export const NETWORK_ERROR_TEXT = 'Нет связи с сервером. Проверьте подключение и обновите страницу.'
+
+/** Сбой сети (fetch не дошёл до сервера): вместо стека вызовов — понятная фраза. */
+function isNetworkFailure(text: string): boolean {
+  return /Failed to fetch|NetworkError|Load failed|ERR_CONNECTION|fetch failed/i.test(text)
+}
+
 export function formatSupabaseError(err: unknown): string {
   if (err == null) return 'Неизвестная ошибка'
+  let raw = ''
+  try {
+    raw = err instanceof Error ? err.message : typeof err === 'object' ? (JSON.stringify(err) ?? '') : String(err)
+  } catch {
+    raw = String(err)
+  }
+  if (isNetworkFailure(raw)) return NETWORK_ERROR_TEXT
   if (err instanceof Error) return err.message
   if (typeof err !== 'object') return String(err)
   const o = err as Record<string, unknown>
