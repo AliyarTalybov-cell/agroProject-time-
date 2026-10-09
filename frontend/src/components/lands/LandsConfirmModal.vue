@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiModal from '@/components/ui/UiModal.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 /**
  * Небольшое модальное окно раздела земель: заголовок, одна строка текста и
  * кнопки. Заменяет четыре одинаковых по устройству диалога, которые лежали в

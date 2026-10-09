@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiButton from '@/components/ui/UiButton.vue'
+import UiModal from '@/components/ui/UiModal.vue'
 import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
@@ -9,6 +11,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-grou
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
 import { ChevronLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import RefList from '@/components/ui/RefList.vue'
+import { useMediaQuery } from '@vueuse/core'
+import UiSuccessModal from '@/components/UiSuccessModal.vue'
 import FormField from '@/components/ui/layout/FormField.vue'
 import { promptText } from '@/composables/usePromptText'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -247,6 +251,19 @@ const landEditorOpen = ref(false)
 const landEditorMode = ref<'create' | 'edit'>('create')
 const landInlineEditOpen = ref(false)
 const showDetailsMap = ref(false)
+/** Телефон: группы справочников — выпадающим списком, а не восемью вкладками. */
+const isPhone = useMediaQuery('(max-width: 639px)')
+/** Группы справочников — для выпадающего списка на телефоне вместо восьми вкладок. */
+const REF_GROUPS = [
+  { value: 'rights-refs', label: 'Справочники прав' },
+  { value: 'land-refs', label: 'Справочники земель' },
+  { value: 'crops-refs', label: 'Справочники СХ культур' },
+  { value: 'melioration-refs', label: 'Справочники мелиорации' },
+  { value: 'equipment-refs', label: 'Справочники техники' },
+  { value: 'field-refs', label: 'Справочники полей' },
+  { value: 'crop-rotation-refs', label: 'Справочники севооборота' },
+  { value: 'storage-refs', label: 'Справочники хранения' },
+] as const
 const landsRootTab = ref<'registry' | 'melioration' | 'land-refs' | 'rights-refs' | 'crops-refs' | 'melioration-refs' | 'equipment-refs' | 'field-refs' | 'crop-rotation-refs' | 'storage-refs'>('registry')
 const landRefsTab = ref<'land-types' | 'land-categories' | 'land-usage'>('land-types')
 const rightsRefsTab = ref<'ownership-forms' | 'right-types' | 'document-types' | 'holder-types' | 'holders'>('ownership-forms')
@@ -3733,7 +3750,16 @@ onMounted(() => void reloadAll())
 
     <div v-else class="lands-content">
       <Card v-if="!isDetailsMode" class="lands-card page-enter-item gap-0">
-        <div class="lands-tabs lands-tabs--top">
+        <div v-if="isPhone && (landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs')" class="mb-4">
+          <UiSelect
+            :model-value="landsRootTab"
+            block
+            aria-label="Группа справочников"
+            :options="[...REF_GROUPS]"
+            @update:model-value="(v) => (landsRootTab = v as typeof landsRootTab)"
+          />
+        </div>
+        <div v-if="!(isPhone && (landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs'))" class="lands-tabs lands-tabs--top">
           <template v-if="landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs'">
             <button type="button" class="lands-tab-btn" :class="{ 'is-active': landsRootTab === 'rights-refs' }" @click="landsRootTab = 'rights-refs'">
               Справочники прав
@@ -3934,8 +3960,8 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'land-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <Tabs :model-value="landRefsTab">
-            <TabsList>
+          <Tabs :model-value="landRefsTab" class="mb-4">
+            <TabsList class="max-w-full justify-start overflow-x-auto">
               <TabsTrigger value="land-types" @click="landRefsTab = 'land-types'">
               Типы земли
             </TabsTrigger>
@@ -4007,8 +4033,8 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'melioration-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <Tabs :model-value="meliorationRefsTab">
-            <TabsList>
+          <Tabs :model-value="meliorationRefsTab" class="mb-4">
+            <TabsList class="max-w-full justify-start overflow-x-auto">
               <TabsTrigger value="types" @click="meliorationRefsTab = 'types'">
               Типы мелиорации
             </TabsTrigger>
@@ -4065,8 +4091,8 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'equipment-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <Tabs :model-value="equipmentRefsTab">
-            <TabsList>
+          <Tabs :model-value="equipmentRefsTab" class="mb-4">
+            <TabsList class="max-w-full justify-start overflow-x-auto">
               <TabsTrigger value="types" @click="equipmentRefsTab = 'types'">
               Тип техники
             </TabsTrigger>
@@ -4104,8 +4130,8 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'field-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <Tabs :model-value="fieldRefsTab">
-            <TabsList>
+          <Tabs :model-value="fieldRefsTab" class="mb-4">
+            <TabsList class="max-w-full justify-start overflow-x-auto">
               <TabsTrigger value="municipalities" @click="fieldRefsTab = 'municipalities'">
               Муниципальные образования
             </TabsTrigger>
@@ -4127,8 +4153,8 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'crop-rotation-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <Tabs :model-value="cropRotationRefsTab">
-            <TabsList>
+          <Tabs :model-value="cropRotationRefsTab" class="mb-4">
+            <TabsList class="max-w-full justify-start overflow-x-auto">
               <TabsTrigger value="types" @click="cropRotationRefsTab = 'types'">
               Типы севооборота
             </TabsTrigger>
@@ -4150,8 +4176,8 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else-if="landsRootTab === 'storage-refs'">
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <Tabs :model-value="storageRefsTab">
-            <TabsList>
+          <Tabs :model-value="storageRefsTab" class="mb-4">
+            <TabsList class="max-w-full justify-start overflow-x-auto">
               <TabsTrigger value="types" @click="storageRefsTab = 'types'">
               Типы мест хранения
             </TabsTrigger>
@@ -4228,8 +4254,8 @@ onMounted(() => void reloadAll())
         </template>
         <template v-else>
           <p v-if="refsError" class="lands-error">{{ refsError }}</p>
-          <Tabs :model-value="rightsRefsTab">
-            <TabsList>
+          <Tabs :model-value="rightsRefsTab" class="mb-4">
+            <TabsList class="max-w-full justify-start overflow-x-auto">
               <TabsTrigger value="ownership-forms" @click="rightsRefsTab = 'ownership-forms'">
               Формы собственности
             </TabsTrigger>
@@ -4911,17 +4937,7 @@ onMounted(() => void reloadAll())
         @confirm="confirmRemoveRightSupportingFile"
         @close="closeRightFileDeleteConfirm"
       />
-      <LandsConfirmModal
-        :open="successModalOpen"
-        dialog-label="Успешно"
-        title="Готово"
-        :text="successModalText"
-        confirm-label="Закрыть"
-        confirm-variant="save"
-        :cancellable="false"
-        @confirm="closeSuccessModal"
-        @close="closeSuccessModal"
-      />
+      <UiSuccessModal :open="successModalOpen" title="Готово" :message="successModalText" @close="closeSuccessModal" />
     </teleport>
   </section>
 </template>

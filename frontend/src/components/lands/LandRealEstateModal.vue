@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiModal from '@/components/ui/UiModal.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import { Input } from '@/components/ui/shadcn/input'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**

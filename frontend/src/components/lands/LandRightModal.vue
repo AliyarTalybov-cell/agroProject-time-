@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import UiButton from '@/components/ui/UiButton.vue'
+import UiModal from '@/components/ui/UiModal.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { FileIcon, XIcon } from '@lucide/vue'
