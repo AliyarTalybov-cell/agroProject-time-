@@ -43,7 +43,7 @@ export const routes = [
   { path: '/weather', name: 'weather', component: WeatherPage, meta: { title: 'Погода и условия' } },
   { path: '/lands', name: 'lands', component: LandsPage, meta: { title: 'Земли' } },
   { path: '/lands/:id', name: 'land-details', component: LandsPage, props: true, meta: { title: 'Земельный участок' } },
-  { path: '/fields', name: 'fields', component: FieldsPage, meta: { title: 'Поля и Культуры' } },
+  { path: '/fields', name: 'fields', component: FieldsPage, meta: { title: 'Поля и культуры' } },
   { path: '/fields/:id', name: 'field-details', component: FieldDetailsPage, props: true, meta: { title: 'Поле' } },
   { path: '/warehouses', name: 'warehouses', component: WarehousesPage, meta: { title: 'Склады' } },
   { path: '/warehouses/storage-locations', name: 'storage-locations', component: StorageLocationsPage, meta: { title: 'Места хранения' } },

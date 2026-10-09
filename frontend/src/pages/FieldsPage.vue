@@ -1643,7 +1643,7 @@ onMounted(async () => {
                     <span v-if="fieldsSortMark('cadastralNumber')" class="fields-th-sort-mark">{{ fieldsSortMark('cadastralNumber') }}</span>
                   </Button>
                 </th>
-                <th scope="col" class="fields-th-efis">№ поля ЕФИС ЗСН</th>
+                <th scope="col" class="fields-th-efis hidden 2xl:table-cell">№ поля ЕФИС ЗСН</th>
                 <th scope="col" class="fields-th-area" :aria-sort="fieldsAriaSort('area')">
                   <Button variant="ghost" size="sm"
                     type="button"
@@ -1666,7 +1666,7 @@ onMounted(async () => {
                     <span v-if="fieldsSortMark('crop')" class="fields-th-sort-mark">{{ fieldsSortMark('crop') }}</span>
                   </Button>
                 </th>
-                <th scope="col" class="fields-th-land" :aria-sort="fieldsAriaSort('land')">
+                <th scope="col" class="fields-th-land hidden 2xl:table-cell" :aria-sort="fieldsAriaSort('land')">
                   <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
@@ -1677,7 +1677,7 @@ onMounted(async () => {
                     <span v-if="fieldsSortMark('land')" class="fields-th-sort-mark">{{ fieldsSortMark('land') }}</span>
                   </Button>
                 </th>
-                <th scope="col" class="fields-th-location" :aria-sort="fieldsAriaSort('location')">
+                <th scope="col" class="fields-th-location hidden 2xl:table-cell" :aria-sort="fieldsAriaSort('location')">
                   <Button variant="ghost" size="sm"
                     type="button"
                     class="fields-th-sort-btn"
@@ -1688,8 +1688,8 @@ onMounted(async () => {
                     <span v-if="fieldsSortMark('location')" class="fields-th-sort-mark">{{ fieldsSortMark('location') }}</span>
                   </Button>
                 </th>
-                <th scope="col">Муниципальное образование</th>
-                <th scope="col">Регион</th>
+                <th scope="col" class="hidden 2xl:table-cell">Муниципальное образование</th>
+                <th scope="col" class="hidden 2xl:table-cell">Регион</th>
                 <th scope="col" class="fields-th-responsible" :aria-sort="fieldsAriaSort('responsible')">
                   <Button variant="ghost" size="sm"
                     type="button"
@@ -1713,24 +1713,28 @@ onMounted(async () => {
               >
                 <td class="fields-td-name fields-list-title-main">{{ f.name || '—' }}</td>
                 <td class="fields-td-cadastral">{{ f.cadastralNumber || '—' }}</td>
-                <td class="fields-td-efis">{{ f.efisZsnNumber || '—' }}</td>
-                <td class="fields-td-area">{{ f.area }}</td>
+                <td class="fields-td-efis hidden 2xl:table-cell">{{ f.efisZsnNumber || '—' }}</td>
+                <td class="fields-td-area tabular-nums">{{ Number(f.area || 0).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) }}</td>
                 <td class="fields-td-crop">
                   <span :class="cropPillClass(f)">{{ f.cropName }}</span>
                 </td>
-                <td class="fields-td-land">{{ f.landType }}</td>
-                <td class="fields-td-location">
+                <td class="fields-td-land hidden 2xl:table-cell">{{ f.landType }}</td>
+                <td class="fields-td-location hidden 2xl:table-cell">
                   <div class="fields-location-text" :title="f.locationDescription">{{ f.locationDescription || '—' }}</div>
                 </td>
-                <td>{{ f.municipality || '—' }}</td>
-                <td>{{ f.region || '—' }}</td>
+                <td class="hidden 2xl:table-cell">{{ f.municipality || '—' }}</td>
+                <td class="hidden 2xl:table-cell">{{ f.region || '—' }}</td>
                 <td class="fields-td-responsible" @click.stop>
-                  <UiSelect
-                    :model-value="f.responsibleId || ''"
-                    :options="[{ value: '', label: 'Не назначен' }, ...profiles.map((p) => ({ value: p.id, label: p.display_name || p.email || '' }))]"
-                    class="fields-responsible-select"
-                    @update:model-value="(v) => onResponsibleChange(f.id, String(v))"
-                  />
+                  <div class="w-44">
+                    <UiSelect
+                      :model-value="f.responsibleId || ''"
+                      block
+                      size="sm"
+                      aria-label="Ответственный"
+                      :options="[{ value: '', label: 'Не назначен' }, ...profiles.map((p) => ({ value: p.id, label: p.display_name || p.email || '' }))]"
+                      @update:model-value="(v) => onResponsibleChange(f.id, String(v))"
+                    />
+                  </div>
                 </td>
                 <td class="fields-td-actions" @click.stop>
                   <div class="fields-actions-row">
@@ -1757,7 +1761,7 @@ onMounted(async () => {
                 </td>
               </tr>
               <tr v-if="!paginatedFields.length">
-                <td colspan="9" class="fields-empty">Нет полей. Добавьте поле с помощью кнопки выше.</td>
+                <td colspan="11" class="fields-empty">Нет полей. Добавьте поле с помощью кнопки выше.</td>
               </tr>
             </tbody>
           </table>
@@ -1876,11 +1880,11 @@ onMounted(async () => {
             </div>
             <div class="modal-form-section modal-form-section--grid">
               <label class="modal-field">
-                <span class="modal-label">Кадастровый номер <span class="modal-label-opt">(опц.)</span></span>
+                <span class="modal-label">Кадастровый номер</span>
                 <Input v-model="newFieldCadastral" type="text" class="modal-input" placeholder="XX:XX:XXXXXXX:XX" />
               </label>
               <label class="modal-field">
-                <span class="modal-label">№ поля ЕФИС ЗСН <span class="modal-label-opt">(опц.)</span></span>
+                <span class="modal-label">№ поля ЕФИС ЗСН</span>
                 <Input v-model="newFieldEfisZsn" type="text" class="modal-input" placeholder="Например: EFIS-000123" />
               </label>
             </div>
@@ -1905,7 +1909,7 @@ onMounted(async () => {
             </div>
             <div class="modal-form-section">
               <label class="modal-field modal-field--full">
-                <span class="modal-label">Адрес <span class="modal-label-opt">(опц.)</span></span>
+                <span class="modal-label">Адрес</span>
                 <Input
                   v-model="newFieldAddress"
                   type="text"
@@ -2026,7 +2030,7 @@ onMounted(async () => {
             </div>
             <div class="modal-form-section modal-form-section--grid">
               <label class="modal-field">
-                <span class="modal-label">Геолокация <span class="modal-label-opt">(опц.)</span></span>
+                <span class="modal-label">Геолокация</span>
                 <Input
                   v-model="newFieldGeo"
                   type="text"
@@ -2034,7 +2038,7 @@ onMounted(async () => {
                   placeholder="Например: 55.7558, 37.6173" />
               </label>
               <label class="modal-field modal-field--full">
-                <span class="modal-label">Доп. информация <span class="modal-label-opt">(опц.)</span></span>
+                <span class="modal-label">Доп. информация</span>
                 <textarea
                   v-model="newFieldExtra"
                   class="modal-textarea"
@@ -2045,7 +2049,7 @@ onMounted(async () => {
             </div>
             <div class="modal-form-section">
               <div class="modal-field modal-field--full">
-                <span class="modal-label">Прикрепить схему/план <span class="modal-label-opt">(опц.)</span></span>
+                <span class="modal-label">Прикрепить схему/план</span>
                 <input
                   id="field-scheme-file-input"
                   ref="schemeFileInputRef"

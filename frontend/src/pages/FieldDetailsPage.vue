@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
-import { Building2Icon, CalendarIcon, ChevronLeftIcon, CircleQuestionMarkIcon, Clock4Icon, ClockIcon, FileIcon, FileTextIcon, HomeIcon, LayersIcon, LayoutGridIcon, MapPinIcon, PencilIcon, SproutIcon, TractorIcon, UploadIcon, UserIcon } from '@lucide/vue'
+import { Building2Icon, CalendarIcon, CircleQuestionMarkIcon, Clock4Icon, ClockIcon, FileIcon, FileTextIcon, HomeIcon, LayersIcon, LayoutGridIcon, MapPinIcon, PencilIcon, SproutIcon, TractorIcon, UploadIcon, UserIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -293,7 +293,7 @@ const mainMedia = computed(() => {
     const p = photos.value[0]
     return {
       url: p.file_url,
-      title: p.title || 'Фото поля',
+      title: photoTitle(p.title, 'Фото поля'),
       description: p.description || '',
       date: p.created_at,
       isPhoto: true,
@@ -317,7 +317,7 @@ const galleryItems = computed(() => {
     .slice(0, 8)
     .map((p) => ({
       url: p.file_url,
-      title: p.title || 'Фото',
+      title: photoTitle(p.title, 'Фото'),
       id: p.id,
     }))
   if (field.value?.scheme_file_url && !items.some((i) => i.url === field.value!.scheme_file_url)) {
@@ -623,16 +623,17 @@ watch(
     void loadData()
   },
 )
+
+/** Подпись фото: служебное имя файла (uuid) пользователю ничего не говорит — показываем общее название. */
+function photoTitle(title: string | null | undefined, fallback: string): string {
+  const t = (title ?? '').trim()
+  if (!t || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/i.test(t)) return fallback
+  return t
+}
 </script>
 
 <template>
   <div class="field-details">
-    <div class="field-details-header">
-      <Button variant="ghost" size="sm" type="button" class="field-details-back" @click="goBack" aria-label="Назад к списку полей">
-        <ChevronLeftIcon :size="20" />
-        К списку полей
-      </Button>
-    </div>
 
     <div v-if="loading" class="field-details-grid">
       <Card class="field-details-card field-details-card--left field-details-card--loading gap-0">
@@ -655,7 +656,7 @@ watch(
             <div class="field-details-title-block">
               <h1 class="field-details-name">{{ isEditing ? editForm.name : field.name }}</h1>
               <p class="field-details-meta">
-                № {{ displayFieldNumber }} · {{ isEditing ? editForm.area : field.area }} га
+                № {{ displayFieldNumber }} · {{ isEditing ? editForm.area : Number(field.area || 0).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) }} га
                 <span class="field-details-status" v-if="!isEditing">
                   <span class="field-details-status-dot" aria-hidden="true"></span>
                   Активно
@@ -1038,7 +1039,7 @@ watch(
                   Открыть схему
                 </a>
               </div>
-              <p class="field-details-main-media-desc">{{ mainMedia.description || '—' }}</p>
+              <p v-if="mainMedia.description" class="field-details-main-media-desc">{{ mainMedia.description }}</p>
               <p class="field-details-main-media-date">
                 <CalendarIcon :size="14" />
                 {{ mainMedia.date ? new Date(mainMedia.date).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }) : '—' }}
