@@ -91,11 +91,13 @@ async function save() {
       <label class="ui-form-label">Партия в ячейке *</label>
       <UiSelect v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию" class="ui-form-select" />
     </div>
-    <div class="ui-form-row ui-form-row--three">
+    <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Дата и время *</label>
         <UiDateTimePicker v-model="form.docDate" />
       </div>
+    </div>
+    <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Масса до, т *</label>
         <Input v-model.trim="form.before" inputmode="decimal" class="ui-form-input" />

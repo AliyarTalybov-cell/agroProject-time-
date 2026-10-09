@@ -101,11 +101,13 @@ async function save() {
       <label class="ui-form-label">Куда *</label>
       <UiSelect v-model="form.toCellId" :options="[...(targets).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" placeholder="Выберите ячейку" class="ui-form-select" />
     </div>
-    <div class="ui-form-row ui-form-row--three">
+    <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Дата и время *</label>
         <UiDateTimePicker v-model="form.docDate" />
       </div>
+    </div>
+    <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Масса, т *</label>
         <Input v-model.trim="form.tons" inputmode="decimal" class="ui-form-input" />

@@ -73,7 +73,7 @@ async function save() {
 
 <template>
   <UiModal title="Инвентаризация ячейки" :max-width="620" :close-disabled="saving" @close="emit('close')">
-    <div class="ui-form-row ui-form-row--three">
+    <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Ячейка *</label>
         <UiSelect v-model="cellId" :options="[...(cells).map((c) => ({ value: c.id, label: String(c.label) }))]" class="ui-form-select" />
@@ -82,6 +82,8 @@ async function save() {
         <label class="ui-form-label">Дата и время *</label>
         <UiDateTimePicker v-model="docDate" />
       </div>
+    </div>
+    <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
         <label class="ui-form-label">Акт №</label>
         <Input v-model.trim="actNumber" class="ui-form-input" />
