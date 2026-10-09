@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/shadcn/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/shadcn/radio-group'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
+import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 
 defineProps<{
   busy: boolean
@@ -22,7 +23,17 @@ const emit = defineEmits<{ cancel: []; confirm: [] }>()
 </script>
 
 <template>
+  <!-- Без выбора вариантов — обычное подтверждение. -->
+  <UiConfirmModal
+    v-if="!audienceChoice && !asSeries"
+    title="Удалить событие?"
+    text="Событие будет удалено без возможности восстановления."
+    :busy="busy"
+    @confirm="emit('confirm')"
+    @cancel="emit('cancel')"
+  />
   <UiModal
+    v-else
     title="Удалить событие?"
     :description="asSeries ? 'Выберите вариант удаления для повторяющихся событий.' : 'Событие будет удалено без возможности восстановления.'"
     :max-width="460"

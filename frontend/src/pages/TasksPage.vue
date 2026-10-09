@@ -1,10 +1,21 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Label } from '@/components/ui/shadcn/label'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Spinner } from '@/components/ui/shadcn/spinner'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import UiBadge, { type UiBadgeTone } from '@/components/ui/UiBadge.vue'
+import { toast } from 'vue-sonner'
 import UiPersonPicker from '@/components/ui/UiPersonPicker.vue'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/shadcn/radio-group'
-import { CalendarIcon, CirclePlusIcon, ClockIcon, FileIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon, UsersIcon } from '@lucide/vue'
+import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, FileIcon, FileTextIcon, PaperclipIcon, PlusIcon, XIcon } from '@lucide/vue'
 import CalendarDeleteDialog from '@/components/ui/dialogs/CalendarDeleteDialog.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -12,6 +23,7 @@ import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
+import { askConfirm } from '@/composables/useConfirm'
 import { useAuth } from '@/stores/auth'
 import {
   loadCalendarTasks,
@@ -35,7 +47,6 @@ import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
 import { avatarColorByPosition } from '@/lib/avatarColors'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
-import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
 
 type CalendarTask = {
@@ -102,14 +113,6 @@ const managerCalendarOptions = computed(() => {
     .sort((a, b) => a.label.localeCompare(b.label, 'ru'))
 })
 
-const calendarViewingOtherLabel = computed(() => {
-  if (!isManager.value || !auth.user.value?.id) return ''
-  const uid = effectiveCalendarUserId.value
-  if (!uid || uid === auth.user.value.id) return ''
-  const p = profileById(uid)
-  return p ? profileLabel(p) : ''
-})
-
 const today = new Date()
 const currentYear = ref(today.getFullYear())
 const currentMonth = ref(today.getMonth())
@@ -118,7 +121,6 @@ const calendarViewMode = ref<'day' | 'week' | 'month' | 'schedule'>('day')
 
 const tasks = ref<CalendarTask[]>([])
 const tasksLoading = ref(false)
-const filesLoading = ref(false)
 const profiles = ref<ProfileRow[]>([])
 
 const isTaskModalOpen = ref(false)
@@ -131,11 +133,12 @@ const deleteAudienceScope = ref<'all' | 'only_me'>('all')
 const successModalOpen = ref(false)
 const successModalTitle = ref('Операция выполнена')
 const successModalMessage = ref('')
+/** Ошибка в окне события: сохранение, конфликт времени, файлы, участие. */
+const modalError = ref('')
 
 const taskTitle = ref('')
 const taskDescription = ref('')
 const taskStartDate = ref('')
-const taskEndDate = ref('')
 const taskStartTime = ref('09:00')
 const taskEndTime = ref('11:30')
 const taskPriority = ref<'low' | 'normal' | 'high'>('normal')
@@ -149,10 +152,7 @@ const taskRepeatApplyMode = ref<RepeatApplyMode>('only_this')
 const taskAssignees = ref<string[]>([])
 const taskFiles = ref<CalendarTaskFileRow[]>([])
 const fileUploading = ref(false)
-const assigneePickerOpen = ref(false)
-const assigneeSearch = ref('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const taskFilesByTaskId = ref<Record<string, CalendarTaskFileRow[]>>({})
 const taskAssigneeIdsByTaskId = ref<Record<string, string[]>>({})
 const taskAssigneeStatusByTaskId = ref<Record<string, Record<string, CalendarTaskAssigneeStatus>>>({})
 const dayEventsScrollRef = ref<HTMLElement | null>(null)
@@ -186,15 +186,6 @@ const scheduleHasMore = ref(true)
 const schedulePage = ref(1)
 const scheduleListRef = ref<HTMLElement | null>(null)
 const schedulePageSize = 30
-const assigneesTooltipVisible = ref(false)
-const assigneesTooltipText = ref('')
-const assigneesTooltipX = ref(0)
-const assigneesTooltipY = ref(0)
-const assigneesTooltipRef = ref<HTMLElement | null>(null)
-
-function shortTaskId(id: string): string {
-  return id.replace(/-/g, '').slice(-8).toUpperCase()
-}
 
 function profileLabel(p: ProfileRow): string {
   return (p.display_name?.trim() || p.email) ?? ''
@@ -216,26 +207,9 @@ function assigneeAvatarStyle(p: ProfileRow): Record<string, string> {
   return { background: avatarColorByPosition(p.position) }
 }
 
-function weekCardTitle(title: string): string {
-  const normalized = (title || '').replace(/\s+/g, ' ').trim()
-  const maxChars = 36
-  if (!normalized) return 'Без названия'
-  if (normalized.length <= maxChars) return normalized
-  return `${normalized.slice(0, maxChars - 1).trimEnd()}…`
-}
-
 const profilesNotAssigned = computed(() =>
   profiles.value.filter((p) => !taskAssignees.value.includes(p.id)),
 )
-
-const assigneeSearchLower = computed(() => assigneeSearch.value.trim().toLowerCase())
-
-const assigneeOptions = computed(() => {
-  const q = assigneeSearchLower.value
-  const base = profilesNotAssigned.value
-  if (!q) return base
-  return base.filter((p) => profileLabel(p).toLowerCase().includes(q))
-})
 
 const monthsShort = [
   'Январь',
@@ -252,7 +226,9 @@ const monthsShort = [
   'Декабрь',
 ]
 
-const weekdaysShort = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']
+const weekdaysShort = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+/** Ширина колонки с часами слева от сетки дня и недели, px. */
+const gridGutter = 64
 const dayStartHour = 8
 const dayEndHour = 22
 const dayViewportEndHour = 16
@@ -556,8 +532,61 @@ function isTaskRecurringInSchedule(task: CalendarTask): boolean {
   return recurringScheduleSignatures.value.has(key)
 }
 
-function priorityClass(priority: CalendarTask['priority']): string {
-  return `priority-${priority || 'normal'}`
+/** Цвет события по приоритету: полоса слева и фон карточки. */
+function eventToneClass(priority: CalendarTask['priority']): string {
+  if (priority === 'high') return 'border-l-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-950/50 dark:hover:bg-red-950/80'
+  if (priority === 'low') return 'border-l-sky-500 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/50 dark:hover:bg-sky-950/80'
+  return 'border-l-primary bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-950/80'
+}
+
+function eventDotClass(priority: CalendarTask['priority']): string {
+  if (priority === 'high') return 'bg-red-500'
+  if (priority === 'low') return 'bg-sky-500'
+  return 'bg-primary'
+}
+
+function priorityLabel(priority: CalendarTask['priority']): string {
+  if (priority === 'high') return 'Высокий'
+  if (priority === 'low') return 'Низкий'
+  return 'Обычный'
+}
+
+function priorityTone(priority: CalendarTask['priority']): UiBadgeTone {
+  if (priority === 'high') return 'danger'
+  if (priority === 'low') return 'neutral'
+  return 'primary'
+}
+
+/**
+ * Раскладка пересекающихся по времени событий по колонкам, как в Google Календаре:
+ * событие встаёт в первую свободную колонку, ширина делится на число колонок в группе.
+ */
+function layoutLanes<T extends { start: number; end: number }>(items: T[]): (T & { lane: number; lanes: number })[] {
+  const sorted = [...items].sort((a, b) => a.start - b.start || b.end - a.end)
+  const result: (T & { lane: number; lanes: number })[] = []
+  let group: (T & { lane: number; lanes: number })[] = []
+  let laneEnds: number[] = []
+  let groupEnd = -1
+  const closeGroup = () => {
+    for (const item of group) item.lanes = laneEnds.length
+    result.push(...group)
+    group = []
+    laneEnds = []
+  }
+  for (const item of sorted) {
+    if (group.length && item.start >= groupEnd) closeGroup()
+    let lane = laneEnds.findIndex((end) => end <= item.start)
+    if (lane < 0) {
+      lane = laneEnds.length
+      laneEnds.push(item.end)
+    } else {
+      laneEnds[lane] = item.end
+    }
+    group.push({ ...item, lane, lanes: 1 })
+    groupEnd = Math.max(groupEnd, item.end)
+  }
+  closeGroup()
+  return result
 }
 
 function parseDateKey(value: string): Date {
@@ -600,7 +629,7 @@ const tasksForSelectedWeek = computed(() => {
 const weekEventsTimed = computed(() => {
   const start = dayStartHour * 60
   const end = dayEndHour * 60
-  return tasksForSelectedWeek.value
+  const timed = tasksForSelectedWeek.value
     .filter((task) => !!task.startTime)
     .map((task) => {
       const dayIndex = weekDays.value.findIndex((d) => d.key === task.date)
@@ -616,6 +645,7 @@ const weekEventsTimed = computed(() => {
       return { task, dayIndex, top, height, start: eventStart, end: eventEnd }
     })
     .filter((x): x is NonNullable<typeof x> => !!x)
+  return weekDays.value.flatMap((_, idx) => layoutLanes(timed.filter((e) => e.dayIndex === idx)))
 })
 
 const tasksByDate = computed(() => {
@@ -677,10 +707,56 @@ const visibleTaskIdsKey = computed(() =>
     .join(','),
 )
 
-function setCalendarView(mode: 'day' | 'week' | 'month' | 'schedule') {
+type CalendarView = 'day' | 'week' | 'month' | 'schedule'
+
+function setCalendarView(mode: CalendarView) {
   calendarViewMode.value = mode
   monthExpandedDate.value = null
 }
+
+/** «Назад» / «Вперёд» в шапке: на день, неделю или месяц в зависимости от режима. */
+function shiftPeriod(direction: 1 | -1) {
+  monthExpandedDate.value = null
+  if (isMonthView.value) selectedDate.value = addMonthsToKey(selectedDate.value, direction)
+  else selectedDate.value = addDaysToKey(selectedDate.value, isWeekView.value ? 7 * direction : direction)
+}
+
+function goToday() {
+  monthExpandedDate.value = null
+  selectedDate.value = todayKey
+}
+
+const monthsGenitive = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+
+const periodTitle = computed(() => {
+  if (isScheduleView.value) return 'Ближайшие события'
+  if (isMonthView.value) return currentMonthLabel.value
+  if (isWeekView.value) {
+    const first = parseDateKey(weekDays.value[0].key)
+    const last = parseDateKey(weekDays.value[6].key)
+    const lastPart = `${last.getDate()} ${monthsGenitive[last.getMonth()]} ${last.getFullYear()}`
+    if (first.getMonth() === last.getMonth()) return `${first.getDate()}–${lastPart}`
+    return `${first.getDate()} ${monthsGenitive[first.getMonth()]} – ${lastPart}`
+  }
+  return parseDateKey(selectedDate.value).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })
+})
+
+function pluralEvents(n: number): string {
+  const mod10 = n % 10
+  const mod100 = n % 100
+  if (mod10 === 1 && mod100 !== 11) return 'событие'
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'события'
+  return 'событий'
+}
+
+const periodEventsCount = computed(() => visibleTasksForAssignees.value.length)
+
+const repeatUnitLabel = computed(() => {
+  if (taskRepeatRule.value === 'daily') return 'дн.'
+  if (taskRepeatRule.value === 'weekly') return 'нед.'
+  if (taskRepeatRule.value === 'monthly') return 'мес.'
+  return 'г.'
+})
 
 async function loadSchedulePage(append: boolean) {
   const uid = effectiveCalendarUserId.value
@@ -718,7 +794,7 @@ async function loadSchedulePage(append: boolean) {
   } catch (err) {
     if (!append) scheduleTasks.value = []
     scheduleHasMore.value = false
-    console.error(err)
+    loadError.value = formatSupabaseError(err) || 'Не удалось загрузить расписание'
   } finally {
     if (append) scheduleLoadingMore.value = false
     else scheduleLoading.value = false
@@ -869,7 +945,7 @@ async function onMonthEventReorderDrop(dateKey: string, targetTaskId: string, e:
   } catch (err) {
     draggedTask.startTime = prevStart
     draggedTask.endTime = prevEnd
-    console.error(err)
+    toast.error('Не удалось перенести событие', { description: formatSupabaseError(err) })
   }
 }
 
@@ -951,7 +1027,7 @@ async function onMonthCellDrop(dateKey: string, e: DragEvent) {
     task.date = prevDate
     task.startTime = prevStartTime
     task.endTime = prevEndTime
-    console.error(err)
+    toast.error('Не удалось перенести событие', { description: formatSupabaseError(err) })
   }
 }
 
@@ -977,7 +1053,7 @@ function getWeekDropPreviewFromEvent(e: DragEvent) {
   const rect = grid.getBoundingClientRect()
   const relativeX = e.clientX - rect.left
   const relativeY = e.clientY - rect.top
-  const weekLabelWidth = 66
+  const weekLabelWidth = gridGutter
   const usableWidth = Math.max(1, rect.width - weekLabelWidth)
   const dayWidth = usableWidth / 7
   const dayIndex = Math.max(0, Math.min(6, Math.floor((relativeX - weekLabelWidth) / dayWidth)))
@@ -1043,7 +1119,7 @@ async function onWeekGridDrop(e: DragEvent) {
     task.date = prev.date
     task.startTime = prev.startTime
     task.endTime = prev.endTime
-    console.error(err)
+    toast.error('Не удалось перенести событие', { description: formatSupabaseError(err) })
   }
 }
 
@@ -1128,7 +1204,7 @@ async function onDayGridDrop(e: DragEvent) {
     task.date = prev.date
     task.startTime = prev.startTime
     task.endTime = prev.endTime
-    console.error(err)
+    toast.error('Не удалось перенести событие', { description: formatSupabaseError(err) })
   }
 }
 
@@ -1206,11 +1282,10 @@ async function ensureNoParticipantConflicts(args: {
 }): Promise<boolean> {
   const conflicts = await findParticipantConflicts(args)
   if (conflicts.length === 0) return true
-  const lines = conflicts.map((c) => `• ${c.label} — занято ${c.date} ${c.start}-${c.end} (${c.title})`)
-  successModalTitle.value = 'Конфликт слотов'
-  successModalMessage.value =
-    'Не удалось сохранить событие: у некоторых участников уже есть пересечение по времени.\n\n' + lines.join('\n')
-  successModalOpen.value = true
+  const lines = conflicts.map((c) => `• ${c.label} — занято ${c.date.split('-').reverse().join('.')} ${c.start}–${c.end} (${c.title})`)
+  const text = 'У участников уже есть события в это время:\n' + lines.join('\n')
+  if (isTaskModalOpen.value) modalError.value = text
+  else toast.error('Не удалось перенести событие', { description: text })
   return false
 }
 
@@ -1227,7 +1302,7 @@ const daySlots = computed(() => {
 const dayEventsTimed = computed(() => {
   const start = dayStartHour * 60
   const end = dayEndHour * 60
-  return tasksForSelectedDate.value
+  const timed = tasksForSelectedDate.value
     .filter((task) => !!task.startTime)
     .map((task) => {
       const rawStart = hhmmToMinutes(task.startTime)
@@ -1237,10 +1312,11 @@ const dayEventsTimed = computed(() => {
       const fallbackEnd = eventStart + 60
       const eventEnd = Math.max(eventStart + 30, Math.min(end, rawEnd ?? fallbackEnd))
       const top = dayGridTopPadding + ((eventStart - start) / daySlotMinutes) * daySlotHeight
-      const height = Math.max(44, ((eventEnd - eventStart) / daySlotMinutes) * daySlotHeight - 6)
+      const height = Math.max(36, ((eventEnd - eventStart) / daySlotMinutes) * daySlotHeight - 4)
       return { task, top, height, start: eventStart, end: eventEnd }
     })
     .filter((x): x is NonNullable<typeof x> => !!x)
+  return layoutLanes(timed)
 })
 
 const dayEventsUntimed = computed(() =>
@@ -1280,7 +1356,8 @@ function refreshNowMarker() {
 function scrollDayViewportToNow(force = false) {
   const container = dayEventsScrollRef.value
   if (!container) return
-  if (selectedDate.value !== todayKey) {
+  const showsToday = isWeekView.value ? weekDays.value.some((d) => d.key === todayKey) : selectedDate.value === todayKey
+  if (!showsToday) {
     if (force) container.scrollTop = 0
     return
   }
@@ -1293,33 +1370,6 @@ function scrollDayViewportToNow(force = false) {
 
 function selectDay(key: string) {
   selectedDate.value = key
-}
-
-async function loadFilesForVisibleTasks() {
-  const ids = tasksForSelectedDate.value.map((t) => t.id)
-  if (ids.length === 0 || !isSupabaseConfigured()) {
-    taskFilesByTaskId.value = {}
-    return
-  }
-  filesLoading.value = true
-  const next: Record<string, CalendarTaskFileRow[]> = {}
-  try {
-    await Promise.all(
-      ids.map(async (taskId) => {
-        try {
-          const files = await loadTaskFiles(taskId)
-          next[taskId] = files
-        } catch (e) {
-          // Вложения одной задачи не должны ронять загрузку календаря целиком.
-          console.error('Файлы задачи', e)
-          next[taskId] = []
-        }
-      }),
-    )
-    taskFilesByTaskId.value = next
-  } finally {
-    filesLoading.value = false
-  }
 }
 
 async function loadAssigneesForVisibleTasks() {
@@ -1358,16 +1408,6 @@ function dayEventAssignees(taskId: string): ProfileRow[] {
     .filter((p): p is ProfileRow => !!p)
 }
 
-function taskAssigneesTitle(taskId: string): string {
-  const names = dayEventAssignees(taskId).map((p) => profileLabel(p)).filter(Boolean)
-  return names.length ? names.join(', ') : ''
-}
-
-function taskAssigneesTooltip(taskId: string): string {
-  const names = taskAssigneesTitle(taskId)
-  return names ? `Участники: ${names}` : ''
-}
-
 function taskParticipationStatus(taskId: string): CalendarTaskAssigneeStatus | null {
   const me = myUserId.value
   if (!me) return null
@@ -1382,9 +1422,16 @@ function taskParticipationLabel(taskId: string): string {
   return ''
 }
 
-function taskParticipationClass(taskId: string): string {
-  const status = taskParticipationStatus(taskId)
-  return status ? `event-participation--${status}` : ''
+function participationTone(status: CalendarTaskAssigneeStatus | null | undefined): UiBadgeTone {
+  if (status === 'accepted') return 'success'
+  if (status === 'declined') return 'danger'
+  return 'warning'
+}
+
+/** Участники события строкой — подсказка при наведении на аватары. */
+function taskAssigneesTitle(taskId: string): string {
+  const names = dayEventAssignees(taskId).map((p) => profileLabel(p)).filter(Boolean)
+  return names.length ? `Участники: ${names.join(', ')}` : ''
 }
 
 function buildAssigneeStatusPayload(taskId: string | null): Record<string, CalendarTaskAssigneeStatus> {
@@ -1396,38 +1443,6 @@ function buildAssigneeStatusPayload(taskId: string | null): Record<string, Calen
   const owner = effectiveCalendarUserId.value ?? auth.user.value?.id ?? null
   if (owner && next[owner]) next[owner] = 'accepted'
   return next
-}
-
-function moveAssigneesTooltip(e: MouseEvent) {
-  const offset = 14
-  const pad = 8
-  const tipWidth = assigneesTooltipRef.value?.offsetWidth ?? 260
-  const tipHeight = assigneesTooltipRef.value?.offsetHeight ?? 86
-
-  let x = e.clientX + offset
-  let y = e.clientY + offset
-
-  if (x + tipWidth + pad > window.innerWidth) {
-    x = Math.max(pad, e.clientX - tipWidth - offset)
-  }
-  if (y + tipHeight + pad > window.innerHeight) {
-    y = Math.max(pad, e.clientY - tipHeight - offset)
-  }
-
-  assigneesTooltipX.value = x
-  assigneesTooltipY.value = y
-}
-
-function showTaskAssigneesTooltip(taskId: string, e: MouseEvent) {
-  const text = taskAssigneesTooltip(taskId)
-  if (!text) return
-  assigneesTooltipText.value = text
-  assigneesTooltipVisible.value = true
-  moveAssigneesTooltip(e)
-}
-
-function hideTaskAssigneesTooltip() {
-  assigneesTooltipVisible.value = false
 }
 
 function prevMonth() {
@@ -1459,6 +1474,7 @@ async function loadTasksFromDb() {
   tasksLoading.value = true
   try {
     const rows = await loadCalendarTasks(uid)
+    loadError.value = ''
     tasks.value = rows.map(rowToTask)
   } catch (e) {
     loadError.value = formatSupabaseError(e) || 'Не удалось загрузить задачи календаря'
@@ -1481,12 +1497,18 @@ async function loadProfilesOnce() {
 watch(
   () => [visibleTaskIdsKey.value, selectedDate.value, calendarViewMode.value] as const,
   () => {
-    if (isDayView.value) void loadFilesForVisibleTasks()
     void loadAssigneesForVisibleTasks()
     void nextTick(() => scrollDayViewportToNow(true))
   },
   { immediate: true },
 )
+
+// Месяц мини-календаря и режима «Месяц» следует за выбранным днём.
+watch(selectedDate, (key) => {
+  const d = parseDateKey(key)
+  currentYear.value = d.getFullYear()
+  currentMonth.value = d.getMonth()
+})
 
 watch(taskRepeatRule, (rule) => {
   if (rule !== 'weekly') return
@@ -1547,7 +1569,6 @@ function openNewTaskModal(startTime?: string) {
   taskTitle.value = ''
   taskDescription.value = ''
   taskStartDate.value = selectedDate.value
-  taskEndDate.value = selectedDate.value
   taskStartTime.value = startTime ?? '09:00'
   taskEndTime.value = minutesToHhmm((hhmmToMinutes(taskStartTime.value) ?? 540) + 60)
   taskPriority.value = 'normal'
@@ -1561,7 +1582,7 @@ function openNewTaskModal(startTime?: string) {
   const owner = effectiveCalendarUserId.value
   taskAssignees.value = owner ? [owner] : auth.user.value?.id ? [auth.user.value.id] : []
   taskFiles.value = []
-  assigneePickerOpen.value = false
+  modalError.value = ''
   isTaskModalOpen.value = true
 }
 
@@ -1575,7 +1596,7 @@ function onDayGridClick(e: MouseEvent) {
   const minutesFromStart = Math.floor((y - dayGridTopPadding) / daySlotHeight) * daySlotMinutes
   const startMinutes = dayStartHour * 60 + minutesFromStart
   if (isWeekView.value) {
-    const gutter = 66
+    const gutter = gridGutter
     const usableWidth = Math.max(1, rect.width - gutter)
     const relativeX = Math.max(0, Math.min(usableWidth - 1, e.clientX - rect.left - gutter))
     const dayIndex = Math.max(0, Math.min(6, Math.floor((relativeX / usableWidth) * 7)))
@@ -1590,7 +1611,6 @@ async function openEditTaskModal(task: CalendarTask) {
   taskTitle.value = task.title
   taskDescription.value = task.description
   taskStartDate.value = task.date
-  taskEndDate.value = task.date
   taskStartTime.value = task.startTime ?? '09:00'
   taskEndTime.value = task.endTime ?? '11:30'
   taskPriority.value = task.priority
@@ -1602,7 +1622,7 @@ async function openEditTaskModal(task: CalendarTask) {
   taskRepeatWeekDays.value = [weekdayMon1Sun7(task.date)]
   taskRepeatApplyMode.value = 'only_this'
   taskFiles.value = []
-  assigneePickerOpen.value = false
+  modalError.value = ''
   isTaskModalOpen.value = true
   if (isSupabaseConfigured()) {
     try {
@@ -1617,7 +1637,7 @@ async function openEditTaskModal(task: CalendarTask) {
       }
       taskFiles.value = await loadTaskFiles(task.id)
     } catch (e) {
-      console.error('Исполнители и файлы выбранной задачи', e)
+      modalError.value = formatSupabaseError(e) || 'Не удалось загрузить участников и файлы события'
       taskAssignees.value = []
       taskAssigneeStatusByTaskId.value = {
         ...taskAssigneeStatusByTaskId.value,
@@ -1635,7 +1655,6 @@ function removeAssignee(uid: string) {
 
 function addAssignee(uid: string) {
   if (!taskAssignees.value.includes(uid)) taskAssignees.value = [...taskAssignees.value, uid]
-  assigneePickerOpen.value = false
 }
 
 function formatFileSize(bytes: number | null): string {
@@ -1654,7 +1673,7 @@ async function onFileSelect(e: Event) {
     const row = await uploadTaskFile(editingTaskId.value, file)
     taskFiles.value = [row, ...taskFiles.value]
   } catch (err) {
-    console.error(err)
+    modalError.value = `Файл не прикрепился: ${formatSupabaseError(err) || 'ошибка загрузки'}`
   } finally {
     fileUploading.value = false
     input.value = ''
@@ -1667,11 +1686,12 @@ function triggerFileInput() {
 
 async function removeFile(fileRow: CalendarTaskFileRow) {
   if (!isSupabaseConfigured()) return
+  if (!(await askConfirm('Удалить файл?', `«${fileRow.file_name}» будет удалён из события.`))) return
   try {
     await deleteTaskFile(fileRow.id)
     taskFiles.value = taskFiles.value.filter((f) => f.id !== fileRow.id)
   } catch (err) {
-    console.error(err)
+    modalError.value = `Файл не удалён: ${formatSupabaseError(err) || 'ошибка'}`
   }
 }
 
@@ -1700,7 +1720,7 @@ async function setMyParticipationStatus(status: CalendarTaskAssigneeStatus) {
     }
     successModalOpen.value = true
   } catch (err) {
-    console.error(err)
+    modalError.value = formatSupabaseError(err) || 'Не удалось изменить участие'
   }
 }
 
@@ -1714,6 +1734,7 @@ async function onSubmitTask() {
 
   if (!isSupabaseConfigured()) return
 
+  modalError.value = ''
   taskSaveLoading.value = true
   try {
     const id = editingTaskId.value
@@ -1722,9 +1743,7 @@ async function onSubmitTask() {
     const endTime = taskEndTime.value?.trim() || null
     const participantIds = [...new Set(taskAssignees.value.filter(Boolean))]
     if (id && !canEditCurrentTask.value) {
-      successModalTitle.value = 'Недостаточно прав'
-      successModalMessage.value = 'Редактировать событие может только его постановщик или руководитель.'
-      successModalOpen.value = true
+      modalError.value = 'Редактировать событие может только его постановщик или руководитель.'
       return
     }
     if (id) {
@@ -1793,7 +1812,10 @@ async function onSubmitTask() {
       }
     } else {
       const repeatRule = taskRepeatRule.value
-      if (repeatRule === 'weekly' && taskRepeatWeekDays.value.length === 0) return
+      if (repeatRule === 'weekly' && taskRepeatWeekDays.value.length === 0) {
+        modalError.value = 'Выберите хотя бы один день недели для повтора.'
+        return
+      }
       const repeatUntil = taskRepeatUntil.value || date
       const plannedDates = buildRecurringDates(
         date,
@@ -1827,7 +1849,6 @@ async function onSubmitTask() {
     }
     await loadTasksFromDb()
     if (isScheduleView.value) await loadSchedulePage(false)
-    await loadFilesForVisibleTasks()
     isTaskModalOpen.value = false
     successModalTitle.value = editingTaskId.value ? 'Изменения сохранены' : 'Событие создано'
     successModalMessage.value = editingTaskId.value
@@ -1839,27 +1860,21 @@ async function onSubmitTask() {
         : 'Серия событий успешно добавлена.'
     successModalOpen.value = true
   } catch (e) {
-    console.error(e)
+    modalError.value = formatSupabaseError(e) || 'Не удалось сохранить событие'
   } finally {
     taskSaveLoading.value = false
   }
 }
 
 async function deleteTask(id: string) {
-  try {
-    await deleteCalendarTask(id)
-    await loadTasksFromDb()
-    if (isScheduleView.value) await loadSchedulePage(false)
-  } catch (e) {
-    console.error(e)
-  }
+  await deleteCalendarTask(id)
+  await loadTasksFromDb()
+  if (isScheduleView.value) await loadSchedulePage(false)
 }
 
 function openDeleteConfirm() {
   if (!canDeleteCurrentTask.value) {
-    successModalTitle.value = 'Недостаточно прав'
-    successModalMessage.value = 'Удалять событие может руководитель, постановщик или участник события (только у себя).'
-    successModalOpen.value = true
+    modalError.value = 'Удалять событие может руководитель, постановщик или участник события (только у себя).'
     return
   }
   deleteScope.value = 'only_this'
@@ -1877,9 +1892,7 @@ async function confirmDeleteTask() {
   if (!currentId || !currentTask) return
   if (!canDeleteCurrentTask.value) {
     closeDeleteConfirm()
-    successModalTitle.value = 'Недостаточно прав'
-    successModalMessage.value = 'Удалять событие может руководитель, постановщик или участник события (только у себя).'
-    successModalOpen.value = true
+    modalError.value = 'Удалять событие может руководитель, постановщик или участник события (только у себя).'
     return
   }
   deleteInProgress.value = true
@@ -1890,9 +1903,9 @@ async function confirmDeleteTask() {
       await loadTasksFromDb()
       if (isScheduleView.value) await loadSchedulePage(false)
     } else if (deleteAudienceScope.value === 'all' && !canDeleteForAll.value) {
-      successModalTitle.value = 'Недостаточно прав'
-      successModalMessage.value = 'Удалять у всех может только постановщик события или руководитель.'
-      successModalOpen.value = true
+      showDeleteConfirm.value = false
+      modalError.value = 'Удалять у всех может только постановщик события или руководитель.'
+      return
     } else if (deleteScope.value === 'this_and_following' && canDeleteAsSeries.value) {
       const ids = deleteSeriesCandidates.value
         .filter((t) => t.date >= currentTask.date)
@@ -1905,8 +1918,10 @@ async function confirmDeleteTask() {
     }
     showDeleteConfirm.value = false
     closeTaskModal()
+    toast.success('Событие удалено')
   } catch (e) {
-    console.error(e)
+    showDeleteConfirm.value = false
+    modalError.value = formatSupabaseError(e) || 'Не удалось удалить событие'
   } finally {
     deleteInProgress.value = false
   }
@@ -1914,373 +1929,314 @@ async function confirmDeleteTask() {
 </script>
 
 <template>
-  <section class="calendar-page">
-    <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
-    <header class="calendar-header page-enter-item">
-      <div class="calendar-header-text">
-        <div class="type-label">Календарь</div>
-        <div class="calendar-title-row">
-          <h1 class="page-title">Планирование дня</h1>
-          <div class="calendar-help" tabindex="0" aria-label="Подсказка по планированию">
-            <span class="calendar-help-icon">?</span>
-            <div class="calendar-help-tooltip">
-              Планируйте задачи по дням, неделям и месяцам. Создавайте события кликом по слоту или кнопкой «Создать событие».
-            </div>
-          </div>
-        </div>
-        <div v-if="isManager" class="calendar-owner-card">
-          <div class="calendar-owner-select-shell">
-            <span class="calendar-owner-icon calendar-owner-icon--inline" aria-hidden="true">
-              <UsersIcon />
-            </span>
-            <UiSelect v-model="managerCalendarUserId" :options="[...(managerCalendarOptions).map((opt) => ({ value: opt.id, label: `${opt.label}${opt.id === auth.user.value?.id ? ' (я)' : ''}` }))]" id="calendar-owner-select" class="calendar-owner-select" />
-          </div>
-        </div>
-        <p v-if="calendarViewingOtherLabel" class="calendar-view-hint">
-          <span class="calendar-view-hint-eyebrow" aria-hidden="true">Режим руководителя</span>
-          Просмотр календаря: <strong>{{ calendarViewingOtherLabel }}</strong>
-        </p>
+  <section class="tw-scope flex flex-col gap-6">
+    <Alert v-if="loadError" variant="destructive">
+      <AlertDescription>{{ loadError }}</AlertDescription>
+    </Alert>
+
+    <PageToolbar>
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        aria-label="Режим календаря"
+        :model-value="calendarViewMode"
+        @update:model-value="(v) => v && setCalendarView(v as CalendarView)"
+      >
+        <ToggleGroupItem value="day" class="px-3">День</ToggleGroupItem>
+        <ToggleGroupItem value="week" class="px-3">Неделя</ToggleGroupItem>
+        <ToggleGroupItem value="month" class="px-3">Месяц</ToggleGroupItem>
+        <ToggleGroupItem value="schedule" class="px-3">Расписание</ToggleGroupItem>
+      </ToggleGroup>
+      <div v-if="isManager" class="w-full sm:w-64">
+        <UiSelect
+          v-model="managerCalendarUserId"
+          block
+          aria-label="Чей календарь показать"
+          :options="managerCalendarOptions.map((opt) => ({ value: opt.id, label: `${opt.label}${opt.id === auth.user.value?.id ? ' (я)' : ''}` }))"
+        />
       </div>
-      <div class="calendar-header-actions">
-        <ToggleGroup type="single" variant="outline" size="sm" aria-label="Режим календаря"
-          :model-value="(isDayView) ? 'b0' : (isWeekView) ? 'b1' : (isMonthView) ? 'b2' : (isScheduleView) ? 'b3' : ''"
-          @update:model-value="(v) => { if (v === 'b0') { setCalendarView('day') } else if (v === 'b1') { setCalendarView('week') } else if (v === 'b2') { setCalendarView('month') } else if (v === 'b3') { setCalendarView('schedule') } }"
-        >
-          <ToggleGroupItem value="b0" class="px-3">День</ToggleGroupItem>
-          <ToggleGroupItem value="b1" class="px-3">Неделя</ToggleGroupItem>
-          <ToggleGroupItem value="b2" class="px-3">Месяц</ToggleGroupItem>
-          <ToggleGroupItem value="b3" class="px-3">Расписание</ToggleGroupItem>
-        </ToggleGroup>
-        <Button variant="default" type="button" class="calendar-add-btn" @click="openNewTaskModal()">
-          <PlusIcon class="calendar-add-btn-icon" />
+      <template #actions>
+        <Button type="button" @click="openNewTaskModal()">
+          <PlusIcon />
           Создать событие
         </Button>
-      </div>
-    </header>
+      </template>
+    </PageToolbar>
 
-    <div
-      class="calendar-layout page-enter-item"
-      :class="{ 'calendar-layout--manager': isManager, 'calendar-layout--week': isWeekView || isMonthView || isScheduleView }"
-      style="--enter-delay: 60ms"
-    >
-      <Transition name="mini-calendar-slide">
-      <section v-if="isDayView" class="calendar-card calendar-card-left">
-        <div class="calendar-month-header">
-          <Button variant="outline" size="icon-sm"
-            type="button"
-            class="month-nav-btn"
-            aria-label="Предыдущий месяц"
-            @click="prevMonth"
-          >
-            ‹
+    <div class="grid items-start gap-6" :class="isDayView ? 'lg:grid-cols-[16rem_minmax(0,1fr)]' : ''">
+      <!-- Мини-календарь (режим «День») -->
+      <section v-if="isDayView" class="hidden rounded-xl border bg-card p-4 lg:block" aria-label="Выбор дня">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <Button variant="ghost" size="icon-sm" type="button" aria-label="Предыдущий месяц" @click="prevMonth">
+            <ChevronLeftIcon />
           </Button>
-          <div class="month-label">
-            {{ currentMonthLabel }}
-          </div>
-          <Button variant="outline" size="icon-sm"
-            type="button"
-            class="month-nav-btn"
-            aria-label="Следующий месяц"
-            @click="nextMonth"
-          >
-            ›
+          <span class="text-sm font-medium">{{ currentMonthLabel }}</span>
+          <Button variant="ghost" size="icon-sm" type="button" aria-label="Следующий месяц" @click="nextMonth">
+            <ChevronRightIcon />
           </Button>
         </div>
-
-        <div class="calendar-grid">
-          <div v-for="day in weekdaysShort" :key="day" class="calendar-weekday">
-            {{ day }}
-          </div>
+        <div class="grid grid-cols-7 gap-y-1 text-center">
+          <span v-for="day in weekdaysShort" :key="day" class="pb-1 text-xs text-muted-foreground">{{ day }}</span>
           <button
             v-for="day in calendarWeeks.flat()"
             :key="day.key"
             type="button"
-            class="calendar-day"
-            :class="{
-              'calendar-day--muted': !day.inCurrentMonth,
-              'calendar-day--today': day.isToday,
-              'calendar-day--selected': day.isSelected,
-            }"
+            class="relative mx-auto flex size-8 items-center justify-center rounded-md text-sm tabular-nums transition-colors"
+            :class="[
+              day.isSelected
+                ? 'bg-primary font-medium text-primary-foreground'
+                : day.isToday
+                  ? 'font-semibold text-primary hover:bg-muted'
+                  : 'hover:bg-muted',
+              !day.inCurrentMonth && !day.isSelected ? 'text-muted-foreground/60' : '',
+            ]"
+            :aria-pressed="day.isSelected"
             @click="selectDay(day.key)"
           >
-            <span class="calendar-day-number">{{ day.date }}</span>
-            <span v-if="day.hasTasks" class="calendar-day-dot" />
+            {{ day.date }}
+            <span
+              v-if="day.hasTasks"
+              class="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full"
+              :class="day.isSelected ? 'bg-primary-foreground' : 'bg-primary'"
+            />
           </button>
         </div>
       </section>
-      </Transition>
 
-      <section class="calendar-card calendar-card-right">
-        <header class="day-header">
-          <div class="day-header-text">
-            <div class="type-label">{{ isScheduleView ? 'Расписание событий' : isMonthView ? 'Задачи на месяц' : isWeekView ? 'Задачи на неделю' : 'Задачи на день' }}</div>
-            <h2 class="day-title">
-              {{
-                isMonthView
-                  ? `${monthsShort[currentMonth].toLowerCase()} ${currentYear}`
-                  : isScheduleView
-                  ? 'Ближайшие события'
-                  : isWeekView
-                  ? `${weekDays[0].weekDay.toLowerCase()}, ${weekDays[0].date} ${monthsShort[parseDateKey(weekDays[0].key).getMonth()].toLowerCase()} — ${weekDays[6].weekDay.toLowerCase()}, ${weekDays[6].date} ${monthsShort[parseDateKey(weekDays[6].key).getMonth()].toLowerCase()}`
-                  : new Date(selectedDate + 'T12:00:00').toLocaleDateString('ru-RU', {
-                    day: 'numeric',
-                    month: 'long',
-                    weekday: 'long',
-                  })
-              }}
-            </h2>
-            <p class="day-header-summary">
-              Запланировано
-              {{ isScheduleView ? scheduleTasks.length : isMonthView ? tasksForCurrentMonth.length : isWeekView ? tasksForSelectedWeek.length : tasksForSelectedDate.length }}
-              {{
-                (isScheduleView ? scheduleTasks.length : isMonthView ? tasksForCurrentMonth.length : isWeekView ? tasksForSelectedWeek.length : tasksForSelectedDate.length) === 1
-                  ? 'событие'
-                  : (isScheduleView ? scheduleTasks.length : isMonthView ? tasksForCurrentMonth.length : isWeekView ? tasksForSelectedWeek.length : tasksForSelectedDate.length) < 5
-                    ? 'события'
-                    : 'событий'
-              }}
-            </p>
-            <div v-if="filesLoading" class="day-header-loading">
-              <UiLoadingBar size="md" />
-            </div>
+      <section class="min-w-0 overflow-hidden rounded-xl border bg-card">
+        <header class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-4 py-3">
+          <div v-if="!isScheduleView" class="flex items-center gap-1">
+            <Button variant="outline" size="sm" type="button" @click="goToday">Сегодня</Button>
+            <Button variant="ghost" size="icon-sm" type="button" :aria-label="isMonthView ? 'Предыдущий месяц' : isWeekView ? 'Предыдущая неделя' : 'Предыдущий день'" @click="shiftPeriod(-1)">
+              <ChevronLeftIcon />
+            </Button>
+            <Button variant="ghost" size="icon-sm" type="button" :aria-label="isMonthView ? 'Следующий месяц' : isWeekView ? 'Следующая неделя' : 'Следующий день'" @click="shiftPeriod(1)">
+              <ChevronRightIcon />
+            </Button>
           </div>
+          <h2 class="text-base font-semibold first-letter:uppercase">{{ periodTitle }}</h2>
+          <span class="ml-auto text-sm text-muted-foreground tabular-nums">
+            {{ periodEventsCount ? `${periodEventsCount} ${pluralEvents(periodEventsCount)}` : 'Нет событий' }}
+          </span>
         </header>
 
-        <div v-if="tasksLoading" class="day-loading">
-          <UiLoadingBar />
-          <div class="day-loading-skeletons">
-            <div class="day-loading-skeleton" />
-            <div class="day-loading-skeleton day-loading-skeleton--short" />
-            <div class="day-loading-skeleton day-loading-skeleton--medium" />
-          </div>
+        <div v-if="tasksLoading" class="grid gap-3 p-4" aria-busy="true">
+          <Skeleton class="h-10 w-full" />
+          <Skeleton class="h-10 w-2/3" />
+          <Skeleton class="h-10 w-5/6" />
         </div>
-        <div v-else-if="isWeekView" class="week-view-wrap">
-          <div class="week-view-header">
-            <div class="week-view-gmt">GMT+3</div>
-            <button
-              v-for="day in weekDays"
-              :key="day.key"
-              type="button"
-              class="week-view-day"
-              :class="{ 'week-view-day--today': day.isToday, 'week-view-day--selected': day.isSelected, 'week-view-day--weekend': day.isWeekend }"
-              @click="selectDay(day.key)"
-            >
-              <span class="week-view-day-label">{{ day.weekDay.toLowerCase() }}</span>
-              <span class="week-view-day-num">{{ day.date }}</span>
-            </button>
-          </div>
-          <div class="day-events-scroll week-view-scroll" :style="{ height: `${dayGridViewportHeight}px` }">
-            <div
-              class="day-events-grid week-view-grid"
-              :style="{ height: `${dayGridHeight}px` }"
-              @click="onDayGridClick"
-              @dragover="onWeekGridDragOver"
-              @drop="onWeekGridDrop"
-            >
+
+        <!-- Неделя -->
+        <div v-else-if="isWeekView" class="overflow-x-auto">
+          <div class="min-w-[44rem]">
+            <div class="grid border-b" :style="{ gridTemplateColumns: `${gridGutter}px repeat(7, minmax(0, 1fr))` }">
+              <span />
+              <button
+                v-for="day in weekDays"
+                :key="day.key"
+                type="button"
+                class="flex flex-col items-center gap-0.5 border-l py-2 transition-colors hover:bg-muted/50"
+                :class="day.isWeekend ? 'bg-muted/30' : ''"
+                @click="selectDay(day.key)"
+              >
+                <span class="text-xs text-muted-foreground">{{ day.weekDay }}</span>
+                <span
+                  class="flex size-7 items-center justify-center rounded-full text-sm tabular-nums"
+                  :class="day.isToday ? 'bg-primary font-semibold text-primary-foreground' : day.isSelected ? 'bg-muted font-semibold' : ''"
+                >{{ day.date }}</span>
+              </button>
+            </div>
+            <div ref="dayEventsScrollRef" class="overflow-y-auto overscroll-contain" :style="{ height: `${dayGridViewportHeight}px` }">
               <div
-                v-for="slot in daySlots.slice(0, -1)"
-                :key="`week-${slot.key}`"
-                class="day-grid-line week-grid-line"
-                :style="{ top: `${dayGridTopPadding + ((slot.minutes - dayStartHour * 60) / daySlotMinutes) * daySlotHeight}px` }"
+                class="relative cursor-cell"
+                :style="{ height: `${dayGridHeight}px` }"
+                @click="onDayGridClick"
+                @dragover="onWeekGridDragOver"
+                @drop="onWeekGridDrop"
               >
-                <span class="day-grid-time">{{ slot.label }}</span>
-              </div>
-              <div class="week-view-cols">
-                <div v-for="day in weekDays" :key="`col-${day.key}`" class="week-view-col" />
-              </div>
-              <article
-                v-for="event in weekEventsTimed"
-                :key="`week-ev-${event.task.id}`"
-                class="day-event-card week-event-card"
-                :class="[priorityClass(event.task.priority), { 'week-event-card--compact': event.height < 74 }]"
-                draggable="true"
-                :style="{
-                  top: `${event.top}px`,
-                  height: `${event.height}px`,
-                  left: `calc(66px + ${event.dayIndex} * ((100% - 66px) / 7) + 4px)`,
-                  width: 'calc((100% - 66px) / 7 - 8px)',
-                }"
-                @click="openEditTaskModal(event.task)"
-                @dragstart="onWeekEventDragStart(event.task.id, event.start, event.end, event.task.priority, $event)"
-                @dragend="onWeekEventDragEnd"
-              >
-                <div class="day-event-time">{{ minutesToHhmm(event.start) }}<span v-if="event.task.endTime"> – {{ event.task.endTime }}</span></div>
-                <div class="day-event-title">{{ weekCardTitle(event.task.title) }}</div>
                 <div
-                  v-if="dayEventAssignees(event.task.id).length"
-                  class="day-event-assignees"
-                  @mouseenter.stop="showTaskAssigneesTooltip(event.task.id, $event)"
-                  @mousemove.stop="moveAssigneesTooltip($event)"
-                  @mouseleave.stop="hideTaskAssigneesTooltip"
+                  v-for="(day, idx) in weekDays"
+                  :key="`col-${day.key}`"
+                  class="pointer-events-none absolute inset-y-0 border-l"
+                  :class="day.isWeekend ? 'bg-muted/30' : ''"
+                  :style="{ left: `calc(${gridGutter}px + ${idx} * ((100% - ${gridGutter}px) / 7))`, width: `calc((100% - ${gridGutter}px) / 7)` }"
+                />
+                <div
+                  v-for="slot in daySlots.slice(0, -1)"
+                  :key="`week-${slot.key}`"
+                  class="pointer-events-none absolute inset-x-0 h-0"
+                  :style="{ top: `${dayGridTopPadding + ((slot.minutes - dayStartHour * 60) / daySlotMinutes) * daySlotHeight}px` }"
                 >
-                  <UserAvatar
-                    v-for="p in dayEventAssignees(event.task.id).slice(0, 3)"
-                    :key="`w-${event.task.id}-${p.id}`"
-                    class="day-event-assignee-avatar"
-                    :style="assigneeAvatarStyle(p)"
-                    :url="p.avatar_url"
-                    :initials="assigneeInitials(p)"
-                  />
-                  <span v-if="dayEventAssignees(event.task.id).length > 3" class="day-event-assignee-more">
-                    +{{ dayEventAssignees(event.task.id).length - 3 }}
-                  </span>
+                  <span v-if="slot.minutes % 60 === 0" class="absolute left-0 -translate-y-1/2 pr-2 text-right text-xs text-muted-foreground tabular-nums" :style="{ width: `${gridGutter}px` }">{{ slot.label }}</span>
+                  <span class="absolute right-0 border-t" :class="slot.minutes % 60 === 0 ? '' : 'opacity-40'" :style="{ left: `${gridGutter}px` }" />
                 </div>
-              </article>
-              <article
-                v-if="weekDragPreview"
-                class="day-event-card week-event-card week-event-card--drag-preview"
-                :class="priorityClass(weekDragPriority)"
-                :style="{
-                  top: `${weekDragPreview.top}px`,
-                  height: `${weekDragPreview.height}px`,
-                  left: `calc(66px + ${weekDragPreview.dayIndex} * ((100% - 66px) / 7) + 4px)`,
-                  width: 'calc((100% - 66px) / 7 - 8px)',
-                }"
-              >
-                <div class="day-event-time">{{ minutesToHhmm(weekDragPreview.start) }} – {{ minutesToHhmm(weekDragPreview.end) }}</div>
-                <div class="day-event-title">Новый временной слот</div>
-              </article>
-              <div
-                v-if="showNowMarker"
-                class="day-now-line week-now-line"
-                :style="{ top: `${nowMarkerTop}px` }"
-              >
-                <span class="day-now-label">{{ nowMarkerLabel }}</span>
+                <article
+                  v-for="event in weekEventsTimed"
+                  :key="`week-ev-${event.task.id}`"
+                  class="day-event-card absolute flex cursor-pointer flex-col overflow-hidden rounded-md border-l-[3px] px-1.5 py-1 text-xs shadow-xs transition-colors"
+                  :class="eventToneClass(event.task.priority)"
+                  draggable="true"
+                  role="button"
+                  tabindex="0"
+                  :title="taskAssigneesTitle(event.task.id) || undefined"
+                  :style="{
+                    top: `${event.top}px`,
+                    height: `${event.height}px`,
+                    left: `calc(${gridGutter}px + ${event.dayIndex} * ((100% - ${gridGutter}px) / 7) + 2px + ${event.lane} * (((100% - ${gridGutter}px) / 7 - 4px) / ${event.lanes}))`,
+                    width: `calc(((100% - ${gridGutter}px) / 7 - 4px) / ${event.lanes} - 2px)`,
+                  }"
+                  @click.stop="openEditTaskModal(event.task)"
+                  @keydown.enter="openEditTaskModal(event.task)"
+                  @dragstart="onWeekEventDragStart(event.task.id, event.start, event.end, event.task.priority, $event)"
+                  @dragend="onWeekEventDragEnd"
+                >
+                  <span v-if="event.height < 56" class="truncate leading-snug">
+                    <span class="text-muted-foreground tabular-nums">{{ minutesToHhmm(event.start) }}</span>
+                    <span class="font-medium text-foreground"> {{ event.task.title || 'Без названия' }}</span>
+                  </span>
+                  <template v-else>
+                    <span class="line-clamp-2 font-medium leading-snug text-foreground">{{ event.task.title || 'Без названия' }}</span>
+                    <span class="truncate text-muted-foreground tabular-nums">{{ minutesToHhmm(event.start) }}<template v-if="event.task.endTime">–{{ event.task.endTime }}</template></span>
+                  </template>
+                </article>
+                <div
+                  v-if="weekDragPreview"
+                  class="pointer-events-none absolute rounded-md border border-dashed border-primary bg-primary/10 px-1.5 py-1 text-xs text-primary tabular-nums"
+                  :style="{
+                    top: `${weekDragPreview.top}px`,
+                    height: `${weekDragPreview.height}px`,
+                    left: `calc(${gridGutter}px + ${weekDragPreview.dayIndex} * ((100% - ${gridGutter}px) / 7) + 2px)`,
+                    width: `calc((100% - ${gridGutter}px) / 7 - 4px)`,
+                  }"
+                >
+                  {{ minutesToHhmm(weekDragPreview.start) }}–{{ minutesToHhmm(weekDragPreview.end) }}
+                </div>
+                <div v-if="showNowMarker" class="pointer-events-none absolute right-0 z-10 h-px bg-red-500" :style="{ top: `${nowMarkerTop}px`, left: `${gridGutter}px` }" aria-hidden="true">
+                  <span class="absolute -left-1 -top-1 size-2 rounded-full bg-red-500" />
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div v-else-if="isMonthView" class="month-view-wrap">
-          <div class="month-view-header">
-            <Button variant="outline" size="icon-sm" type="button" class="month-nav-btn" aria-label="Предыдущий месяц" @click="prevMonth">‹</Button>
-            <div class="month-label">{{ currentMonthLabel }}</div>
-            <Button variant="outline" size="icon-sm" type="button" class="month-nav-btn" aria-label="Следующий месяц" @click="nextMonth">›</Button>
-          </div>
-          <div class="month-view-grid">
-            <div v-for="day in weekdaysShort" :key="`m-${day}`" class="month-view-weekday">{{ day }}</div>
-            <button
-              v-for="cell in monthCells"
-              :key="`m-cell-${cell.key}`"
-              type="button"
-              class="month-view-cell"
-              :class="{
-                'month-view-cell--muted': !cell.inCurrentMonth,
-                'month-view-cell--today': cell.isToday,
-                'month-view-cell--selected': cell.isSelected,
-                'month-view-cell--weekend': cell.isWeekend,
-                'month-view-cell--drop-target': monthDropTargetDate === cell.key,
-              }"
-              @click="onMonthCellClick(cell.key)"
-              @dragover="onMonthCellDragOver(cell.key, $event)"
-              @dragleave="onMonthCellDragLeave(cell.key)"
-              @drop="onMonthCellDrop(cell.key, $event)"
-            >
-              <div class="month-view-date">{{ cell.date }}</div>
+
+        <!-- Месяц -->
+        <div v-else-if="isMonthView" class="overflow-x-auto">
+          <div class="min-w-[44rem]">
+            <div class="grid grid-cols-7 border-b bg-muted/40">
+              <span v-for="day in weekdaysShort" :key="`m-${day}`" class="px-2 py-2 text-xs font-medium text-muted-foreground">{{ day }}</span>
+            </div>
+            <div class="grid grid-cols-7">
               <div
-                class="month-view-events"
-                :class="{ 'month-view-events--expanded': monthExpandedRowIndex !== null && monthExpandedRowIndex === cell.rowIndex }"
+                v-for="cell in monthCells"
+                :key="`m-cell-${cell.key}`"
+                role="button"
+                tabindex="0"
+                class="flex min-h-28 min-w-0 cursor-pointer flex-col gap-1 border-b border-r p-1.5 text-left transition-colors hover:bg-muted/40 [&:nth-child(7n)]:border-r-0"
+                :class="[
+                  cell.isWeekend ? 'bg-muted/30' : '',
+                  monthDropTargetDate === cell.key ? 'bg-primary/10 ring-2 ring-inset ring-primary' : '',
+                ]"
+                @click="onMonthCellClick(cell.key)"
+                @keydown.enter.self="onMonthCellClick(cell.key)"
+                @dragover="onMonthCellDragOver(cell.key, $event)"
+                @dragleave="onMonthCellDragLeave(cell.key)"
+                @drop="onMonthCellDrop(cell.key, $event)"
               >
+                <span
+                  class="flex size-6 items-center justify-center rounded-full text-xs tabular-nums"
+                  :class="[
+                    cell.isToday ? 'bg-primary font-semibold text-primary-foreground' : cell.isSelected ? 'bg-muted font-semibold' : '',
+                    !cell.inCurrentMonth && !cell.isToday ? 'text-muted-foreground/60' : '',
+                  ]"
+                >{{ cell.date }}</span>
+                <div class="grid min-w-0 gap-0.5">
+                  <button
+                    v-for="t in ((monthExpandedRowIndex !== null && monthExpandedRowIndex === cell.rowIndex) ? cell.allTasks : cell.tasks)"
+                    :key="t.id"
+                    type="button"
+                    class="flex min-w-0 items-center gap-1 rounded border-l-2 px-1.5 py-0.5 text-left text-xs transition-colors"
+                    :class="[eventToneClass(t.priority), monthReorderTargetTaskId === t.id ? 'ring-2 ring-primary' : '']"
+                    draggable="true"
+                    @click.stop="openEditTaskModal(t)"
+                    @dragstart="onMonthEventDragStart(t.id, $event)"
+                    @dragend="onMonthEventDragEnd"
+                    @dragover="onMonthEventReorderOver(cell.key, t.id, $event)"
+                    @dragleave="onMonthEventReorderLeave(t.id)"
+                    @drop="onMonthEventReorderDrop(cell.key, t.id, $event)"
+                  >
+                    <span v-if="t.startTime" class="shrink-0 text-muted-foreground tabular-nums">{{ t.startTime }}</span>
+                    <span class="truncate">{{ t.title }}</span>
+                  </button>
+                </div>
                 <button
-                  v-for="t in ((monthExpandedRowIndex !== null && monthExpandedRowIndex === cell.rowIndex) ? cell.allTasks : cell.tasks)"
-                  :key="t.id"
+                  v-if="cell.more > 0 || monthExpandedDate === cell.key"
                   type="button"
-                  class="month-view-event-pill"
-                  :class="[priorityClass(t.priority), { 'month-view-event-pill--drop-target': monthReorderTargetTaskId === t.id }]"
-                  draggable="true"
-                  @click.stop="openEditTaskModal(t)"
-                  @dragstart="onMonthEventDragStart(t.id, $event)"
-                  @dragend="onMonthEventDragEnd"
-                  @dragover="onMonthEventReorderOver(cell.key, t.id, $event)"
-                  @dragleave="onMonthEventReorderLeave(t.id)"
-                  @drop="onMonthEventReorderDrop(cell.key, t.id, $event)"
+                  class="self-start rounded px-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                  @click.stop="toggleMonthMore(cell.key)"
                 >
-                  <span class="month-view-event-title">{{ t.title }}</span>
-                  <span v-if="t.startTime" class="month-view-event-time">{{ t.startTime }}</span>
+                  {{ monthExpandedDate === cell.key ? 'Свернуть' : `Ещё ${cell.more}` }}
                 </button>
               </div>
-              <button
-                v-if="cell.more > 0 || monthExpandedDate === cell.key"
-                type="button"
-                class="month-view-event-more"
-                @click.stop="toggleMonthMore(cell.key)"
-              >
-                {{ monthExpandedDate === cell.key ? 'Скрыть' : `Развернуть (+${cell.more})` }}
-              </button>
-            </button>
+            </div>
           </div>
         </div>
-        <div v-else-if="isScheduleView" ref="scheduleListRef" class="schedule-view-wrap" @scroll.passive="onScheduleScroll">
-          <div v-if="scheduleLoading" class="day-loading">
-            <UiLoadingBar />
+
+        <!-- Расписание -->
+        <div v-else-if="isScheduleView" ref="scheduleListRef" class="max-h-[70vh] overflow-y-auto overscroll-contain" @scroll.passive="onScheduleScroll">
+          <div v-if="scheduleLoading" class="grid gap-3 p-4">
+            <Skeleton v-for="i in 4" :key="i" class="h-10 w-full" />
           </div>
           <template v-else>
-            <section v-for="group in scheduleGroups" :key="group.date" class="schedule-day-group">
-              <div class="schedule-day-head-wrap">
-                <div class="schedule-day-head">{{ group.label }}</div>
-              </div>
-              <button
-                v-for="task in group.tasks"
-                :key="task.id"
-                type="button"
-                class="schedule-item"
-                :class="priorityClass(task.priority)"
-                @click="openEditTaskModal(task)"
-              >
-                <div class="schedule-item-timebox">
-                  <div class="schedule-item-time">{{ task.startTime ? `${task.startTime}${task.endTime ? ` - ${task.endTime}` : ''}` : 'весь день' }}</div>
-                  <div v-if="isTaskRecurringInSchedule(task)" class="schedule-item-repeat">Повторяемое событие</div>
-                </div>
-                <div class="schedule-item-main">
-                  <span class="schedule-item-dot" :class="priorityClass(task.priority)" />
-                  <span class="schedule-item-title">{{ task.title }}</span>
-                </div>
-                <div
-                  v-if="taskParticipationLabel(task.id) || dayEventAssignees(task.id).length"
-                  class="schedule-item-meta"
-                >
-                  <span
-                    v-if="taskParticipationLabel(task.id)"
-                    class="event-participation-pill schedule-item-status"
-                    :class="taskParticipationClass(task.id)"
-                  >
-                    {{ taskParticipationLabel(task.id) }}
-                  </span>
-                  <div
-                    v-if="dayEventAssignees(task.id).length"
-                    class="schedule-item-assignees"
-                    @mouseenter.stop="showTaskAssigneesTooltip(task.id, $event)"
-                    @mousemove.stop="moveAssigneesTooltip($event)"
-                    @mouseleave.stop="hideTaskAssigneesTooltip"
-                  >
-                    <UserAvatar
-                      v-for="p in dayEventAssignees(task.id).slice(0, 3)"
-                      :key="`s-${task.id}-${p.id}`"
-                      class="day-event-assignee-avatar"
-                      :style="assigneeAvatarStyle(p)"
-                      :url="p.avatar_url"
-                      :initials="assigneeInitials(p)"
-                    />
-                    <span v-if="dayEventAssignees(task.id).length > 3" class="day-event-assignee-more">
-                      +{{ dayEventAssignees(task.id).length - 3 }}
+            <section v-for="group in scheduleGroups" :key="group.date">
+              <h3 class="sticky top-0 z-10 border-b bg-muted/80 px-4 py-2 text-xs font-medium text-muted-foreground backdrop-blur first-letter:uppercase">
+                {{ group.label }}
+              </h3>
+              <ul>
+                <li v-for="task in group.tasks" :key="task.id" class="border-b last:border-b-0">
+                  <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50" @click="openEditTaskModal(task)">
+                    <span class="w-24 shrink-0 text-sm text-muted-foreground tabular-nums">
+                      {{ task.startTime ? `${task.startTime}${task.endTime ? `–${task.endTime}` : ''}` : 'Весь день' }}
                     </span>
-                  </div>
-                </div>
-              </button>
+                    <span class="size-2 shrink-0 rounded-full" :class="eventDotClass(task.priority)" aria-hidden="true" />
+                    <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ task.title }}</span>
+                    <UiBadge v-if="isTaskRecurringInSchedule(task)" tone="neutral" class="hidden sm:inline-flex">Повторяется</UiBadge>
+                    <UiBadge v-if="taskParticipationLabel(task.id)" :tone="participationTone(taskParticipationStatus(task.id))">
+                      {{ taskParticipationLabel(task.id) }}
+                    </UiBadge>
+                    <span v-if="dayEventAssignees(task.id).length" class="hidden shrink-0 -space-x-1.5 sm:flex" :title="taskAssigneesTitle(task.id)">
+                      <UserAvatar
+                        v-for="p in dayEventAssignees(task.id).slice(0, 3)"
+                        :key="`s-${task.id}-${p.id}`"
+                        class="size-6 text-[10px] font-medium text-white ring-2 ring-card"
+                        :style="assigneeAvatarStyle(p)"
+                        :url="p.avatar_url"
+                        :initials="assigneeInitials(p)"
+                      />
+                    </span>
+                  </button>
+                </li>
+              </ul>
             </section>
-            <div v-if="scheduleLoadingMore" class="schedule-more-loader">
-              <UiLoadingBar size="compact" />
+            <div v-if="scheduleLoadingMore" class="flex justify-center p-4">
+              <Spinner class="size-4 text-muted-foreground" />
             </div>
-            <div v-else-if="!scheduleHasMore && scheduleTasks.length" class="schedule-end">Больше событий нет</div>
-            <div v-if="!scheduleTasks.length" class="day-empty">
-              <p>Событий в расписании пока нет.</p>
-            </div>
+            <p v-else-if="!scheduleHasMore && scheduleTasks.length" class="px-4 py-3 text-center text-xs text-muted-foreground">Больше событий нет</p>
+            <Empty v-if="!scheduleTasks.length" class="py-12">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><CalendarDaysIcon /></EmptyMedia>
+                <EmptyTitle>Событий нет</EmptyTitle>
+                <EmptyDescription>Запланированные события появятся здесь списком по дням.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           </template>
         </div>
-        <div v-else class="day-events-layout" :class="{ 'day-events-layout--with-aside': dayEventsUntimed.length > 0 }">
-          <div class="day-events-board">
-            <div ref="dayEventsScrollRef" class="day-events-scroll" :style="{ height: `${dayGridViewportHeight}px` }">
+
+        <!-- День -->
+        <div v-else class="flex flex-col lg:flex-row">
+          <div class="min-w-0 flex-1">
+            <div ref="dayEventsScrollRef" class="overflow-y-auto overscroll-contain" :style="{ height: `${dayGridViewportHeight}px` }">
               <div
-                class="day-events-grid"
+                class="relative cursor-cell"
                 :style="{ height: `${dayGridHeight}px` }"
                 @click.self="onDayGridClick"
                 @dragover="onDayGridDragOver"
@@ -2289,24 +2245,23 @@ async function confirmDeleteTask() {
                 <div
                   v-for="slot in daySlots.slice(0, -1)"
                   :key="slot.key"
-                  class="day-grid-line"
+                  class="pointer-events-none absolute inset-x-0 h-0"
                   :style="{ top: `${dayGridTopPadding + ((slot.minutes - dayStartHour * 60) / daySlotMinutes) * daySlotHeight}px` }"
                 >
-                  <span class="day-grid-time">{{ slot.label }}</span>
+                  <span v-if="slot.minutes % 60 === 0" class="absolute left-0 -translate-y-1/2 pr-2 text-right text-xs text-muted-foreground tabular-nums" :style="{ width: `${gridGutter}px` }">{{ slot.label }}</span>
+                  <span class="absolute right-0 border-t" :class="slot.minutes % 60 === 0 ? '' : 'opacity-40'" :style="{ left: `${gridGutter}px` }" />
                 </div>
                 <article
                   v-for="event in dayEventsTimed"
                   :key="event.task.id"
-                  class="day-event-card"
-                  :class="[
-                    priorityClass(event.task.priority),
-                    {
-                      'day-event-card--completed': event.task.completedAt,
-                      'day-event-card--compact': event.height < 64,
-                      'day-event-card--dragging': dayDragTaskId === event.task.id,
-                    },
-                  ]"
-                  :style="{ top: `${event.top}px`, height: `${event.height}px` }"
+                  class="day-event-card absolute flex cursor-pointer flex-col gap-0.5 overflow-hidden rounded-md border-l-[3px] px-2 py-1 text-xs shadow-xs transition-colors"
+                  :class="[eventToneClass(event.task.priority), { 'opacity-60': event.task.completedAt, 'opacity-40': dayDragTaskId === event.task.id }]"
+                  :style="{
+                    top: `${event.top}px`,
+                    height: `${event.height}px`,
+                    left: `calc(${gridGutter}px + ${event.lane} * ((100% - ${gridGutter}px - 8px) / ${event.lanes}))`,
+                    width: `calc((100% - ${gridGutter}px - 8px) / ${event.lanes} - 4px)`,
+                  }"
                   role="button"
                   tabindex="0"
                   draggable="true"
@@ -2315,71 +2270,55 @@ async function confirmDeleteTask() {
                   @dragstart="onDayEventDragStart(event.task.id, event.start, event.end, event.task.priority, $event)"
                   @dragend="onDayEventDragEnd"
                 >
-                  <div class="day-event-time">{{ minutesToHhmm(event.start) }}<span v-if="event.task.endTime"> – {{ event.task.endTime }}</span></div>
-                  <div class="day-event-title">{{ event.task.title }}</div>
-                  <div class="day-event-meta-row" :class="{ 'day-event-meta-row--compact': event.height < 64 }">
-                    <div
-                      v-if="taskParticipationLabel(event.task.id)"
-                      class="event-participation-pill"
-                      :class="taskParticipationClass(event.task.id)"
-                    >
+                  <div class="flex min-w-0 items-baseline gap-2">
+                    <span class="truncate text-sm font-medium text-foreground">{{ event.task.title || 'Без названия' }}</span>
+                    <span class="shrink-0 text-muted-foreground tabular-nums">{{ minutesToHhmm(event.start) }}<template v-if="event.task.endTime">–{{ event.task.endTime }}</template></span>
+                  </div>
+                  <div v-if="event.height >= 64" class="flex min-w-0 items-center gap-2">
+                    <UiBadge v-if="taskParticipationLabel(event.task.id)" :tone="participationTone(taskParticipationStatus(event.task.id))">
                       {{ taskParticipationLabel(event.task.id) }}
-                    </div>
-                    <div
-                      v-if="dayEventAssignees(event.task.id).length"
-                      class="day-event-assignees"
-                      @mouseenter.stop="showTaskAssigneesTooltip(event.task.id, $event)"
-                      @mousemove.stop="moveAssigneesTooltip($event)"
-                      @mouseleave.stop="hideTaskAssigneesTooltip"
-                    >
+                    </UiBadge>
+                    <span v-if="dayEventAssignees(event.task.id).length" class="flex -space-x-1.5" :title="taskAssigneesTitle(event.task.id)">
                       <UserAvatar
-                        v-for="p in dayEventAssignees(event.task.id).slice(0, 3)"
+                        v-for="p in dayEventAssignees(event.task.id).slice(0, 4)"
                         :key="p.id"
-                        class="day-event-assignee-avatar"
+                        class="size-5 text-[9px] font-medium text-white ring-2 ring-card"
                         :style="assigneeAvatarStyle(p)"
                         :url="p.avatar_url"
                         :initials="assigneeInitials(p)"
                       />
-                      <span v-if="dayEventAssignees(event.task.id).length > 3" class="day-event-assignee-more">
-                        +{{ dayEventAssignees(event.task.id).length - 3 }}
-                      </span>
-                    </div>
+                    </span>
+                    <span v-if="dayEventAssignees(event.task.id).length > 4" class="text-muted-foreground">+{{ dayEventAssignees(event.task.id).length - 4 }}</span>
                   </div>
                 </article>
-                <article
-                  v-if="dayDragPreview"
-                  class="day-event-card day-event-card--drag-preview"
-                  :class="priorityClass(dayDragPriority)"
-                  :style="{ top: `${dayDragPreview.top}px`, height: `${dayDragPreview.height}px` }"
-                >
-                  <div class="day-event-time">{{ minutesToHhmm(dayDragPreview.start) }} – {{ minutesToHhmm(dayDragPreview.end) }}</div>
-                  <div class="day-event-title">Новый временной слот</div>
-                </article>
                 <div
-                  v-if="showNowMarker"
-                  class="day-now-line"
-                  :style="{ top: `${nowMarkerTop}px` }"
-                  aria-hidden="true"
+                  v-if="dayDragPreview"
+                  class="pointer-events-none absolute rounded-md border border-dashed border-primary bg-primary/10 px-2 py-1 text-xs text-primary tabular-nums"
+                  :style="{ top: `${dayDragPreview.top}px`, height: `${dayDragPreview.height}px`, left: `${gridGutter}px`, right: '8px' }"
                 >
-                  <span class="day-now-label">{{ nowMarkerLabel }}</span>
+                  {{ minutesToHhmm(dayDragPreview.start) }}–{{ minutesToHhmm(dayDragPreview.end) }}
+                </div>
+                <div v-if="showNowMarker" class="pointer-events-none absolute right-0 z-10 h-px bg-red-500" :style="{ top: `${nowMarkerTop}px`, left: `${gridGutter}px` }" aria-hidden="true">
+                  <span class="absolute -left-1 -top-1 size-2 rounded-full bg-red-500" />
                 </div>
               </div>
             </div>
-            <div v-if="!tasksForSelectedDate.length" class="day-empty">
-              <p>На этот день событий нет. Кликните на слот сетки или нажмите «Создать событие».</p>
-            </div>
+            <p v-if="!tasksForSelectedDate.length" class="border-t px-4 py-3 text-sm text-muted-foreground">
+              На этот день событий нет. Нажмите на время в сетке, чтобы создать событие.
+            </p>
           </div>
-          <aside v-if="dayEventsUntimed.length" class="day-unscheduled">
-            <div class="day-unscheduled-title">Без времени</div>
+          <aside v-if="dayEventsUntimed.length" class="grid content-start gap-2 border-t p-4 lg:w-64 lg:border-l lg:border-t-0">
+            <h3 class="text-sm font-medium">Без времени</h3>
             <button
               v-for="task in dayEventsUntimed"
               :key="task.id"
               type="button"
-              class="day-unscheduled-item"
+              class="grid gap-1 rounded-md border-l-[3px] px-3 py-2 text-left text-sm transition-colors"
+              :class="eventToneClass(task.priority)"
               @click="openEditTaskModal(task)"
             >
-              <span>{{ task.title }}</span>
-              <span class="day-unscheduled-item-meta">{{ task.priority === 'high' ? 'Высокий' : task.priority === 'low' ? 'Низкий' : 'Обычный' }}</span>
+              <span class="font-medium">{{ task.title }}</span>
+              <span class="text-xs text-muted-foreground">Приоритет: {{ priorityLabel(task.priority).toLowerCase() }}</span>
             </button>
           </aside>
         </div>
@@ -2388,275 +2327,201 @@ async function confirmDeleteTask() {
 
     <UiModal
       v-if="isTaskModalOpen"
-      :title="editingTaskId ? 'Редактирование события' : 'Новое событие'"
-      :description="`Постановщик: ${modalTaskOwnerLabel}` + (!editingTaskId ? ' · ' + new Date((taskStartDate || selectedDate) + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' }) : '')"
-      :max-width="720"
+      :title="editingTaskId ? 'Событие' : 'Новое событие'"
+      :description="`Постановщик: ${modalTaskOwnerLabel}`"
+      :max-width="672"
       :close-disabled="taskSaveLoading"
       @close="closeTaskModal"
     >
-      <div class="calendar-page modal-calendar ui-legacy-scope">
-        <form id="calendar-task-form" class="modal-form modal-form--design" @submit.prevent="onSubmitTask" :aria-busy="taskSaveLoading">
-          <fieldset class="modal-form-fieldset" :disabled="taskSaveLoading">
-          <div class="modal-body">
-            <label class="modal-field modal-field--design">
-              <span class="modal-label modal-label--design">Название события</span>
-              <Input
-                v-model="taskTitle"
-                type="text"
-                class="modal-input modal-input--design modal-input--title"
-                placeholder="Введите название..."
-                required />
-            </label>
+      <form id="calendar-task-form" class="tw-scope" :aria-busy="taskSaveLoading" @submit.prevent="onSubmitTask">
+        <fieldset :disabled="taskSaveLoading" class="m-0 min-w-0 border-0 p-0">
+          <FormGrid :cols="2">
+            <Alert v-if="modalError" variant="destructive" class="sm:col-span-full">
+              <AlertDescription class="whitespace-pre-line">{{ modalError }}</AlertDescription>
+            </Alert>
 
-            <label class="modal-field modal-field--design">
-              <span class="modal-label modal-label--design">Описание</span>
-              <textarea
-                v-model="taskDescription"
-                class="modal-textarea modal-textarea--design"
-                rows="4"
-                placeholder="Добавьте детали события..."
+            <FormField label="Название" for="cal-title" wide>
+              <Input id="cal-title" v-model="taskTitle" type="text" placeholder="Например, планёрка с агрономами" required />
+            </FormField>
+
+            <FormField label="Описание" for="cal-description" wide>
+              <Textarea id="cal-description" v-model="taskDescription" rows="3" placeholder="Детали, место, что подготовить" />
+            </FormField>
+
+            <FormField label="Дата">
+              <UiDatePicker v-model="taskStartDate" block aria-label="Дата события" />
+            </FormField>
+
+            <FormField label="Время" for="cal-start">
+              <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+                <Input id="cal-start" v-model="taskStartTime" type="time" aria-label="Начало" />
+                <span class="text-muted-foreground">–</span>
+                <Input v-model="taskEndTime" type="time" aria-label="Окончание" />
+              </div>
+            </FormField>
+
+            <FormField label="Приоритет">
+              <UiSelect
+                v-model="taskPriority"
+                block
+                aria-label="Приоритет"
+                :options="[{ value: 'normal', label: 'Обычный' }, { value: 'high', label: 'Высокий' }, { value: 'low', label: 'Низкий' }]"
               />
-            </label>
+            </FormField>
 
-            <!-- Сетка как в макете: Дата/время начала | Дата/время завершения -->
-            <div class="modal-grid-2">
-              <label class="modal-field modal-field--design">
-                <span class="modal-label modal-label--design">Дата и время начала</span>
-                <div class="modal-deadline-row modal-deadline-row--design">
-                  <div class="modal-deadline-date">
-                    <CalendarIcon class="modal-input-icon" :size="18" />
-                    <UiDatePicker v-model="taskStartDate" class="modal-input modal-input--design modal-input--with-icon" />
-                  </div>
-                  <div class="modal-deadline-time-range modal-deadline-time-range--single">
-                    <div class="modal-deadline-time-start">
-                      <ClockIcon class="modal-input-icon" :size="18" aria-hidden="true" />
-                      <Input v-model="taskStartTime" type="time" class="modal-input modal-input--design modal-input--with-icon pl-9" />
-                    </div>
-                  </div>
-                </div>
-              </label>
-              <label class="modal-field modal-field--design">
-                <span class="modal-label modal-label--design">Дата и время завершения</span>
-                <div class="modal-deadline-row modal-deadline-row--design">
-                  <div class="modal-deadline-date">
-                    <CalendarIcon class="modal-input-icon" :size="18" />
-                    <UiDatePicker v-model="taskEndDate" class="modal-input modal-input--design modal-input--with-icon" />
-                  </div>
-                  <div class="modal-deadline-time-range modal-deadline-time-range--single">
-                    <div class="modal-deadline-time-start">
-                      <ClockIcon class="modal-input-icon" :size="18" aria-hidden="true" />
-                      <Input v-model="taskEndTime" type="time" class="modal-input modal-input--design modal-input--with-icon pl-9" />
-                    </div>
-                  </div>
-                </div>
-              </label>
-            </div>
+            <FormField label="Повтор">
+              <UiSelect
+                v-model="taskRepeatRule"
+                block
+                aria-label="Повтор"
+                :options="[{ value: 'none', label: 'Не повторяется' }, { value: 'daily', label: 'Каждый день' }, { value: 'weekly', label: 'Каждую неделю' }, { value: 'monthly', label: 'Каждый месяц' }, { value: 'yearly', label: 'Каждый год' }]"
+              />
+            </FormField>
 
-            <label class="modal-field modal-field--design">
-              <span class="modal-label modal-label--design">Приоритет</span>
-              <UiSelect v-model="taskPriority" :options="[{ value: 'normal', label: 'Обычный' }, { value: 'high', label: 'Высокий' }, { value: 'low', label: 'Низкий' }]" class="modal-input modal-input--design modal-select modal-select--design" />
-            </label>
-
-            <div class="modal-grid-2">
-              <label class="modal-field modal-field--design">
-                <span class="modal-label modal-label--design">Повторяемость</span>
-                <div class="repeat-row">
-                <UiSelect v-model="taskRepeatRule" :options="[{ value: 'none', label: 'Не повторяется' }, { value: 'daily', label: 'Каждый день' }, { value: 'weekly', label: 'Каждую неделю' }, { value: 'monthly', label: 'Каждый месяц' }, { value: 'yearly', label: 'Каждый год' }]" class="modal-input modal-input--design modal-select modal-select--design" />
-                <template v-if="taskRepeatRule !== 'none'">
-                  <span class="repeat-inline-label">каждые</span>
-                  <Input
-                    v-model.number="taskRepeatEvery"
-                    type="number"
-                    min="1"
-                    max="365"
-                    class="modal-input modal-input--design repeat-every-input"
-                    :disabled="false" />
-                </template>
+            <template v-if="taskRepeatRule !== 'none'">
+              <FormField label="Интервал" for="cal-repeat-every">
+                <div class="flex items-center gap-2 text-sm">
+                  <span>Каждые</span>
+                  <Input id="cal-repeat-every" v-model.number="taskRepeatEvery" type="number" min="1" max="365" class="w-20 tabular-nums" />
+                  <span class="text-muted-foreground">{{ repeatUnitLabel }}</span>
                 </div>
-                <Transition name="repeat-reveal">
-                <ToggleGroup
-                  v-if="taskRepeatRule === 'weekly'"
-                  v-model="taskRepeatWeekDays"
-                  type="multiple"
-                  variant="outline"
-                  size="sm"
-                  class="repeat-weekdays"
-                  aria-label="Дни недели"
-                >
-                  <ToggleGroupItem v-for="(d, idx) in weekdaysShort" :key="d" :value="idx + 1" :aria-label="d">{{ d }}</ToggleGroupItem>
+              </FormField>
+
+              <FormField v-if="taskRepeatRule === 'weekly'" label="Дни недели">
+                <ToggleGroup v-model="taskRepeatWeekDays" type="multiple" variant="outline" size="sm" class="w-full" aria-label="Дни недели">
+                  <ToggleGroupItem v-for="(d, idx) in weekdaysShort" :key="d" :value="idx + 1" :aria-label="d" class="flex-1">{{ d }}</ToggleGroupItem>
                 </ToggleGroup>
-                </Transition>
-              </label>
-              <Transition name="repeat-reveal">
-              <label v-if="taskRepeatRule !== 'none'" class="modal-field modal-field--design">
-                <span class="modal-label modal-label--design">Окончание</span>
-                <RadioGroup v-model="taskRepeatEndMode" class="repeat-end">
-                  <label class="repeat-end-item">
-                    <RadioGroupItem value="never" />
-                    <span>Никогда</span>
-                    <span class="repeat-end-spacer" aria-hidden="true"></span>
-                  </label>
-                  <label class="repeat-end-item repeat-end-item--after">
-                    <RadioGroupItem value="after" />
-                    <span>После</span>
-                    <span class="repeat-end-inline">
-                      <Input
-                        v-model.number="taskRepeatCount"
-                        type="number"
-                        min="1"
-                        max="500"
-                        class="modal-input modal-input--design repeat-count-input"
-                        :disabled="taskRepeatEndMode !== 'after'" />
-                      <span>повторений</span>
-                    </span>
-                  </label>
-                  <label class="repeat-end-item repeat-end-item--date">
-                    <RadioGroupItem value="on_date" />
-                    <span>Дата</span>
-                    <UiDatePicker v-model="taskRepeatUntil" class="modal-input modal-input--design repeat-date-input" :min="taskStartDate || selectedDate" :disabled="taskRepeatEndMode !== 'on_date'" />
-                  </label>
+              </FormField>
+
+              <FormField label="Окончание повтора" wide>
+                <RadioGroup v-model="taskRepeatEndMode" class="gap-3">
+                  <div class="flex items-center gap-2">
+                    <RadioGroupItem id="cal-end-never" value="never" />
+                    <Label for="cal-end-never" class="font-normal">Никогда</Label>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <RadioGroupItem id="cal-end-after" value="after" />
+                    <Label for="cal-end-after" class="font-normal">После</Label>
+                    <Input v-model.number="taskRepeatCount" type="number" min="1" max="500" class="h-8 w-20 tabular-nums" aria-label="Число повторений" :disabled="taskRepeatEndMode !== 'after'" />
+                    <span class="text-sm text-muted-foreground">повторений</span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <RadioGroupItem id="cal-end-date" value="on_date" />
+                    <Label for="cal-end-date" class="font-normal">До даты</Label>
+                    <div class="w-40">
+                      <UiDatePicker v-model="taskRepeatUntil" block aria-label="Дата окончания повтора" :min="taskStartDate || selectedDate" :disabled="taskRepeatEndMode !== 'on_date'" />
+                    </div>
+                  </div>
                 </RadioGroup>
-              </label>
-              </Transition>
-            </div>
+              </FormField>
 
-            <div v-if="editingTaskId && taskRepeatRule !== 'none'" class="repeat-apply-box">
-              <div class="repeat-apply-title">Как применить изменения повторяемости</div>
-              <RadioGroup v-model="taskRepeatApplyMode" class="repeat-apply-options">
-              <label class="repeat-apply-option">
-                <RadioGroupItem value="only_this" />
-                <span>Только это событие</span>
-              </label>
-              <label class="repeat-apply-option">
-                <RadioGroupItem value="this_and_following" />
-                <span>Это событие и следующие</span>
-              </label>
-              </RadioGroup>
-              <p class="repeat-apply-hint">
-                При выборе «это и следующие» будут созданы новые встречи по выбранному правилу начиная с текущей даты.
-              </p>
-            </div>
+              <FormField v-if="editingTaskId" label="Применить изменения" wide hint="«К этому и следующим» создаст новые встречи по выбранному правилу начиная с даты события.">
+                <RadioGroup v-model="taskRepeatApplyMode" class="gap-3">
+                  <div class="flex items-center gap-2">
+                    <RadioGroupItem id="cal-apply-one" value="only_this" />
+                    <Label for="cal-apply-one" class="font-normal">Только к этому событию</Label>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <RadioGroupItem id="cal-apply-next" value="this_and_following" />
+                    <Label for="cal-apply-next" class="font-normal">К этому и следующим</Label>
+                  </div>
+                </RadioGroup>
+              </FormField>
+            </template>
 
-            <!-- Ответственные: label + кнопка «Добавить» в одну строку, чипы как в макете -->
-            <div class="modal-field modal-field--design">
-              <div class="modal-label-row modal-label-row--design">
-                <span class="modal-label modal-label--design">Ответственные специалисты</span>
+            <FormField label="Участники" wide :hint="taskAssignees.length ? undefined : 'Участники увидят событие в своём календаре и смогут принять или отклонить приглашение.'">
+              <template #label-actions>
                 <UiPersonPicker
                   :options="profilesNotAssigned.map((p) => ({ id: p.id, label: profileLabel(p) + (p.id === auth.user.value?.id ? ' (Вы)' : ''), initials: assigneeInitials(p), url: p.avatar_url, avatarStyle: assigneeAvatarStyle(p) }))"
                   :all-added="profilesNotAssigned.length === 0"
                   @pick="addAssignee"
                 />
-              </div>
-              <div class="modal-chips modal-chips--design">
-                <div
-                  v-for="uid in taskAssignees"
-                  :key="uid"
-                  class="modal-chip modal-chip--design"
-                >
+              </template>
+              <ul v-if="taskAssignees.length" class="flex flex-wrap gap-2">
+                <li v-for="uid in taskAssignees" :key="uid" class="inline-flex h-8 max-w-full items-center gap-2 rounded-full border bg-muted/40 pl-1 pr-1 text-sm">
                   <UserAvatar
-                    class="modal-chip-avatar modal-chip-avatar--design"
+                    class="size-6 shrink-0 text-[10px] font-medium text-white"
                     :style="profileById(uid) ? assigneeAvatarStyle(profileById(uid)!) : undefined"
                     :url="profileById(uid)?.avatar_url ?? null"
                     :initials="profileById(uid) ? assigneeInitials(profileById(uid)!) : '?'"
                   />
-                  <span class="modal-chip-label">{{ profileById(uid) ? profileLabel(profileById(uid)!) : uid }}</span>
-                  <span
-                    class="modal-chip-status"
-                    :class="`modal-chip-status--${assigneeStatusForModal(uid)}`"
-                  >{{ assigneeStatusLabel(assigneeStatusForModal(uid)) }}</span>
-                  <Button variant="ghost" size="icon-sm" type="button" class="modal-chip-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать" @click="removeAssignee(uid)">×</Button>
-                </div>
-              </div>
-            </div>
+                  <span class="min-w-0 truncate">{{ profileById(uid) ? profileLabel(profileById(uid)!) : uid }}</span>
+                  <UiBadge v-if="editingTaskId" :tone="participationTone(assigneeStatusForModal(uid))" class="shrink-0">{{ assigneeStatusLabel(assigneeStatusForModal(uid)) }}</UiBadge>
+                  <Button variant="ghost" size="icon-sm" type="button" class="size-6 shrink-0 rounded-full text-muted-foreground hover:text-destructive" :aria-label="`Убрать ${profileById(uid) ? profileLabel(profileById(uid)!) : ''}`" @click="removeAssignee(uid)">
+                    <XIcon class="size-3.5" />
+                  </Button>
+                </li>
+              </ul>
+            </FormField>
 
-            <div v-if="editingTaskId && currentTaskParticipationStatus" class="modal-field modal-field--design">
-              <span class="modal-label modal-label--design">Мое участие</span>
-              <div class="participation-box">
-                <span class="event-participation-pill" :class="taskParticipationClass(editingTaskId)">
-                  {{ taskParticipationLabel(editingTaskId) }}
-                </span>
-                <div v-if="currentTaskParticipationStatus === 'pending'" class="participation-actions">
-                  <Button variant="outline" type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="setMyParticipationStatus('declined')">
-                    Отклонить
-                  </Button>
-                  <Button variant="default" type="button" class="modal-btn modal-btn--design" @click="setMyParticipationStatus('accepted')">
-                    Принять
-                  </Button>
-                </div>
-                <div v-else-if="currentTaskParticipationStatus === 'accepted'" class="participation-actions">
-                  <Button variant="outline" type="button" class="modal-btn-ghost modal-btn-ghost--design" @click="setMyParticipationStatus('declined')">
-                    Отказаться
-                  </Button>
-                </div>
-                <div v-else-if="currentTaskParticipationStatus === 'declined'" class="participation-actions">
-                  <Button variant="default" type="button" class="modal-btn modal-btn--design" @click="setMyParticipationStatus('accepted')">
-                    Принять снова
-                  </Button>
-                </div>
+            <FormField v-if="editingTaskId && currentTaskParticipationStatus" label="Моё участие" wide>
+              <div class="flex flex-wrap items-center gap-2">
+                <UiBadge :tone="participationTone(currentTaskParticipationStatus)">{{ taskParticipationLabel(editingTaskId) }}</UiBadge>
+                <span class="flex-1" />
+                <Button v-if="currentTaskParticipationStatus !== 'declined'" variant="outline" size="sm" type="button" @click="setMyParticipationStatus('declined')">
+                  {{ currentTaskParticipationStatus === 'accepted' ? 'Отказаться' : 'Отклонить' }}
+                </Button>
+                <Button v-if="currentTaskParticipationStatus !== 'accepted'" size="sm" type="button" @click="setMyParticipationStatus('accepted')">
+                  {{ currentTaskParticipationStatus === 'declined' ? 'Принять снова' : 'Принять' }}
+                </Button>
               </div>
-            </div>
+            </FormField>
 
-            <!-- Прикреплённые файлы: карточки как в макете (иконка в квадрате, имя, размер, корзина) -->
-            <div class="modal-field modal-field--design">
-              <span class="modal-label modal-label--design">Прикреплённые файлы</span>
-              <div class="modal-files-grid modal-files-grid--design">
-                <a
-                  v-for="f in taskFiles"
-                  :key="f.id"
-                  :href="getTaskFilePublicUrl(f.file_path)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="modal-file-card modal-file-card--design"
-                >
-                  <div class="modal-file-icon-box">
-                    <img
-                      v-if="/\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(f.file_name)"
-                      class="modal-file-thumb"
-                      :src="getTaskFilePublicUrl(f.file_path)"
-                      :alt="f.file_name"
-                      loading="lazy"
-                    />
-                    <FileTextIcon v-else-if="/\.pdf$/i.test(f.file_name)" class="modal-file-icon-pdf" :size="20" />
-                    <FileIcon v-else class="modal-file-icon-doc" :size="20" />
-                  </div>
-                  <div class="modal-file-info">
-                    <span class="modal-file-name">{{ f.file_name }}</span>
-                    <span class="modal-file-size">{{ formatFileSize(f.file_size) }}</span>
-                  </div>
-                  <UiDeleteButton size="xs" @click.prevent="removeFile(f)" />
-                </a>
-                <button
-                  v-if="editingTaskId"
-                  type="button"
-                  class="modal-attach-placeholder modal-attach-placeholder--design"
-                  :disabled="fileUploading"
-                  @click="triggerFileInput"
-                >
-                  <PaperclipIcon :size="20" />
-                  <span>{{ fileUploading ? 'Загрузка...' : 'Прикрепить файл' }}</span>
-                </button>
-                <div v-else class="modal-attach-placeholder modal-attach-placeholder--design modal-attach-placeholder--muted">
-                  <PaperclipIcon :size="20" />
-                  <span>Сохраните задачу, чтобы прикрепить файлы</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          </fieldset>
-        </form>
-        <input ref="fileInputRef" type="file" class="modal-file-input-hidden" accept="image/*,.pdf,.doc,.docx" @change="onFileSelect" />
-      </div>
+            <FormField label="Файлы" wide>
+              <template v-if="editingTaskId && taskFiles.length" #label-actions>
+                <Button variant="outline" size="sm" type="button" :disabled="fileUploading" @click="triggerFileInput">
+                  <Spinner v-if="fileUploading" />
+                  <PaperclipIcon v-else />
+                  Добавить
+                </Button>
+              </template>
+              <ul v-if="taskFiles.length" class="grid gap-2 sm:grid-cols-2">
+                <li v-for="f in taskFiles" :key="f.id" class="min-w-0">
+                  <a
+                    :href="getTaskFilePublicUrl(f.file_path)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex min-w-0 items-center gap-3 rounded-lg border p-2 text-inherit no-underline transition-colors hover:bg-muted/50"
+                  >
+                    <span class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
+                      <img v-if="/\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(f.file_name)" class="size-full object-cover" :src="getTaskFilePublicUrl(f.file_path)" :alt="f.file_name" loading="lazy" />
+                      <FileTextIcon v-else-if="/\.pdf$/i.test(f.file_name)" class="size-4" />
+                      <FileIcon v-else class="size-4" />
+                    </span>
+                    <span class="grid min-w-0 flex-1">
+                      <span class="truncate text-sm font-medium">{{ f.file_name }}</span>
+                      <span class="text-xs text-muted-foreground">{{ formatFileSize(f.file_size) }}</span>
+                    </span>
+                    <UiDeleteButton size="xs" @click.prevent="removeFile(f)" />
+                  </a>
+                </li>
+              </ul>
+              <button
+                v-else-if="editingTaskId"
+                type="button"
+                class="flex h-16 w-full items-center justify-center gap-2 rounded-lg border border-dashed text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+                :disabled="fileUploading"
+                @click="triggerFileInput"
+              >
+                <Spinner v-if="fileUploading" />
+                <PaperclipIcon v-else class="size-4" />
+                {{ fileUploading ? 'Загрузка…' : 'Прикрепить файл' }}
+              </button>
+              <p v-else class="text-sm text-muted-foreground">Файлы можно прикрепить после сохранения события.</p>
+            </FormField>
+          </FormGrid>
+        </fieldset>
+      </form>
+      <input ref="fileInputRef" type="file" class="hidden" accept="image/*,.pdf,.doc,.docx" @change="onFileSelect" />
       <template #actions>
         <UiButton v-if="editingTaskId && canDeleteCurrentTask" variant="danger-quiet" class="sm:mr-auto" :disabled="taskSaveLoading" @click="openDeleteConfirm">Удалить</UiButton>
         <UiButton :disabled="taskSaveLoading" @click="closeTaskModal">Отмена</UiButton>
         <UiButton variant="primary" type="submit" form="calendar-task-form" :disabled="taskSaveLoading || (!!editingTaskId && !canEditCurrentTask)">
-          {{ taskSaveLoading ? 'Сохранение…' : (editingTaskId ? 'Сохранить изменения' : 'Создать событие') }}
+          {{ taskSaveLoading ? 'Сохранение…' : (editingTaskId ? 'Сохранить' : 'Создать событие') }}
         </UiButton>
       </template>
     </UiModal>
 
-    <!-- Подтверждение удаления события — Dialog shadcn -->
     <CalendarDeleteDialog
       v-if="showDeleteConfirm"
       v-model:audience="deleteAudienceScope"
@@ -2674,357 +2539,7 @@ async function confirmDeleteTask() {
       :open="successModalOpen"
       :title="successModalTitle"
       :message="successModalMessage"
-      button-text="Отлично"
       @close="successModalOpen = false"
     />
-    <div
-      v-if="assigneesTooltipVisible"
-      ref="assigneesTooltipRef"
-      class="assignees-tooltip-float"
-      :style="{ left: `${assigneesTooltipX}px`, top: `${assigneesTooltipY}px` }"
-    >
-      {{ assigneesTooltipText }}
-    </div>
   </section>
 </template>
-
-<style scoped src="./TasksPage.css"></style>
-
-<style>
-@layer legacy {
-html[data-theme='dark'] .calendar-page .calendar-owner-card {
-  background: linear-gradient(
-    152deg,
-    rgba(61, 92, 64, 0.22) 0%,
-    rgba(28, 32, 30, 0.96) 55%,
-    var(--bg-panel, #1c201e) 100%
-  );
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-html[data-theme='dark'] .calendar-page .calendar-owner-label {
-  color: color-mix(in srgb, #fff 88%, var(--agro));
-}
-
-html[data-theme='dark'] .calendar-page .calendar-owner-select {
-  background: rgba(0, 0, 0, 0.28);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary, #f3f4f3);
-}
-
-html[data-theme='dark'] .calendar-page .calendar-owner-select:hover {
-  border-color: rgba(61, 92, 64, 0.45);
-}
-
-html[data-theme='dark'] .calendar-page .calendar-owner-select:focus {
-  border-color: var(--agro);
-  outline-color: var(--agro);
-}
-
-html[data-theme='dark'] .calendar-page .calendar-owner-select-shell::after {
-  border-right-color: var(--agro-light, #4d7350);
-  border-bottom-color: var(--agro-light, #4d7350);
-}
-
-html[data-theme='dark'] .calendar-page .calendar-view-hint {
-  background: rgba(61, 92, 64, 0.15);
-  border-color: rgba(255, 255, 255, 0.08);
-  color: var(--text-secondary);
-}
-
-html[data-theme='dark'] .calendar-page .calendar-view-hint strong {
-  color: color-mix(in srgb, #fff 90%, var(--agro-light));
-}
-
-html[data-theme='dark'] .calendar-page .calendar-help {
-  background: color-mix(in srgb, var(--bg-panel) 84%, #102119);
-  border-color: color-mix(in srgb, var(--text-primary) 16%, transparent);
-  color: color-mix(in srgb, #fff 78%, var(--agro-light));
-}
-
-html[data-theme='dark'] .calendar-page .calendar-help-tooltip {
-  background: color-mix(in srgb, var(--bg-panel) 90%, #0d1b15);
-  border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-  color: #eaf2ee;
-}
-
-html[data-theme='dark'] .calendar-page .schedule-day-head-wrap::before {
-  background: color-mix(in srgb, var(--text-primary) 16%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .schedule-day-head {
-  background: color-mix(in srgb, var(--bg-base) 86%, #132119);
-  border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-  color: color-mix(in srgb, #fff 82%, var(--agro-light));
-}
-
-/* Усиливаем читаемость рабочих зон календаря в dark без смены общей палитры */
-html[data-theme='dark'] .calendar-page .calendar-card-right {
-  background: color-mix(in srgb, var(--bg-panel) 92%, #0f1714);
-  border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .day-events-scroll,
-html[data-theme='dark'] .calendar-page .week-view-wrap,
-html[data-theme='dark'] .calendar-page .month-view-wrap,
-html[data-theme='dark'] .calendar-page .schedule-view-wrap {
-  background: color-mix(in srgb, var(--bg-base) 88%, #0d1512);
-  border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
-  border-radius: var(--radius-xl);
-}
-
-html[data-theme='dark'] .calendar-page .day-events-grid,
-html[data-theme='dark'] .calendar-page .week-view-grid {
-  background: color-mix(in srgb, var(--bg-panel) 90%, #101917);
-}
-
-html[data-theme='dark'] .calendar-page .day-grid-line,
-html[data-theme='dark'] .calendar-page .week-grid-line {
-  border-top-color: rgba(148, 163, 184, 0.26);
-}
-
-html[data-theme='dark'] .calendar-page .day-grid-time {
-  color: color-mix(in srgb, #fff 70%, #9fb7cc);
-}
-
-html[data-theme='dark'] .calendar-page .week-view-header {
-  background: color-mix(in srgb, var(--bg-panel) 90%, #121d19);
-  border-color: color-mix(in srgb, var(--text-primary) 16%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .week-view-day {
-  border-right-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .week-view-col {
-  border-right-color: color-mix(in srgb, var(--text-primary) 12%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .month-view-grid {
-  background: color-mix(in srgb, var(--bg-panel) 90%, #0f1815);
-  border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .month-view-weekday,
-html[data-theme='dark'] .calendar-page .month-view-cell {
-  border-color: color-mix(in srgb, var(--text-primary) 13%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .month-view-cell {
-  background: color-mix(in srgb, var(--bg-panel) 86%, #121c18);
-}
-
-html[data-theme='dark'] .calendar-page .month-view-cell--muted {
-  background: color-mix(in srgb, var(--bg-base) 82%, #0c1311);
-}
-
-html[data-theme='dark'] .calendar-page .month-view-cell--weekend {
-  background: color-mix(in srgb, var(--bg-panel) 78%, #17231e);
-}
-
-html[data-theme='dark'] .calendar-page .month-view-cell--selected,
-html[data-theme='dark'] .calendar-page .week-view-day--selected {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--agro-light) 46%, transparent);
-}
-
-html[data-theme='dark'] .calendar-page .priority-normal.day-event-card,
-html[data-theme='dark'] .calendar-page .priority-normal.month-view-event-pill,
-html[data-theme='dark'] .calendar-page .priority-normal.month-view-more-item,
-html[data-theme='dark'] .calendar-page .priority-normal.schedule-item {
-  background: #21455b;
-  border-color: #356683;
-}
-
-html[data-theme='dark'] .calendar-page .priority-high.day-event-card,
-html[data-theme='dark'] .calendar-page .priority-high.month-view-event-pill,
-html[data-theme='dark'] .calendar-page .priority-high.month-view-more-item,
-html[data-theme='dark'] .calendar-page .priority-high.schedule-item {
-  background: #5b2e36;
-  border-color: #8a4a56;
-}
-
-html[data-theme='dark'] .calendar-page .priority-low.day-event-card,
-html[data-theme='dark'] .calendar-page .priority-low.month-view-event-pill,
-html[data-theme='dark'] .calendar-page .priority-low.month-view-more-item,
-html[data-theme='dark'] .calendar-page .priority-low.schedule-item {
-  background: #2f3741;
-  border-color: #4d5865;
-}
-
-/* В дневном фильтре делаем карточки темнее, чтобы не выбивались из фона */
-html[data-theme='dark'] .calendar-page .day-events-grid:not(.week-view-grid) .priority-normal.day-event-card {
-  background: #193746;
-  border-color: #2a556c;
-}
-
-html[data-theme='dark'] .calendar-page .day-events-grid:not(.week-view-grid) .priority-high.day-event-card {
-  background: #4a2730;
-  border-color: #71404c;
-}
-
-html[data-theme='dark'] .calendar-page .day-events-grid:not(.week-view-grid) .priority-low.day-event-card {
-  background: #252d37;
-  border-color: #3d4a58;
-}
-
-html[data-theme='dark'] .calendar-page .day-event-time,
-html[data-theme='dark'] .calendar-page .day-event-title,
-html[data-theme='dark'] .calendar-page .month-view-event-title,
-html[data-theme='dark'] .calendar-page .schedule-item-time,
-html[data-theme='dark'] .calendar-page .schedule-item-title {
-  color: #eef6ff;
-}
-
-html[data-theme='dark'] .calendar-page .day-events-grid:not(.week-view-grid) .day-event-time,
-html[data-theme='dark'] .calendar-page .day-events-grid:not(.week-view-grid) .day-event-title {
-  color: #deebf7;
-}
-
-html[data-theme='dark'] .calendar-page .month-view-event-time,
-html[data-theme='dark'] .calendar-page .schedule-item-repeat {
-  color: color-mix(in srgb, #fff 72%, #9fb7cc);
-}
-
-html[data-theme='dark'] .calendar-page .schedule-item-dot.priority-normal {
-  background: #79bfeb;
-}
-
-html[data-theme='dark'] .calendar-page .schedule-item-dot.priority-high {
-  background: #f1a2ad;
-}
-
-html[data-theme='dark'] .calendar-page .schedule-item-dot.priority-low {
-  background: #b8c1cb;
-}
-
-html[data-theme='dark'] .calendar-page .day-event-assignee-more {
-  background: rgba(8, 18, 28, 0.85);
-  color: #d8e6f5;
-}
-
-html[data-theme='dark'] .calendar-page .event-participation--accepted {
-  background: rgba(34, 197, 94, 0.24);
-  color: #bbf7d0;
-}
-
-html[data-theme='dark'] .calendar-page .event-participation--pending {
-  background: rgba(245, 158, 11, 0.26);
-  color: #fde68a;
-}
-
-html[data-theme='dark'] .calendar-page .event-participation--declined {
-  background: rgba(239, 68, 68, 0.24);
-  color: #fecaca;
-}
-
-/* Модалка события в dark: повышаем читаемость без смены общей палитры */
-html[data-theme='dark'] .calendar-page .modal-calendar {
-  background: var(--bg-elevated);
-  border-color: var(--border-color);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-header--design {
-  background: var(--bg-overlay);
-  border-bottom-color: var(--border-color);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-body {
-  background: var(--bg-elevated);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-label--design,
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-task-id--design,
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-task-owner--design,
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-subtitle {
-  color: var(--text-secondary);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-title--design {
-  color: var(--text-primary);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-input.modal-input--design,
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-select.modal-select--design,
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-textarea.modal-textarea--design {
-  background: color-mix(in srgb, var(--bg-elevated) 84%, black);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-input.modal-input--design::placeholder,
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-textarea.modal-textarea--design::placeholder {
-  color: var(--text-muted);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .repeat-apply-box,
-html[data-theme='dark'] .calendar-page .modal-calendar .participation-box,
-html[data-theme='dark'] .calendar-page .modal-calendar .assignee-status-column {
-  background: color-mix(in srgb, var(--bg-elevated) 86%, black);
-  border-color: var(--border-color);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-attach-placeholder--design {
-  background: color-mix(in srgb, var(--bg-elevated) 86%, black);
-  border-color: var(--border-color);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-actions.modal-actions--design {
-  background: var(--bg-overlay);
-  border-top-color: var(--border-color);
-}
-
-html[data-theme='dark'] .calendar-page .modal-calendar .modal-btn-ghost.modal-btn-ghost--design {
-  background: color-mix(in srgb, var(--bg-elevated) 88%, black);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-html[data-theme='dark'] .calendar-page .modal-chip-status--accepted {
-  background: color-mix(in srgb, var(--accent-green) 24%, transparent);
-  color: color-mix(in srgb, white 84%, var(--accent-green));
-}
-
-html[data-theme='dark'] .calendar-page .modal-chip-status--pending {
-  background: color-mix(in srgb, var(--warning-orange) 26%, transparent);
-  color: color-mix(in srgb, white 84%, var(--warning-orange));
-}
-
-html[data-theme='dark'] .calendar-page .modal-chip-status--declined {
-  background: color-mix(in srgb, var(--danger-red) 24%, transparent);
-  color: color-mix(in srgb, white 84%, var(--danger-red));
-}
-
-html[data-theme='dark'] .calendar-page .assignees-tooltip-float {
-  background: color-mix(in srgb, var(--bg-elevated) 88%, black);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-html[data-theme='dark'] .calendar-page .assignee-status-column {
-  background: color-mix(in srgb, var(--bg-elevated) 82%, black);
-  border-color: var(--border-color);
-}
-
-html[data-theme='dark'] .calendar-page .assignee-status-title {
-  color: var(--text-secondary);
-}
-
-html[data-theme='dark'] .calendar-page .assignee-status-chip {
-  background: color-mix(in srgb, var(--bg-elevated) 88%, black);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-html[data-theme='dark'] .calendar-page .assignee-status-chip--declined {
-  background: color-mix(in srgb, var(--danger-red) 24%, transparent);
-  border-color: color-mix(in srgb, var(--danger-red) 42%, var(--border-color));
-  color: color-mix(in srgb, white 84%, var(--danger-red));
-}
-
-@media (max-width: 820px) {
-  .assignee-status-board {
-    grid-template-columns: 1fr;
-  }
-}
-}
-</style>
