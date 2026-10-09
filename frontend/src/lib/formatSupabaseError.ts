@@ -9,6 +9,13 @@ function isNetworkFailure(text: string): boolean {
   return /Failed to fetch|NetworkError|Load failed|ERR_CONNECTION|fetch failed/i.test(text)
 }
 
+export const PERMISSION_ERROR_TEXT = 'Нет прав на это действие. Обратитесь к руководителю или администратору.'
+
+/** Отказ политики доступа (RLS) или грантов: текст базы по-английски пользователю ничего не говорит. */
+function isPermissionDenied(text: string): boolean {
+  return /row-level security|permission denied|"code":"42501"/i.test(text)
+}
+
 export function formatSupabaseError(err: unknown): string {
   if (err == null) return 'Неизвестная ошибка'
   let raw = ''
@@ -18,6 +25,7 @@ export function formatSupabaseError(err: unknown): string {
     raw = String(err)
   }
   if (isNetworkFailure(raw)) return NETWORK_ERROR_TEXT
+  if (isPermissionDenied(raw)) return PERMISSION_ERROR_TEXT
   if (err instanceof Error) return err.message
   if (typeof err !== 'object') return String(err)
   const o = err as Record<string, unknown>

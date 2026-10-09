@@ -105,6 +105,8 @@ const successModalOpen = ref(false)
  */
 const boardError = ref('')
 const taskModalError = ref('')
+/** Ошибка сохранения в окне создания / редактирования. */
+const formError = ref('')
 const selectedTaskId = ref<string | null>(null)
 const tasksLoading = ref(true)
 const tasks = ref<Task[]>([])
@@ -803,6 +805,7 @@ function openEdit() {
 }
 
 function closeCreate() {
+  formError.value = ''
   showCreateModal.value = false
   editingTaskId.value = null
   closeParticipantPicker()
@@ -880,6 +883,8 @@ async function createTask() {
       closeCreate()
       selectedTaskId.value = taskId
       await loadMetaForTask(taskId)
+    } catch (err) {
+      formError.value = formatSupabaseError(err) || 'Не удалось сохранить задачу'
     } finally {
       isSavingTask.value = false
     }
@@ -902,18 +907,30 @@ async function createTask() {
       assigneeId,
       auth.user.value.id,
     )
-    await uploadPendingFiles(createdTask.id)
+    // Задача уже создана: сбой загрузки файлов не должен оставить её без участников.
+    let filesError = ''
+    try {
+      await uploadPendingFiles(createdTask.id)
+    } catch (err) {
+      filesError = formatSupabaseError(err) || 'ошибка загрузки'
+    }
     if (isManager.value && form.value.participantIds.length) {
       await syncTaskParticipants(createdTask.id, form.value.participantIds)
     }
     await loadData()
-    successModalOpen.value = true
-  } catch {
-    // skip if no Supabase
+    closeCreate()
+    if (filesError) {
+      selectedTaskId.value = createdTask.id
+      await loadMetaForTask(createdTask.id)
+      taskModalError.value = `Задача создана, но файлы не прикрепились: ${filesError}`
+    } else {
+      successModalOpen.value = true
+    }
+  } catch (err) {
+    formError.value = formatSupabaseError(err) || 'Не удалось создать задачу'
   } finally {
     isSavingTask.value = false
   }
-  closeCreate()
 }
 
 watch(
@@ -953,11 +970,12 @@ async function onDetailFilesSelected(e: Event) {
   const files = Array.from(input.files ?? [])
   if (!files.length || !selectedTaskId.value || !isSupabaseConfigured()) return
   fileUploading.value = true
+  taskModalError.value = ''
   try {
     const uploaded = await Promise.all(files.map((file) => uploadTaskFile(selectedTaskId.value as string, file)))
     taskFiles.value = [...uploaded.reverse(), ...taskFiles.value]
   } catch (err) {
-    console.error(err)
+    taskModalError.value = `Файл не прикрепился: ${formatSupabaseError(err) || 'ошибка загрузки'}`
   } finally {
     fileUploading.value = false
     input.value = ''
@@ -966,11 +984,12 @@ async function onDetailFilesSelected(e: Event) {
 
 async function removeTaskFileRow(fileRow: TaskFileRow) {
   if (!isSupabaseConfigured()) return
+  if (!(await askConfirm('Удалить файл?', `«${fileRow.file_name}» будет удалён из задачи.`))) return
   try {
     await deleteTaskFile(fileRow.id)
     taskFiles.value = taskFiles.value.filter((file) => file.id !== fileRow.id)
   } catch (err) {
-    console.error(err)
+    taskModalError.value = `Файл не удалён: ${formatSupabaseError(err) || 'ошибка'}`
   }
 }
 
@@ -1337,6 +1356,9 @@ function sortIcon(key: TaskSortKey) {
     >
       <form id="task-create-form" class="tw-scope" @submit.prevent="createTask">
         <FormGrid :cols="2">
+          <Alert v-if="formError" variant="destructive" class="sm:col-span-full">
+            <AlertDescription>{{ formError }}</AlertDescription>
+          </Alert>
           <FormField label="Название задачи" for="task-title" wide :count="form.title.length" :max="TASK_TITLE_MAX">
             <Input id="task-title" v-model="form.title" type="text" placeholder="Например, подготовка поля к посеву" :maxlength="TASK_TITLE_MAX" />
           </FormField>
@@ -1567,7 +1589,7 @@ function sortIcon(key: TaskSortKey) {
               </div>
               <p v-else-if="!taskEvents.length" class="text-sm text-muted-foreground">История пока пуста</p>
               <ol v-else class="grid max-h-64 gap-3 overflow-y-auto pr-1">
-                <li v-for="event in taskEvents" :key="event.id" class="relative grid gap-0.5 pl-4 text-sm before:absolute before:left-0 before:top-1.5 before:size-1.5 before:rounded-full before:bg-muted-foreground/40">
+                <li v-for="event in taskEvents.slice().reverse()" :key="event.id" class="relative grid gap-0.5 pl-4 text-sm before:absolute before:left-0 before:top-1.5 before:size-1.5 before:rounded-full before:bg-muted-foreground/40">
                   <span>
                     <span class="font-medium">{{ profileName(event.user_id) }}</span>
                     <span class="text-muted-foreground">

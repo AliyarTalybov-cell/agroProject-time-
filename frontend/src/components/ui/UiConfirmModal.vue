@@ -40,8 +40,8 @@ function onOpenChange(open: boolean) {
 
 <template>
   <AlertDialog :open="true" @update:open="onOpenChange">
-    <AlertDialogContent class="ui-dialog" @escape-key-down="(e: Event) => busy && e.preventDefault()">
-      <AlertDialogHeader>
+    <AlertDialogContent @escape-key-down="(e: Event) => busy && e.preventDefault()">
+      <AlertDialogHeader class="text-left">
         <AlertDialogTitle>{{ title }}</AlertDialogTitle>
         <AlertDialogDescription>
           <slot>{{ text }}</slot>
