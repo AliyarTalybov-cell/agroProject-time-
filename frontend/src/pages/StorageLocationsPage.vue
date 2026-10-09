@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/shadcn/card'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
@@ -7,7 +14,6 @@ import { BoxIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -39,6 +45,8 @@ import {
 const loading = ref(false)
 const saving = ref(false)
 const error = ref<string | null>(null)
+/** Ошибка сохранения — в окне, а не под ним на странице. */
+const modalError = ref<string | null>(null)
 
 const search = ref('')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
@@ -237,6 +245,7 @@ function openEditModal(place: StorageLocationRow) {
       cap != null && Number.isFinite(Number(cap)) ? String(Number(cap)).replace('.', ',') : '',
     fgisCode: place.fgis_grain_code || '',
   }
+  modalError.value = null
   modalOpen.value = true
 }
 
@@ -254,7 +263,7 @@ async function savePlace() {
   if (!name || !address || capacityTons === null) return
 
   saving.value = true
-  error.value = null
+  modalError.value = null
   try {
     if (editingId.value) {
       await updateStorageLocation(editingId.value, {
@@ -283,7 +292,7 @@ async function savePlace() {
     page.value = 1
     if (!clearCreateQuery()) await reloadStorageLocations()
   } catch (e) {
-    error.value = mapError(e, 'Не удалось сохранить место хранения')
+    modalError.value = mapError(e, 'Не удалось сохранить место хранения')
   } finally {
     saving.value = false
   }
@@ -311,17 +320,14 @@ async function confirmDeletePlace() {
     await reloadStorageLocations()
   } catch (e) {
     error.value = mapError(e, 'Не удалось удалить место хранения')
+    deleteConfirmOpen.value = false
+    deleteTargetId.value = null
   } finally {
     saving.value = false
   }
 }
 
-function typePillClass(typeName: string): string {
-  if (typeName === 'Ток') return 'storage-type-pill--tok'
-  if (typeName === 'Силос') return 'storage-type-pill--silos'
-  if (typeName === 'Склад') return 'storage-type-pill--warehouse'
-  return 'storage-type-pill--burt'
-}
+const deleteTargetName = computed(() => storagePlaces.value.find((p) => p.id === deleteTargetId.value)?.name ?? '')
 
 onMounted(async () => {
   await loadStorageRefs()
@@ -357,705 +363,142 @@ function onPageSizeChange(size: number) {
 </script>
 
 <template>
-  <section class="fields-page">
-    <div class="fields-page-inner">
-      <header class="fields-header page-enter-item">
-        <div class="fields-header-text">
-          <p class="fields-subtitle">Склады, силосы, тока и бурты для хранения зерна</p>
-        </div>
-        <Button variant="default" class="fields-add-btn" type="button" @click="openCreateModal">
-          <PlusIcon class="fields-add-btn-icon" />
+  <section class="tw-scope flex flex-col gap-6">
+    <PageToolbar>
+      <InputGroup class="w-full sm:w-80">
+        <InputGroupAddon><SearchIcon /></InputGroupAddon>
+        <InputGroupInput v-model.trim="search" type="search" placeholder="Название или адрес" autocomplete="off" aria-label="Поиск места хранения" />
+      </InputGroup>
+      <template #actions>
+        <Button type="button" @click="openCreateModal">
+          <PlusIcon />
           Добавить место хранения
         </Button>
-      </header>
+      </template>
+    </PageToolbar>
 
-      <Card class="fields-card gap-0">
-      <div v-if="!isSupabaseConfigured()" class="storage-alert" role="status">
-        Supabase не настроен. Добавьте `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` в `frontend/.env.local`.
-      </div>
-      <div v-else-if="error" class="storage-alert storage-alert--error" role="alert">{{ error }}</div>
+    <Alert v-if="!isSupabaseConfigured()" variant="destructive">
+      <AlertDescription>Нет подключения к базе: не заданы адрес и ключ Supabase.</AlertDescription>
+    </Alert>
+    <Alert v-else-if="error" variant="destructive">
+      <AlertDescription>{{ error }}</AlertDescription>
+    </Alert>
 
-      <div class="fields-toolbar">
-        <InputGroup class="fields-search-wrap max-w-sm">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput v-model.trim="search" type="search" placeholder="Поиск по названию или адресу..." autocomplete="off" />
-        </InputGroup>
-      </div>
-
-      <div v-if="loading" class="fields-loading" role="status" aria-live="polite">
-        <UiLoadingBar />
-      </div>
-
-      <div v-else-if="pagedPlaces.length" class="fields-table-wrap">
-        <table class="fields-table storage-table" aria-label="Список мест хранения" v-card-table>
-          <thead>
-            <tr>
-              <th>Название</th>
-              <th>Тип</th>
-              <th>Адрес</th>
-              <th>Вместимость</th>
-              <th>Код ФГИС Зерно</th>
-              <th>Лежит</th>
-              <th>Культуры</th>
-              <th>Статус места</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="place in pagedPlaces" :key="place.id">
-              <td>
-                <div class="storage-name-cell">
-                  <strong class="storage-name-text storage-cell-ellipsis" :title="place.name">{{ place.name }}</strong>
-                </div>
-              </td>
-              <td>
-                <span class="storage-type-pill" :class="typePillClass(storageLocationTypeName(place))">{{ storageLocationTypeName(place) }}</span>
-              </td>
-              <td><span class="storage-cell-ellipsis storage-address-text" :title="place.address">{{ place.address }}</span></td>
-              <td class="storage-capacity">{{ formatCapacityCell(place.capacity_tons) }}</td>
-              <td class="storage-code"><span class="storage-cell-ellipsis storage-code-text" :title="place.fgis_grain_code || '—'">{{ place.fgis_grain_code || '—' }}</span></td>
-              <td class="storage-capacity">{{ stockByPlace[place.id] ? formatTons(stockByPlace[place.id].tons) : '—' }}</td>
-              <td class="storage-crop"><span class="storage-cell-ellipsis" :title="stockCropsLabel(place.id)">{{ stockCropsLabel(place.id) }}</span></td>
-              <td>
-                <span class="storage-status" :class="{ 'storage-status--off': storageLocationMarksInactive(place) }">
-                  {{ storageLocationStatusName(place) }}
-                </span>
-              </td>
-              <td class="storage-td-actions" @click.stop>
-                <div class="fields-actions-row">
-                  <Button variant="ghost" size="icon-sm" type="button" class="fields-action-btn" aria-label="Редактировать" title="Редактировать" @click="openEditModal(place)">
-                    <PencilIcon :size="18" />
+    <div v-if="loading" class="grid gap-2">
+      <Skeleton v-for="i in 4" :key="i" class="h-12 w-full" />
+    </div>
+    <template v-else-if="pagedPlaces.length">
+      <div class="sm:overflow-hidden sm:rounded-xl sm:border sm:bg-card">
+        <Table v-card-table class="min-w-[60rem]" aria-label="Места хранения">
+          <TableHeader class="bg-muted/50">
+            <TableRow>
+              <TableHead class="pl-4">Название</TableHead>
+              <TableHead>Тип</TableHead>
+              <TableHead>Адрес</TableHead>
+              <TableHead class="text-right">Вместимость</TableHead>
+              <TableHead class="text-right">Лежит</TableHead>
+              <TableHead>Культуры</TableHead>
+              <TableHead>Код ФГИС «Зерно»</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead class="w-px pr-4"><span class="sr-only">Действия</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="place in pagedPlaces" :key="place.id">
+              <TableCell class="max-w-48 pl-4">
+                <RouterLink :to="{ name: 'warehouse-cell', params: { id: place.id } }" class="block truncate font-medium no-underline underline-offset-4 hover:text-primary hover:underline" :title="place.name">{{ place.name }}</RouterLink>
+              </TableCell>
+              <TableCell>{{ storageLocationTypeName(place) }}</TableCell>
+              <TableCell class="max-w-56"><span class="block truncate" :title="place.address">{{ place.address }}</span></TableCell>
+              <TableCell class="text-right tabular-nums">{{ formatCapacityCell(place.capacity_tons) }}</TableCell>
+              <TableCell class="text-right font-medium tabular-nums">{{ stockByPlace[place.id] ? formatTons(stockByPlace[place.id].tons) : '—' }}</TableCell>
+              <TableCell class="max-w-48"><span class="block truncate" :title="stockCropsLabel(place.id)">{{ stockCropsLabel(place.id) }}</span></TableCell>
+              <TableCell class="max-w-40"><span class="block truncate text-muted-foreground tabular-nums" :title="place.fgis_grain_code || ''">{{ place.fgis_grain_code || '—' }}</span></TableCell>
+              <TableCell>
+                <UiBadge :tone="storageLocationMarksInactive(place) ? 'neutral' : 'success'">{{ storageLocationStatusName(place) }}</UiBadge>
+              </TableCell>
+              <TableCell class="pr-4">
+                <div class="flex justify-end gap-1">
+                  <Button variant="ghost" size="icon-sm" type="button" class="text-muted-foreground" :aria-label="`Изменить «${place.name}»`" @click="openEditModal(place)">
+                    <PencilIcon />
                   </Button>
-                  <UiDeleteButton size="sm" class="storage-delete-btn" @click="requestDeletePlace(place.id)" />
+                  <UiDeleteButton size="sm" @click="requestDeletePlace(place.id)" />
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
-
-      <div v-else class="storage-empty">
-        <div class="storage-empty-icon" aria-hidden="true">
-          <BoxIcon :size="52" :stroke-width="1.7" />
-        </div>
-        <h3>Нет мест хранения</h3>
-        <p>Добавьте первый склад или ток для начала работы</p>
-        <Button variant="default" type="button" class="fields-add-btn" @click="openCreateModal">
-          <PlusIcon class="fields-add-btn-icon" />
-          Добавить место хранения
-        </Button>
-      </div>
-
       <UiPagination
-        v-if="!loading && total > 0"
         :page="page"
         :page-size="pageSize"
         :total="total"
         @update:page="setPage"
         @update:page-size="onPageSizeChange"
       />
-    </Card>
+    </template>
+    <Empty v-else class="rounded-xl border border-dashed">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><BoxIcon /></EmptyMedia>
+        <EmptyTitle>{{ search ? 'Ничего не найдено' : 'Мест хранения пока нет' }}</EmptyTitle>
+        <EmptyDescription>{{ search ? 'Измените поиск.' : 'Склады, силосы, тока и бурты для хранения зерна. Добавьте первое место.' }}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent v-if="!search">
+        <Button size="sm" type="button" @click="openCreateModal"><PlusIcon />Добавить место хранения</Button>
+      </EmptyContent>
+    </Empty>
 
-    <teleport to="body">
-      <UiModal
-        v-if="modalOpen"
-        :title="editingId ? 'Редактирование места хранения' : 'Новое место хранения'"
-        :close-disabled="saving"
-        @close="closeModal"
-      >
-        <div class="task-form-row task-form-row--design">
-          <div class="task-form-field">
-            <label class="task-form-label">Название *</label>
-            <Input v-model.trim="form.name" type="text" class="task-form-input task-form-input--title" placeholder="Например: Склад А" />
-          </div>
-        </div>
-
-        <div class="task-form-row task-form-row--two task-form-row--design">
-          <div class="task-form-field">
-            <label class="task-form-label task-form-label--with-help">Тип *
+    <UiModal
+      v-if="modalOpen"
+      :title="editingId ? 'Место хранения' : 'Новое место хранения'"
+      :close-disabled="saving"
+      @close="closeModal"
+    >
+      <form id="storage-place-form" class="tw-scope" @submit.prevent="savePlace">
+        <FormGrid :cols="2">
+          <Alert v-if="modalError" variant="destructive" class="sm:col-span-full">
+            <AlertDescription>{{ modalError }}</AlertDescription>
+          </Alert>
+          <FormField label="Название" for="sp-name" wide required>
+            <Input id="sp-name" v-model.trim="form.name" type="text" placeholder="Например, Склад А" />
+          </FormField>
+          <FormField label="Тип" required>
+            <template #label-actions>
               <RefFieldHelp text="Нет нужного типа? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-types' } }" link-label="Справочники хранения" />
-            </label>
-            <UiSelect v-model="form.typeId" :options="storageTypes.map((t) => ({ value: t.id, label: t.name }))" :placeholder="storageTypes.length ? 'Выберите тип' : 'Сначала добавьте типы в справочниках'" class="task-form-select" />
-          </div>
-          <div class="task-form-field">
-            <label class="task-form-label task-form-label--with-help">Статус места *
+            </template>
+            <UiSelect v-model="form.typeId" block aria-label="Тип" :options="storageTypes.map((t) => ({ value: t.id, label: t.name }))" :placeholder="storageTypes.length ? 'Выберите тип' : 'Сначала добавьте типы'" />
+          </FormField>
+          <FormField label="Статус" required>
+            <template #label-actions>
               <RefFieldHelp text="Нужен другой статус? Создайте его в" :to="{ path: '/lands', query: { tab: 'storage-statuses' } }" link-label="Справочники хранения" />
-            </label>
-            <UiSelect v-model="form.statusId" :options="storageStatuses.map((s) => ({ value: s.id, label: s.name }))" :placeholder="storageStatuses.length ? 'Выберите статус' : 'Сначала добавьте статусы в справочниках'" class="task-form-select" />
-          </div>
-        </div>
+            </template>
+            <UiSelect v-model="form.statusId" block aria-label="Статус" :options="storageStatuses.map((st) => ({ value: st.id, label: st.name }))" :placeholder="storageStatuses.length ? 'Выберите статус' : 'Сначала добавьте статусы'" />
+          </FormField>
+          <FormField label="Адрес" for="sp-address" wide required>
+            <Input id="sp-address" v-model.trim="form.address" type="text" placeholder="Населённый пункт, улица" />
+          </FormField>
+          <FormField label="Вместимость, т" for="sp-capacity" required hint="Сколько зерна можно разместить.">
+            <Input id="sp-capacity" v-model.trim="form.capacityTons" type="text" inputmode="decimal" placeholder="2500 или 120,5" autocomplete="off" />
+          </FormField>
+          <FormField label="Код ФГИС «Зерно»" for="sp-fgis" hint="Необязательно.">
+            <Input id="sp-fgis" v-model.trim="form.fgisCode" type="text" />
+          </FormField>
+        </FormGrid>
+      </form>
+      <template #actions>
+        <UiButton :disabled="saving" @click="closeModal">Отмена</UiButton>
+        <UiButton variant="primary" type="submit" form="storage-place-form" :disabled="saving || !canSavePlace">
+          {{ saving ? 'Сохранение…' : 'Сохранить' }}
+        </UiButton>
+      </template>
+    </UiModal>
 
-        <div class="task-form-row task-form-row--design">
-          <div class="task-form-field">
-            <label class="task-form-label">Адрес *</label>
-            <Input v-model.trim="form.address" type="text" class="task-form-input" placeholder="Укажите адрес места хранения" />
-          </div>
-        </div>
-
-        <div class="task-form-row task-form-row--design">
-          <div class="task-form-field">
-            <label class="task-form-label">Вместительность, т *</label>
-            <Input
-              v-model.trim="form.capacityTons"
-              type="text"
-              inputmode="decimal"
-              class="task-form-input"
-              placeholder="Например: 2500 или 120,5"
-              autocomplete="off" />
-            <p class="storage-field-hint">Номинальная масса зерна, которую можно разместить (тонны).</p>
-          </div>
-        </div>
-
-        <div class="task-form-row task-form-row--design">
-          <div class="task-form-field">
-            <label class="task-form-label">Код ФГИС Зерно (необязательно)</label>
-            <Input v-model.trim="form.fgisCode" type="text" class="task-form-input" placeholder="Можно оставить пустым" />
-          </div>
-        </div>
-        <template #actions>
-          <UiButton :disabled="saving" @click="closeModal">Отмена</UiButton>
-          <UiButton variant="primary" :disabled="saving || !canSavePlace" @click="savePlace">
-            {{ saving ? 'Сохранение…' : 'Сохранить' }}
-          </UiButton>
-        </template>
-      </UiModal>
-
-      <UiConfirmModal
-        v-if="deleteConfirmOpen"
-        title="Удалить место хранения?"
-        :busy="saving"
-        @cancel="closeDeleteConfirm"
-        @confirm="confirmDeletePlace"
-      />
-    </teleport>
-    </div>
+    <UiConfirmModal
+      v-if="deleteConfirmOpen"
+      :title="deleteTargetName ? `Удалить «${deleteTargetName}»?` : 'Удалить место хранения?'"
+      :busy="saving"
+      @cancel="closeDeleteConfirm"
+      @confirm="confirmDeletePlace"
+    />
   </section>
 </template>
-
-<style scoped>
-@layer legacy {
-.fields-page {
-  width: 100%;
-}
-
-.fields-page-inner {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-}
-
-.fields-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-md);
-}
-
-.fields-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.fields-subtitle {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.fields-add-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: var(--control-h);
-  border: 1px solid var(--accent-green);
-  border-radius: var(--radius-md);
-  background: var(--accent-green);
-  color: #fff;
-  padding: 0 14px;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.25;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.fields-add-btn:hover {
-  background: var(--accent-green-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(61, 92, 64, 0.3);
-}
-
-.fields-add-btn-icon {
-  width: 18px;
-  height: 18px;
-  transform-origin: center;
-  transition: transform 0.28s ease;
-}
-
-.fields-add-btn:hover .fields-add-btn-icon {
-  transform: rotate(52deg) scale(1.18);
-}
-
-.fields-card {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: 12px;
-}
-
-.fields-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-md);
-  margin-bottom: 10px;
-}
-
-.fields-search-wrap {
-  position: relative;
-  flex: 1;
-  min-width: 200px;
-  max-width: 28rem;
-}
-
-.fields-search-icon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.fields-search-input {
-  width: 100%;
-  height: var(--control-h);
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-md);
-  background: var(--input-bg);
-  color: var(--text-primary);
-  padding: 0 12px 0 34px;
-  font-size: 0.93rem;
-  box-shadow: var(--shadow-xs);
-}
-
-.fields-search-input::placeholder {
-  color: var(--text-secondary);
-}
-
-.fields-search-input:focus {
-  outline: none;
-  border-color: var(--accent-green);
-  box-shadow: 0 0 0 1px var(--accent-green);
-}
-
-[data-theme='dark'] .fields-search-input {
-  background: var(--toolbar-form-surface);
-  border-color: var(--toolbar-form-surface-border);
-  color: var(--text-primary);
-}
-
-.fields-table-wrap {
-  overflow: visible;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  position: relative;
-  z-index: 1;
-}
-
-.fields-table {
-  width: 100%;
-  min-width: 1020px;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.fields-table thead {
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.fields-table th,
-.fields-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border-color);
-  text-align: left;
-}
-
-.fields-table th {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.fields-table tbody tr {
-  transition: background 0.15s ease;
-}
-
-.fields-table tbody tr:hover {
-  background: var(--row-hover-bg);
-}
-
-.storage-name-cell {
-  display: inline-flex;
-  align-items: center;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.storage-cell-ellipsis {
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
-}
-
-.storage-name-text {
-  max-width: min(44vw, 420px);
-}
-
-.storage-address-text {
-  max-width: min(32vw, 360px);
-}
-
-.storage-code-text {
-  max-width: 150px;
-}
-
-.storage-type-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-size: 0.74rem;
-  font-weight: 700;
-}
-
-.storage-type-pill--tok {
-  background: rgba(245, 158, 11, 0.12);
-  color: #b45309;
-  border-color: rgba(245, 158, 11, 0.28);
-}
-
-.storage-type-pill--silos {
-  background: rgba(59, 130, 246, 0.12);
-  color: #1d4ed8;
-  border-color: rgba(59, 130, 246, 0.26);
-}
-
-.storage-type-pill--warehouse {
-  background: rgba(139, 92, 246, 0.12);
-  color: #6d28d9;
-  border-color: rgba(139, 92, 246, 0.25);
-}
-
-.storage-type-pill--burt {
-  background: rgba(217, 119, 6, 0.12);
-  color: #b45309;
-  border-color: rgba(217, 119, 6, 0.28);
-}
-
-[data-theme='dark'] .storage-type-pill {
-  border-width: 1px;
-}
-
-[data-theme='dark'] .storage-type-pill--tok {
-  background: rgba(245, 158, 11, 0.22);
-  color: #fde68a;
-  border-color: rgba(245, 158, 11, 0.5);
-}
-
-[data-theme='dark'] .storage-type-pill--silos {
-  background: rgba(59, 130, 246, 0.22);
-  color: #bfdbfe;
-  border-color: rgba(59, 130, 246, 0.5);
-}
-
-[data-theme='dark'] .storage-type-pill--warehouse {
-  background: rgba(139, 92, 246, 0.24);
-  color: #ddd6fe;
-  border-color: rgba(139, 92, 246, 0.52);
-}
-
-[data-theme='dark'] .storage-type-pill--burt {
-  background: rgba(217, 119, 6, 0.24);
-  color: #fed7aa;
-  border-color: rgba(217, 119, 6, 0.52);
-}
-
-.storage-code {
-  color: var(--text-secondary);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.8rem;
-}
-
-.storage-capacity {
-  white-space: nowrap;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-
-.storage-crop {
-  max-width: 10rem;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-}
-
-.storage-field-hint {
-  margin: 6px 0 0;
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  line-height: 1.35;
-}
-
-.storage-status {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #15803d;
-  background: rgba(34, 197, 94, 0.1);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.storage-status--off {
-  border-color: rgba(100, 116, 139, 0.35);
-  color: var(--text-secondary);
-  background: rgba(148, 163, 184, 0.12);
-}
-
-.fields-actions-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.fields-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 6px;
-  color: var(--text-secondary);
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.fields-action-btn svg {
-  transform-origin: center;
-  transition: transform 0.24s ease;
-}
-
-.fields-action-btn:hover {
-  background: var(--bg-panel-hover);
-  color: var(--text-primary);
-}
-
-.fields-action-btn:hover svg {
-  transform: rotate(16deg) scale(1.08);
-}
-
-.storage-delete-btn {
-  position: relative;
-  z-index: 40;
-}
-
-[data-theme='dark'] .fields-action-btn {
-  color: color-mix(in srgb, var(--text-primary) 84%, white);
-}
-
-[data-theme='dark'] .fields-action-btn:hover {
-  background: color-mix(in srgb, var(--accent-green) 20%, transparent);
-  color: #f5f7fa;
-}
-
-[data-theme='dark'] .storage-delete-btn :deep(.ui-del-btn) {
-  color: color-mix(in srgb, #f87171 88%, white);
-}
-
-[data-theme='dark'] .storage-delete-btn :deep(.ui-del-btn:hover),
-[data-theme='dark'] .storage-delete-btn :deep(.ui-del-root:hover .ui-del-btn) {
-  background: rgba(239, 68, 68, 0.2);
-  color: #fecaca;
-}
-
-[data-theme='dark'] .storage-status {
-  color: #86efac;
-  background: rgba(34, 197, 94, 0.2);
-  border-color: rgba(34, 197, 94, 0.45);
-}
-
-[data-theme='dark'] .storage-status--off {
-  color: #cbd5e1;
-  background: rgba(148, 163, 184, 0.2);
-  border-color: rgba(148, 163, 184, 0.45);
-}
-
-.storage-alert {
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-base);
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-}
-
-.storage-alert--error {
-  background: rgba(185, 28, 28, 0.1);
-  border-color: rgba(185, 28, 28, 0.22);
-  color: var(--danger-red);
-}
-
-.fields-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg) 24px;
-}
-
-.storage-empty {
-  min-height: 340px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-align: center;
-  padding: 20px;
-}
-
-.storage-empty-icon {
-  color: #94a3b8;
-}
-
-.storage-empty h3 {
-  margin: 4px 0 0;
-}
-
-.storage-empty p {
-  margin: 0 0 12px;
-  color: var(--text-secondary);
-}
-
-.task-form-row--design {
-  margin-bottom: 0;
-}
-
-.task-form-row--two {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
-}
-
-.task-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.task-form-label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 5px;
-  line-height: 1.3;
-}
-
-.task-form-input,
-.task-form-select {
-  width: 100%;
-  min-height: 38px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--input-border);
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  line-height: 1.4;
-  box-shadow: var(--shadow-xs);
-}
-
-.task-form-input:focus,
-.task-form-select:focus {
-  outline: none;
-  border-color: var(--agro);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--agro) 20%, transparent);
-}
-
-.task-form-input--title {
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.task-form-label--with-help {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-@media (max-width: 900px) {
-  .fields-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .fields-add-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .fields-search-wrap {
-    max-width: none;
-    width: 100%;
-  }
-
-  .task-form-row--two {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .fields-card {
-    padding: 10px;
-  }
-
-  .fields-table {
-    min-width: 880px;
-  }
-
-  .storage-name-text {
-    max-width: 220px;
-  }
-
-  .storage-address-text {
-    max-width: 180px;
-  }
-
-  .storage-code-text {
-    max-width: 110px;
-  }
-}
-}
-</style>

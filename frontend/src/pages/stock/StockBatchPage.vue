@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/shadcn/card'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
-import { ChevronLeftIcon } from '@lucide/vue'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/shadcn/empty'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu'
+import { ArrowLeftRightIcon, ChevronDownIcon, PencilIcon } from '@lucide/vue'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Карточка партии: происхождение, качество, где лежит, операции, история. */
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
@@ -33,7 +38,6 @@ import {
 } from '@/lib/stockLedger'
 
 const props = defineProps<{ id: string }>()
-const router = useRouter()
 
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -81,12 +85,22 @@ const QUALITY_LABELS: Record<string, string> = {
   class: 'Класс',
 }
 
-/** Известные показатели по-русски; перенесённые из старого учёта — как были. Пустые не показываем. */
-const qualityRows = computed(() =>
-  Object.entries(batch.value?.quality ?? {})
+/**
+ * Известные показатели по-русски; перенесённые из старого учёта — как были. Пустые не показываем,
+ * а старый ключ вроде «Влажность (%)» рядом с новым «Влажность, %» — только один раз.
+ */
+const qualityRows = computed(() => {
+  const seen = new Set<string>()
+  return Object.entries(batch.value?.quality ?? {})
     .filter(([, v]) => v != null && String(v).trim() !== '')
-    .map(([k, v]) => ({ label: QUALITY_LABELS[k] ?? k, value: String(v) })),
-)
+    .map(([k, v]) => ({ label: QUALITY_LABELS[k] ?? k, value: String(v) }))
+    .filter((row) => {
+      const key = row.label.toLowerCase().replace(/[^a-zа-яё]/g, '')
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+})
 
 const source = computed(() => {
   const b = batch.value
@@ -159,246 +173,167 @@ async function saveEdit() {
 </script>
 
 <template>
-  <section class="ui-page">
-    <div class="ui-page-inner">
-      <Button variant="outline" type="button" class="ui-back-btn" aria-label="Назад к списку партий" @click="router.push('/grain/batches')">
-        <ChevronLeftIcon :size="16" />
-        Назад к списку партий
-      </Button>
-
-      <div v-if="loading" class="ui-loading"><UiLoadingBar /></div>
-      <p v-else-if="error && !batch" class="ui-alert ui-alert--error">{{ error }}</p>
-      <p v-else-if="!batch" class="ui-alert">Партия не найдена.</p>
-
-      <template v-else>
-        <Card class="ui-card batch-head gap-0">
-          <div class="batch-title-row">
-            <div>
-              <h2 class="batch-title">{{ batch.code }} · {{ batch.cropLabel }}</h2>
-              <p class="ui-page-subtitle">{{ source }}</p>
-            </div>
-            <span class="ui-pill" :class="batch.tons > 0 ? 'ui-pill--green' : ''">{{ batch.tons > 0 ? 'С остатком' : 'Закрыта' }}</span>
-          </div>
-
-          <div class="ui-stats">
-            <div class="ui-stat">
-              <span class="ui-stat-label">Остаток</span>
-              <span class="ui-stat-value">{{ formatTons(batch.tons) }}</span>
-            </div>
-            <div class="ui-stat">
-              <span class="ui-stat-label">Урожай</span>
-              <span class="ui-stat-value">{{ batch.harvest_year ?? '—' }}</span>
-            </div>
-            <div class="ui-stat">
-              <span class="ui-stat-label">Назначение</span>
-              <span class="ui-stat-value batch-small-value">{{ batch.purposeLabel }}</span>
-            </div>
-            <div class="ui-stat">
-              <span class="ui-stat-label">Сорт</span>
-              <span class="ui-stat-value batch-small-value">{{ batch.variety || '—' }}</span>
-            </div>
-            <div class="ui-stat">
-              <span class="ui-stat-label">Партия во ФГИС</span>
-              <span class="ui-stat-value batch-small-value">{{ batch.fgis_batch_number || '—' }}</span>
-            </div>
-          </div>
-
-          <div class="batch-actions">
-            <Button variant="outline" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'transfer' }">Перемещение</Button>
-            <Button variant="outline" v-for="o in OUTGOING" :key="o.type" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'outgoing', type: o.type }">
-              {{ o.label }}
-            </Button>
-            <Button variant="outline" type="button" class="ui-soft-btn" :disabled="batch.tons <= 0" @click="dialog = { kind: 'processing' }">Подработка</Button>
-            <Button variant="outline" type="button" class="ui-soft-btn" @click="openEdit">Изменить данные партии</Button>
-          </div>
-        </Card>
-
-        <div class="batch-grid">
-          <Card class="ui-card gap-0">
-            <h3 class="ui-card-title">Где лежит</h3>
-            <p v-if="!placements.length" class="ui-muted">Партия полностью израсходована.</p>
-            <ul v-else class="batch-list">
-              <li v-for="p in placements" :key="p.cellId">
-                <RouterLink :to="{ name: 'warehouse-cell', params: { id: p.locationId } }" class="batch-link">{{ p.locationName }}, {{ p.cellName }}</RouterLink>
-                <span class="ui-num ui-strong">{{ formatTons(p.tons) }}</span>
-              </li>
-            </ul>
-          </Card>
-          <Card class="ui-card gap-0">
-            <h3 class="ui-card-title">Качество</h3>
-            <p v-if="!qualityRows.length" class="ui-muted">Показатели не внесены.</p>
-            <dl v-else class="batch-dl">
-              <template v-for="q in qualityRows" :key="q.label">
-                <dt>{{ q.label }}</dt>
-                <dd>{{ q.value }}</dd>
-              </template>
-            </dl>
-            <p v-if="batch.comment" class="ui-muted batch-comment">{{ batch.comment }}</p>
-          </Card>
-        </div>
-
-        <Card class="ui-card gap-0">
-          <h3 class="ui-card-title">История партии</h3>
-          <StockDocumentsTable :documents="documents" :scope-batch-id="batch.id" @changed="load" />
-        </Card>
-      </template>
+  <section class="tw-scope flex flex-col gap-6">
+    <div v-if="loading" class="grid gap-4">
+      <Skeleton class="h-8 w-72" />
+      <Skeleton class="h-24 w-full" />
+      <Skeleton class="h-48 w-full" />
     </div>
+    <Alert v-else-if="error && !batch" variant="destructive">
+      <AlertDescription>{{ error }}</AlertDescription>
+    </Alert>
+    <Empty v-else-if="!batch" class="rounded-xl border border-dashed">
+      <EmptyHeader>
+        <EmptyTitle>Партия не найдена</EmptyTitle>
+        <EmptyDescription>Возможно, ссылка устарела. Вернитесь к списку партий.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
 
-    <teleport to="body">
-      <template v-if="batch && dialog">
-        <StockTransferModal v-if="dialog.kind === 'transfer'" :batch-id="batch.id" @close="dialog = null" @done="onDone" />
-        <StockProcessingModal v-else-if="dialog.kind === 'processing'" :batch-id="batch.id" @close="dialog = null" @done="onDone" />
-        <StockOutgoingModal v-else-if="dialog.kind === 'outgoing'" :type="dialog.type" :batch-id="batch.id" @close="dialog = null" @done="onDone" />
-        <UiModal v-else-if="dialog.kind === 'edit'" title="Данные партии" :max-width="620" :close-disabled="editSaving" @close="dialog = null">
-          <p class="ui-muted" style="margin: 0">Культура и происхождение меняются только через документы — они здесь не редактируются.</p>
-          <div class="ui-form-row ui-form-row--three">
-            <div class="ui-form-field">
-              <label class="ui-form-label">Сорт</label>
-              <Input v-model.trim="edit.variety" class="ui-form-input" />
-            </div>
-            <div class="ui-form-field">
-              <label class="ui-form-label">Урожай года</label>
-              <Input v-model.trim="edit.harvestYear" inputmode="numeric" class="ui-form-input" />
-            </div>
-            <div class="ui-form-field">
-              <label class="ui-form-label ui-form-label--with-help">Назначение
+    <template v-else>
+      <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div class="grid min-w-0 gap-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-xl font-semibold tabular-nums">{{ batch.code }}</h1>
+            <UiBadge :tone="batch.tons > 0 ? 'success' : 'neutral'">{{ batch.tons > 0 ? 'С остатком' : 'Закрыта' }}</UiBadge>
+          </div>
+          <p class="text-sm text-muted-foreground">{{ batch.cropLabel }} · {{ source }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <Button variant="outline" type="button" :disabled="batch.tons <= 0" @click="dialog = { kind: 'transfer' }">
+            <ArrowLeftRightIcon />
+            Перемещение
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" type="button" :disabled="batch.tons <= 0">
+                Операция
+                <ChevronDownIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-52">
+              <DropdownMenuItem v-for="o in OUTGOING" :key="o.type" @select="dialog = { kind: 'outgoing', type: o.type }">{{ o.label }}</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem @select="dialog = { kind: 'processing' }">Подработка</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="outline" type="button" @click="openEdit">
+            <PencilIcon />
+            Изменить
+          </Button>
+        </div>
+      </header>
+
+      <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-3 lg:grid-cols-5">
+        <div class="grid gap-1 bg-card p-4">
+          <dt class="text-xs text-muted-foreground">Остаток</dt>
+          <dd class="text-lg font-semibold tabular-nums">{{ formatTons(batch.tons) }}</dd>
+        </div>
+        <div class="grid gap-1 bg-card p-4">
+          <dt class="text-xs text-muted-foreground">Урожай</dt>
+          <dd class="text-lg font-semibold tabular-nums">{{ batch.harvest_year ?? '—' }}</dd>
+        </div>
+        <div class="grid gap-1 bg-card p-4">
+          <dt class="text-xs text-muted-foreground">Назначение</dt>
+          <dd class="text-sm font-medium">{{ batch.purposeLabel }}</dd>
+        </div>
+        <div class="grid gap-1 bg-card p-4">
+          <dt class="text-xs text-muted-foreground">Сорт</dt>
+          <dd class="text-sm font-medium">{{ batch.variety || '—' }}</dd>
+        </div>
+        <div class="col-span-2 grid gap-1 bg-card p-4 sm:col-span-2 lg:col-span-1">
+          <dt class="text-xs text-muted-foreground">Партия во ФГИС</dt>
+          <dd class="break-all text-sm font-medium tabular-nums">{{ batch.fgis_batch_number || '—' }}</dd>
+        </div>
+      </dl>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section class="grid content-start gap-3 rounded-xl border bg-card p-4 sm:p-6">
+          <h2 class="text-sm font-medium">Где лежит</h2>
+          <p v-if="!placements.length" class="text-sm text-muted-foreground">Партия полностью израсходована.</p>
+          <ul v-else class="grid gap-2 text-sm">
+            <li v-for="p in placements" :key="p.cellId" class="flex items-baseline justify-between gap-3">
+              <RouterLink :to="{ name: 'warehouse-cell', params: { id: p.locationId } }" class="min-w-0 text-foreground no-underline underline-offset-4 hover:text-primary hover:underline">
+                {{ p.locationName }}, {{ p.cellName }}
+              </RouterLink>
+              <span class="shrink-0 font-medium tabular-nums">{{ formatTons(p.tons) }}</span>
+            </li>
+          </ul>
+        </section>
+        <section class="grid content-start gap-3 rounded-xl border bg-card p-4 sm:p-6">
+          <h2 class="text-sm font-medium">Качество</h2>
+          <p v-if="!qualityRows.length" class="text-sm text-muted-foreground">Показатели не внесены.</p>
+          <dl v-else class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-2 text-sm">
+            <template v-for="q in qualityRows" :key="q.label">
+              <dt class="text-muted-foreground">{{ q.label }}</dt>
+              <dd class="tabular-nums">{{ q.value }}</dd>
+            </template>
+          </dl>
+          <p v-if="batch.comment" class="whitespace-pre-line text-sm text-muted-foreground">{{ batch.comment }}</p>
+        </section>
+      </div>
+
+      <section class="grid gap-3">
+        <h2 class="text-base font-semibold">История партии</h2>
+        <StockDocumentsTable :documents="documents" :scope-batch-id="batch.id" @changed="load" />
+      </section>
+    </template>
+
+    <template v-if="batch && dialog">
+      <StockTransferModal v-if="dialog.kind === 'transfer'" :batch-id="batch.id" @close="dialog = null" @done="onDone" />
+      <StockProcessingModal v-else-if="dialog.kind === 'processing'" :batch-id="batch.id" @close="dialog = null" @done="onDone" />
+      <StockOutgoingModal v-else-if="dialog.kind === 'outgoing'" :type="dialog.type" :batch-id="batch.id" @close="dialog = null" @done="onDone" />
+      <UiModal
+        v-else-if="dialog.kind === 'edit'"
+        title="Данные партии"
+        description="Культура и происхождение меняются только через документы."
+        :max-width="560"
+        :close-disabled="editSaving"
+        @close="dialog = null"
+      >
+        <form id="batch-edit-form" class="tw-scope" @submit.prevent="saveEdit">
+          <FormGrid :cols="2">
+            <Alert v-if="editError" variant="destructive" class="sm:col-span-full">
+              <AlertDescription>{{ editError }}</AlertDescription>
+            </Alert>
+            <FormField label="Сорт" for="be-variety">
+              <Input id="be-variety" v-model.trim="edit.variety" />
+            </FormField>
+            <FormField label="Урожай года" for="be-year">
+              <Input id="be-year" v-model.trim="edit.harvestYear" inputmode="numeric" placeholder="2026" />
+            </FormField>
+            <FormField label="Назначение">
+              <template #label-actions>
                 <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
-              </label>
-              <UiSelect v-model="edit.purpose" :options="[...(purposes).map((p) => ({ value: p.id, label: String(p.label), disabled: !p.active && p.id !== edit.purpose }))]" class="ui-form-select" />
+              </template>
+              <UiSelect v-model="edit.purpose" block aria-label="Назначение" :options="purposes.map((p) => ({ value: p.id, label: String(p.label), disabled: !p.active && p.id !== edit.purpose }))" />
+            </FormField>
+            <FormField label="Класс" for="be-class">
+              <Input id="be-class" v-model.trim="edit.class" placeholder="Например, 3" />
+            </FormField>
+            <FormField label="Партия во ФГИС «Зерно», №" for="be-fgis" wide>
+              <Input id="be-fgis" v-model.trim="edit.fgis" />
+            </FormField>
+            <div class="grid grid-cols-3 gap-4 sm:col-span-full">
+              <FormField label="Протеин, %" for="be-protein">
+                <Input id="be-protein" v-model.trim="edit.protein" inputmode="decimal" />
+              </FormField>
+              <FormField label="Клейковина, %" for="be-gluten">
+                <Input id="be-gluten" v-model.trim="edit.gluten" inputmode="decimal" />
+              </FormField>
+              <FormField label="Натура, г/л" for="be-nature">
+                <Input id="be-nature" v-model.trim="edit.nature" inputmode="decimal" />
+              </FormField>
             </div>
-          </div>
-          <div class="ui-form-row ui-form-row--two">
-            <div class="ui-form-field">
-              <label class="ui-form-label">Партия во ФГИС «Зерно» №</label>
-              <Input v-model.trim="edit.fgis" class="ui-form-input" />
-            </div>
-            <div class="ui-form-field">
-              <label class="ui-form-label">Класс</label>
-              <Input v-model.trim="edit.class" class="ui-form-input" placeholder="Например: 3" />
-            </div>
-          </div>
-          <div class="ui-form-row ui-form-row--three">
-            <div class="ui-form-field">
-              <label class="ui-form-label">Протеин, %</label>
-              <Input v-model.trim="edit.protein" inputmode="decimal" class="ui-form-input" />
-            </div>
-            <div class="ui-form-field">
-              <label class="ui-form-label">Клейковина, %</label>
-              <Input v-model.trim="edit.gluten" inputmode="decimal" class="ui-form-input" />
-            </div>
-            <div class="ui-form-field">
-              <label class="ui-form-label">Натура, г/л</label>
-              <Input v-model.trim="edit.nature" inputmode="decimal" class="ui-form-input" />
-            </div>
-          </div>
-          <div class="ui-form-field">
-            <label class="ui-form-label">Комментарий</label>
-            <textarea v-model.trim="edit.comment" class="ui-form-textarea" rows="2" />
-          </div>
-          <p v-if="editError" class="ui-form-error">{{ editError }}</p>
-          <template #actions>
-            <UiButton :disabled="editSaving" @click="dialog = null">Отмена</UiButton>
-            <UiButton variant="primary" :disabled="editSaving" @click="saveEdit">{{ editSaving ? 'Сохранение…' : 'Сохранить' }}</UiButton>
-          </template>
-        </UiModal>
-      </template>
-    </teleport>
+            <FormField label="Комментарий" for="be-comment" wide>
+              <Textarea id="be-comment" v-model.trim="edit.comment" rows="2" />
+            </FormField>
+          </FormGrid>
+        </form>
+        <template #actions>
+          <UiButton :disabled="editSaving" @click="dialog = null">Отмена</UiButton>
+          <UiButton variant="primary" type="submit" form="batch-edit-form" :disabled="editSaving">{{ editSaving ? 'Сохранение…' : 'Сохранить' }}</UiButton>
+        </template>
+      </UiModal>
+    </template>
   </section>
 </template>
-
-<style scoped>
-@layer legacy {
-.batch-head {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-}
-
-.batch-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.batch-title {
-  margin: 0 0 4px;
-  font-size: 1.5rem;
-  line-height: 1.2;
-  color: var(--text-primary);
-}
-
-.batch-small-value {
-  font-size: 0.95rem;
-}
-
-.batch-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.batch-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-lg);
-}
-
-.batch-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.batch-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.batch-link {
-  color: var(--text-primary);
-}
-
-.batch-link:hover {
-  color: var(--accent-green);
-}
-
-.batch-dl {
-  margin: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 6px 16px;
-  font-size: 0.9rem;
-}
-
-.batch-dl dt {
-  color: var(--text-secondary);
-}
-
-.batch-dl dd {
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-.batch-comment {
-  margin: 10px 0 0;
-}
-
-@media (max-width: 900px) {
-  .batch-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .batch-actions > * {
-    flex: 1 1 calc(50% - 8px);
-  }
-}
-}
-</style>

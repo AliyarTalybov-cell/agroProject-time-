@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
-import { XIcon } from '@lucide/vue'
+import { PlusIcon, XIcon } from '@lucide/vue'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
@@ -158,7 +158,7 @@ async function save() {
         <label class="ui-form-label ui-form-label--with-help">Покупатель *
           <RefFieldHelp text="Нет покупателя? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
         </label>
-        <UiSelect v-model="form.counterpartyId" :options="[...(refs.buyers.value).map((c) => ({ value: c.id, label: `${c.name}${c.inn ? ` · ИНН ${c.inn}` : ''}` }))]" placeholder="{{ refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»' }}" class="ui-form-select" />
+        <UiSelect v-model="form.counterpartyId" :options="[...(refs.buyers.value).map((c) => ({ value: c.id, label: `${c.name}${c.inn ? ` · ИНН ${c.inn}` : ''}` }))]" :placeholder="refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»'" class="ui-form-select" />
       </div>
       <div v-else-if="type === 'seeding'" class="ui-form-field">
         <label class="ui-form-label">Поле *</label>
@@ -185,12 +185,12 @@ async function save() {
       <Button variant="ghost" size="icon-sm" v-if="lines.length > 1" type="button" class="stock-line-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать строку" @click="removeLine(i)">
         <XIcon :size="16" />
       </Button>
-      <p v-if="parsedLines[i].over" class="ui-form-hint stock-line-hint">
+      <p v-if="parsedLines[i].over" class="ui-form-hint stock-line-hint text-destructive" role="alert">
         Больше остатка: доступно {{ formatTons(parsedLines[i].src?.available) }}
       </p>
     </div>
     <div class="stock-lines-footer">
-      <Button variant="outline" v-if="sources.length > lines.length" type="button" class="ui-soft-btn" @click="addLine">+ Ещё партия</Button>
+      <Button v-if="sources.length > lines.length" variant="outline" size="sm" type="button" @click="addLine"><PlusIcon />Ещё партия</Button>
       <span class="ui-strong">Итого {{ formatTons(totalTons) }}</span>
     </div>
     <p v-if="duplicate" class="ui-form-error">Одна и та же партия в ячейке выбрана дважды.</p>

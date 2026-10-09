@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/shadcn/input'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
+import { Label } from '@/components/ui/shadcn/label'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Контрагент: покупатель и/или поставщик зерна. */
 import { computed, ref } from 'vue'
@@ -49,58 +54,50 @@ async function save() {
 </script>
 
 <template>
-  <UiModal :title="c ? 'Контрагент' : 'Новый контрагент'" :max-width="620" :close-disabled="saving" @close="emit('close')">
-    <div class="ui-form-row ui-form-row--two">
-      <div class="ui-form-field">
-        <label class="ui-form-label">Название *</label>
-        <Input v-model.trim="form.name" class="ui-form-input" placeholder="ООО «Агроторг»" />
-      </div>
-      <div class="ui-form-field">
-        <label class="ui-form-label">Роль *</label>
-        <UiSelect v-model="form.kind" :options="[...(COUNTERPARTY_KINDS).map((k) => ({ value: k, label: String(counterpartyKindLabel(k)) }))]" class="ui-form-select" />
-      </div>
-    </div>
-    <div class="ui-form-row ui-form-row--two">
-      <div class="ui-form-field">
-        <label class="ui-form-label">ИНН</label>
-        <Input v-model.trim="form.inn" inputmode="numeric" class="ui-form-input" />
-        <p v-if="!innOk" class="ui-form-hint" style="color: var(--danger-red)">10 или 12 цифр</p>
-      </div>
-      <div class="ui-form-field">
-        <label class="ui-form-label">КПП</label>
-        <Input v-model.trim="form.kpp" inputmode="numeric" class="ui-form-input" />
-        <p v-if="!kppOk" class="ui-form-hint" style="color: var(--danger-red)">9 цифр</p>
-      </div>
-    </div>
-    <div class="ui-form-field">
-      <label class="ui-form-label">Адрес</label>
-      <Input v-model.trim="form.address" class="ui-form-input" />
-    </div>
-    <div class="ui-form-row ui-form-row--three">
-      <div class="ui-form-field">
-        <label class="ui-form-label">Контактное лицо</label>
-        <Input v-model.trim="form.contact_person" class="ui-form-input" />
-      </div>
-      <div class="ui-form-field">
-        <label class="ui-form-label">Телефон</label>
-        <Input v-model.trim="form.phone" type="tel" class="ui-form-input" />
-      </div>
-      <div class="ui-form-field">
-        <label class="ui-form-label">Почта</label>
-        <Input v-model.trim="form.email" type="email" class="ui-form-input" />
-      </div>
-    </div>
-    <div class="ui-form-field">
-      <label class="ui-form-label">Комментарий</label>
-      <textarea v-model.trim="form.comment" class="ui-form-textarea" rows="2" />
-    </div>
-    <label v-if="c" class="ui-muted" style="display: inline-flex; gap: 8px; align-items: center">
-      <Checkbox v-model="form.active" /> Работаем с ним (снимите, чтобы скрыть из списков выбора)
-    </label>
-    <p v-if="error" class="ui-form-error">{{ error }}</p>
+  <UiModal :title="c ? 'Контрагент' : 'Новый контрагент'" :max-width="560" :close-disabled="saving" @close="emit('close')">
+    <form id="counterparty-form" class="tw-scope" @submit.prevent="save">
+      <FormGrid :cols="2">
+        <Alert v-if="error" variant="destructive" class="sm:col-span-full">
+          <AlertDescription>{{ error }}</AlertDescription>
+        </Alert>
+        <FormField label="Название" for="cp-name" required>
+          <Input id="cp-name" v-model.trim="form.name" placeholder="ООО «Агроторг»" />
+        </FormField>
+        <FormField label="Роль">
+          <UiSelect v-model="form.kind" block aria-label="Роль" :options="COUNTERPARTY_KINDS.map((k) => ({ value: k, label: String(counterpartyKindLabel(k)) }))" />
+        </FormField>
+        <FormField label="ИНН" for="cp-inn" :error="!innOk && '10 или 12 цифр'">
+          <Input id="cp-inn" v-model.trim="form.inn" inputmode="numeric" :aria-invalid="!innOk || undefined" />
+        </FormField>
+        <FormField label="КПП" for="cp-kpp" :error="!kppOk && '9 цифр'">
+          <Input id="cp-kpp" v-model.trim="form.kpp" inputmode="numeric" :aria-invalid="!kppOk || undefined" />
+        </FormField>
+        <FormField label="Адрес" for="cp-address" wide>
+          <Input id="cp-address" v-model.trim="form.address" />
+        </FormField>
+        <FormField label="Контактное лицо" for="cp-contact" wide>
+          <Input id="cp-contact" v-model.trim="form.contact_person" />
+        </FormField>
+        <FormField label="Телефон" for="cp-phone">
+          <Input id="cp-phone" v-model.trim="form.phone" type="tel" />
+        </FormField>
+        <FormField label="Почта" for="cp-email">
+          <Input id="cp-email" v-model.trim="form.email" type="email" />
+        </FormField>
+        <FormField label="Комментарий" for="cp-comment" wide>
+          <Textarea id="cp-comment" v-model.trim="form.comment" rows="2" />
+        </FormField>
+        <FormField v-if="c" wide hint="Снимите отметку, чтобы скрыть контрагента из списков выбора.">
+          <div class="flex items-center gap-2">
+            <Checkbox id="cp-active" v-model="form.active" />
+            <Label for="cp-active" class="font-normal">Работаем с ним</Label>
+          </div>
+        </FormField>
+      </FormGrid>
+    </form>
     <template #actions>
       <UiButton :disabled="saving" @click="emit('close')">Отмена</UiButton>
-      <UiButton variant="primary" :disabled="saving || !canSave" @click="save">{{ saving ? 'Сохранение…' : 'Сохранить' }}</UiButton>
+      <UiButton variant="primary" type="submit" form="counterparty-form" :disabled="saving || !canSave">{{ saving ? 'Сохранение…' : 'Сохранить' }}</UiButton>
     </template>
   </UiModal>
 </template>

@@ -180,8 +180,15 @@
      (иначе border-color = currentColor). Утилиты цвета рамки сильнее.
      Стиль рамки не задаём: утилиты border-* ставят его сами и только на своей
      стороне, а общий «solid» включал бы рамку 3px на остальных сторонах. */
-  :where(.border, .border-t, .border-b, .border-l, .border-r, .border-x, .border-y, .border-2, .border-dashed, [class*=':border-t'], [class*=':border-b'], [class*=':border-l'], [class*=':border-r'], [class*=':border-x'], [class*=':border-y']) {
+  :where(.border, .border-t, .border-b, .border-l, .border-r, .border-x, .border-y, .border-2, .border-dashed, [class*=':border-t'], [class*=':border-b'], [class*=':border-l'], [class*=':border-r'], [class*=':border-x'], [class*=':border-y'], [class~='sm:border'], [class~='md:border'], [class~='lg:border']) {
     border-color: var(--color-border);
+  }
+
+  /* Таблицы shadcn: ячейки без промежутков, как под preflight. */
+  table[data-slot='table'] {
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-indent: 0;
   }
 
   :where(ul, ol)[data-slot] {

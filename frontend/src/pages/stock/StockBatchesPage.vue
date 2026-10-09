@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/shadcn/card'
-import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
-import { PlusIcon, SearchIcon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table'
+import { PackageIcon, PlusIcon, SearchIcon } from '@lucide/vue'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /**
  * Партии зерна — один реестр вместо «Реестра партий» и «Текущих партий».
@@ -10,7 +15,6 @@ import UiSelect from '@/components/ui/UiSelect.vue'
  */
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import StockIntakeModal from '@/components/stock/StockIntakeModal.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
@@ -138,98 +142,83 @@ function onIntakeDone() {
 </script>
 
 <template>
-  <section class="ui-page">
-    <div class="ui-page-inner">
-      <header class="ui-page-header">
-        <p class="ui-page-subtitle">Партии зерна по всем складам. Остатки из журнала операций — те же, что в карточках складов.</p>
-        <div class="ui-header-actions">
-          <Button variant="default" type="button" class="ui-add-btn" @click="intakeOpen = true">
-            <PlusIcon />
-            Приёмка зерна
-          </Button>
-        </div>
-      </header>
-
-      <Card class="ui-card gap-0">
-        <div class="ui-toolbar">
-          <label class="ui-search">
-            <SearchIcon />
-            <Input v-model="search" type="search" placeholder="№ партии, сорт, поле, поставщик, № ФГИС" class="pl-9" />
-          </label>
-          <UiSelect v-model="statusFilter" :options="statusOptions" aria-label="Статус" class="ui-filter-select" />
-          <UiSelect v-model="cropFilter" :options="cropSelectOptions" aria-label="Культура" class="ui-filter-select" />
-          <UiSelect v-model="locationFilter" :options="locationSelectOptions" aria-label="Склад" class="ui-filter-select" />
-          <UiSelect v-model="purposeFilter" :options="purposeSelectOptions" aria-label="Назначение" class="ui-filter-select" />
-        </div>
-
-        <p v-if="error" class="ui-alert ui-alert--error">{{ error }}</p>
-        <div v-if="loading" class="ui-loading"><UiLoadingBar /></div>
-        <div v-else-if="!filtered.length" class="ui-empty">
-          <h3>Партий не найдено</h3>
-          <p>Измените фильтры или проведите приёмку зерна.</p>
-          <Button variant="outline" type="button" class="ui-soft-btn" @click="resetFilters">Сбросить фильтры</Button>
-        </div>
-        <template v-else>
-          <div class="ui-table-wrap">
-            <table class="ui-table batches-table" v-card-table>
-              <thead>
-                <tr>
-                  <th>Партия</th>
-                  <th>Культура</th>
-                  <th>Откуда</th>
-                  <th>Назначение</th>
-                  <th>Где лежит</th>
-                  <th class="ui-num">Остаток</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="b in pageRows"
-                  :key="b.id"
-                  class="ui-list-row"
-                  @click="router.push({ name: 'grain-batch', params: { id: b.id } })"
-                >
-                  <td>
-                    <span class="ui-list-title">{{ b.code }}</span>
-                    <div class="ui-muted ui-small">урожай {{ b.harvest_year ?? '—' }}{{ b.variety ? ` · ${b.variety}` : '' }}</div>
-                  </td>
-                  <td>{{ b.cropLabel }}</td>
-                  <td>{{ sourceLabel(b) }}</td>
-                  <td>{{ b.purposeLabel }}</td>
-                  <td class="batches-where">{{ whereLabel(b) }}</td>
-                  <td class="ui-num ui-strong">
-                    <span v-if="b.tons > 0">{{ formatTons(b.tons) }}</span>
-                    <span v-else class="ui-pill">закрыта</span>
-                  </td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="5">Итого по фильтру · партий: {{ filtered.length }}</td>
-                  <td class="ui-num">{{ formatTons(totalTons) }}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-          <UiPagination v-model:page="page" v-model:page-size="pageSize" :total="filtered.length" :page-size-options="[10, 20, 50, 100]" />
-        </template>
-      </Card>
+  <section class="tw-scope flex flex-col gap-6">
+    <PageToolbar>
+      <InputGroup class="w-full sm:w-80">
+        <InputGroupAddon><SearchIcon /></InputGroupAddon>
+        <InputGroupInput v-model="search" type="search" placeholder="№ партии, сорт, поле, поставщик, № ФГИС" aria-label="Поиск партии" />
+      </InputGroup>
+      <template #actions>
+        <Button type="button" @click="intakeOpen = true">
+          <PlusIcon />
+          Приёмка зерна
+        </Button>
+      </template>
+    </PageToolbar>
+    <div class="-mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+      <div class="sm:w-44"><UiSelect v-model="statusFilter" block :options="statusOptions" aria-label="Статус" /></div>
+      <div class="sm:w-44"><UiSelect v-model="cropFilter" block :options="cropSelectOptions" aria-label="Культура" /></div>
+      <div class="sm:w-44"><UiSelect v-model="locationFilter" block :options="locationSelectOptions" aria-label="Склад" /></div>
+      <div class="sm:w-48"><UiSelect v-model="purposeFilter" block :options="purposeSelectOptions" aria-label="Назначение" /></div>
     </div>
 
-    <teleport to="body">
-      <StockIntakeModal v-if="intakeOpen" @close="intakeOpen = false" @done="onIntakeDone" />
-    </teleport>
+    <Alert v-if="error" variant="destructive">
+      <AlertDescription>{{ error }}</AlertDescription>
+    </Alert>
+
+    <div v-if="loading" class="grid gap-2">
+      <Skeleton v-for="i in 6" :key="i" class="h-12 w-full" />
+    </div>
+    <Empty v-else-if="!filtered.length" class="rounded-xl border border-dashed">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><PackageIcon /></EmptyMedia>
+        <EmptyTitle>Партий не найдено</EmptyTitle>
+        <EmptyDescription>Измените фильтры или проведите приёмку зерна.</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button variant="outline" size="sm" type="button" @click="resetFilters">Сбросить фильтры</Button>
+      </EmptyContent>
+    </Empty>
+    <template v-else>
+      <div class="sm:overflow-hidden sm:rounded-xl sm:border sm:bg-card">
+        <Table v-card-table class="min-w-[56rem]">
+          <TableHeader class="bg-muted/50">
+            <TableRow>
+              <TableHead class="pl-4">Партия</TableHead>
+              <TableHead>Культура</TableHead>
+              <TableHead>Откуда</TableHead>
+              <TableHead>Назначение</TableHead>
+              <TableHead>Где лежит</TableHead>
+              <TableHead class="pr-4 text-right">Остаток</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="b in pageRows" :key="b.id" class="cursor-pointer" @click="router.push({ name: 'grain-batch', params: { id: b.id } })">
+              <TableCell class="pl-4">
+                <span class="font-medium tabular-nums">{{ b.code }}</span>
+                <span class="block text-xs text-muted-foreground">урожай {{ b.harvest_year ?? '—' }}{{ b.variety ? ` · ${b.variety}` : '' }}</span>
+              </TableCell>
+              <TableCell class="whitespace-normal">{{ b.cropLabel }}</TableCell>
+              <TableCell class="max-w-56 whitespace-normal">{{ sourceLabel(b) }}</TableCell>
+              <TableCell class="whitespace-normal">{{ b.purposeLabel }}</TableCell>
+              <TableCell class="max-w-56 whitespace-normal">{{ whereLabel(b) }}</TableCell>
+              <TableCell class="pr-4 text-right font-medium tabular-nums">
+                <template v-if="b.tons > 0">{{ formatTons(b.tons) }}</template>
+                <UiBadge v-else tone="neutral">закрыта</UiBadge>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colspan="5" class="pl-4">Итого по фильтру · партий: {{ filtered.length }}</TableCell>
+              <TableCell class="pr-4 text-right tabular-nums">{{ formatTons(totalTons) }}</TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </div>
+      <UiPagination v-model:page="page" v-model:page-size="pageSize" :total="filtered.length" :page-size-options="[10, 20, 50, 100]" />
+    </template>
+
+    <StockIntakeModal v-if="intakeOpen" @close="intakeOpen = false" @done="onIntakeDone" />
   </section>
 </template>
-
-<style scoped>
-@layer legacy {
-.batches-table {
-  min-width: 900px;
-}
-
-.batches-where {
-  max-width: 280px;
-}
-}
-</style>

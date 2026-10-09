@@ -549,6 +549,8 @@
 
 .ui-form-section-title {
   margin: 8px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);

@@ -8,9 +8,14 @@ import type { Directive } from 'vue'
  * чтобы в карточке у значения была подпись, как в мобильных карточках задач.
  * Строки добавляются и меняются динамически — подписи обновляются через
  * MutationObserver. Строки с colspan (раскрытые подробности) не трогаются.
+ * Ставится и на саму <table>, и на обёртку (Table из shadcn: div > table).
  */
 
 const observers = new WeakMap<HTMLElement, MutationObserver>()
+
+function tableOf(el: HTMLElement): HTMLElement | null {
+  return el.tagName === 'TABLE' ? el : el.querySelector('table')
+}
 
 function label(table: HTMLElement) {
   const heads = Array.from(table.querySelectorAll('thead th')).map((th) => (th as HTMLElement).innerText.trim())
@@ -27,14 +32,17 @@ function label(table: HTMLElement) {
 
 export const vCardTable: Directive<HTMLElement> = {
   mounted(el) {
-    el.classList.add('ui-card-table')
-    label(el)
-    const obs = new MutationObserver(() => label(el))
-    obs.observe(el, { childList: true, subtree: true })
+    const table = tableOf(el)
+    if (!table) return
+    table.classList.add('ui-card-table')
+    label(table)
+    const obs = new MutationObserver(() => label(table))
+    obs.observe(table, { childList: true, subtree: true })
     observers.set(el, obs)
   },
   updated(el) {
-    label(el)
+    const table = tableOf(el)
+    if (table) label(table)
   },
   unmounted(el) {
     observers.get(el)?.disconnect()
