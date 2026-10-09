@@ -696,7 +696,7 @@ watch(
                 <span class="field-details-item-icon" aria-hidden="true">
                   <TractorIcon :size="18" />
                 </span>
-                <span class="field-details-item-label">№ ПОЛЯ ЕФИС ЗСН</span>
+                <span class="field-details-item-label">№ поля ЕФИС ЗСН</span>
                 <span class="field-details-item-value">{{ (field as any).efis_zsn_number || '—' }}</span>
               </li>
               <li class="field-details-item">
@@ -900,7 +900,7 @@ watch(
                 <Input v-model="editForm.region" type="text" class="field-details-edit-input" placeholder="Например: Ростовская область" />
               </label>
               <label class="field-details-edit-field">
-                <span class="field-details-edit-label">№ ПОЛЯ ЕФИС ЗСН</span>
+                <span class="field-details-edit-label">№ поля ЕФИС ЗСН</span>
                 <Input v-model="editForm.efis_zsn_number" type="text" class="field-details-edit-input" placeholder="Например: EFIS-000123" />
               </label>
               <label class="field-details-edit-field">

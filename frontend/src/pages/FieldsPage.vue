@@ -529,7 +529,7 @@ function exportFieldsToExcel() {
     '№',
     'Название',
     'Кадастровый №',
-    '№ ПОЛЯ ЕФИС ЗСН',
+    '№ поля ЕФИС ЗСН',
     'Площадь (га)',
     'Культура',
     'Тип земли',
@@ -561,7 +561,7 @@ async function exportFieldsToPdf() {
     '№',
     'Название',
     'Кадастровый №',
-    '№ ПОЛЯ ЕФИС ЗСН',
+    '№ поля ЕФИС ЗСН',
     'Площадь (га)',
     'Культура',
     'Тип земли',
@@ -1643,7 +1643,7 @@ onMounted(async () => {
                     <span v-if="fieldsSortMark('cadastralNumber')" class="fields-th-sort-mark">{{ fieldsSortMark('cadastralNumber') }}</span>
                   </Button>
                 </th>
-                <th scope="col" class="fields-th-efis">№ ПОЛЯ ЕФИС ЗСН</th>
+                <th scope="col" class="fields-th-efis">№ поля ЕФИС ЗСН</th>
                 <th scope="col" class="fields-th-area" :aria-sort="fieldsAriaSort('area')">
                   <Button variant="ghost" size="sm"
                     type="button"
@@ -1880,7 +1880,7 @@ onMounted(async () => {
                 <Input v-model="newFieldCadastral" type="text" class="modal-input" placeholder="XX:XX:XXXXXXX:XX" />
               </label>
               <label class="modal-field">
-                <span class="modal-label">№ ПОЛЯ ЕФИС ЗСН <span class="modal-label-opt">(опц.)</span></span>
+                <span class="modal-label">№ поля ЕФИС ЗСН <span class="modal-label-opt">(опц.)</span></span>
                 <Input v-model="newFieldEfisZsn" type="text" class="modal-input" placeholder="Например: EFIS-000123" />
               </label>
             </div>

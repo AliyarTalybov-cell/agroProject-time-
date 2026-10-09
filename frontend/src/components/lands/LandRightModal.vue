@@ -51,7 +51,7 @@ defineEmits<{
 </script>
 
 <template>
-<UiModal v-if="open" :title="editingId ? 'Редактировать право владения' : 'Добавить право владения'" :max-width="1100" :close-disabled="saving || uploading" @close="$emit('close')">
+<UiModal v-if="open" :title="editingId ? 'Редактировать право владения' : 'Добавить право владения'" :max-width="720" :close-disabled="saving || uploading" @close="$emit('close')">
     <div class="lands-modal-body">
       <div class="lands-owner-mode-section">
         <div class="lands-owner-mode-label">Правообладатель</div>

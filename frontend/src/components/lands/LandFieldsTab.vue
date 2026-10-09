@@ -54,7 +54,7 @@ defineEmits<{
             <thead>
               <tr>
                 <th>Название</th>
-                <th>№ ПОЛЯ ЕФИС ЗСН</th>
+                <th>№ поля ЕФИС ЗСН</th>
                 <th>Площадь, га</th>
                 <th>Культура</th>
                 <th>Тип земли</th>
@@ -71,7 +71,7 @@ defineEmits<{
                   <div class="lands-field-cell-subtitle">{{ field.cadastral_number ? `Кад. №: ${field.cadastral_number}` : 'Нет кад. номера' }}</div>
                 </td>
                 <td>{{ (field as any).efis_zsn_number || '—' }}</td>
-                <td>{{ Number(field.area || 0).toFixed(2) }}</td>
+                <td>{{ Number(field.area || 0).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</td>
                 <td>
                   <span :class="cropPillClass(field.crop_key)">
                     {{ cropLabel(field.crop_key) }}

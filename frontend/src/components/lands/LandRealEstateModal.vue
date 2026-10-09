@@ -32,11 +32,11 @@ defineEmits<{
 </script>
 
 <template>
-<UiModal v-if="open" :title="editingId ? 'Редактировать объект недвижимости' : 'Добавить объект недвижимости'" :max-width="1100" @close="$emit('close')">
+<UiModal v-if="open" :title="editingId ? 'Редактировать объект недвижимости' : 'Добавить объект недвижимости'" :max-width="720" @close="$emit('close')">
     <div class="lands-modal-body">
       <div class="lands-form-grid">
         <label class="lands-field">
-          <span>№ ПОЛЯ ЕФИС ЗСН</span>
+          <span>№ поля ЕФИС ЗСН</span>
           <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '—' }, ...(assignedFields).map((field) => ({ value: field.id, label: `№${field.number} — ${field.name}` }))]" />
         </label>
         <label class="lands-field">

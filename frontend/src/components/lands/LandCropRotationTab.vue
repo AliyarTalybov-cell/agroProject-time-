@@ -62,7 +62,7 @@ defineEmits<{
             <div class="lands-crop-rotation-card-main">
               <div class="lands-crop-rotation-metric-row">
                 <div class="lands-crop-rotation-metric">
-                  <span class="lands-crop-rotation-metric-label">№ ПОЛЯ ЕФИС ЗСН</span>
+                  <span class="lands-crop-rotation-metric-label">№ поля ЕФИС ЗСН</span>
                   <span class="lands-crop-rotation-metric-value lands-crop-rotation-metric-value--nowrap">{{ fieldLabel(rotation.field_id) }}</span>
                 </div>
                 <div class="lands-crop-rotation-metric">
@@ -82,7 +82,7 @@ defineEmits<{
                   <span class="lands-crop-rotation-metric-value">{{ formatMetric(fieldMap.get(rotation.field_id)?.area) }}</span>
                 </div>
                 <div class="lands-crop-rotation-metric">
-                  <span class="lands-crop-rotation-metric-label">Площадь для выращивания сельхозкультур, га *</span>
+                  <span class="lands-crop-rotation-metric-label">Площадь для выращивания сельхозкультур, га</span>
                   <span class="lands-crop-rotation-metric-value">{{ formatMetric(rotation.area_for_crops_ha) }}</span>
                 </div>
                 <div class="lands-crop-rotation-metric">

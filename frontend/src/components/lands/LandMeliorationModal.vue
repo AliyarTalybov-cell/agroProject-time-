@@ -45,7 +45,7 @@ defineEmits<{
     <div class="lands-modal-body">
       <div class="lands-form-grid">
         <label class="lands-field">
-          <span>№ ПОЛЯ ЕФИС ЗСН</span>
+          <span>№ поля ЕФИС ЗСН</span>
           <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '—' }, ...(fieldOptions).map((field) => ({ value: field.id, label: String(fieldLabel(field.id)) }))]" />
         </label>
         <label v-if="tab === 'systems'" class="lands-field">

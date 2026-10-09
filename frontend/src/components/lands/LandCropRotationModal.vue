@@ -49,7 +49,7 @@ function canSave(): boolean {
       <div class="lands-modal-body">
         <div class="lands-form-grid">
           <label class="lands-field">
-            <span>№ ПОЛЯ ЕФИС ЗСН</span>
+            <span>№ поля ЕФИС ЗСН</span>
             <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '— Выберите поле —' }, ...(assignedFields).map((field) => ({ value: field.id, label: `№${field.number} — ${field.name}` }))]" />
           </label>
           <label class="lands-field">

@@ -49,7 +49,7 @@ defineEmits<{
 </script>
 
 <template>
-<UiModal v-if="open" :title="editingId ? 'Редактировать землепользователя' : 'Добавить землепользователя'" :max-width="1100" :close-disabled="saving || uploading" @close="$emit('close')">
+<UiModal v-if="open" :title="editingId ? 'Редактировать землепользователя' : 'Добавить землепользователя'" :max-width="720" :close-disabled="saving || uploading" @close="$emit('close')">
     <div class="lands-modal-body">
       <label class="lands-field">
         <span class="lands-label-with-help">

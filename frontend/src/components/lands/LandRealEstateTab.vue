@@ -59,11 +59,11 @@ defineEmits<{
             <div class="lands-re-card-main">
               <div class="lands-re-metric-row">
                 <div class="lands-re-metric">
-                  <span class="lands-re-metric-label">№ ПОЛЯ ЕФИС ЗСН</span>
+                  <span class="lands-re-metric-label">№ поля ЕФИС ЗСН</span>
                   <span class="lands-re-metric-value lands-re-metric-value--nowrap">{{ fieldLabel(obj.field_id) }}</span>
                 </div>
                 <div class="lands-re-metric">
-                  <span class="lands-re-metric-label">Кадастровый номер *</span>
+                  <span class="lands-re-metric-label">Кадастровый номер</span>
                   <span class="lands-re-metric-value lands-re-metric-value--nowrap">{{ obj.cadastral_number || '—' }}</span>
                 </div>
                 <div class="lands-re-metric">

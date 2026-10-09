@@ -100,10 +100,12 @@
   padding:12px;
 }
 .lands-card h2 { margin:0 0 .7rem; font-size:1rem; }
-.lands-overview-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:10px; }
-.lands-overview-item { border:1px solid var(--border-color); border-radius:10px; padding:8px 10px; background:#fff; display:flex; flex-direction:column; gap:2px; }
+/* Сводка участка: одна рамка, значения разделены тонкими линиями (как сводки складов и партий). */
+.lands-overview-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; margin-bottom:16px; overflow:hidden; border:1px solid var(--border-color); border-radius:var(--radius-xl); background:var(--border-color); }
+.lands-overview-item { padding:12px 16px; background:var(--bg-panel); display:flex; flex-direction:column; gap:4px; min-width:0; }
+.lands-overview-item:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .lands-overview-item > span { font-size:.75rem; color:var(--text-secondary); }
-.lands-overview-item > strong { font-size:.9rem; color:var(--text-primary); font-weight:500; }
+.lands-overview-item > strong { font-size:.875rem; color:var(--text-primary); font-weight:500; overflow-wrap:anywhere; }
 .lands-passport-input { width:100%; border: 1px solid var(--input-border); border-radius:8px; padding:7px 9px; font-size:.88rem; color:var(--text-primary); background:#fff;
   box-shadow: var(--shadow-xs);
 }
@@ -795,14 +797,17 @@
 
 /* Поля формы внутри окон. Перенесено из LandsPage.css; страница получает их
    отсюда же. */
-.lands-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.lands-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:end; }
 .lands-form-grid--passport { margin-bottom:10px; }
-.lands-field { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+.lands-field { display:flex; flex-direction:column; gap:8px; margin:0; min-width:0; }
 .lands-field--inline-end { justify-content:flex-end; }
-.lands-field > span { font-size:.85rem; font-weight:600; }
+/* Ряды полей формы идут отдельными блоками — между ними 16px, как в FormGrid. */
+:is(.lands-form-grid, .lands-field) + :is(.lands-form-grid, .lands-field):not(.lands-form-grid > *) { margin-top:16px; }
+.lands-field > span { font-size:.875rem; font-weight:500; line-height:1.2; }
 .lands-label-with-help {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
 }
 .lands-field input, .lands-field textarea, .lands-field select { border: 1px solid var(--input-border); border-radius:10px; padding: 7px 11px; font-size:.93rem; background:#fff; color:var(--text-primary);
   box-shadow: var(--shadow-xs);

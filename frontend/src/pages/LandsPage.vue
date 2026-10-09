@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
-import { ChevronLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
+import { FileSpreadsheetIcon, FileTextIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import RefList from '@/components/ui/RefList.vue'
 import { useMediaQuery } from '@vueuse/core'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
@@ -394,6 +394,11 @@ let addressCandidatesRequestId = 0
 const route = useRoute()
 const router = useRouter()
 const ROOT_TAB_QUERY_MAP = new Set(['registry', 'melioration', 'land-refs', 'land-types', 'land-categories', 'land-usage', 'rights-refs', 'crops-refs', 'melioration-refs', 'equipment-refs', 'field-refs', 'crop-rotation-refs', 'storage-refs', 'storage-types', 'storage-statuses', 'storage-fill-statuses', 'storage-writeoff-reasons', 'storage-consumption-targets', 'storage-purposes'])
+/** Площадь в гектарах по-русски: «50 879,03». */
+function formatHa(v: number | string | null | undefined): string {
+  return Number(v || 0).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 const routeLandId = computed(() => String(route.params.id || ''))
 const isDetailsMode = computed(() => Boolean(routeLandId.value))
 const landsListSubtitle = computed(() => (
@@ -663,7 +668,7 @@ const landInfoExportRows = computed(() => {
     ['Площадь земельного участка, га', exportCellValue(Number(land.area || 0).toFixed(2))],
     ['Вид разрешенного использования по документам', exportCellValue(land.permitted_use_docs)],
     ['Кадастровый номер', exportCellValue(land.cadastral_number)],
-    ['№ ПОЛЯ ЕФИС ЗСН', landEfisNumberDisplay(land)],
+    ['№ поля ЕФИС ЗСН', landEfisNumberDisplay(land)],
     ['Геолокация', geolocation],
     ['Адрес', exportCellValue(land.address)],
     ['Описание местоположения', exportCellValue(land.location_description)],
@@ -705,7 +710,7 @@ const landRightsExportRows = computed(() => landRights.value.map((right) => ([
 ])))
 
 const landCropRotationExportHeaders = [
-  '№ ПОЛЯ ЕФИС ЗСН',
+  '№ поля ЕФИС ЗСН',
   'Сезон',
   'Тип',
   'Культура',
@@ -725,7 +730,7 @@ const landCropRotationExportRows = computed(() => landCropRotations.value.map((r
 ])))
 
 const landRealEstateExportHeaders = [
-  '№ ПОЛЯ ЕФИС ЗСН',
+  '№ поля ЕФИС ЗСН',
   'Кадастровый номер',
   'Наименование',
   'Адрес',
@@ -742,7 +747,7 @@ const landRealEstateExportRows = computed(() => landRealEstateObjects.value.map(
 
 const landFieldsExportHeaders = [
   'Название',
-  '№ ПОЛЯ ЕФИС ЗСН',
+  '№ поля ЕФИС ЗСН',
   'Площадь, га',
   'Культура',
   'Тип земли',
@@ -863,7 +868,7 @@ function exportLandsToExcel() {
   if (!lands.value.length) return
   const headers = [
     'Кадастровый номер',
-    '№ ПОЛЯ ЕФИС ЗСН',
+    '№ поля ЕФИС ЗСН',
     'Адрес земельного участка',
     'Категория земель',
     'Площадь земельного участка, га',
@@ -884,7 +889,7 @@ async function exportLandsToPdf() {
   if (!lands.value.length) return
   const headers = [
     'Кадастровый номер',
-    '№ ПОЛЯ ЕФИС ЗСН',
+    '№ поля ЕФИС ЗСН',
     'Адрес земельного участка',
     'Категория земель',
     'Площадь земельного участка, га',
@@ -1264,7 +1269,13 @@ function fieldCropPillClass(cropKey: string | null): string {
 
 function formatRotationMetric(value: number | null | undefined, fractionDigits = 2): string {
   if (value == null || Number.isNaN(Number(value))) return '—'
-  return Number(value).toFixed(fractionDigits)
+  return Number(value).toLocaleString('ru-RU', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })
+}
+
+/** Дата из базы «ГГГГ-ММ-ДД» — по-русски «ДД.ММ.ГГГГ». */
+function formatIsoDate(value: string | null | undefined): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '')
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : value || '—'
 }
 
 function realEstateFieldLabel(fieldId: string | null): string {
@@ -1285,7 +1296,7 @@ function meliorationFieldLabel(fieldId: string | null): string {
 function meliorationExportData() {
   if (meliorationTab.value === 'systems') {
     const headers = [
-      '№ ПОЛЯ ЕФИС ЗСН',
+      '№ поля ЕФИС ЗСН',
       'Тип мелиорации',
       'Вид мелиорации',
       'Описание системы и местоположения',
@@ -1306,7 +1317,7 @@ function meliorationExportData() {
   }
   if (meliorationTab.value === 'forest') {
     const headers = [
-      '№ ПОЛЯ ЕФИС ЗСН',
+      '№ поля ЕФИС ЗСН',
       'Площадь МЗЛН, га',
       'Количественные, качественные характеристики',
       'Год создания',
@@ -1324,7 +1335,7 @@ function meliorationExportData() {
     return { headers, rows }
   }
   const headers = [
-    '№ ПОЛЯ ЕФИС ЗСН',
+    '№ поля ЕФИС ЗСН',
     'Тип мероприятия',
     'Дата проведения',
     'Площадь земельного участка, га',
@@ -3717,10 +3728,6 @@ onMounted(() => void reloadAll())
   <section class="lands-page">
     <header class="lands-top page-enter-item">
       <div class="lands-top-text">
-        <Button variant="outline" v-if="isDetailsMode" type="button" class="lands-back-btn" @click="goToRegistry" aria-label="Назад к списку земель">
-          <ChevronLeftIcon :size="20" />
-          Назад к списку земель
-        </Button>
         <p v-if="!isDetailsMode" class="lands-subtitle">{{ landsListSubtitle }}</p>
       </div>
       <div class="lands-top-actions">
@@ -3759,7 +3766,7 @@ onMounted(() => void reloadAll())
             @update:model-value="(v) => (landsRootTab = v as typeof landsRootTab)"
           />
         </div>
-        <div v-if="!(isPhone && (landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs'))" class="lands-tabs lands-tabs--top">
+        <div v-if="!isPhone && (landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs')" class="lands-tabs lands-tabs--top">
           <template v-if="landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs'">
             <button type="button" class="lands-tab-btn" :class="{ 'is-active': landsRootTab === 'rights-refs' }" @click="landsRootTab = 'rights-refs'">
               Справочники прав
@@ -3830,7 +3837,7 @@ onMounted(() => void reloadAll())
               <thead>
                 <tr>
                   <th>Кадастровый номер</th>
-                  <th>№ ПОЛЯ ЕФИС ЗСН</th>
+                  <th>№ поля ЕФИС ЗСН</th>
                   <th>Адрес</th>
                   <th>Категория земли</th>
                   <th>Площадь, га</th>
@@ -3849,7 +3856,7 @@ onMounted(() => void reloadAll())
                   <td>{{ landEfisNumberDisplay(land) }}</td>
                   <td>{{ land.address || '—' }}</td>
                   <td>{{ land.land_category || '—' }}</td>
-                  <td>{{ Number(land.area || 0).toFixed(2) }}</td>
+                  <td>{{ formatHa(land.area || 0) }}</td>
                   <td>{{ land.permitted_use_docs || '—' }}</td>
                 </tr>
               </tbody>
@@ -3890,7 +3897,7 @@ onMounted(() => void reloadAll())
             <table class="lands-table" v-card-table>
               <thead>
                 <tr v-if="meliorationTab === 'systems'">
-                  <th>№ ПОЛЯ ЕФИС ЗСН</th>
+                  <th>№ поля ЕФИС ЗСН</th>
                   <th>Тип мелиорации</th>
                   <th>Вид мелиорации</th>
                   <th>Описание системы и местоположения</th>
@@ -3900,7 +3907,7 @@ onMounted(() => void reloadAll())
                   <th>Действия</th>
                 </tr>
                 <tr v-else-if="meliorationTab === 'forest'">
-                  <th>№ ПОЛЯ ЕФИС ЗСН</th>
+                  <th>№ поля ЕФИС ЗСН</th>
                   <th>Площадь МЗЛН, га</th>
                   <th>Количественные, качественные характеристики</th>
                   <th>Год создания</th>
@@ -3909,7 +3916,7 @@ onMounted(() => void reloadAll())
                   <th>Действия</th>
                 </tr>
                 <tr v-else>
-                  <th>№ ПОЛЯ ЕФИС ЗСН</th>
+                  <th>№ поля ЕФИС ЗСН</th>
                   <th>Тип мероприятия</th>
                   <th>Дата проведения</th>
                   <th>Площадь земельного участка, га</th>
@@ -3925,7 +3932,7 @@ onMounted(() => void reloadAll())
                     <td>{{ entry.melioration_subtype || '—' }}</td>
                     <td>{{ entry.description_location || '—' }}</td>
                     <td>{{ entry.cadastral_number || '—' }}</td>
-                    <td>{{ entry.commissioned_at || '—' }}</td>
+                    <td>{{ formatIsoDate(entry.commissioned_at) }}</td>
                     <td>{{ formatRotationMetric(entry.irrigated_area_ha ?? entry.area_ha) }}</td>
                   </template>
                   <template v-else-if="meliorationTab === 'forest'">
@@ -3937,7 +3944,7 @@ onMounted(() => void reloadAll())
                   </template>
                   <template v-else>
                     <td>{{ entry.event_type || '—' }}</td>
-                    <td>{{ entry.event_date || '—' }}</td>
+                    <td>{{ formatIsoDate(entry.event_date) }}</td>
                     <td>{{ formatRotationMetric(entry.area_ha) }}</td>
                     <td>{{ entry.project_approval || '—' }}</td>
                   </template>
@@ -4417,7 +4424,7 @@ onMounted(() => void reloadAll())
             <div class="lands-overview-item">
               <span>Площадь, га</span>
               <Input v-if="landInlineEditOpen" v-model.number="form.area" class="lands-passport-input" type="number" min="0" step="0.01" />
-              <strong v-else>{{ Number(selectedLand.area || 0).toFixed(2) }}</strong>
+              <strong v-else>{{ formatHa(selectedLand.area || 0) }}</strong>
             </div>
             <div class="lands-overview-item">
               <span class="lands-label-with-help">
@@ -4437,7 +4444,7 @@ onMounted(() => void reloadAll())
               <strong v-else>{{ selectedLand.cadastral_number || '—' }}</strong>
             </div>
             <div class="lands-overview-item">
-              <span>№ ПОЛЯ ЕФИС ЗСН</span>
+              <span>№ поля ЕФИС ЗСН</span>
               <strong>{{ landEfisNumberDisplay(selectedLand) }}</strong>
             </div>
             <div class="lands-overview-item">
@@ -4496,8 +4503,8 @@ onMounted(() => void reloadAll())
           </div>
         </template>
 
-        <Tabs :model-value="activeTab">
-          <TabsList>
+        <Tabs :model-value="activeTab" class="mb-4">
+          <TabsList class="max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="info" @click="activeTab = 'info'">
             Сведения об участке
           </TabsTrigger>
@@ -4535,7 +4542,7 @@ onMounted(() => void reloadAll())
           </div>
           <div v-if="!landInlineEditOpen" class="lands-overview-grid">
             <div class="lands-overview-item"><span>Общая площадь по документам, га</span><strong>{{ selectedLand.document_area_ha ?? '—' }}</strong></div>
-            <div class="lands-overview-item"><span>Площадь земельного участка, га</span><strong>{{ Number(selectedLand.area || 0).toFixed(2) }}</strong></div>
+            <div class="lands-overview-item"><span>Площадь земельного участка, га</span><strong>{{ formatHa(selectedLand.area || 0) }}</strong></div>
             <div class="lands-overview-item"><span>Отнесение к сельхозугодьям</span><strong>{{ landTypeLabelMap.get(selectedLand.agri_land_type_id || '') || '—' }}</strong></div>
             <div class="lands-overview-item"><span>Площадь сельхозугодий, га</span><strong>{{ selectedLand.agri_land_area_ha ?? '—' }}</strong></div>
             <div class="lands-overview-item"><span>Особо ценные продуктивные угодья</span><strong>{{ selectedLand.is_valuable_agri_land == null ? '—' : selectedLand.is_valuable_agri_land ? 'Да' : 'Нет' }}</strong></div>
@@ -4701,7 +4708,7 @@ onMounted(() => void reloadAll())
     </div>
 
     <teleport to="body">
-      <UiModal v-if="landEditorOpen" :title="landEditorMode === 'create' ? 'Новая земля' : 'Редактирование земли'" :max-width="1100" @close="closeLandEditor">
+      <UiModal v-if="landEditorOpen" :title="landEditorMode === 'create' ? 'Новая земля' : 'Редактирование земли'" :max-width="720" @close="closeLandEditor">
           <div class="lands-modal-body">
             <div class="lands-form-grid">
               <label class="lands-field">
@@ -4753,7 +4760,7 @@ onMounted(() => void reloadAll())
                 <UiSelect v-model="form.permittedUseDocs" :options="[{ value: '', label: '—' }, ...(landRightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
               </label>
               <label class="lands-field">
-                <span>№ ПОЛЯ ЕФИС ЗСН</span>
+                <span>№ поля ЕФИС ЗСН</span>
                 <span class="lands-muted-line">Заполняется автоматически из привязанных полей (раздел «Поля»).</span>
               </label>
             </div>
