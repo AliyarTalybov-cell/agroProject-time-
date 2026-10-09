@@ -27,6 +27,7 @@ import { askConfirm } from '@/composables/useConfirm'
 import { useAuth } from '@/stores/auth'
 import {
   loadCalendarTasks,
+  loadBusyCalendarTasks,
   loadCalendarTasksPage,
   loadTaskAssignees,
   updateTaskAssigneeStatus,
@@ -1244,7 +1245,7 @@ async function findParticipantConflicts(args: {
 
   const rows = await Promise.all(
     uniqueParticipants.map(async (uid) => {
-      const userTasks = await loadCalendarTasks(uid)
+      const userTasks = await loadBusyCalendarTasks(uid)
       return { uid, userTasks }
     }),
   )

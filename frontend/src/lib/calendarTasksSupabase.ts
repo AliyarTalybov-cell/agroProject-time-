@@ -92,6 +92,39 @@ export async function loadCalendarTasks(userId: string | null): Promise<Calendar
   })
 }
 
+/**
+ * События, в которые человек занят (для проверки пересечений по времени):
+ * где он участник и не отказался, плюс его собственные старые события без
+ * списка участников. Постановщик, не добавивший себя в участники, не занят.
+ */
+export async function loadBusyCalendarTasks(userId: string): Promise<CalendarTaskRow[]> {
+  if (!supabase) return []
+  const cols = 'id, user_id, date, title, description, start_time, end_time, priority, assignee, completed_at, created_at, updated_at'
+  const { data: mine, error: mineError } = await supabase
+    .from(ASSIGNEES_TABLE)
+    .select('task_id, status')
+    .eq('user_id', userId)
+  if (mineError) throw mineError
+  const busyIds = new Set((mine ?? []).filter((r) => r.status !== 'declined').map((r) => r.task_id as string))
+
+  const { data: created, error: createdError } = await supabase.from(TABLE).select('id').eq('user_id', userId)
+  if (createdError) throw createdError
+  const createdIds = (created ?? []).map((r) => r.id as string)
+  if (createdIds.length) {
+    const { data: withAssignees, error: waError } = await supabase
+      .from(ASSIGNEES_TABLE)
+      .select('task_id')
+      .in('task_id', createdIds)
+    if (waError) throw waError
+    const hasAssignees = new Set((withAssignees ?? []).map((r) => r.task_id as string))
+    for (const id of createdIds) if (!hasAssignees.has(id)) busyIds.add(id)
+  }
+  if (!busyIds.size) return []
+  const { data, error } = await supabase.from(TABLE).select(cols).in('id', [...busyIds])
+  if (error) throw error
+  return (data ?? []) as CalendarTaskRow[]
+}
+
 export async function loadCalendarTasksPage(args: LoadCalendarTasksPageArgs): Promise<CalendarTaskRow[]> {
   if (!supabase) return []
   const safePage = Math.max(1, Math.floor(args.page))
