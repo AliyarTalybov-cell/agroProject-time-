@@ -6,10 +6,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
-import { CheckIcon, DownloadIcon, FileTextIcon, MenuIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
+import { DownloadIcon, FileTextIcon, MenuIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
-import { computed, ref, onMounted, watch, nextTick } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
   isSupabaseConfigured,
@@ -34,8 +34,11 @@ import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
 import { downloadDelimited, escapeHtml, openPdfInNewTab, renderTablePdfFitPage } from '@/lib/tableExport'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
-import UiTrashIcon from '@/components/UiTrashIcon.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
+import UiModal from '@/components/ui/UiModal.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { toast } from 'vue-sonner'
 
 const DEFAULT_EQUIPMENT_TYPES = [
   { code: 'tractor', name: 'Трактор' },
@@ -70,11 +73,14 @@ const currentPage = ref(1)
 const equipmentTotal = ref(0)
 let equipmentSearchTimer: ReturnType<typeof setTimeout> | null = null
 const editingId = ref<string | null>(null)
+/** Окно «Новая техника / Техника» и «Орудие»: формы больше не висят над списком. */
+const equipmentModalOpen = ref(false)
+const implementModalOpen = ref(false)
+const modalError = ref('')
 const profiles = ref<ProfileRow[]>([])
 const implementOptions = ref<EquipmentImplementRow[]>([])
 const equipmentTypeRefs = ref<EquipmentTypeRefRow[]>([])
 const equipmentConditionRefs = ref<EquipmentConditionRefRow[]>([])
-const equipmentFormCardRef = ref<HTMLElement | null>(null)
 
 const implementsLoading = ref(false)
 const implementsSaving = ref(false)
@@ -378,6 +384,18 @@ function clearForm() {
   editingId.value = null
 }
 
+function openNewEquipment() {
+  clearForm()
+  modalError.value = ''
+  equipmentModalOpen.value = true
+}
+
+function closeEquipmentModal() {
+  if (saving.value) return
+  equipmentModalOpen.value = false
+  clearForm()
+}
+
 function startEdit(row: EquipmentRow) {
   editingId.value = row.id
   form.value = {
@@ -398,9 +416,8 @@ function startEdit(row: EquipmentRow) {
     responsible_id: row.responsible_id ?? '',
     notes: row.notes ?? '',
   }
-  void nextTick(() => {
-    equipmentFormCardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  })
+  modalError.value = ''
+  equipmentModalOpen.value = true
 }
 
 async function saveEquipment() {
@@ -409,6 +426,7 @@ async function saveEquipment() {
   if (!brand || !license_plate) return
   if (!isSupabaseConfigured()) return
   saving.value = true
+  modalError.value = ''
   try {
     if (editingId.value) {
       await updateEquipment(editingId.value, {
@@ -450,7 +468,11 @@ async function saveEquipment() {
       })
     }
     await fetchList()
+    toast.success(editingId.value ? 'Изменения сохранены' : 'Техника добавлена')
+    equipmentModalOpen.value = false
     clearForm()
+  } catch (e) {
+    modalError.value = formatSupabaseError(e) || 'Не удалось сохранить технику'
   } finally {
     saving.value = false
   }
@@ -463,8 +485,9 @@ async function removeEquipment(row: EquipmentRow) {
     await deleteEquipment(row.id)
     await fetchList()
     if (editingId.value === row.id) clearForm()
-  } catch {
-    // show error in UI if needed
+    toast.success('Техника удалена')
+  } catch (e) {
+    toast.error('Не удалось удалить технику', { description: formatSupabaseError(e) })
   }
 }
 
@@ -478,7 +501,21 @@ function clearImplementForm() {
   }
 }
 
+function openNewImplement() {
+  clearImplementForm()
+  modalError.value = ''
+  implementModalOpen.value = true
+}
+
+function closeImplementModal() {
+  if (implementsSaving.value) return
+  implementModalOpen.value = false
+  clearImplementForm()
+}
+
 function startEditImplement(row: EquipmentImplementRow) {
+  modalError.value = ''
+  implementModalOpen.value = true
   editingImplementId.value = row.id
   implementForm.value = {
     name: row.name,
@@ -493,6 +530,7 @@ async function saveImplement() {
   if (!name) return
   if (!isSupabaseConfigured()) return
   implementsSaving.value = true
+  modalError.value = ''
   try {
     if (editingImplementId.value) {
       await updateEquipmentImplement(editingImplementId.value, {
@@ -510,7 +548,11 @@ async function saveImplement() {
       })
     }
     await Promise.all([fetchImplementsPage(), fetchList()])
+    toast.success(editingImplementId.value ? 'Изменения сохранены' : 'Орудие добавлено')
+    implementModalOpen.value = false
     clearImplementForm()
+  } catch (e) {
+    modalError.value = formatSupabaseError(e) || 'Не удалось сохранить орудие'
   } finally {
     implementsSaving.value = false
   }
@@ -524,8 +566,9 @@ async function removeImplement(row: EquipmentImplementRow) {
     if (editingImplementId.value === row.id) clearImplementForm()
     if (form.value.implement_id === row.id) form.value.implement_id = ''
     await Promise.all([fetchImplementsPage(), fetchList()])
-  } catch {
-    // show error in UI if needed
+    toast.success('Орудие удалено')
+  } catch (e) {
+    toast.error('Не удалось удалить орудие', { description: formatSupabaseError(e) })
   }
 }
 
@@ -609,6 +652,12 @@ async function exportToPdf() {
     loadError.value = formatSupabaseError(e) || 'Не удалось сформировать PDF'
   }
 }
+
+/** Дата из базы «ГГГГ-ММ-ДД» — по-русски «ДД.ММ.ГГГГ». */
+function formatIsoDate(value: string | null | undefined): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '')
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : value || '—'
+}
 </script>
 
 <template>
@@ -626,165 +675,158 @@ async function exportToPdf() {
       </TabsList>
     </Tabs>
 
-    <!-- Новая единица техники -->
-    <div ref="equipmentFormCardRef" v-show="activeTab === 'equipment'" class="equipment-form-card card-rounded">
-      <div class="equipment-section-head">
-        <h2 class="equipment-form-title">
-          <MenuIcon class="equipment-section-icon" />
-          Новая единица техники
-        </h2>
-        <p class="equipment-form-hint">Поля со знаком <span class="equipment-required-star">*</span> обязательны</p>
-      </div>
-
+    <UiModal
+      v-if="equipmentModalOpen"
+      :title="editingId ? 'Техника' : 'Новая техника'"
+      :description="editingId ? `${form.brand} · ${form.license_plate}` : 'Обязательные поля отмечены звёздочкой.'"
+      :max-width="720"
+      :close-disabled="saving"
+      @close="closeEquipmentModal"
+    >
+      <form id="equipment-form" class="equipment-modal-form" @submit.prevent="saveEquipment">
+        <Alert v-if="modalError" variant="destructive" class="mb-4">
+          <AlertDescription>{{ modalError }}</AlertDescription>
+        </Alert>
       <div class="equipment-form-grid">
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-brand">Марка <span class="equipment-required-star">*</span></label>
-          <Input
-            id="eq-brand"
-            v-model="form.brand"
-            type="text"
-            class="equipment-input"
-            placeholder="Например: Камаз" />
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-brand">Марка <span class="equipment-required-star">*</span></label>
+            <Input
+              id="eq-brand"
+              v-model="form.brand"
+              type="text"
+              class="equipment-input"
+              placeholder="Например: Камаз" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-plate">Гос. номер <span class="equipment-required-star">*</span></label>
+            <Input
+              id="eq-plate"
+              v-model="form.license_plate"
+              type="text"
+              class="equipment-input"
+              placeholder="A 123 AA 77" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-factory-number">Заводской номер (VIN/PIN)</label>
+            <Input
+              id="eq-factory-number"
+              v-model="form.factory_number"
+              type="text"
+              class="equipment-input"
+              placeholder="Например: XTA12345678901234" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-epsm-psm">ЭПСМ/ПСМ (Паспорт самоходной машины)</label>
+            <Input
+              id="eq-epsm-psm"
+              v-model="form.epsm_psm"
+              type="text"
+              class="equipment-input"
+              placeholder="Например: ПСМ 12 345678" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-model">Модель</label>
+            <Input
+              id="eq-model"
+              v-model="form.model"
+              type="text"
+              class="equipment-input"
+              placeholder="Например: 8R 340" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label equipment-label--with-help" for="eq-type">
+              <span>Тип техники</span>
+              <RefFieldHelp
+                text="Нет нужного типа техники? Добавьте его в"
+                :to="{ path: '/lands', query: { tab: 'equipment-refs' } }"
+                link-label="Справочники техники"
+              />
+            </label>
+            <UiSelect v-model="form.equipment_type" :options="[...(equipmentTypeOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-type" class="equipment-input equipment-select" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-svr-number">СВР (Номер свидетельства о регистрации)</label>
+            <Input
+              id="eq-svr-number"
+              v-model="form.svr_number"
+              type="text"
+              class="equipment-input"
+              placeholder="Например: 1234567890" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-reg-cert">Свидетельство о регистрации (номер)</label>
+            <Input
+              id="eq-reg-cert"
+              v-model="form.registration_certificate"
+              type="text"
+              class="equipment-input"
+              placeholder="Например: АА 000000" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-year">Год выпуска</label>
+            <Input
+              id="eq-year"
+              v-model.number="form.year"
+              type="number"
+              class="equipment-input"
+              placeholder="YYYY"
+              min="1900"
+              max="2100" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-reg-date">Дата регистрации</label>
+            <UiDatePicker v-model="form.registration_date" id="eq-reg-date" class="equipment-input" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-dereg-date">Дата снятия с учета</label>
+            <UiDatePicker v-model="form.deregistration_date" id="eq-dereg-date" class="equipment-input" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-purpose">Назначение / Культура</label>
+            <Input
+              id="eq-purpose"
+              v-model="form.purpose_crop"
+              type="text"
+              class="equipment-input"
+              placeholder="Например: Уборка пшеницы" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-implement">Орудие</label>
+            <UiSelect v-model="form.implement_id" :options="[{ value: '', label: 'Не выбрано' }, ...(implementOptions).map((opt) => ({ value: opt.id, label: String(opt.name) }))]" id="eq-implement" class="equipment-input equipment-select" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-responsible">Ответственный</label>
+            <UiSelect v-model="form.responsible_id" :options="[{ value: '', label: 'Не назначен' }, ...(responsibleOptions).map((opt) => ({ value: opt.id, label: String(opt.label) }))]" id="eq-responsible" class="equipment-input equipment-select" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label equipment-label--with-help" for="eq-condition">
+              <span>Состояние</span>
+              <RefFieldHelp
+                text="Нет нужного состояния? Добавьте его в"
+                :to="{ path: '/lands', query: { tab: 'equipment-refs' } }"
+                link-label="Справочники техники"
+              />
+            </label>
+            <UiSelect v-model="form.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-condition" class="equipment-input equipment-select" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="eq-notes">Примечания</label>
+            <Input
+              id="eq-notes"
+              v-model="form.notes"
+              type="text"
+              class="equipment-input"
+              placeholder="Дополнительная информация" />
+          </div>
         </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-plate">Гос. номер <span class="equipment-required-star">*</span></label>
-          <Input
-            id="eq-plate"
-            v-model="form.license_plate"
-            type="text"
-            class="equipment-input"
-            placeholder="A 123 AA 77" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-factory-number">Заводской номер (VIN/PIN)</label>
-          <Input
-            id="eq-factory-number"
-            v-model="form.factory_number"
-            type="text"
-            class="equipment-input"
-            placeholder="Например: XTA12345678901234" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-epsm-psm">ЭПСМ/ПСМ (Паспорт самоходной машины)</label>
-          <Input
-            id="eq-epsm-psm"
-            v-model="form.epsm_psm"
-            type="text"
-            class="equipment-input"
-            placeholder="Например: ПСМ 12 345678" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-model">Модель</label>
-          <Input
-            id="eq-model"
-            v-model="form.model"
-            type="text"
-            class="equipment-input"
-            placeholder="Например: 8R 340" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label equipment-label--with-help" for="eq-type">
-            <span>Тип техники</span>
-            <RefFieldHelp
-              text="Нет нужного типа техники? Добавьте его в"
-              :to="{ path: '/lands', query: { tab: 'equipment-refs' } }"
-              link-label="Справочники техники"
-            />
-          </label>
-          <UiSelect v-model="form.equipment_type" :options="[...(equipmentTypeOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-type" class="equipment-input equipment-select" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-svr-number">СВР (Номер свидетельства о регистрации)</label>
-          <Input
-            id="eq-svr-number"
-            v-model="form.svr_number"
-            type="text"
-            class="equipment-input"
-            placeholder="Например: 1234567890" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-reg-cert">Свидетельство о регистрации (номер)</label>
-          <Input
-            id="eq-reg-cert"
-            v-model="form.registration_certificate"
-            type="text"
-            class="equipment-input"
-            placeholder="Например: АА 000000" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-year">Год выпуска</label>
-          <Input
-            id="eq-year"
-            v-model.number="form.year"
-            type="number"
-            class="equipment-input"
-            placeholder="YYYY"
-            min="1900"
-            max="2100" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-reg-date">Дата регистрации</label>
-          <UiDatePicker v-model="form.registration_date" id="eq-reg-date" class="equipment-input" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-dereg-date">Дата снятия с учета</label>
-          <UiDatePicker v-model="form.deregistration_date" id="eq-dereg-date" class="equipment-input" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-purpose">Назначение / Культура</label>
-          <Input
-            id="eq-purpose"
-            v-model="form.purpose_crop"
-            type="text"
-            class="equipment-input"
-            placeholder="Например: Уборка пшеницы" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-implement">Орудие</label>
-          <UiSelect v-model="form.implement_id" :options="[{ value: '', label: 'Не выбрано' }, ...(implementOptions).map((opt) => ({ value: opt.id, label: String(opt.name) }))]" id="eq-implement" class="equipment-input equipment-select" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-responsible">Ответственный</label>
-          <UiSelect v-model="form.responsible_id" :options="[{ value: '', label: 'Не назначен' }, ...(responsibleOptions).map((opt) => ({ value: opt.id, label: String(opt.label) }))]" id="eq-responsible" class="equipment-input equipment-select" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label equipment-label--with-help" for="eq-condition">
-            <span>Состояние</span>
-            <RefFieldHelp
-              text="Нет нужного состояния? Добавьте его в"
-              :to="{ path: '/lands', query: { tab: 'equipment-refs' } }"
-              link-label="Справочники техники"
-            />
-          </label>
-          <UiSelect v-model="form.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-condition" class="equipment-input equipment-select" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="eq-notes">Примечания</label>
-          <Input
-            id="eq-notes"
-            v-model="form.notes"
-            type="text"
-            class="equipment-input"
-            placeholder="Дополнительная информация" />
-        </div>
-      </div>
-
-      <div class="equipment-form-actions">
-        <Button variant="outline" type="button" class="equipment-btn equipment-btn-clear" @click="clearForm">
-          <UiTrashIcon class="equipment-btn-icon" aria-hidden="true" />
-          Очистить
-        </Button>
-        <Button variant="default"
-          type="button"
-          class="equipment-btn equipment-btn-save"
-          :disabled="saving || !form.brand.trim() || !form.license_plate.trim()"
-          @click="saveEquipment"
-        >
-          <CheckIcon class="equipment-btn-icon" />
-          Сохранить технику
-        </Button>
-      </div>
-    </div>
+      </form>
+      <template #actions>
+        <UiButton :disabled="saving" @click="closeEquipmentModal">Отмена</UiButton>
+        <UiButton variant="primary" type="submit" form="equipment-form" :disabled="saving || !form.brand.trim() || !form.license_plate.trim()">
+          {{ saving ? 'Сохранение…' : editingId ? 'Сохранить' : 'Добавить технику' }}
+        </UiButton>
+      </template>
+    </UiModal>
 
     <!-- Список техники -->
     <Card v-show="activeTab === 'equipment'" class="equipment-list-card card-rounded gap-0">
@@ -813,6 +855,10 @@ async function exportToPdf() {
             <FileTextIcon class="task-header-icon" :size="18" />
             PDF
           </button>
+          <Button type="button" @click="openNewEquipment">
+            <PlusIcon />
+            Добавить технику
+          </Button>
         </div>
       </div>
 
@@ -825,12 +871,12 @@ async function exportToPdf() {
             <tr>
               <th>Марка / Модель</th>
               <th>Гос. номер</th>
-              <th>Заводской номер (VIN/PIN)</th>
-              <th>ЭПСМ/ПСМ</th>
-              <th>СВР</th>
-              <th>Свидетельство о регистрации</th>
-              <th>Дата регистрации</th>
-              <th>Дата снятия с учета</th>
+              <th class="hidden 2xl:table-cell">Заводской номер (VIN/PIN)</th>
+              <th class="hidden 2xl:table-cell">ЭПСМ/ПСМ</th>
+              <th class="hidden 2xl:table-cell">СВР</th>
+              <th class="hidden 2xl:table-cell">Свидетельство о регистрации</th>
+              <th class="hidden 2xl:table-cell">Дата регистрации</th>
+              <th class="hidden 2xl:table-cell">Дата снятия с учета</th>
               <th>Тип техники</th>
               <th>Орудие</th>
               <th>Ответственный</th>
@@ -854,12 +900,12 @@ async function exportToPdf() {
               <td>
                 <span class="equipment-plate-badge">{{ row.license_plate }}</span>
               </td>
-              <td>{{ row.factory_number || '—' }}</td>
-              <td>{{ row.epsm_psm || '—' }}</td>
-              <td>{{ row.svr_number || '—' }}</td>
-              <td>{{ row.registration_certificate || '—' }}</td>
-              <td>{{ row.registration_date || '—' }}</td>
-              <td>{{ row.deregistration_date || '—' }}</td>
+              <td class="hidden 2xl:table-cell">{{ row.factory_number || '—' }}</td>
+              <td class="hidden 2xl:table-cell">{{ row.epsm_psm || '—' }}</td>
+              <td class="hidden 2xl:table-cell">{{ row.svr_number || '—' }}</td>
+              <td class="hidden 2xl:table-cell">{{ row.registration_certificate || '—' }}</td>
+              <td class="hidden 2xl:table-cell">{{ formatIsoDate(row.registration_date) }}</td>
+              <td class="hidden 2xl:table-cell">{{ formatIsoDate(row.deregistration_date) }}</td>
               <td>{{ equipmentTypeLabel(row.equipment_type) }}</td>
               <td>{{ implementLabelById(row.implement_id) }}</td>
               <td>
@@ -911,36 +957,11 @@ async function exportToPdf() {
               placeholder="Поиск по названию или назначению..."
               autocomplete="off" />
           </InputGroup>
+          <Button type="button" @click="openNewImplement">
+            <PlusIcon />
+            Добавить орудие
+          </Button>
         </div>
-      </div>
-
-      <div class="equipment-form-grid equipment-form-grid--implements">
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="impl-name">Название <span class="equipment-required-star">*</span></label>
-          <Input id="impl-name" v-model="implementForm.name" type="text" class="equipment-input" placeholder="Например: Плуг ПЛН-5-35" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="impl-purpose">Предназначение</label>
-          <Input id="impl-purpose" v-model="implementForm.purpose" type="text" class="equipment-input" placeholder="Например: Вспашка почвы" />
-        </div>
-        <div class="equipment-form-field">
-          <label class="equipment-label" for="impl-condition">Состояние</label>
-          <UiSelect v-model="implementForm.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="impl-condition" class="equipment-input equipment-select" />
-        </div>
-        <div class="equipment-form-field equipment-form-field--full">
-          <label class="equipment-label" for="impl-description">Описание</label>
-          <Input id="impl-description" v-model="implementForm.description" type="text" class="equipment-input" placeholder="Дополнительная информация по орудию" />
-        </div>
-      </div>
-      <div class="equipment-form-actions equipment-form-actions--implements">
-        <Button variant="outline" type="button" class="equipment-btn equipment-btn-clear" @click="clearImplementForm">
-          <UiTrashIcon class="equipment-btn-icon" aria-hidden="true" />
-          Очистить
-        </Button>
-        <Button variant="default" type="button" class="equipment-btn equipment-btn-save" :disabled="implementsSaving || !implementForm.name.trim()" @click="saveImplement">
-          <CheckIcon class="equipment-btn-icon" />
-          {{ editingImplementId ? 'Сохранить изменения' : 'Добавить орудие' }}
-        </Button>
       </div>
 
       <div v-if="implementsLoading" class="equipment-loading" role="status" aria-live="polite">
@@ -989,10 +1010,57 @@ async function exportToPdf() {
 
       <UiPagination v-if="implementsTotal > 0" :page="implementsPage" :page-size="implementsPageSize" :total="implementsTotal" :page-size-options="IMPLEMENTS_PAGE_SIZE_OPTIONS" @update:page="goToImplementsPage" @update:page-size="(n) => (implementsPageSize = n)" />
     </Card>
+      <UiModal
+      v-if="implementModalOpen"
+      :title="editingImplementId ? 'Орудие' : 'Новое орудие'"
+      :max-width="560"
+      :close-disabled="implementsSaving"
+      @close="closeImplementModal"
+    >
+      <form id="implement-form" class="equipment-modal-form" @submit.prevent="saveImplement">
+        <Alert v-if="modalError" variant="destructive" class="mb-4">
+          <AlertDescription>{{ modalError }}</AlertDescription>
+        </Alert>
+      <div class="equipment-form-grid equipment-form-grid--implements">
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="impl-name">Название <span class="equipment-required-star">*</span></label>
+            <Input id="impl-name" v-model="implementForm.name" type="text" class="equipment-input" placeholder="Например: Плуг ПЛН-5-35" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="impl-purpose">Предназначение</label>
+            <Input id="impl-purpose" v-model="implementForm.purpose" type="text" class="equipment-input" placeholder="Например: Вспашка почвы" />
+          </div>
+          <div class="equipment-form-field">
+            <label class="equipment-label" for="impl-condition">Состояние</label>
+            <UiSelect v-model="implementForm.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="impl-condition" class="equipment-input equipment-select" />
+          </div>
+          <div class="equipment-form-field equipment-form-field--full">
+            <label class="equipment-label" for="impl-description">Описание</label>
+            <Input id="impl-description" v-model="implementForm.description" type="text" class="equipment-input" placeholder="Дополнительная информация по орудию" />
+          </div>
+        </div>
+      </form>
+      <template #actions>
+        <UiButton :disabled="implementsSaving" @click="closeImplementModal">Отмена</UiButton>
+        <UiButton variant="primary" type="submit" form="implement-form" :disabled="implementsSaving || !implementForm.name.trim()">
+          {{ implementsSaving ? 'Сохранение…' : editingImplementId ? 'Сохранить' : 'Добавить орудие' }}
+        </UiButton>
+      </template>
+    </UiModal>
   </section>
 </template>
 
 <style scoped>
+/* Формы в окнах: две колонки вместо четырёх, промежутки по канону. */
+.equipment-modal-form :deep(.equipment-form-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+@media (max-width: 639px) {
+  .equipment-modal-form :deep(.equipment-form-grid) { grid-template-columns: 1fr; }
+}
+
 @layer legacy {
 /* Сообщение о неудавшейся загрузке или действии.
    Оформление то же, что у ошибок в ChatPage и LandsPage. */
@@ -1148,7 +1216,8 @@ async function exportToPdf() {
 .equipment-form-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .equipment-form-field--full {
@@ -1165,15 +1234,16 @@ async function exportToPdf() {
 }
 
 .equipment-label {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
+  color: var(--text-primary);
+  margin-bottom: 0;
 }
 
 .equipment-label--with-help {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
 }
 
 .equipment-input {
@@ -1475,7 +1545,10 @@ async function exportToPdf() {
 }
 
 .equipment-table--main {
-  min-width: 1760px;
+  min-width: 900px;
+}
+@media (min-width: 1536px) {
+  .equipment-table--main { min-width: 1600px; }
 }
 
 .equipment-table th,
