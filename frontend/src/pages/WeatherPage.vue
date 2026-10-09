@@ -243,7 +243,13 @@ function formatDuration(seconds: number | null | undefined): string {
 
 function formatValue(value: number | null | undefined, unit = '', digits = 0): string {
   if (value == null || !Number.isFinite(value)) return '—'
-  return `${value.toFixed(digits).replace(/\.0+$/, '')}${unit}`
+  return `${num(value, digits)}${unit}`
+}
+
+/** Число по-русски: «5,42», без лишних нулей. */
+function num(value: number | null | undefined, digits = 1): string {
+  if (value == null || !Number.isFinite(Number(value))) return '—'
+  return Number(value).toLocaleString('ru-RU', { maximumFractionDigits: digits })
 }
 
 type HourlyRiskLevel = 'safe' | 'warn' | 'risk'
@@ -400,7 +406,7 @@ const agroRiskCards = computed(() => {
     },
     {
       title: 'Влага почвы',
-      value: formatValue(soilMoisture, '', 3),
+      value: soilMoisture == null ? '—' : `${num(soilMoisture * 100, 1)}%`,
       text: soilMoisture == null ? 'Нет данных по верхнему слою' : soilMoisture < 0.18 ? 'Верхний слой сухой' : 'Верхний слой в норме',
       status: soilMoisture == null ? 'muted' : soilMoisture < 0.18 ? 'warn' : 'ok',
     },
@@ -468,7 +474,7 @@ const heroRecommendation = computed(() => {
   const okForSpray = wind <= 5 && (data.temp ?? 15) >= 5 && (data.temp ?? 15) <= 28
   const title = okForSpray ? 'Идеально для опрыскивания' : wind > 5 ? 'Отложите опрыскивание' : 'Умеренные условия'
   const items = [
-    { label: wind <= 5 ? 'Ветер в норме' : 'Ветер повышен', value: `${wind} м/с` },
+    { label: wind <= 5 ? 'Ветер в норме' : 'Ветер повышен', value: `${num(wind, 1)} м/с` },
     { label: 'Вер. осадков', value: `${Math.round(precip)}%` },
   ]
   return { title, items }
@@ -683,8 +689,8 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
           <div>
             <div class="weather-indicator-label">Ветер</div>
-            <div class="weather-indicator-value">{{ weather.windSpeed != null ? weather.windSpeed : '—' }} <span class="weather-indicator-muted">м/с, {{ weather.windDirection || '—' }}</span></div>
-            <div class="weather-indicator-sub">Порывы: {{ weather.windGusts != null ? weather.windGusts + ' м/с' : '—' }}</div>
+            <div class="weather-indicator-value">{{ num(weather.windSpeed, 1) }} <span class="weather-indicator-muted">м/с, {{ weather.windDirection || '—' }}</span></div>
+            <div class="weather-indicator-sub">Порывы: {{ weather.windGusts != null ? `${num(weather.windGusts, 1)} м/с` : '—' }}</div>
           </div>
         </div>
         <div class="weather-indicator-card">
@@ -707,7 +713,7 @@ const weatherMapFieldMarkers = computed(() => {
           <div class="weather-indicator-icon weather-icon-visibility"><EyeIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">Видимость</div>
-            <div class="weather-indicator-value">{{ weather.visibility != null ? Number((weather.visibility / 1000).toFixed(1)) : '—' }}<span class="weather-indicator-muted"> км</span></div>
+            <div class="weather-indicator-value">{{ weather.visibility != null ? num(weather.visibility / 1000, 1) : '—' }}<span class="weather-indicator-muted"> км</span></div>
             <div class="weather-indicator-sub">{{ weather.visibility == null ? '—' : (weather.visibility < 2000 ? 'Ограничена (возможен туман/осадки)' : 'Отличная видимость') }}</div>
           </div>
         </div>
@@ -732,7 +738,7 @@ const weatherMapFieldMarkers = computed(() => {
           <div class="weather-indicator-icon weather-icon-uv"><SunIcon :size="24" /></div>
           <div>
             <div class="weather-indicator-label">УФ-Индекс</div>
-            <div class="weather-indicator-value">{{ forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? '—' }} <span v-if="forecastWithLabels[0]?.uvIndexMax != null || weatherInsights?.airQuality?.uvIndex != null || weather.uvIndex != null" class="weather-badge" :class="((forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? 0) > 5) ? 'weather-badge-high' : 'weather-badge-low'">{{ ((forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? 0) > 5) ? 'Высокий' : 'Низкий' }}</span></div>
+            <div class="weather-indicator-value">{{ num(forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex, 1) }} <span v-if="forecastWithLabels[0]?.uvIndexMax != null || weatherInsights?.airQuality?.uvIndex != null || weather.uvIndex != null" class="weather-badge" :class="((forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? 0) > 5) ? 'weather-badge-high' : 'weather-badge-low'">{{ ((forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? 0) > 5) ? 'Высокий' : 'Низкий' }}</span></div>
             <div class="weather-indicator-sub">{{ ((forecastWithLabels[0]?.uvIndexMax ?? weatherInsights?.airQuality?.uvIndex ?? weather.uvIndex ?? 0) > 5) ? 'Требуется защита' : 'Контроль УФ по прогнозу' }}</div>
           </div>
         </div>
@@ -742,7 +748,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
           <div>
             <div class="weather-indicator-label">Темп. почвы</div>
-            <div class="weather-indicator-value">{{ weather.soilTemperature != null ? weather.soilTemperature : '—' }}<span class="weather-indicator-muted" v-if="weather.soilTemperature != null">°C</span></div>
+            <div class="weather-indicator-value">{{ num(weather.soilTemperature, 1) }}<span class="weather-indicator-muted" v-if="weather.soilTemperature != null">°C</span></div>
             <div class="weather-indicator-sub">{{ weather.soilTemperature != null ? 'Поверхность почвы' : 'Нет данных' }}</div>
           </div>
         </div>
@@ -753,7 +759,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
           <div>
             <div class="weather-indicator-label">Влажн. почвы</div>
-            <div class="weather-indicator-value">{{ weather.soilMoisture != null ? weather.soilMoisture : '—' }}</div>
+            <div class="weather-indicator-value">{{ weather.soilMoisture != null ? num(weather.soilMoisture * 100, 1) : '—' }}<span class="weather-indicator-muted" v-if="weather.soilMoisture != null">%</span></div>
             <div class="weather-indicator-sub">{{ weather.soilMoisture != null ? 'Верхний слой 0–1 см' : 'Нет данных' }}</div>
           </div>
         </div>
@@ -764,7 +770,7 @@ const weatherMapFieldMarkers = computed(() => {
           </div>
           <div>
             <div class="weather-indicator-label">Листья</div>
-            <div class="weather-indicator-value">{{ weather.vapourPressureDeficit != null ? weather.vapourPressureDeficit : '—' }}<span class="weather-indicator-muted" v-if="weather.vapourPressureDeficit != null"> кПа</span></div>
+            <div class="weather-indicator-value">{{ num(weather.vapourPressureDeficit, 2) }}<span class="weather-indicator-muted" v-if="weather.vapourPressureDeficit != null"> кПа</span></div>
             <div class="weather-indicator-sub">{{ weather.vapourPressureDeficit != null && weather.vapourPressureDeficit > 1.6 ? 'Сухой воздух, стресс листа' : 'VPD / риск пересыхания' }}</div>
           </div>
         </div>
@@ -799,7 +805,7 @@ const weatherMapFieldMarkers = computed(() => {
           <div>
             <div class="weather-indicator-label">Точка росы</div>
             <div class="weather-indicator-value weather-indicator-value-dew">
-              <span>{{ weather.dewPoint != null ? weather.dewPoint : '—' }}<span class="weather-indicator-muted" v-if="weather.dewPoint != null">°C</span></span>
+              <span>{{ num(weather.dewPoint, 1) }}<span class="weather-indicator-muted" v-if="weather.dewPoint != null">°C</span></span>
               <span v-if="weather.dewPoint != null" class="weather-dew-pill">Риск конденсата и росы</span>
             </div>
             <div v-if="weather.dewPoint == null" class="weather-indicator-sub">Нет данных</div>
@@ -880,7 +886,7 @@ const weatherMapFieldMarkers = computed(() => {
                 <img :src="getWeatherIconUrl(f.icon)" alt="" width="28" height="28" />
                 <span class="weather-field-mini-temp">{{ f.loading ? '…' : f.temp != null ? `${f.temp}°C` : '—' }}</span>
                 <span class="weather-field-mini-wind" :class="{ 'wind-strong': f.windStrong && !f.loading }">{{
-                  f.loading ? '…' : `Ветер ${f.wind} м/с${f.windDir ? ', ' + f.windDir : ''}`
+                  f.loading ? '…' : `Ветер ${num(f.wind, 1)} м/с${f.windDir ? ', ' + f.windDir : ''}`
                 }}</span>
               </div>
             </div>
@@ -918,7 +924,7 @@ const weatherMapFieldMarkers = computed(() => {
             <div class="weather-forecast-extra">
               <span>Осадки {{ day.pop }}%</span>
               <span v-if="day.precipitationSum != null">{{ day.precipitationSum }} мм</span>
-              <span v-if="day.windGusts != null">Порывы {{ day.windGusts }} м/с</span>
+              <span v-if="day.windGusts != null">Порывы {{ num(day.windGusts, 1) }} м/с</span>
               <span v-if="day.evapotranspiration != null">ET₀ {{ day.evapotranspiration }} мм</span>
               <span v-if="day.sunshineDuration != null">Солнце {{ formatDuration(day.sunshineDuration) }}</span>
             </div>

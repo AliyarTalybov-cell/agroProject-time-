@@ -2042,3 +2042,11 @@
   }
 }
 }
+
+/* Телефон: поиск во всю ширину, экспорт — под ним. */
+@media (max-width: 639px) {
+  .fields-toolbar .fields-search-wrap {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
