@@ -131,19 +131,15 @@ onMounted(() => void loadData())
 
 <template>
   <section class="news-details">
-    <div class="news-details-top">
-      <Button variant="outline" type="button" class="news-back-btn" @click="goBack" aria-label="Назад к новостям">
-        <ChevronLeftIcon class="news-back-btn-icon" :size="22" />
-        Назад к новостям
+    <div v-if="isManager && post" class="tw-scope mb-4 flex justify-end gap-2">
+      <Button variant="outline" size="sm" type="button" @click="openEdit">
+        <PenLineIcon />
+        Изменить
       </Button>
-      <div v-if="isManager && post" class="news-details-actions">
-        <Button variant="ghost" size="icon-sm" type="button" class="news-icon-btn" aria-label="Редактировать новость" title="Редактировать" @click="openEdit">
-          <PenLineIcon :size="18" />
-        </Button>
-        <Button variant="ghost" size="icon-sm" type="button" class="news-icon-btn news-icon-btn--danger" aria-label="Удалить новость" title="Удалить" @click="removePost">
-          <Trash2Icon :size="18" />
-        </Button>
-      </div>
+      <Button variant="ghost" size="sm" type="button" class="text-destructive hover:bg-destructive/10 hover:text-destructive" @click="removePost">
+        <Trash2Icon />
+        Удалить
+      </Button>
     </div>
 
     <div v-if="loading"><UiLoadingBar /></div>
