@@ -2,8 +2,9 @@
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
 import { Button } from '@/components/ui/shadcn/button'
-import { CalendarIcon, MailIcon, PhoneIcon, PlusIcon, SearchIcon, SlidersVerticalIcon } from '@lucide/vue'
+import { CalendarIcon, MailIcon, PhoneIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useAuth } from '@/stores/auth'
@@ -32,7 +33,7 @@ const search = ref('')
 const positionFilter = ref<string>('')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 const page = ref(1)
-const pageSize = ref(5)
+const pageSize = ref(8)
 const total = ref(0)
 
 const createOpen = ref(false)
@@ -165,30 +166,21 @@ function openEmployee(e: EmployeeRow) {
 
 <template>
   <section class="emp-page page-enter-item">
-    <header class="emp-header">
-      <div>
-        <p class="emp-subtitle">Управление персоналом и доступом к системе.</p>
+    <PageToolbar class="tw-scope mb-6">
+      <InputGroup class="w-full sm:w-72">
+        <InputGroupAddon><SearchIcon /></InputGroupAddon>
+        <InputGroupInput v-model.trim="search" type="search" placeholder="Имя, почта, телефон" aria-label="Поиск сотрудника" />
+      </InputGroup>
+      <div class="w-full sm:w-56">
+        <UiSelect v-model="positionFilter" block aria-label="Фильтр по должности" :options="[{ value: '', label: 'Все должности' }, ...positions.map((p) => ({ value: p.name, label: String(p.name) }))]" />
       </div>
-
-      <div class="emp-actions">
-        <InputGroup class="emp-search-wrap max-w-sm">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput v-model.trim="search" type="text" placeholder="Поиск сотрудника..." />
-        </InputGroup>
-
-        <div class="emp-filter-wrap">
-          <SlidersVerticalIcon class="emp-filter-icon" aria-hidden="true" />
-          <UiSelect v-model="positionFilter" :options="[{ value: '', label: 'Должность: все' }, ...(positions).map((p) => ({ value: p.name, label: String(p.name) }))]" class="emp-filter-select" aria-label="Фильтр по должности" />
-        </div>
-
-        <Button variant="default" type="button" class="emp-btn emp-btn--primary" :disabled="!canManage" @click="createOpen = true">
-          <PlusIcon class="emp-btn-icon" />
-          Добавить
+      <template #actions>
+        <Button type="button" :disabled="!canManage" @click="createOpen = true">
+          <PlusIcon />
+          Добавить сотрудника
         </Button>
-      </div>
-    </header>
+      </template>
+    </PageToolbar>
 
     <div v-if="!isSupabaseConfigured()" class="emp-empty card" role="status">
       Supabase не настроен. Добавьте `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` в `frontend/.env.local`.
@@ -223,7 +215,7 @@ function openEmployee(e: EmployeeRow) {
             />
             <div class="emp-card-meta">
               <div class="emp-name">{{ e.display_name || e.email }}</div>
-              <div class="emp-position">{{ e.position || '—' }}</div>
+              <div class="emp-position">{{ e.position || 'Должность не указана' }}</div>
             </div>
           </div>
 
@@ -251,7 +243,7 @@ function openEmployee(e: EmployeeRow) {
           </div>
         </Card>
       </div>
-      <UiPagination v-if="!loading && total > 0" :page="page" :page-size="pageSize" :total="total" :page-size-options="[5, 8, 12, 24, 48]" @update:page="goPage" @update:page-size="(n) => (pageSize = n)" />
+      <UiPagination v-if="!loading && total > 0" :page="page" :page-size="pageSize" :total="total" :page-size-options="[8, 12, 24, 48]" @update:page="goPage" @update:page-size="(n) => (pageSize = n)" />
     </div>
 
     <EmployeeCreateModal

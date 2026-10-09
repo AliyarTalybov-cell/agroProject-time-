@@ -158,6 +158,41 @@ export async function loadPositions(): Promise<PositionRow[]> {
 }
 
 /**
+ * Ошибка вызова функции сервера (admin-*-employee) — понятным текстом.
+ * Причину отказа функция пишет в теле ответа ({ error }), supabase-js кладёт
+ * сам ответ в error.context — читаем его, а не показываем «Forbidden».
+ */
+export async function describeFunctionError(error: unknown): Promise<Error> {
+  const e = error as { message?: string; context?: Response | { status?: number } }
+  const msg = e?.message ?? String(error)
+  if (msg.includes('Failed to send a request')) {
+    return new Error('Сервер не отвечает. Проверьте подключение и попробуйте ещё раз.')
+  }
+  const ctx = e?.context
+  const status = ctx && 'status' in ctx ? ctx.status : undefined
+  let reason = ''
+  if (ctx && typeof (ctx as Response).clone === 'function') {
+    try {
+      const body = await (ctx as Response).clone().json()
+      if (body && typeof body === 'object' && 'error' in body) reason = String((body as { error: unknown }).error ?? '')
+    } catch {
+      try {
+        reason = (await (ctx as Response).clone().text()).trim()
+      } catch {
+        reason = ''
+      }
+    }
+  }
+  // Служебные «Forbidden» / «Unauthorized» причиной не считаем.
+  if (/^(forbidden|unauthorized|internal server error)$/i.test(reason)) reason = ''
+  if (status === 401 || status === 403) {
+    return new Error(reason ? `Нет прав на это действие: ${reason}` : 'Нет прав на это действие. Изменять сотрудников может только руководитель.')
+  }
+  if (reason) return new Error(reason)
+  return new Error(status ? `Сервер вернул ошибку (код ${status}). Попробуйте позже.` : msg)
+}
+
+/**
  * Создание сотрудника с паролем нельзя безопасно делать напрямую из браузера,
  * поэтому вызываем Supabase Edge Function `admin-create-employee`.
  */
@@ -173,7 +208,7 @@ export async function createEmployee(payload: CreateEmployeePayload): Promise<{ 
     body: { ...payload, accessToken: session.access_token },
     headers: { Authorization: `Bearer ${session.access_token}` },
   })
-  if (error) throw error
+  if (error) throw await describeFunctionError(error)
   const backendError =
     data && typeof data === 'object' && 'error' in (data as Record<string, unknown>)
       ? String((data as Record<string, unknown>).error ?? '')
@@ -206,30 +241,7 @@ export async function updateEmployee(payload: UpdateEmployeePayload): Promise<vo
     body: { ...payload, accessToken: session.access_token },
     headers: { Authorization: `Bearer ${session.access_token}` },
   })
-  if (error) {
-    const anyErr = error as unknown as {
-      message?: string
-      context?: { status?: number; statusText?: string; body?: unknown }
-    }
-    const msg = anyErr?.message ?? (error instanceof Error ? error.message : String(error))
-    const status = anyErr?.context?.status
-    const statusText = anyErr?.context?.statusText
-    const body = anyErr?.context?.body
-    const bodyError =
-      body && typeof body === 'object' && 'error' in (body as Record<string, unknown>) ? String((body as Record<string, unknown>).error) : null
-    const details = bodyError || (typeof body === 'string' ? body : null)
-
-    if (msg.includes('Failed to send a request to the Edge Function')) {
-      throw new Error(
-        'Не удалось вызвать Edge Function `admin-update-employee` (функция недоступна или не задеплоена). Проверьте деплой через Supabase CLI.',
-      )
-    }
-    if (msg.includes('Edge Function returned a non-2xx status code')) {
-      const tail = [status != null ? `HTTP ${status}` : null, statusText || null, details || null].filter(Boolean).join(' — ')
-      throw new Error(`Ошибка Edge Function: ${tail || 'non-2xx'}`)
-    }
-    throw error
-  }
+  if (error) throw await describeFunctionError(error)
 }
 
 export async function deleteEmployee(id: string): Promise<void> {
@@ -244,6 +256,6 @@ export async function deleteEmployee(id: string): Promise<void> {
     body: { id, accessToken: session.access_token },
     headers: { Authorization: `Bearer ${session.access_token}` },
   })
-  if (error) throw error
+  if (error) throw await describeFunctionError(error)
 }
 
