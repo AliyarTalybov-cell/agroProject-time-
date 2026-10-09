@@ -471,6 +471,16 @@ function formatIsoDate(value: string | null | undefined): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '')
   return m ? `${m[3]}.${m[2]}.${m[1]}` : value || '—'
 }
+
+/** Длительность: «45 мин», «2 ч 5 мин», «3 дн 4 ч». */
+function formatDuration(minutes: number | null | undefined): string {
+  const m = Math.max(0, Math.round(Number(minutes) || 0))
+  if (m < 60) return `${m} мин`
+  const h = Math.floor(m / 60)
+  if (h < 24) return m % 60 ? `${h} ч ${m % 60} мин` : `${h} ч`
+  const d = Math.floor(h / 24)
+  return h % 24 ? `${d} дн ${h % 24} ч` : `${d} дн`
+}
 </script>
 
 <template>
@@ -768,7 +778,7 @@ function formatIsoDate(value: string | null | undefined): string {
                   <div class="equipment-history-op-text">
                     <div class="equipment-history-op-title">{{ h.operation || 'Операция' }}</div>
                     <div class="equipment-history-op-meta">
-                      {{ formatDateTime(h.startISO) }} • Длительность: {{ h.durationMinutes }} мин
+                      {{ formatDateTime(h.startISO) }} · {{ formatDuration(h.durationMinutes) }}
                     </div>
                   </div>
                 </div>
@@ -831,8 +841,8 @@ function formatIsoDate(value: string | null | undefined): string {
                       </span>
                       <span class="equipment-history-body-col-label">Список дел / заметки</span>
                     </div>
-                    <div class="equipment-history-body-box">
-                      {{ h.notes || '—' }}
+                    <div class="equipment-history-body-box" :class="{ 'equipment-history-body-box--empty': !h.notes }">
+                      {{ h.notes || 'Нет' }}
                     </div>
                   </div>
 
@@ -843,8 +853,8 @@ function formatIsoDate(value: string | null | undefined): string {
                       </span>
                       <span class="equipment-history-body-col-label">Починка / проблемы</span>
                     </div>
-                    <div class="equipment-history-body-box">
-                      {{ h.equipmentRepairNotes || '—' }}
+                    <div class="equipment-history-body-box" :class="{ 'equipment-history-body-box--empty': !h.equipmentRepairNotes }">
+                      {{ h.equipmentRepairNotes || 'Нет' }}
                     </div>
                   </div>
                 </div>

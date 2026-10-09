@@ -1184,7 +1184,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   border: none;
   background: none;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -1288,7 +1288,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 }
 .field-details-map-hint {
   margin: 8px 0 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 .field-details-geometry-head {
@@ -1310,7 +1310,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   background: transparent;
   color: var(--text-secondary);
   padding: 7px 12px;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1323,12 +1323,12 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 }
 .field-details-geometry-area-hint {
   margin-top: 4px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 .field-details-map-status {
   margin: 6px 0 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 .field-details-map-status--error {
@@ -1340,7 +1340,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   gap: 4px;
 }
 .field-details-address-candidates-label {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 .field-details-address-candidates-select {
@@ -1360,7 +1360,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   margin-bottom: 10px;
 }
 .field-details-view-map-title {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -1373,7 +1373,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   height: 280px;
 }
 .field-details-edit-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -1392,7 +1392,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   border: 1px solid var(--input-border);
   background: var(--input-bg);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-family: inherit;
   box-shadow: var(--shadow-xs);
 }
@@ -1430,7 +1430,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   opacity: 0.7;
 }
 .field-details-scheme-hint {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 .field-details-edit-actions {
@@ -1444,7 +1444,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   border: 1px solid var(--input-border);
   background: var(--bg-panel);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   box-shadow: var(--shadow-xs);
@@ -1458,7 +1458,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   border: none;
   background: var(--accent-green);
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
 }
@@ -1475,7 +1475,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 .field-details-cancel-btn--compact,
 .field-details-save-btn--compact {
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 .field-details-title-icon {
   flex-shrink: 0;
@@ -1494,14 +1494,14 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 }
 .field-details-name {
   margin: 0 0 4px;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 .field-details-meta {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 .field-details-status {
@@ -1529,7 +1529,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   grid-template-columns: auto 1fr auto;
   gap: 12px;
   align-items: start;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 .field-details-item-icon {
   color: var(--text-secondary);
@@ -1565,13 +1565,13 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   gap: 12px;
 }
 .field-details-notes-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
 .field-details-notes-text {
   margin: 4px 0 0;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-primary);
   white-space: pre-wrap;
 }
@@ -1599,13 +1599,13 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 }
 .field-details-media-title {
   margin: 0 0 4px;
-  font-size: 1.15rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 .field-details-media-subtitle {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 .field-details-file-hidden {
@@ -1624,7 +1624,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   border: 1px solid var(--input-border);
   background: var(--bg-panel);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
@@ -1655,7 +1655,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   margin-bottom: 24px;
 }
 .field-details-main-media-label {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 8px;
@@ -1664,7 +1664,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   gap: 8px;
 }
 .field-details-main-media-badge {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
   display: inline-flex;
@@ -1704,19 +1704,19 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   justify-content: center;
   gap: 12px;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 .field-details-main-media-placeholder svg {
   opacity: 0.5;
 }
 .field-details-main-media-desc {
   margin: 8px 0 4px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 .field-details-main-media-date {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -1852,20 +1852,20 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 }
 
 .field-history-title {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .field-history-meta {
   margin-top: 2px;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .field-history-duration {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -1895,7 +1895,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 }
 
 .field-history-value {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
   word-break: break-word;
@@ -1913,7 +1913,7 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   border: 1px solid rgba(76, 175, 80, 0.5);
   background: rgba(76, 175, 80, 0.15);
   color: var(--text-primary);
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
   max-width: 100%;
