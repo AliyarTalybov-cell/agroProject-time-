@@ -224,7 +224,7 @@ watch(
     </div>
 
     <template #actions>
-      <UiButton variant="danger" class="sm:mr-auto" :disabled="busy" @click="confirmDelete = true">
+      <UiButton variant="danger-quiet" class="sm:mr-auto" :disabled="busy" @click="confirmDelete = true">
         <Trash2 />
         Удалить
       </UiButton>

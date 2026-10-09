@@ -6,7 +6,18 @@ import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
 import UiPersonPicker from '@/components/ui/UiPersonPicker.vue'
-import { CirclePlusIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon } from '@lucide/vue'
+import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon, CirclePlusIcon, ClipboardListIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { ButtonGroup } from '@/components/ui/shadcn/button-group'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Separator } from '@/components/ui/shadcn/separator'
+import { Spinner } from '@/components/ui/shadcn/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import UiBadge, { type UiBadgeTone } from '@/components/ui/UiBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -660,6 +671,9 @@ function applyDateFilter() {
   filterDateTo.value = dateToInput.value
 }
 
+// Даты применяются сразу при выборе — как остальные фильтры.
+watch([dateFromInput, dateToInput], applyDateFilter)
+
 watch(
   () => [filterDateFrom.value, filterDateTo.value, filterEmployeeId.value, filterStatus.value, activeFilter.value],
   () => {
@@ -1083,193 +1097,200 @@ async function exportToPdf() {
   }
 }
 
-function priorityClass(p: Priority) {
-  return { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' }[p]
+const TASK_EVENT_LABELS: Record<string, string> = {
+  created: 'создал задачу',
+  comment_added: 'оставил комментарий',
+  field_changed: 'изменил объект',
+  work_type_changed: 'изменил тип работ',
+  priority_changed: 'изменил приоритет',
+  due_date_changed: 'изменил срок',
+  assignee_changed: 'сменил исполнителя',
+  title_changed: 'изменил название',
+  description_changed: 'изменил описание',
 }
-function statusClass(s: Status) {
-  return {
-    todo: 'status-todo',
-    in_progress: 'status-in-progress',
-    review: 'status-review',
-    done: 'status-done',
-  }[s]
+function taskEventLabel(type: string): string {
+  return TASK_EVENT_LABELS[type] ?? 'изменил задачу'
+}
+function statusTone(s: Status): UiBadgeTone {
+  return ({ todo: 'neutral', in_progress: 'info', review: 'warning', done: 'success' } as const)[s]
+}
+function priorityTone(p: Priority): UiBadgeTone {
+  return ({ high: 'danger', medium: 'warning', low: 'neutral' } as const)[p]
+}
+function sortIcon(key: TaskSortKey) {
+  const d = sortIndicator(key)
+  return d === 'asc' ? ArrowUpIcon : d === 'desc' ? ArrowDownIcon : ChevronsUpDownIcon
 }
 </script>
 
 <template>
-  <section class="task-management-page page-enter-item">
-    <p v-if="boardError" class="tm-error" role="alert">{{ boardError }}</p>
-    <header class="task-header">
-      <div class="task-header-left">
-        <div class="task-filter-row">
-          <Tabs :model-value="activeFilter">
-            <TabsList>
-              <TabsTrigger :value="f.key"
-              v-for="f in filters"
-              :key="f.key"
-             
-              @click="activeFilter = f.key">
-              {{ f.label }}
-            </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <UiSelect v-model="filterEmployeeId" :options="[{ value: '', label: 'Все сотрудники' }, { value: TASK_ASSIGNEE_FILTER_UNASSIGNED, label: 'Без исполнителя' }, ...(assignees).map((a) => ({ value: a.id, label: String(a.name) }))]" v-if="isManager" class="task-filter-pill task-filter-pill--select" title="Сотрудник" :disabled="!assignees.length" />
-          <UiSelect v-model="filterStatus" :options="[{ value: '', label: 'Все статусы' }, ...(statusColumns).map((col) => ({ value: col.key, label: String(col.title) }))]" class="task-filter-pill task-filter-pill--select" title="Статус" />
-          <div class="task-filter-dates">
-            <span class="task-filter-date-label">С</span>
-            <UiDatePicker v-model="dateFromInput" placeholder="Дата с" class="task-filter-date" />
-            <span class="task-filter-date-label">По</span>
-            <UiDatePicker v-model="dateToInput" placeholder="Дата по" class="task-filter-date" />
-            <button type="button" class="task-filter-tab task-filter-apply-dates" @click="applyDateFilter">
-              Применить
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="task-header-actions">
-        <InputGroup class="task-search-wrap max-w-sm">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput
-            v-model.trim="searchTaskNumber"
-            type="text"
-            inputmode="numeric"
-            placeholder="Поиск по номеру" />
-        </InputGroup>
-        <div class="task-export-btns">
-          <button
-            type="button"
-            class="task-btn-export action_has has_saved"
-            :disabled="!filteredTasks.length"
-            title="Экспорт в PDF (предпросмотр)"
-            @click="exportToPdf"
-          >
-            <FileTextIcon class="task-header-icon" />
+  <section class="tw-scope flex flex-col gap-6">
+    <Alert v-if="boardError" variant="destructive">
+      <AlertDescription>{{ boardError }}</AlertDescription>
+    </Alert>
+
+    <PageToolbar>
+      <Tabs :model-value="activeFilter">
+        <TabsList>
+          <TabsTrigger v-for="f in filters" :key="f.key" :value="f.key" @click="activeFilter = f.key">
+            {{ f.label }}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <template #actions>
+        <ButtonGroup>
+          <Button variant="outline" :disabled="!filteredTasks.length" title="Экспорт в PDF (предпросмотр)" @click="exportToPdf">
+            <FileTextIcon />
             PDF
-          </button>
-          <button
-            type="button"
-            class="task-btn-export action_has has_saved"
-            :disabled="!filteredTasks.length"
-            title="Экспорт в Excel"
-            @click="exportToExcel"
-          >
-            <FileSpreadsheetIcon class="task-header-icon" />
+          </Button>
+          <Button variant="outline" :disabled="!filteredTasks.length" title="Экспорт в Excel" @click="exportToExcel">
+            <FileSpreadsheetIcon />
             Excel
-          </button>
-        </div>
-        <Button variant="default" type="button" class="task-btn-create" @click="openCreate">
-          <PlusIcon class="task-header-icon task-btn-create-icon" />
+          </Button>
+        </ButtonGroup>
+        <Button @click="openCreate">
+          <PlusIcon />
           Создать задачу
         </Button>
-      </div>
-    </header>
+      </template>
+    </PageToolbar>
 
-    <div v-if="tasksLoading" class="task-loading" role="status" aria-live="polite">
-      <UiLoadingBar />
+    <div class="-mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+      <InputGroup class="col-span-2 sm:w-52">
+        <InputGroupAddon>
+          <SearchIcon />
+        </InputGroupAddon>
+        <InputGroupInput v-model.trim="searchTaskNumber" type="text" inputmode="numeric" placeholder="Номер задачи" />
+      </InputGroup>
+      <div v-if="isManager" class="min-w-0 sm:w-48">
+        <UiSelect
+          v-model="filterEmployeeId"
+          block
+          :options="[{ value: '', label: 'Все сотрудники' }, { value: TASK_ASSIGNEE_FILTER_UNASSIGNED, label: 'Без исполнителя' }, ...assignees.map((a) => ({ value: a.id, label: String(a.name) }))]"
+          aria-label="Сотрудник"
+          :disabled="!assignees.length"
+        />
+      </div>
+      <div class="min-w-0 sm:w-40">
+        <UiSelect
+          v-model="filterStatus"
+          block
+          :options="[{ value: '', label: 'Все статусы' }, ...statusColumns.map((col) => ({ value: col.key, label: String(col.title) }))]"
+          aria-label="Статус"
+        />
+      </div>
+      <UiDatePicker v-model="dateFromInput" placeholder="Срок с" clearable block class="sm:w-36" />
+      <UiDatePicker v-model="dateToInput" placeholder="Срок по" clearable block class="sm:w-36" />
     </div>
-    <div v-show="!tasksLoading" class="task-list-wrap">
-      <div class="task-list-table-wrapper">
-        <table class="task-list-table">
-          <thead>
-            <tr>
-              <th class="task-list-cell-num">
-                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('number')">
-                  №
-                  <span class="task-list-sort-indicator">{{ sortIndicator('number') === 'asc' ? '↑' : sortIndicator('number') === 'desc' ? '↓' : '↕' }}</span>
-                </Button>
-              </th>
-              <th>
-                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('title')">
-                  Название задачи
-                  <span class="task-list-sort-indicator">{{ sortIndicator('title') === 'asc' ? '↑' : sortIndicator('title') === 'desc' ? '↓' : '↕' }}</span>
-                </Button>
-              </th>
-              <th class="task-list-cell-desc-header">Описание</th>
-              <th>
-                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('assignee')">
-                  Исполнитель
-                  <span class="task-list-sort-indicator">{{ sortIndicator('assignee') === 'asc' ? '↑' : sortIndicator('assignee') === 'desc' ? '↓' : '↕' }}</span>
-                </Button>
-              </th>
-              <th>
-                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('priority')">
-                  Приоритет
-                  <span class="task-list-sort-indicator">{{ sortIndicator('priority') === 'asc' ? '↑' : sortIndicator('priority') === 'desc' ? '↓' : '↕' }}</span>
-                </Button>
-              </th>
-              <th>
-                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('dueDate')">
-                  Срок
-                  <span class="task-list-sort-indicator">{{ sortIndicator('dueDate') === 'asc' ? '↑' : sortIndicator('dueDate') === 'desc' ? '↓' : '↕' }}</span>
-                </Button>
-              </th>
-              <th>
-                <Button variant="ghost" size="sm" type="button" class="task-list-sort-btn" @click="setListSort('status')">
-                  Статус
-                  <span class="task-list-sort-indicator">{{ sortIndicator('status') === 'asc' ? '↑' : sortIndicator('status') === 'desc' ? '↓' : '↕' }}</span>
-                </Button>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(task, index) in paginatedTasks"
-              :key="task.id"
-              class="task-list-row"
+
+    <div v-if="tasksLoading" class="overflow-hidden rounded-xl border">
+      <div v-for="i in 6" :key="i" class="flex items-center gap-4 border-b px-4 py-3 last:border-b-0">
+        <Skeleton class="h-4 w-8" />
+        <Skeleton class="h-4 flex-1" />
+        <Skeleton class="hidden h-4 w-32 md:block" />
+        <Skeleton class="hidden h-5 w-20 rounded-full md:block" />
+      </div>
+    </div>
+
+    <template v-else>
+      <Empty v-if="!paginatedTasks.length" class="rounded-xl border border-dashed">
+        <EmptyHeader>
+          <EmptyMedia variant="icon"><ClipboardListIcon /></EmptyMedia>
+          <EmptyTitle>Задач нет</EmptyTitle>
+          <EmptyDescription>По выбранным фильтрам ничего не найдено. Измените фильтры или создайте задачу.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+
+      <template v-else>
+        <!-- Телефон: карточки -->
+        <ul class="grid grid-cols-1 gap-3 md:hidden">
+          <li v-for="task in paginatedTasks" :key="task.id">
+            <button
+              type="button"
+              class="grid w-full min-w-0 grid-cols-1 gap-3 rounded-xl border bg-card p-4 text-left shadow-xs transition-colors hover:bg-muted/50"
               @click="openTask(task.id)"
             >
-              <td class="task-list-cell-num" data-label="№">{{ getTaskNumber(task.id) }}</td>
-              <td class="task-list-cell-title" data-label="Название задачи">
-                <div class="task-list-title-cell" :title="taskListSubtitleTitle(task) || task.title">
-                  <span class="task-list-title-main">{{ task.title }}</span>
-                  <span v-if="taskListContextLine(task)" class="task-list-title-meta">
-                    {{ taskListContextLine(task) }}
-                  </span>
+              <div class="flex items-start justify-between gap-3">
+                <div class="grid min-w-0 gap-1">
+                  <span class="text-xs text-muted-foreground tabular-nums">№ {{ getTaskNumber(task.id) }}</span>
+                  <span class="font-medium leading-snug">{{ task.title }}</span>
+                  <span v-if="taskListContextLine(task)" class="truncate text-xs text-muted-foreground">{{ taskListContextLine(task) }}</span>
                 </div>
-              </td>
-              <td
-                class="task-list-cell-desc"
-                data-label="Описание"
-                :title="taskListDescriptionFull(task)"
-              >
-                <span v-if="taskListDescriptionPreview(task)" class="task-list-desc">
-                  {{ taskListDescriptionPreview(task) }}
+                <UiBadge :tone="statusTone(task.status)">{{ statusTitle(task.status) }}</UiBadge>
+              </div>
+              <div class="flex items-center justify-between gap-3 text-sm">
+                <span class="flex min-w-0 items-center gap-2">
+                  <UserAvatar class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(task.assignee.id)" :url="avatarUrlByUserId(task.assignee.id)" :initials="task.assignee.initials" />
+                  <span class="truncate text-muted-foreground">{{ task.assignee.name }}</span>
                 </span>
-                <span v-else class="task-list-desc-empty">—</span>
-              </td>
-              <td class="task-list-cell-assignee" data-label="Исполнитель">
-                <div class="task-list-assignee-inner">
-                  <UserAvatar class="task-list-avatar" :style="avatarStyleByUserId(task.assignee.id)" :url="avatarUrlByUserId(task.assignee.id)" :initials="task.assignee.initials" />
-                  <span class="task-list-assignee-name">{{ task.assignee.name }}</span>
-                </div>
-              </td>
-              <td class="task-list-cell-priority" data-label="Приоритет">
-                <span class="task-pill" :class="priorityClass(task.priority)">
-                  {{ task.priority === 'high' ? 'Высокий' : task.priority === 'medium' ? 'Средний' : 'Низкий' }}
+                <span class="flex shrink-0 items-center gap-2">
+                  <UiBadge :tone="priorityTone(task.priority)">{{ priorityLabel(task.priority) }}</UiBadge>
+                  <span class="whitespace-nowrap tabular-nums" :class="task.description === 'Просрочено' ? 'text-destructive' : 'text-muted-foreground'">{{ task.dueDate }}</span>
                 </span>
-              </td>
-              <td data-label="Срок" :class="{ 'task-cell-overdue': task.description === 'Просрочено' }">
-                <template v-if="task.description === 'Просрочено'">
-                  <span class="task-overdue-icon" aria-hidden="true">△</span>
+              </div>
+            </button>
+          </li>
+        </ul>
+
+        <!-- Десктоп: таблица -->
+        <div class="hidden overflow-hidden rounded-xl border md:block">
+          <Table class="table-fixed">
+            <TableHeader class="bg-muted/50">
+              <TableRow>
+                <TableHead class="w-20 pl-4">
+                  <button type="button" class="inline-flex items-center gap-1 hover:text-foreground" @click="setListSort('number')">№<component :is="sortIcon('number')" class="size-3.5 opacity-60" /></button>
+                </TableHead>
+                <TableHead>
+                  <button type="button" class="inline-flex items-center gap-1 hover:text-foreground" @click="setListSort('title')">Задача<component :is="sortIcon('title')" class="size-3.5 opacity-60" /></button>
+                </TableHead>
+                <TableHead class="hidden w-[24%] xl:table-cell">Описание</TableHead>
+                <TableHead class="w-[19%]">
+                  <button type="button" class="inline-flex items-center gap-1 hover:text-foreground" @click="setListSort('assignee')">Исполнитель<component :is="sortIcon('assignee')" class="size-3.5 opacity-60" /></button>
+                </TableHead>
+                <TableHead class="w-28">
+                  <button type="button" class="inline-flex items-center gap-1 hover:text-foreground" @click="setListSort('priority')">Приоритет<component :is="sortIcon('priority')" class="size-3.5 opacity-60" /></button>
+                </TableHead>
+                <TableHead class="w-28">
+                  <button type="button" class="inline-flex items-center gap-1 hover:text-foreground" @click="setListSort('dueDate')">Срок<component :is="sortIcon('dueDate')" class="size-3.5 opacity-60" /></button>
+                </TableHead>
+                <TableHead class="w-32 pr-4">
+                  <button type="button" class="inline-flex items-center gap-1 hover:text-foreground" @click="setListSort('status')">Статус<component :is="sortIcon('status')" class="size-3.5 opacity-60" /></button>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="task in paginatedTasks" :key="task.id" class="cursor-pointer" @click="openTask(task.id)">
+                <TableCell class="pl-4 text-muted-foreground tabular-nums">{{ getTaskNumber(task.id) }}</TableCell>
+                <TableCell class="whitespace-normal" :title="taskListSubtitleTitle(task) || task.title">
+                  <div class="grid gap-0.5">
+                    <span class="line-clamp-2 font-medium">{{ task.title }}</span>
+                    <span v-if="taskListContextLine(task)" class="truncate text-xs text-muted-foreground">{{ taskListContextLine(task) }}</span>
+                  </div>
+                </TableCell>
+                <TableCell class="hidden whitespace-normal xl:table-cell" :title="taskListDescriptionFull(task)">
+                  <span class="line-clamp-2 text-muted-foreground">{{ taskListDescriptionPreview(task) || '—' }}</span>
+                </TableCell>
+                <TableCell>
+                  <div class="flex min-w-0 items-center gap-2">
+                    <UserAvatar class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(task.assignee.id)" :url="avatarUrlByUserId(task.assignee.id)" :initials="task.assignee.initials" />
+                    <span class="truncate">{{ task.assignee.name }}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <UiBadge :tone="priorityTone(task.priority)">{{ priorityLabel(task.priority) }}</UiBadge>
+                </TableCell>
+                <TableCell class="tabular-nums" :class="task.description === 'Просрочено' ? 'font-medium text-destructive' : ''">
                   {{ task.dueDate }}
-                </template>
-                <template v-else>{{ task.dueDate }}</template>
-              </td>
-              <td data-label="Статус">
-                <span
-                  class="task-pill task-pill-status"
-                  :class="statusClass(task.status)"
-                >
-                  {{ statusColumns.find((c) => c.key === task.status)?.title }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+                </TableCell>
+                <TableCell class="pr-4">
+                  <UiBadge :tone="statusTone(task.status)">{{ statusTitle(task.status) }}</UiBadge>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+      </template>
+    </template>
     <UiPagination v-show="!tasksLoading && totalFiltered > 0" :page="currentPage" :page-size="pageSize" :total="totalFiltered" @update:page="goToPage" @update:page-size="(n) => (pageSize = n)" />
 
     <!-- Окно новой / редактируемой задачи — UiModal (Dialog shadcn) -->
@@ -1280,128 +1301,92 @@ function statusClass(s: Status) {
       :max-width="672"
       @close="closeCreate"
     >
-      <form id="task-create-form" class="modal-tm-form modal-form--design" @submit.prevent="createTask">
-            <fieldset class="modal-form-fieldset">
-              <div class="modal-body">
-                <label class="modal-field modal-field--design">
-                  <span class="modal-label modal-label--design">Название задачи</span>
-                  <Input
-                    v-model="form.title"
-                    type="text"
-                    class="modal-input modal-input--design modal-input--title task-form-input"
-                    placeholder="Введите название..."
-                    :maxlength="TASK_TITLE_MAX" />
-                  <div class="task-form-counter">{{ form.title.length }}/{{ TASK_TITLE_MAX }}</div>
-                </label>
-                <div class="modal-grid-2">
-                  <label class="modal-field modal-field--design">
-                    <span class="modal-label modal-label--design">Исполнитель</span>
-                    <div v-if="isManager" class="task-form-select-wrap">
-                      <UserAvatar
-                        class="task-form-avatar"
-                        :style="avatarStyleByUserId(form.assigneeId || null)"
-                        :url="avatarUrlByUserId(form.assigneeId || null)"
-                        :initials="form.assigneeId ? (assignees.find((a) => a.id === form.assigneeId)?.initials ?? '?') : '—'"
-                      />
-                      <UiSelect v-model="form.assigneeId" :options="[{ value: '', label: 'Без исполнителя' }, ...(assignees).map((a) => ({ value: a.id, label: String(a.name) }))]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
-                    </div>
-                    <div v-else class="task-form-static-assignee modal-input modal-input--design">Назначить себе</div>
-                  </label>
-                  <label class="modal-field modal-field--design">
-                    <span class="modal-label modal-label--design">Объект / поле</span>
-                    <UiSelect v-model="form.field" :options="[{ value: '', label: 'Не выбрано' }, ...(fields).map((f) => ({ value: f, label: String(f) }))]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
-                  </label>
+      <form id="task-create-form" class="tw-scope" @submit.prevent="createTask">
+        <FormGrid :cols="2">
+          <FormField label="Название задачи" for="task-title" wide :count="form.title.length" :max="TASK_TITLE_MAX">
+            <Input id="task-title" v-model="form.title" type="text" placeholder="Например, подготовка поля к посеву" :maxlength="TASK_TITLE_MAX" />
+          </FormField>
+
+          <FormField label="Исполнитель">
+            <UiSelect v-if="isManager" v-model="form.assigneeId" block :options="[{ value: '', label: 'Без исполнителя' }, ...assignees.map((a) => ({ value: a.id, label: String(a.name) }))]" />
+            <Input v-else model-value="Назначить себе" disabled />
+          </FormField>
+          <FormField label="Объект / поле">
+            <UiSelect v-model="form.field" block :options="[{ value: '', label: 'Не выбрано' }, ...fields.map((f) => ({ value: f, label: String(f) }))]" />
+          </FormField>
+
+          <FormField v-if="isManager" label="Участники" wide>
+            <template #label-actions>
+              <UiPersonPicker
+                :options="participantsAvailable.map((p) => ({ id: p.id, label: profileLabel(p) + (p.id === auth.user.value?.id ? ' (Вы)' : ''), initials: participantInitials(p), url: avatarUrlByUserId(p.id), avatarStyle: avatarStyleByUserId(p.id) }))"
+                :all-added="participantsAvailable.length === 0"
+                @pick="addParticipant"
+              />
+            </template>
+            <div v-if="form.participantIds.length" class="flex flex-wrap gap-2">
+              <span v-for="uid in form.participantIds" :key="uid" class="inline-flex h-8 items-center gap-2 rounded-full border bg-muted/40 pl-1 pr-1 text-sm">
+                <UserAvatar
+                  class="size-6 text-[10px] font-medium text-white"
+                  :style="profileById(uid) ? avatarStyleByUserId(uid) : undefined"
+                  :url="avatarUrlByUserId(uid)"
+                  :initials="profileById(uid) ? participantInitials(profileById(uid)!) : '?'"
+                />
+                <span class="max-w-48 truncate">{{ profileById(uid) ? profileLabel(profileById(uid)!) : uid }}</span>
+                <Button variant="ghost" size="icon-sm" type="button" class="size-6 rounded-full text-muted-foreground hover:text-destructive" aria-label="Убрать участника" @click="removeParticipant(uid)">
+                  <XIcon />
+                </Button>
+              </span>
+            </div>
+            <p v-else class="text-sm text-muted-foreground">Участники видят задачу и получают уведомления.</p>
+          </FormField>
+
+          <FormField label="Приоритет">
+            <UiSelect v-model="form.priority" block :options="[{ value: 'high', label: 'Высокий' }, { value: 'medium', label: 'Средний' }, { value: 'low', label: 'Низкий' }]" />
+          </FormField>
+          <FormField label="Срок выполнения" for="task-due">
+            <Input id="task-due" v-model="form.dueDate" type="text" inputmode="numeric" placeholder="ДД.ММ.ГГГГ" />
+          </FormField>
+          <FormField label="Тип работ" wide>
+            <UiSelect v-model="form.workType" block :options="[{ value: '', label: 'Не указано' }, ...workTypes.map((w) => ({ value: w, label: String(w) }))]" />
+          </FormField>
+
+          <FormField label="Описание и инструкции" for="task-desc" wide :count="form.description.length" :max="TASK_DESCRIPTION_MAX">
+            <Textarea id="task-desc" v-model="form.description" class="min-h-24" placeholder="Что сделать, на что обратить внимание" rows="4" :maxlength="TASK_DESCRIPTION_MAX" />
+          </FormField>
+
+          <FormField label="Файлы" wide>
+            <template v-if="pendingCreateFiles.length" #label-actions>
+              <Button variant="outline" size="sm" type="button" :disabled="fileUploading" @click="triggerCreateFileInput">
+                <PaperclipIcon />
+                {{ fileUploading ? 'Загрузка…' : 'Добавить' }}
+              </Button>
+            </template>
+            <ul v-if="pendingCreateFiles.length" class="grid gap-2 sm:grid-cols-2">
+              <li v-for="file in pendingCreateFiles" :key="file.id" class="flex min-w-0 items-center gap-3 rounded-lg border p-2">
+                <div class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
+                  <img v-if="file.previewUrl" class="size-full object-cover" :src="file.previewUrl" :alt="file.file.name" />
+                  <FileTextIcon v-else-if="isPdfFile(file.file.name)" class="size-4" />
+                  <FileIcon v-else class="size-4" />
                 </div>
-                <div v-if="isManager" class="modal-field modal-field--design">
-                  <div class="modal-label-row modal-label-row--design">
-                    <span class="modal-label modal-label--design">Участники задачи</span>
-                    <UiPersonPicker
-                      :options="participantsAvailable.map((p) => ({ id: p.id, label: profileLabel(p) + (p.id === auth.user.value?.id ? ' (Вы)' : ''), initials: participantInitials(p), url: avatarUrlByUserId(p.id), avatarStyle: avatarStyleByUserId(p.id) }))"
-                      :all-added="participantsAvailable.length === 0"
-                      @pick="addParticipant"
-                    />
-                  </div>
-                  <div class="modal-chips modal-chips--design">
-                    <div
-                      v-for="uid in form.participantIds"
-                      :key="uid"
-                      class="modal-chip modal-chip--design"
-                    >
-                      <UserAvatar
-                        class="modal-chip-avatar modal-chip-avatar--design"
-                        :style="profileById(uid) ? avatarStyleByUserId(uid) : undefined"
-                        :url="avatarUrlByUserId(uid)"
-                        :initials="profileById(uid) ? participantInitials(profileById(uid)!) : '?'"
-                      />
-                      <span class="modal-chip-label">{{ profileById(uid) ? profileLabel(profileById(uid)!) : uid }}</span>
-                      <Button variant="ghost" size="icon-sm" type="button" class="modal-chip-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать" @click="removeParticipant(uid)">×</Button>
-                    </div>
-                  </div>
+                <div class="grid min-w-0 flex-1">
+                  <span class="truncate text-sm font-medium">{{ file.file.name }}</span>
+                  <span class="text-xs text-muted-foreground">{{ formatFileSize(file.file.size) }}</span>
                 </div>
-                <label class="modal-field modal-field--design tm-form-field--half">
-                  <span class="modal-label modal-label--design">Приоритет</span>
-                  <UiSelect v-model="form.priority" :options="[{ value: 'high', label: 'Высокий' }, { value: 'medium', label: 'Средний' }, { value: 'low', label: 'Низкий' }]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
-                </label>
-                <div class="modal-grid-2">
-                  <label class="modal-field modal-field--design">
-                    <span class="modal-label modal-label--design">Срок выполнения</span>
-                    <Input
-                      v-model="form.dueDate"
-                      type="text"
-                      class="modal-input modal-input--design task-form-input task-form-input--date"
-                      placeholder="ДД.ММ.ГГГГ" />
-                  </label>
-                  <label class="modal-field modal-field--design">
-                    <span class="modal-label modal-label--design">Тип работ</span>
-                    <UiSelect v-model="form.workType" :options="[{ value: '', label: 'Не указано' }, ...(workTypes).map((w) => ({ value: w, label: String(w) }))]" class="modal-input modal-input--design modal-select modal-select--design task-form-select" />
-                  </label>
-                </div>
-                <label class="modal-field modal-field--design">
-                  <span class="modal-label modal-label--design">Описание и инструкции</span>
-                  <Textarea
-                    v-model="form.description"
-                    class="modal-textarea modal-textarea--design task-form-textarea"
-                    placeholder="Добавьте подробности для исполнителя..."
-                    rows="4"
-                    :maxlength="TASK_DESCRIPTION_MAX" />
-                  <div class="task-form-counter">{{ form.description.length }}/{{ TASK_DESCRIPTION_MAX }}</div>
-                </label>
-                <div class="modal-field modal-field--design">
-                  <div class="task-file-section">
-                    <div class="task-file-section-head">
-                      <span class="modal-label modal-label--design">Прикрепленные файлы</span>
-                      <Button variant="outline" size="sm" type="button" class="task-file-add-btn" :disabled="fileUploading" @click="triggerCreateFileInput">
-                        {{ fileUploading ? 'Загрузка...' : 'Добавить файлы' }}
-                      </Button>
-                    </div>
-                    <div v-if="pendingCreateFiles.length" class="task-files-grid">
-                      <div v-for="file in pendingCreateFiles" :key="file.id" class="task-file-card">
-                        <div class="task-file-icon-box">
-                          <img v-if="file.previewUrl" class="task-file-thumb" :src="file.previewUrl" :alt="file.file.name" />
-                          <FileTextIcon v-else-if="isPdfFile(file.file.name)" class="task-file-icon-pdf" :size="20" />
-                          <FileIcon v-else class="task-file-icon-doc" :size="20" />
-                        </div>
-                        <div class="task-file-info">
-                          <span class="task-file-name">{{ file.file.name }}</span>
-                          <span class="task-file-size">{{ formatFileSize(file.file.size) }}</span>
-                        </div>
-                        <UiDeleteButton size="xs" @click="removePendingCreateFile(file.id)" />
-                      </div>
-                    </div>
-                    <button
-                      v-else
-                      type="button"
-                      class="modal-attach-placeholder modal-attach-placeholder--design task-file-dropzone"
-                      :disabled="fileUploading"
-                      @click="triggerCreateFileInput"
-                    >
-                      <PaperclipIcon :size="20" />
-                      <span>Добавьте фото, PDF или документы к задаче</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </fieldset>
+                <UiDeleteButton size="xs" @click="removePendingCreateFile(file.id)" />
+              </li>
+            </ul>
+            <button
+              v-else
+              type="button"
+              class="flex h-20 w-full items-center justify-center gap-2 rounded-lg border border-dashed text-sm text-muted-foreground transition-colors hover:border-ring hover:bg-muted/40 disabled:opacity-50"
+              :disabled="fileUploading"
+              @click="triggerCreateFileInput"
+            >
+              <PaperclipIcon class="size-4" />
+              Фото, PDF или документы
+            </button>
+          </FormField>
+        </FormGrid>
       </form>
       <template #actions>
         <UiButton @click="closeCreate">Отмена</UiButton>
@@ -1419,246 +1404,201 @@ function statusClass(s: Status) {
       :max-width="940"
       @close="closeTask"
     >
-      <div class="modal-tm-detail task-detail-body">
-          <p v-if="taskModalError" class="tm-error tm-error--modal" role="alert">{{ taskModalError }}</p>
-          <div class="task-detail-layout">
-            <div v-if="isMetaInitialLoading" class="task-detail-loading-overlay" aria-hidden="true">
-              <UiLoadingBar size="md" />
-            </div>
-            <div class="task-detail-main">
-              <div class="task-detail-badges">
-                <span
-                  class="task-pill task-pill-status"
-                  :class="selectedTask ? statusClass(selectedTask.status) : ''"
-                >
-                  {{ statusColumns.find((c) => c.key === selectedTask?.status)?.title }}
-                </span>
-                <span class="task-pill" :class="priorityClass(selectedTask.priority)">
-                  {{ selectedTask.priority === 'high' ? 'Высокий приоритет' : selectedTask.priority === 'medium' ? 'Средний' : 'Низкий' }}
-                </span>
+      <div class="tw-scope relative grid gap-6">
+        <Alert v-if="taskModalError" variant="destructive">
+          <AlertDescription>{{ taskModalError }}</AlertDescription>
+        </Alert>
+        <div v-if="isMetaInitialLoading" class="absolute inset-0 z-10 flex items-center justify-center bg-background/60" aria-hidden="true">
+          <Spinner class="size-5 text-muted-foreground" />
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <!-- Основное -->
+          <div class="grid min-w-0 content-start gap-6">
+            <div class="grid gap-3">
+              <div class="flex flex-wrap gap-2">
+                <UiBadge :tone="statusTone(selectedTask.status)">{{ statusTitle(selectedTask.status) }}</UiBadge>
+                <UiBadge :tone="priorityTone(selectedTask.priority)">Приоритет: {{ priorityLabel(selectedTask.priority).toLowerCase() }}</UiBadge>
               </div>
-              <h2 id="task-detail-title" class="task-detail-title">
-                {{ truncateTaskTitle(selectedTask.title) }}
-              </h2>
-              <dl class="task-detail-list">
-                <div class="task-detail-item">
-                  <dt class="task-detail-label">Номер задачи</dt>
-                  <dd class="task-detail-value">№ {{ getTaskNumber(selectedTask.id) || '—' }}</dd>
-                </div>
-                <div class="task-detail-item">
-                  <dt class="task-detail-label">Исполнитель</dt>
-                  <dd class="task-detail-value">
-                    <UserAvatar class="task-detail-avatar" :style="avatarStyleByUserId(selectedTask.assignee.id)" :url="avatarUrlByUserId(selectedTask.assignee.id)" :initials="selectedTask.assignee.initials" />
-                    {{ selectedTask.assignee.name }}
-                  </dd>
-                </div>
-                <div class="task-detail-item">
-                  <dt class="task-detail-label">Статус</dt>
-                  <dd class="task-detail-value">
-                    <UiSelect
-                      :model-value="selectedTask.status"
-                      :options="statusColumns.map((col) => ({ value: col.key, label: col.title }))"
-                      class="task-detail-status-select"
-                      @update:model-value="(v) => selectedTask && updateTaskStatus(selectedTask.id, v as Status)"
-                    />
-                  </dd>
-                </div>
-                <div class="task-detail-item">
-                  <dt class="task-detail-label">Срок выполнения</dt>
-                  <dd class="task-detail-value" :class="{ 'task-detail-overdue': selectedTask.description === 'Просрочено' }">
-                    до {{ selectedTask.dueDate }}
-                    <span v-if="selectedTask.description === 'Просрочено'" class="task-overdue"> (Просрочено)</span>
-                  </dd>
-                </div>
-                <div class="task-detail-item">
-                  <dt class="task-detail-label">Тип работ</dt>
-                  <dd class="task-detail-value">
-                    {{ selectedTask.workType || 'Не указано' }}
-                  </dd>
-                </div>
-                <div class="task-detail-item">
-                  <dt class="task-detail-label">Локация</dt>
-                  <dd class="task-detail-value">
-                    <span class="task-detail-field-value">{{ selectedTask.field || 'Не выбрано' }}</span>
-                  </dd>
-                </div>
-              </dl>
-              <div
-                v-if="selectedTask.participantIds.length"
-                class="task-detail-participants-section"
-              >
-                <span class="modal-label modal-label--design">Участники задачи</span>
-                <div class="modal-chips modal-chips--design">
-                  <div
-                    v-for="uid in selectedTask.participantIds"
-                    :key="uid"
-                    class="modal-chip modal-chip--design modal-chip--readonly"
-                  >
+              <h2 id="task-detail-title" class="text-lg font-semibold leading-snug break-words">{{ selectedTask.title }}</h2>
+            </div>
+
+            <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+              <div class="grid gap-1.5">
+                <dt class="text-xs text-muted-foreground">Исполнитель</dt>
+                <dd class="flex min-w-0 items-center gap-2 text-sm">
+                  <UserAvatar class="size-6 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(selectedTask.assignee.id)" :url="avatarUrlByUserId(selectedTask.assignee.id)" :initials="selectedTask.assignee.initials" />
+                  <span class="truncate">{{ selectedTask.assignee.name }}</span>
+                </dd>
+              </div>
+              <div class="grid gap-1.5">
+                <dt class="text-xs text-muted-foreground">Статус</dt>
+                <dd>
+                  <UiSelect
+                    :model-value="selectedTask.status"
+                    size="sm"
+                    :options="statusColumns.map((col) => ({ value: col.key, label: col.title }))"
+                    aria-label="Статус задачи"
+                    @update:model-value="(v) => selectedTask && updateTaskStatus(selectedTask.id, v as Status)"
+                  />
+                </dd>
+              </div>
+              <div class="grid gap-1.5">
+                <dt class="text-xs text-muted-foreground">Срок</dt>
+                <dd class="text-sm tabular-nums" :class="selectedTask.description === 'Просрочено' ? 'font-medium text-destructive' : ''">
+                  до {{ selectedTask.dueDate }}<span v-if="selectedTask.description === 'Просрочено'"> · просрочено</span>
+                </dd>
+              </div>
+              <div class="grid gap-1.5">
+                <dt class="text-xs text-muted-foreground">Тип работ</dt>
+                <dd class="text-sm">{{ selectedTask.workType || 'Не указано' }}</dd>
+              </div>
+              <div class="grid gap-1.5 sm:col-span-2">
+                <dt class="text-xs text-muted-foreground">Объект / поле</dt>
+                <dd class="text-sm">{{ selectedTask.field || 'Не выбрано' }}</dd>
+              </div>
+              <div v-if="selectedTask.participantIds.length" class="grid gap-1.5 sm:col-span-2">
+                <dt class="text-xs text-muted-foreground">Участники</dt>
+                <dd class="flex flex-wrap gap-2">
+                  <span v-for="uid in selectedTask.participantIds" :key="uid" class="inline-flex h-7 items-center gap-2 rounded-full border bg-muted/40 pl-0.5 pr-3 text-sm">
                     <UserAvatar
-                      class="modal-chip-avatar modal-chip-avatar--design"
+                      class="size-6 text-[10px] font-medium text-white"
                       :style="profileById(uid) ? avatarStyleByUserId(uid) : undefined"
                       :url="avatarUrlByUserId(uid)"
                       :initials="profileById(uid) ? participantInitials(profileById(uid)!) : '?'"
                     />
-                    <span class="modal-chip-label">{{ profileById(uid) ? profileLabel(profileById(uid)!) : uid }}</span>
-                  </div>
-                </div>
+                    <span class="max-w-48 truncate">{{ profileById(uid) ? profileLabel(profileById(uid)!) : uid }}</span>
+                  </span>
+                </dd>
               </div>
-              <div class="task-detail-desc-wrap">
-                <span class="task-detail-label">Описание задачи</span>
-                <div class="task-detail-desc">
-                  {{ selectedTask.description || 'Описание не указано' }}
-                </div>
+            </dl>
+
+            <section class="grid gap-2">
+              <h3 class="text-sm font-medium">Описание</h3>
+              <p class="whitespace-pre-line text-sm leading-relaxed" :class="selectedTask.description ? '' : 'text-muted-foreground'">
+                {{ selectedTask.description || 'Описание не указано' }}
+              </p>
+            </section>
+
+            <section class="grid gap-3">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-sm font-medium">Файлы</h3>
+                <Button variant="outline" size="sm" type="button" :disabled="fileUploading" @click="triggerDetailFileInput">
+                  <PaperclipIcon />
+                  {{ fileUploading ? 'Загрузка…' : 'Добавить' }}
+                </Button>
               </div>
-              <div class="task-detail-desc-wrap">
-                <div class="task-file-section-head">
-                  <span class="task-detail-label">Файлы задачи</span>
-                  <Button variant="outline" size="sm" type="button" class="task-file-add-btn" :disabled="fileUploading" @click="triggerDetailFileInput">
-                    {{ fileUploading ? 'Загрузка...' : 'Добавить файлы' }}
-                  </Button>
-                </div>
-                <div v-if="taskFiles.length" class="task-files-grid">
+              <ul v-if="taskFiles.length" class="grid gap-2 sm:grid-cols-2">
+                <li v-for="file in taskFiles" :key="file.id" class="min-w-0">
                   <a
-                    v-for="file in taskFiles"
-                    :key="file.id"
                     :href="getTaskFilePublicUrl(file.file_path)"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="task-file-card"
+                    class="flex min-w-0 items-center gap-3 rounded-lg border p-2 text-inherit no-underline transition-colors hover:bg-muted/50"
                   >
-                    <div class="task-file-icon-box">
-                      <img v-if="isImageFile(file.file_name)" class="task-file-thumb" :src="getTaskFilePublicUrl(file.file_path)" :alt="file.file_name" />
-                      <FileTextIcon v-else-if="isPdfFile(file.file_name)" class="task-file-icon-pdf" :size="20" />
-                      <FileIcon v-else class="task-file-icon-doc" :size="20" />
+                    <div class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
+                      <img v-if="isImageFile(file.file_name)" class="size-full object-cover" :src="getTaskFilePublicUrl(file.file_path)" :alt="file.file_name" />
+                      <FileTextIcon v-else-if="isPdfFile(file.file_name)" class="size-4" />
+                      <FileIcon v-else class="size-4" />
                     </div>
-                    <div class="task-file-info">
-                      <span class="task-file-name">{{ file.file_name }}</span>
-                      <span class="task-file-size">{{ formatFileSize(file.file_size) }}</span>
+                    <div class="grid min-w-0 flex-1">
+                      <span class="truncate text-sm font-medium">{{ file.file_name }}</span>
+                      <span class="text-xs text-muted-foreground">{{ formatFileSize(file.file_size) }}</span>
                     </div>
                     <UiDeleteButton size="xs" @click.prevent="removeTaskFileRow(file)" />
                   </a>
-                </div>
-                <div v-else class="task-file-empty">Файлы пока не прикреплены.</div>
-              </div>
-            </div>
-            <aside class="task-detail-sidebar">
-              <section class="task-detail-card">
-                <h3 class="task-detail-card-title">Информация о задаче</h3>
-                <div class="task-detail-info-row">
-                  <UserAvatar class="task-detail-info-avatar" :style="avatarStyleByUserId(selectedTask.createdBy?.id ?? null)" :url="avatarUrlByUserId(selectedTask.createdBy?.id ?? null)" :initials="profileInitials(selectedTask.createdBy?.id ?? null)" />
-                  <div class="task-detail-info-main">
-                    <div class="task-detail-info-name">{{ selectedTaskCreatorName }}</div>
-                    <div class="task-detail-info-role">Автор задачи</div>
-                  </div>
-                </div>
-                <div class="task-detail-info-meta">
-                  <div class="task-detail-info-meta-item">
-                    <span class="task-detail-info-meta-label">Создана</span>
-                    <span class="task-detail-info-meta-value">{{ selectedTaskCreatedAt }}</span>
-                  </div>
-                </div>
-              </section>
-              <section class="task-detail-card task-detail-card--history">
-                <h3 class="task-detail-card-title">История изменений</h3>
-                <div v-if="eventsLoading" class="task-history-loading">
-                  <UiLoadingBar size="compact" />
-                </div>
-                <ul v-else class="task-history-list">
-                  <li v-if="!taskEvents.length" class="task-history-empty">История пока пуста</li>
-                  <li v-for="event in taskEvents" :key="event.id" class="task-history-item">
-                    <div class="task-history-dot" aria-hidden="true"></div>
-                    <div class="task-history-content">
-                      <div class="task-history-text">
-                        <span class="task-history-author">{{ profileName(event.user_id) }}</span>
-                        <span class="task-history-sep">·</span>
-                        <span class="task-history-event">
-                          <template v-if="event.event_type === 'status_changed'">
-                            Статус:
-                            {{
-                              statusTitle(
-                                (event.payload?.from as Status) || 'todo',
-                              )
-                            }}
-                            →
-                            {{
-                              statusTitle(
-                                (event.payload?.to as Status) || 'todo',
-                              )
-                            }}
-                          </template>
-                          <template v-else-if="event.event_type === 'comment_added'">
-                            Добавлен комментарий
-                          </template>
-                          <template v-else-if="event.event_type === 'created'">
-                            Задача создана
-                          </template>
-                          <template v-else>
-                            {{ event.event_type }}
-                          </template>
-                        </span>
-                      </div>
-                      <div class="task-history-time">
-                        {{ formatDateTime(event.created_at) }}
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-              </section>
-            </aside>
-          </div>
-          <section class="task-chat">
-            <div class="task-chat-header">
-              <h3 class="task-chat-title">Обсуждение задачи</h3>
-              <Button variant="ghost" size="sm"
-                type="button"
-                class="task-chat-toggle"
-                :disabled="commentsLoading || !taskComments.length"
-                @click="isTaskChatExpanded = !isTaskChatExpanded"
-              >
-                {{ isTaskChatExpanded ? 'Скрыть' : 'Показать все' }}
-              </Button>
-            </div>
-            <div v-if="commentsLoading" class="task-chat-loading">
-              <UiLoadingBar size="compact" />
-            </div>
-            <div v-else-if="isTaskChatExpanded" class="task-chat-body">
-              <div v-if="!taskComments.length" class="task-chat-empty">
-                Пока нет комментариев. Напишите первый.
-              </div>
-              <ul v-else class="task-chat-list">
-                <li v-for="comment in taskComments" :key="comment.id" class="task-chat-item">
-                  <UserAvatar class="task-chat-avatar" :style="avatarStyleByUserId(comment.user_id)" :url="avatarUrlByUserId(comment.user_id)" :initials="profileInitials(comment.user_id)" />
-                  <div class="task-chat-message">
-                    <div class="task-chat-meta">
-                      <span class="task-chat-author">{{ profileName(comment.user_id) }}</span>
-                      <span class="task-chat-dot">·</span>
-                      <span class="task-chat-time">{{ formatDateTime(comment.created_at) }}</span>
-                    </div>
-                    <div class="task-chat-text">
-                      {{ comment.message }}
-                    </div>
-                  </div>
                 </li>
               </ul>
-            </div>
-            <div v-else class="task-chat-collapsed-hint">
-              {{ taskComments.length ? `Комментариев: ${taskComments.length}` : 'Пока нет комментариев. Напишите первый.' }}
-            </div>
-            <form class="task-chat-input-row" @submit.prevent="submitComment">
-              <Textarea
-                v-model="newCommentMessage"
-                class="task-chat-input"
-                rows="2"
-                placeholder="Напишите комментарий для исполнителя..." />
-              <Button variant="default" type="submit" class="task-chat-send" :class="{ 'task-chat-send--loading': isSendingComment }" :disabled="!newCommentMessage.trim() || isSendingComment">
-                <span v-if="!isSendingComment">Отправить</span>
-                <UiLoadingBar v-else size="micro" hide-label class="task-chat-send-loader" />
+              <p v-else class="text-sm text-muted-foreground">Файлы пока не прикреплены.</p>
+            </section>
+          </div>
+
+          <!-- Сбоку: автор и история -->
+          <aside class="grid content-start gap-6 lg:border-l lg:pl-6">
+            <section class="grid gap-3">
+              <h3 class="text-sm font-medium">Автор</h3>
+              <div class="flex min-w-0 items-center gap-3">
+                <UserAvatar class="size-8 shrink-0 text-xs font-medium text-white" :style="avatarStyleByUserId(selectedTask.createdBy?.id ?? null)" :url="avatarUrlByUserId(selectedTask.createdBy?.id ?? null)" :initials="profileInitials(selectedTask.createdBy?.id ?? null)" />
+                <div class="grid min-w-0">
+                  <span class="truncate text-sm font-medium">{{ selectedTaskCreatorName }}</span>
+                  <span class="text-xs text-muted-foreground">Создана {{ selectedTaskCreatedAt }}</span>
+                </div>
+              </div>
+            </section>
+            <Separator class="lg:hidden" />
+            <section class="grid gap-3">
+              <h3 class="text-sm font-medium">История</h3>
+              <div v-if="eventsLoading" class="grid gap-2">
+                <Skeleton v-for="i in 3" :key="i" class="h-8 w-full" />
+              </div>
+              <p v-else-if="!taskEvents.length" class="text-sm text-muted-foreground">История пока пуста</p>
+              <ol v-else class="grid max-h-64 gap-3 overflow-y-auto pr-1">
+                <li v-for="event in taskEvents" :key="event.id" class="relative grid gap-0.5 pl-4 text-sm before:absolute before:left-0 before:top-1.5 before:size-1.5 before:rounded-full before:bg-muted-foreground/40">
+                  <span>
+                    <span class="font-medium">{{ profileName(event.user_id) }}</span>
+                    <span class="text-muted-foreground">
+                      ·
+                      <template v-if="event.event_type === 'status_changed'">
+                        {{ statusTitle((event.payload?.from as Status) || 'todo') }} → {{ statusTitle((event.payload?.to as Status) || 'todo') }}
+                      </template>
+                      <template v-else>{{ taskEventLabel(event.event_type) }}</template>
+                    </span>
+                  </span>
+                  <span class="text-xs text-muted-foreground">{{ formatDateTime(event.created_at) }}</span>
+                </li>
+              </ol>
+            </section>
+          </aside>
+        </div>
+
+        <Separator />
+
+        <!-- Обсуждение -->
+        <section class="grid gap-4">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-sm font-medium">
+              Обсуждение<span v-if="taskComments.length" class="ml-1.5 font-normal text-muted-foreground">{{ taskComments.length }}</span>
+            </h3>
+            <Button
+              v-if="taskComments.length"
+              variant="ghost"
+              size="sm"
+              type="button"
+              :disabled="commentsLoading"
+              @click="isTaskChatExpanded = !isTaskChatExpanded"
+            >
+              {{ isTaskChatExpanded ? 'Свернуть' : 'Показать все' }}
+            </Button>
+          </div>
+          <div v-if="commentsLoading" class="grid gap-2">
+            <Skeleton v-for="i in 2" :key="i" class="h-12 w-full" />
+          </div>
+          <ul v-else-if="isTaskChatExpanded && taskComments.length" class="grid gap-4">
+            <li v-for="comment in taskComments" :key="comment.id" class="flex gap-3">
+              <UserAvatar class="size-7 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(comment.user_id)" :url="avatarUrlByUserId(comment.user_id)" :initials="profileInitials(comment.user_id)" />
+              <div class="grid min-w-0 gap-1">
+                <div class="flex flex-wrap items-baseline gap-x-2 text-sm">
+                  <span class="font-medium">{{ profileName(comment.user_id) }}</span>
+                  <span class="text-xs text-muted-foreground">{{ formatDateTime(comment.created_at) }}</span>
+                </div>
+                <p class="whitespace-pre-line break-words text-sm leading-relaxed">{{ comment.message }}</p>
+              </div>
+            </li>
+          </ul>
+          <p v-else-if="!taskComments.length" class="text-sm text-muted-foreground">Комментариев пока нет.</p>
+          <form class="grid gap-2" @submit.prevent="submitComment">
+            <Textarea v-model="newCommentMessage" class="min-h-16" rows="2" placeholder="Комментарий для исполнителя" />
+            <div class="flex justify-end">
+              <Button type="submit" size="sm" :disabled="!newCommentMessage.trim() || isSendingComment">
+                <Spinner v-if="isSendingComment" />
+                Отправить
               </Button>
-            </form>
-          </section>
+            </div>
+          </form>
+        </section>
       </div>
       <template #actions>
-        <UiButton v-if="canDeleteSelectedTask" variant="danger" class="sm:mr-auto" @click="deleteTask">Удалить</UiButton>
+        <UiButton v-if="canDeleteSelectedTask" variant="danger-quiet" class="sm:mr-auto" @click="deleteTask">Удалить</UiButton>
         <UiButton @click="openEdit">Редактировать</UiButton>
         <UiButton variant="primary" @click="closeTask">Закрыть</UiButton>
       </template>
@@ -1674,7 +1614,7 @@ function statusClass(s: Status) {
     <input
       ref="createFileInputRef"
       type="file"
-      class="task-file-input-hidden"
+      class="hidden"
       accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
       multiple
       @change="onCreateFilesSelected"
@@ -1682,7 +1622,7 @@ function statusClass(s: Status) {
     <input
       ref="detailFileInputRef"
       type="file"
-      class="task-file-input-hidden"
+      class="hidden"
       accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
       multiple
       @change="onDetailFilesSelected"
@@ -1691,4 +1631,3 @@ function statusClass(s: Status) {
   </section>
 </template>
 
-<style scoped src="./TaskManagementPage.css"></style>

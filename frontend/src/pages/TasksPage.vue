@@ -2648,7 +2648,7 @@ async function confirmDeleteTask() {
         <input ref="fileInputRef" type="file" class="modal-file-input-hidden" accept="image/*,.pdf,.doc,.docx" @change="onFileSelect" />
       </div>
       <template #actions>
-        <UiButton v-if="editingTaskId && canDeleteCurrentTask" variant="danger" class="sm:mr-auto" :disabled="taskSaveLoading" @click="openDeleteConfirm">Удалить</UiButton>
+        <UiButton v-if="editingTaskId && canDeleteCurrentTask" variant="danger-quiet" class="sm:mr-auto" :disabled="taskSaveLoading" @click="openDeleteConfirm">Удалить</UiButton>
         <UiButton :disabled="taskSaveLoading" @click="closeTaskModal">Отмена</UiButton>
         <UiButton variant="primary" type="submit" form="calendar-task-form" :disabled="taskSaveLoading || (!!editingTaskId && !canEditCurrentTask)">
           {{ taskSaveLoading ? 'Сохранение…' : (editingTaskId ? 'Сохранить изменения' : 'Создать событие') }}
