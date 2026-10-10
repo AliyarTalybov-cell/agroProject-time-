@@ -16,6 +16,14 @@ const emit = defineEmits<{ close: []; pick: [row: EmployeeRow] }>()
 function name(row: EmployeeRow) {
   return row.display_name?.trim() || row.email || ''
 }
+
+/** Должность, а без неё — роль по-русски (в базе роли хранятся как manager / worker). */
+function roleLabel(row: EmployeeRow) {
+  if (row.position?.trim()) return row.position.trim()
+  if (row.role === 'manager') return 'Руководитель'
+  if (row.role === 'worker') return 'Сотрудник'
+  return ''
+}
 </script>
 
 <template>
@@ -34,7 +42,7 @@ function name(row: EmployeeRow) {
           @click="emit('pick', row)"
         >
           <span class="truncate font-medium">{{ name(row) }}</span>
-          <span class="text-muted-foreground shrink-0 text-xs">{{ row.position || row.role || '—' }}</span>
+          <span class="text-muted-foreground shrink-0 text-xs">{{ roleLabel(row) }}</span>
         </button>
         <p v-if="!results.length" class="text-muted-foreground py-8 text-center text-sm">
           {{ loading ? 'Поиск…' : 'Никого не найдено' }}

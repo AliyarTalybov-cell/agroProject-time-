@@ -873,30 +873,20 @@ a {
   overflow-x: hidden;
 }
 
-/* Чат: занимает всю высоту под topbar, скролл только внутри списка и ленты */
+/* Чат: занимает всю высоту под topbar, скролл только внутри списка и ленты.
+   Отступы — канон 16/24 (задан в .main-content-inner), здесь только высота. */
 .main-content-inner--animated:has(.chat-page) {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  flex: 1;
+  flex: 1 1 0%;
   overflow: hidden;
-  padding: 12px max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px))
-    max(12px, env(safe-area-inset-left, 0px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 768px) {
   .main-content-inner--animated:has(.chat-page) {
-    padding: 16px 20px max(16px, env(safe-area-inset-bottom, 0px));
-    padding-left: max(20px, env(safe-area-inset-left, 0px));
-    padding-right: max(20px, env(safe-area-inset-right, 0px));
-  }
-}
-
-@media (min-width: 900px) {
-  .main-content-inner--animated:has(.chat-page) {
-    padding: 24px 32px max(24px, env(safe-area-inset-bottom, 0px));
-    padding-left: max(32px, env(safe-area-inset-left, 0px));
-    padding-right: max(32px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -905,14 +895,6 @@ a {
   min-height: 0;
   min-width: 0;
   max-height: 100%;
-}
-
-/* Мобильный чат: не растягивать страницу по высоте контента — скролл внутри списка/ленты */
-@media (max-width: 899px) {
-  .main-content-inner--animated:has(.chat-page) {
-    flex: 1 1 0%;
-    max-height: 100%;
-  }
 }
 
 /* ——— Анимация перехода между страницами ——— */

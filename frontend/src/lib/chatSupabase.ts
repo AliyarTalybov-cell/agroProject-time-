@@ -162,7 +162,7 @@ export function mapThreadRow(r: ChatThreadListRow): UiChatConversation {
   const name = isTeam
     ? (r.title || 'Группа')
     : (r.peer_display_name?.trim() || email.split('@')[0] || 'Сотрудник')
-  const role = isTeam ? 'Групповой чат' : (r.peer_position?.trim() || 'Сотрудник')
+  const role = isTeam ? 'Команда' : (r.peer_position?.trim() || 'Сотрудник')
   const initials = isTeam
     ? (r.title || 'Гр').slice(0, 2).toUpperCase()
     : initialsFromProfile(r.peer_display_name, email)

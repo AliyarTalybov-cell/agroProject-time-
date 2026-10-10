@@ -219,6 +219,13 @@
     cursor: pointer;
   }
 
+  /* Крестик очистки в поле поиска — серый, в тон интерфейсу, а не системный синий. */
+  :where(.tw-scope) input[type='search']::-webkit-search-cancel-button {
+    filter: grayscale(1);
+    opacity: 0.55;
+    cursor: pointer;
+  }
+
   :where(.tw-scope) :where(ul, ol, p, h1, h2, h3, h4, h5, h6, dl, dd, figure) {
     margin: 0;
     padding: 0;

@@ -5,7 +5,11 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGr
 import { Spinner } from '@/components/ui/shadcn/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Button } from '@/components/ui/shadcn/button'
-import { ArrowRightIcon, ArrowUpIcon, CheckIcon, FileIcon, PaperclipIcon, RefreshCcwIcon, SaveIcon, SearchIcon, SendIcon } from '@lucide/vue'
+import { ArrowUpIcon, CheckCheckIcon, ChevronDownIcon, ChevronLeftIcon, DownloadIcon, FileIcon, MessagesSquareIcon, PaperclipIcon, RefreshCcwIcon, SearchIcon, SquarePenIcon, Trash2Icon, UsersRoundIcon, XIcon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import ChatGroupDialog from '@/components/ui/dialogs/ChatGroupDialog.vue'
 import ChatDmDialog from '@/components/ui/dialogs/ChatDmDialog.vue'
@@ -14,7 +18,6 @@ import { useAuth } from '@/stores/auth'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { loadEmployees, searchEmployees, type EmployeeRow } from '@/lib/employeesSupabase'
-import UiTrashIcon from '@/components/UiTrashIcon.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import {
   type AvatarTone,
@@ -196,20 +199,55 @@ function setTab(tab: ChatFilterTab) {
   filterTab.value = tab
 }
 
+const AVATAR_TONE_CLASS: Record<AvatarTone, string> = {
+  blue: 'bg-sky-500/15 text-sky-700 dark:text-sky-300',
+  orange: 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+  purple: 'bg-violet-500/15 text-violet-700 dark:text-violet-300',
+  teal: 'bg-teal-500/15 text-teal-700 dark:text-teal-300',
+  rose: 'bg-rose-500/15 text-rose-700 dark:text-rose-300',
+}
+
 function toneClass(tone: AvatarTone) {
-  return `chat-page__av chat-page__av--${tone}`
+  return AVATAR_TONE_CLASS[tone] ?? AVATAR_TONE_CLASS.blue
+}
+
+const MONTHS_GENITIVE = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+
+function dayKey(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+}
+
+/** Подпись дня над сообщениями: «Сегодня», «Вчера», «25 сентября», в прошлые годы — с годом. */
+function dayLabel(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+  if (dayKey(iso) === dayKey(now.toISOString())) return 'Сегодня'
+  if (dayKey(iso) === dayKey(yesterday.toISOString())) return 'Вчера'
+  const base = `${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()]}`
+  return d.getFullYear() === now.getFullYear() ? base : `${base} ${d.getFullYear()}`
 }
 
 function renderMessageBlocks(msgs: UiChatMessage[]) {
-  const blocks: { msg: UiChatMessage; showAvatar: boolean }[] = []
+  const blocks: { msg: UiChatMessage; showAvatar: boolean; startsRun: boolean; day: string | null }[] = []
   let lastKey: string | null = null
+  let lastDay: string | null = null
   for (const msg of msgs) {
     const key = msg.side === 'out' ? 'out' : `in:${msg.senderId}`
-    const showAvatar = key !== lastKey
+    const dk = msg.createdAt ? dayKey(msg.createdAt) : null
+    const newDay = dk !== lastDay
+    const startsRun = key !== lastKey || newDay
+    blocks.push({ msg, showAvatar: startsRun, startsRun, day: newDay && msg.createdAt ? dayLabel(msg.createdAt) : null })
     lastKey = key
-    blocks.push({ msg, showAvatar })
+    lastDay = dk
   }
-  return blocks
+  // Время — под последним сообщением серии или там, где сменилась минута.
+  return blocks.map((b, i) => {
+    const next = blocks[i + 1]
+    const showTime = !next || next.startsRun || next.msg.time !== b.msg.time || b.msg.side === 'out' && next.msg.read !== b.msg.read
+    return { ...b, showTime }
+  })
 }
 
 const messageBlocks = computed(() => renderMessageBlocks(messages.value))
@@ -275,6 +313,7 @@ async function loadGroupMembers() {
 
 const composerPlaceholder = computed(() => {
   if (!active.value) return 'Выберите диалог…'
+  if (active.value.kind === 'group') return 'Сообщение для команды…'
   const first = active.value.name.split(' ')[0] || active.value.name
   return `Напишите сообщение ${first}…`
 })
@@ -329,6 +368,31 @@ function scrollMessagesToBottom() {
   const el = messagesScrollEl.value
   if (!el) return
   el.scrollTop = el.scrollHeight
+}
+
+/** Лента прокручена до конца (с запасом) — новые сообщения можно докручивать автоматически. */
+function isMessagesNearBottom(): boolean {
+  const el = messagesScrollEl.value
+  if (!el) return true
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 120
+}
+
+/** Пользователь внизу ленты — при догрузке картинок держим ленту внизу. */
+let stickToBottom = true
+
+function onMessagesScroll() {
+  stickToBottom = isMessagesNearBottom()
+}
+
+/** Картинка во вложении загрузилась или не открылась — высота сообщения поменялась. */
+function onAttachmentLayoutChange() {
+  if (stickToBottom) scrollMessagesToBottom()
+}
+
+async function scrollMessagesToBottomSoon() {
+  stickToBottom = true
+  await nextTick()
+  scrollMessagesToBottom()
 }
 
 async function loadOlderMessages() {
@@ -406,7 +470,9 @@ async function appendIncomingMessage(row: ChatMessageRow) {
   )
   const ui = mapped[0]
   if (!ui) return
+  const stick = ui.side === 'out' || isMessagesNearBottom()
   messages.value = [...messages.value, ui]
+  if (stick) void scrollMessagesToBottomSoon()
 }
 
 async function handleThreadMessagesRealtime(tid: string, payload: ThreadMessageRealtimePayload | null) {
@@ -477,8 +543,7 @@ async function onPick(c: UiChatConversation) {
     error.value = formatSupabaseError(e) || 'Не удалось открыть диалог'
   } finally {
     chatLoading.value = false
-    await nextTick()
-    scrollMessagesToBottom()
+    void scrollMessagesToBottomSoon()
   }
 }
 
@@ -501,7 +566,10 @@ async function refreshChat() {
     error.value = formatSupabaseError(e) || 'Не удалось обновить'
   } finally {
     refreshBusy.value = false
-    if (hadThread) chatLoading.value = false
+    if (hadThread) {
+      chatLoading.value = false
+      void scrollMessagesToBottomSoon()
+    }
   }
 }
 
@@ -536,6 +604,7 @@ async function onSend() {
       draft.value = ''
     }
     await reloadMessages()
+    void scrollMessagesToBottomSoon()
     await refreshThreads()
     await refreshChatTotalUnread()
   } catch (e) {
@@ -568,6 +637,7 @@ function markImagePreviewFailed(messageId: string) {
     ...failedImagePreviewIds.value,
     [messageId]: true,
   }
+  void nextTick(onAttachmentLayoutChange)
 }
 
 function resetSwipeOffsets() {
@@ -688,25 +758,6 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-function todayLabel(): string {
-  const d = new Date()
-  const months = [
-    'января',
-    'февраля',
-    'марта',
-    'апреля',
-    'мая',
-    'июня',
-    'июля',
-    'августа',
-    'сентября',
-    'октября',
-    'ноября',
-    'декабря',
-  ]
-  return `Сегодня, ${d.getDate()} ${months[d.getMonth()]}`
-}
-
 function isImageAttachmentName(fileName: string | null | undefined): boolean {
   const name = String(fileName || '').toLowerCase()
   return /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(name)
@@ -811,7 +862,7 @@ async function submitGroup() {
 
 function onGlobalPointerDown(e: MouseEvent) {
   const t = e.target as HTMLElement | null
-  if (t?.closest?.('.chat-page__ctx-menu')) return
+  if (t?.closest?.('.chat-ctx-menu')) return
   closeMsgContextMenu()
 }
 
@@ -870,259 +921,246 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="chat-page" :class="chatPageLayoutClass">
-    <p v-if="!configured" class="chat-page__warn">
-      Подключите Supabase (переменные окружения), чтобы чат работал с базой данных.
-    </p>
-    <p v-else-if="error" class="chat-page__err">{{ error }}</p>
+  <div class="chat-page tw-scope flex min-h-0 flex-col gap-4">
+    <Alert v-if="!configured" class="shrink-0">
+      <AlertDescription>Подключите Supabase (переменные окружения), чтобы чат работал с базой данных.</AlertDescription>
+    </Alert>
+    <Alert v-else-if="error" variant="destructive" class="shrink-0">
+      <AlertDescription>{{ error }}</AlertDescription>
+    </Alert>
 
-    <!-- Левая колонка: список (структура как design/chat.html) -->
-    <section class="chat-page__list" aria-label="Диалоги">
-      <div class="chat-page__list-head">
-        <div v-if="configured" class="chat-page__toolbar">
-          <Button variant="outline" size="sm" type="button" class="chat-page__toolbar-btn chat-page__toolbar-btn--anim" @click="openDmModal">Написать</Button>
-          <Button variant="outline" size="sm"
-            type="button"
-            class="chat-page__toolbar-btn chat-page__toolbar-btn--refresh chat-page__toolbar-btn--icon"
-            :disabled="refreshBusy || listLoading"
-            title="Обновить список диалогов и сообщения"
-            aria-label="Обновить чат"
-            @click="refreshChat"
-          >
-            <RefreshCcwIcon class="chat-page__toolbar-refresh-svg" :class="{ 'chat-page__toolbar-refresh-svg--spin': refreshBusy }" aria-hidden="true" :size="18" />
-          </Button>
-          <Button variant="default"
-            v-if="isManager"
-            type="button"
-            class="chat-page__toolbar-btn chat-page__toolbar-btn--primary chat-page__toolbar-btn--anim"
-            aria-label="Новая команда"
-            @click="openGroupModal"
-          >
-            <span class="chat-page__toolbar-label chat-page__toolbar-label--full">Новая команда</span>
-            <span class="chat-page__toolbar-label chat-page__toolbar-label--short" aria-hidden="true">Команда</span>
-          </Button>
-        </div>
-        <InputGroup class="chat-page__search-wrap">
-          <InputGroupAddon><SearchIcon /></InputGroupAddon>
-          <InputGroupInput
-            v-model="searchLocal"
-            type="search"
-            placeholder="ФИО или название группы…"
-            autocomplete="off"
-            aria-label="Поиск по ФИО сотрудника или названию группы"
-          />
-        </InputGroup>
-        <Tabs :model-value="filterTab">
-          <TabsList aria-label="Фильтр диалогов">
-            <TabsTrigger value="all"
-           
-            @click="setTab('all')">
-            Все
-          </TabsTrigger>
-            <TabsTrigger value="unread"
-           
-            aria-label="Непрочитанные"
-            @click="setTab('unread')">
-            <span class="chat-page__tab-text chat-page__tab-text--full">Непрочитанные</span>
-            <span class="chat-page__tab-text chat-page__tab-text--short" aria-hidden="true">Непрочит.</span>
-          </TabsTrigger>
-            <TabsTrigger value="teams"
-           
-            @click="setTab('teams')">
-            Команды
-          </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      <div class="chat-page__list-scroll">
-        <div v-if="listLoading" class="chat-page__list-loader" role="status" aria-live="polite">
-          <Spinner class="size-4" />
-          <span class="chat-page__list-loader-text">Загрузка списка…</span>
-        </div>
-        <template v-else>
-        <button
-          v-for="c in filteredList"
-          :key="c.id"
-          type="button"
-          class="chat-page__row"
-          :class="{ 'chat-page__row--active': c.id === activeId, 'chat-page__row--urgent': c.unreadUrgent > 0 }"
-          @click="onPick(c)"
-        >
-          <div class="chat-page__row-av-wrap">
-            <UserAvatar :class="toneClass(c.tone)" :url="c.avatarUrl" :initials="c.initials" />
-            <span
-              class="chat-page__online"
-              :class="convListPresence(c).online ? 'chat-page__online--on' : 'chat-page__online--off'"
-              aria-hidden="true"
+    <div class="flex min-h-0 flex-1 overflow-hidden rounded-xl border bg-card shadow-xs">
+      <!-- Список диалогов -->
+      <section
+        v-show="!isMobileChatLayout || mobileChatPanel === 'list'"
+        class="flex min-h-0 flex-col"
+        :class="isMobileChatLayout ? 'w-full' : 'w-80 shrink-0 border-r xl:w-96'"
+        aria-label="Диалоги"
+      >
+        <div class="flex shrink-0 flex-col gap-3 border-b p-4">
+          <div v-if="configured" class="flex items-center gap-2">
+            <Button variant="outline" size="sm" type="button" @click="openDmModal">
+              <SquarePenIcon />
+              Написать
+            </Button>
+            <Button v-if="isManager" variant="outline" size="sm" type="button" @click="openGroupModal">
+              <UsersRoundIcon />
+              Новая команда
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              type="button"
+              class="ml-auto text-muted-foreground"
+              :disabled="refreshBusy || listLoading"
+              title="Обновить список диалогов"
+              aria-label="Обновить список диалогов"
+              @click="refreshChat"
+            >
+              <RefreshCcwIcon :class="{ 'animate-spin': refreshBusy }" />
+            </Button>
+          </div>
+          <InputGroup>
+            <InputGroupAddon><SearchIcon /></InputGroupAddon>
+            <InputGroupInput
+              v-model="searchLocal"
+              type="search"
+              placeholder="Сотрудник или команда"
+              autocomplete="off"
+              aria-label="Поиск по ФИО сотрудника или названию команды"
             />
-          </div>
-          <div class="chat-page__row-main">
-            <div class="chat-page__row-top">
-              <h3 class="chat-page__row-name">{{ c.name }}</h3>
-              <span class="chat-page__row-time" :class="{ 'chat-page__row-time--accent': c.unread > 0 }">
-                {{ c.lastTime }}
-              </span>
-            </div>
-            <div class="chat-page__row-role">{{ c.role }}</div>
-            <p class="chat-page__row-preview">
-              {{ c.lastPreview }}
-            </p>
-          </div>
-          <Badge v-if="c.unreadUrgent > 0" variant="destructive" class="shrink-0" :aria-label="`Важно: ${c.unreadUrgent}`">Важно</Badge>
-          <Badge v-if="c.unread > 0" class="h-5 min-w-5 shrink-0 rounded-full px-1.5 tabular-nums" :aria-label="`Непрочитано: ${c.unread}`">{{ c.unread > 9 ? '9+' : c.unread }}</Badge>
-        </button>
-        <p v-if="!filteredList.length" class="chat-page__empty">Нет диалогов по выбранному фильтру.</p>
-        </template>
-      </div>
-    </section>
+          </InputGroup>
+          <Tabs :model-value="filterTab" @update:model-value="(v) => setTab(v as ChatFilterTab)">
+            <TabsList class="w-full" aria-label="Фильтр диалогов">
+              <TabsTrigger value="all">Все</TabsTrigger>
+              <TabsTrigger value="unread">Непрочитанные</TabsTrigger>
+              <TabsTrigger value="teams">Команды</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-    <!-- Правая колонка: активный чат -->
-    <section class="chat-page__thread" aria-label="Переписка">
-      <div v-if="!configured" class="chat-page__thread-empty">
-        <p>Сообщения загружаются из Supabase после настройки проекта.</p>
-      </div>
-      <div v-else-if="!active" class="chat-page__thread-empty">
-        <p>
-          {{
-            isMobileChatLayout
-              ? 'Выберите диалог в списке или нажмите «Написать».'
-              : 'Выберите диалог слева или нажмите «Написать».'
-          }}
-        </p>
-      </div>
-      <template v-else>
-        <header class="chat-page__thread-head">
-          <!-- From Uiverse.io by xopc333 — назад к списку (адаптировано под тему) -->
-          <Button variant="ghost" size="icon-sm"
-            v-if="isMobileChatLayout && mobileChatPanel === 'thread'"
-            type="button"
-            class="chat-page__mobile-back-btn"
-            aria-label="Назад к списку чатов"
-            @click="backToChatList"
-          >
-            <div class="chat-page__mobile-back-box">
-              <span class="chat-page__mobile-back-ico" aria-hidden="true">
-                <ArrowRightIcon />
-              </span>
-              <span class="chat-page__mobile-back-ico" aria-hidden="true">
-                <ArrowRightIcon />
-              </span>
+        <div class="min-h-0 flex-1 overflow-y-auto">
+          <div v-if="listLoading" class="flex flex-col" role="status" aria-label="Загрузка списка">
+            <div v-for="i in 5" :key="i" class="flex items-center gap-3 px-4 py-3">
+              <Skeleton class="size-10 shrink-0 rounded-full" />
+              <div class="grid flex-1 gap-2">
+                <Skeleton class="h-4 w-2/3" />
+                <Skeleton class="h-3 w-1/2" />
+              </div>
             </div>
-          </Button>
-          <div class="chat-page__thread-user">
+          </div>
+          <template v-else>
+            <button
+              v-for="c in filteredList"
+              :key="c.id"
+              type="button"
+              class="flex w-full items-start gap-3 px-4 py-3 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60"
+              :class="c.id === activeId ? 'bg-muted' : ''"
+              :aria-current="c.id === activeId ? 'true' : undefined"
+              @click="onPick(c)"
+            >
+              <div class="relative shrink-0">
+                <UserAvatar class="size-10 text-sm font-medium" :class="toneClass(c.tone)" :url="c.avatarUrl" :initials="c.initials" />
+                <span
+                  v-if="c.kind === 'direct'"
+                  class="absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-card"
+                  :class="convListPresence(c).online ? 'bg-emerald-500' : 'bg-muted-foreground/40'"
+                  aria-hidden="true"
+                />
+              </div>
+              <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+                <div class="flex min-w-0 items-baseline gap-2">
+                  <span class="min-w-0 truncate text-sm font-medium">{{ c.name }}</span>
+                  <span class="ml-auto shrink-0 text-xs tabular-nums" :class="c.unread > 0 ? 'font-medium text-primary dark:text-emerald-300' : 'text-muted-foreground'">
+                    {{ c.lastTime }}
+                  </span>
+                </div>
+                <span v-if="c.role" class="truncate text-xs text-muted-foreground">{{ c.role }}</span>
+                <div class="flex min-w-0 items-center gap-2">
+                  <span class="min-w-0 truncate text-sm" :class="c.unread > 0 ? 'text-foreground' : 'text-muted-foreground'">{{ c.lastPreview }}</span>
+                  <span class="ml-auto flex shrink-0 items-center gap-1">
+                    <UiBadge v-if="c.unreadUrgent > 0" tone="danger" :aria-label="`Важно: ${c.unreadUrgent}`">Важно</UiBadge>
+                    <Badge v-if="c.unread > 0" class="h-5 min-w-5 rounded-full px-1.5 tabular-nums" :aria-label="`Непрочитано: ${c.unread}`">{{ c.unread > 9 ? '9+' : c.unread }}</Badge>
+                  </span>
+                </div>
+              </div>
+            </button>
+            <p v-if="!filteredList.length" class="px-4 py-10 text-center text-sm text-muted-foreground">
+              {{ searchLocal.trim() ? 'Никого не нашли' : filterTab === 'unread' ? 'Непрочитанных нет' : filterTab === 'teams' ? 'Команд пока нет' : 'Диалогов пока нет' }}
+            </p>
+          </template>
+        </div>
+      </section>
+
+      <!-- Переписка -->
+      <section
+        v-show="!isMobileChatLayout || mobileChatPanel === 'thread'"
+        class="flex min-h-0 min-w-0 flex-1 flex-col"
+        aria-label="Переписка"
+      >
+        <Empty v-if="!configured || !active" class="flex-1">
+          <EmptyHeader>
+            <EmptyMedia variant="icon"><MessagesSquareIcon /></EmptyMedia>
+            <EmptyTitle>Выберите диалог</EmptyTitle>
+            <EmptyDescription>
+              {{ configured ? 'Откройте переписку из списка или начните новую.' : 'Сообщения появятся после настройки базы.' }}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent v-if="configured">
+            <Button variant="outline" size="sm" type="button" @click="openDmModal">
+              <SquarePenIcon />
+              Написать
+            </Button>
+          </EmptyContent>
+        </Empty>
+
+        <template v-else>
+          <header class="flex shrink-0 items-center gap-3 border-b px-4 py-3">
+            <Button
+              v-if="isMobileChatLayout"
+              variant="ghost"
+              size="icon-sm"
+              type="button"
+              class="-ml-2"
+              aria-label="Назад к списку чатов"
+              @click="backToChatList"
+            >
+              <ChevronLeftIcon />
+            </Button>
             <button
               v-if="active.kind === 'group'"
               type="button"
-              class="chat-page__group-logo-btn chat-page__row-av-wrap"
+              class="shrink-0 rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               :aria-expanded="groupRosterExpanded"
               aria-controls="chat-group-roster"
-              :aria-label="groupRosterExpanded ? 'Скрыть состав группы' : 'Показать состав группы'"
-              :title="groupRosterExpanded ? 'Скрыть состав' : 'Показать состав'"
+              :aria-label="groupRosterExpanded ? 'Скрыть состав команды' : 'Показать состав команды'"
               @click="toggleGroupRoster"
             >
-              <UserAvatar :class="toneClass(active.tone)" :url="active.avatarUrl" :initials="active.initials" />
+              <UserAvatar class="size-9 text-sm font-medium" :class="toneClass(active.tone)" :url="active.avatarUrl" :initials="active.initials" />
             </button>
-            <div v-else class="chat-page__row-av-wrap">
-              <UserAvatar :class="toneClass(active.tone)" :url="active.avatarUrl" :initials="active.initials" />
+            <div v-else class="relative shrink-0">
+              <UserAvatar class="size-9 text-sm font-medium" :class="toneClass(active.tone)" :url="active.avatarUrl" :initials="active.initials" />
               <span
-                class="chat-page__online"
-                :class="activeDirectPresence?.online ? 'chat-page__online--on' : 'chat-page__online--off'"
+                class="absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-card"
+                :class="activeDirectPresence?.online ? 'bg-emerald-500' : 'bg-muted-foreground/40'"
                 aria-hidden="true"
               />
             </div>
-            <div class="chat-page__thread-head-text">
-              <h2 class="chat-page__thread-title">{{ active.name }}</h2>
-              <p v-if="active.kind === 'group'" class="chat-page__thread-meta">
+            <div class="flex min-w-0 flex-1 flex-col">
+              <h2 class="truncate text-sm font-semibold">{{ active.name }}</h2>
+              <p v-if="active.kind === 'group'" class="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
                 <button
                   type="button"
-                  class="chat-page__group-participants-btn"
+                  class="inline-flex items-center gap-0.5 rounded-sm underline-offset-2 hover:text-foreground hover:underline"
                   :aria-expanded="groupRosterExpanded"
                   aria-controls="chat-group-roster"
-                  :aria-label="`${groupRosterExpanded ? 'Скрыть' : 'Показать'} состав (${participantsLabel(groupMembers.length)})`"
-                  :title="groupRosterExpanded ? 'Скрыть состав' : 'Показать состав'"
                   @click="toggleGroupRoster"
                 >
                   {{ participantsLabel(groupMembers.length) }}
+                  <ChevronDownIcon class="size-3.5 transition-transform" :class="groupRosterExpanded ? 'rotate-180' : ''" />
                 </button>
-                <span class="chat-page__dot" aria-hidden="true" />
-                <span :class="onlineInGroupCount > 0 ? 'chat-page__status-on' : 'chat-page__status-off'">
-                  В сети: {{ onlineInGroupCount }}
-                </span>
+                <span aria-hidden="true">·</span>
+                <span :class="onlineInGroupCount > 0 ? 'text-emerald-600 dark:text-emerald-400' : ''">в сети: {{ onlineInGroupCount }}</span>
               </p>
-              <p v-else class="chat-page__thread-meta">
-                {{ active.role }}
-                <span class="chat-page__dot" aria-hidden="true" />
+              <p v-else class="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                <span v-if="active.role" class="truncate">{{ active.role }}</span>
+                <span v-if="active.role && activeDirectPresence" aria-hidden="true">·</span>
                 <span
                   v-if="activeDirectPresence"
-                  :class="activeDirectPresence.online ? 'chat-page__status-on' : 'chat-page__status-off'"
+                  class="truncate"
+                  :class="activeDirectPresence.online ? 'text-emerald-600 dark:text-emerald-400' : ''"
                 >
                   {{ activeDirectPresence.presenceLabel }}
                 </span>
               </p>
             </div>
-          </div>
-          <div class="chat-page__thread-actions">
-            <Button variant="ghost" size="icon-sm"
+            <Button
+              variant="ghost"
+              size="icon-sm"
               type="button"
-              class="chat-page__icon-btn"
+              class="text-muted-foreground"
               title="Обновить переписку"
               aria-label="Обновить переписку"
               :disabled="refreshBusy"
               @click="refreshChat"
             >
-              <RefreshCcwIcon class="chat-page__thread-refresh-ico" :class="{ 'chat-page__thread-refresh-ico--spin': refreshBusy }" aria-hidden="true" :size="20" />
+              <RefreshCcwIcon :class="{ 'animate-spin': refreshBusy }" />
             </Button>
-          </div>
-        </header>
+          </header>
 
-        <div class="chat-page__thread-main">
-          <div v-if="chatLoading" class="chat-page__chat-loading" role="status" aria-live="polite">
-            <Spinner class="size-6" />
-            <p class="chat-page__chat-loading-title">Загрузка чата</p>
+          <div v-if="chatLoading" class="flex flex-1 flex-col items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
+            <Spinner class="size-5" />
+            Загрузка переписки…
           </div>
 
           <template v-else>
-            <div class="chat-page__thread-loaded">
             <div
               v-if="active.kind === 'group'"
-              id="chat-group-roster"
               v-show="groupRosterExpanded"
-              class="chat-page__group-roster"
-              aria-label="Состав группы"
+              id="chat-group-roster"
+              class="max-h-64 shrink-0 overflow-y-auto border-b bg-muted/30 p-4"
+              aria-label="Состав команды"
             >
-              <div class="chat-page__group-roster-head">
-                <h3 class="chat-page__group-roster-title">Состав</h3>
-                <span v-if="!groupMembersLoading" class="chat-page__group-roster-sub">
-                  {{ onlineInGroupCount }} из {{ groupMembers.length }} в сети
-                </span>
-              </div>
-              <div v-if="groupMembersLoading" class="chat-page__group-roster-loading" role="status">
+              <div v-if="groupMembersLoading" class="flex items-center gap-2 text-sm text-muted-foreground" role="status">
                 <Spinner class="size-4" />
-                <span>Загрузка состава…</span>
+                Загрузка состава…
               </div>
-              <ul v-else class="chat-page__group-roster-list">
-                <li v-for="m in groupMembers" :key="m.userId" class="chat-page__group-roster-item">
-                  <div class="chat-page__row-av-wrap">
-                    <UserAvatar :class="toneClass(m.tone)" :url="m.avatarUrl" :initials="m.initials" />
+              <ul v-else class="grid gap-3 sm:grid-cols-2">
+                <li v-for="m in groupMembers" :key="m.userId" class="flex min-w-0 items-center gap-3">
+                  <div class="relative shrink-0">
+                    <UserAvatar class="size-8 text-xs font-medium" :class="toneClass(m.tone)" :url="m.avatarUrl" :initials="m.initials" />
                     <span
-                      class="chat-page__online"
-                      :class="groupMemberPresence(m).online ? 'chat-page__online--on' : 'chat-page__online--off'"
-                      :title="groupMemberPresence(m).presenceLabel"
-                      :aria-label="`${m.displayName}, ${groupMemberPresence(m).presenceLabel}`"
+                      class="absolute right-0 bottom-0 size-2 rounded-full ring-2 ring-card"
+                      :class="groupMemberPresence(m).online ? 'bg-emerald-500' : 'bg-muted-foreground/40'"
+                      aria-hidden="true"
                     />
                   </div>
-                  <div class="chat-page__group-roster-text">
-                    <span class="chat-page__group-roster-name">
-                      {{ m.displayName }}
-                      <span v-if="m.isSelf" class="chat-page__group-roster-you">(вы)</span>
+                  <div class="grid min-w-0">
+                    <span class="truncate text-sm font-medium">
+                      {{ m.displayName }}<span v-if="m.isSelf" class="font-normal text-muted-foreground"> (вы)</span>
                     </span>
-                    <span class="chat-page__group-roster-role">{{ m.roleLabel }}</span>
-                    <span
-                      class="chat-page__group-roster-status"
-                      :class="groupMemberPresence(m).online ? 'chat-page__group-roster-status--on' : 'chat-page__group-roster-status--off'"
-                    >
-                      {{ groupMemberPresence(m).presenceLabel }}
+                    <span class="truncate text-xs text-muted-foreground">
+                      {{ m.roleLabel }} · <span :class="groupMemberPresence(m).online ? 'text-emerald-600 dark:text-emerald-400' : ''">{{ groupMemberPresence(m).presenceLabel }}</span>
                     </span>
                   </div>
                 </li>
@@ -1131,69 +1169,64 @@ onUnmounted(() => {
 
             <div
               ref="messagesScrollEl"
-              class="chat-page__messages"
+              class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-4 py-4"
               @touchstart.passive="onThreadBackSwipeTouchStart"
               @touchend.passive="onThreadBackSwipeTouchEnd"
               @touchcancel.passive="onThreadBackSwipeTouchCancel"
+              @scroll.passive="onMessagesScroll"
             >
-              <div v-if="hasMoreOlderMessages" class="chat-page__load-older-wrap">
-                <Button variant="ghost" size="sm"
-                  type="button"
-                  class="chat-page__load-older"
-                  :disabled="olderLoading"
-                  @click="loadOlderMessages"
-                >
-                  <span v-if="olderLoading" class="chat-page__spinner chat-page__spinner--sm" aria-hidden="true" />
-                  {{ olderLoading ? 'Загрузка…' : 'Ранее сообщения' }}
+              <div v-if="hasMoreOlderMessages" class="mb-2 flex justify-center">
+                <Button variant="ghost" size="sm" type="button" class="text-muted-foreground" :disabled="olderLoading" @click="loadOlderMessages">
+                  <Spinner v-if="olderLoading" class="size-4" />
+                  {{ olderLoading ? 'Загрузка…' : 'Показать ранние сообщения' }}
                 </Button>
               </div>
 
-              <div class="chat-page__date-pill-wrap">
-                <Badge variant="secondary" class="font-normal">{{ todayLabel() }}</Badge>
-              </div>
+              <p v-if="!messageBlocks.length" class="m-auto text-center text-sm text-muted-foreground">Сообщений пока нет — напишите первым.</p>
 
-              <div v-if="!messageBlocks.length" class="chat-page__no-messages">Сообщений пока нет — напишите первым.</div>
+              <template v-for="block in messageBlocks" :key="block.msg.id">
+                <div v-if="block.day" class="my-3 flex justify-center first:mt-0">
+                  <span class="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">{{ block.day }}</span>
+                </div>
+                <div
+                  class="flex items-end gap-2"
+                  :class="[block.msg.side === 'out' ? 'justify-end' : 'justify-start', block.startsRun && !block.day ? 'mt-3' : 'mt-1']"
+                >
+                  <template v-if="block.msg.side === 'in' && active.kind === 'group'">
+                    <UserAvatar
+                      v-if="block.showAvatar"
+                      class="size-8 shrink-0 self-start text-xs font-medium"
+                      :class="toneClass(incomingAvatar(block).tone)"
+                      :url="incomingAvatar(block).url"
+                      :initials="incomingAvatar(block).initials"
+                    />
+                    <div v-else class="w-8 shrink-0" />
+                  </template>
 
-              <div v-for="block in messageBlocks" :key="block.msg.id" class="chat-page__msg-row" :class="{ 'chat-page__msg-row--out': block.msg.side === 'out' }">
-                <template v-if="block.msg.side === 'in'">
-                  <UserAvatar
-                    v-if="block.showAvatar"
-                    :class="[toneClass(incomingAvatar(block).tone), 'chat-page__msg-av']"
-                    :url="incomingAvatar(block).url"
-                    :initials="incomingAvatar(block).initials"
-                  />
-                  <div v-else class="chat-page__msg-av-spacer" />
-                </template>
-
-                <div class="chat-page__msg-col" :class="{ 'chat-page__msg-col--out': block.msg.side === 'out' }">
                   <div
-                    class="chat-page__msg-block-wrap"
-                    :class="{
-                      'chat-page__msg-block-wrap--own': block.msg.side === 'out',
-                      'chat-page__msg-block-wrap--strip-open':
-                        block.msg.side === 'out' && deleteStripVisible(block.msg.id),
-                    }"
+                    class="relative flex max-w-[85%] min-w-0 flex-col sm:max-w-[70%]"
+                    :class="block.msg.side === 'out' ? 'items-end' : 'items-start'"
                   >
+                    <!-- Красная зона удаления под своим сообщением: видна только при свайпе влево -->
                     <div
-                      v-if="block.msg.side === 'out'"
-                      class="chat-page__msg-delete-strip"
-                      :class="{ 'chat-page__msg-delete-strip--visible': deleteStripVisible(block.msg.id) }"
+                      v-if="block.msg.side === 'out' && deleteStripVisible(block.msg.id)"
+                      class="absolute inset-y-0 right-0 flex w-[76px] items-center justify-center rounded-2xl bg-destructive"
                     >
                       <button
                         type="button"
-                        class="chat-page__msg-delete-strip-btn"
+                        class="flex size-full items-center justify-center text-white"
                         aria-label="Удалить сообщение"
                         @click="stripDeleteClick(block.msg)"
                       >
-                        <UiTrashIcon class="chat-page__msg-delete-icon" aria-hidden="true" />
+                        <Trash2Icon class="size-5" />
                       </button>
                     </div>
                     <div
-                      class="chat-page__msg-block-pane"
-                      :class="{
-                        'chat-page__msg-block-pane--own': block.msg.side === 'out',
-                        'chat-page__msg-block-pane--dt': block.msg.side !== 'out' || swipeDraggingId !== block.msg.id,
-                      }"
+                      class="relative flex min-w-0 flex-col gap-1 bg-card"
+                      :class="[
+                        block.msg.side === 'out' ? 'items-end' : 'items-start',
+                        block.msg.side === 'out' && swipeDraggingId !== block.msg.id ? 'transition-transform duration-200' : '',
+                      ]"
                       :style="ownPaneStyle(block.msg)"
                       @touchstart="onOwnPaneTouchStart($event, block.msg)"
                       @touchmove="onOwnPaneTouchMove($event, block.msg)"
@@ -1204,105 +1237,90 @@ onUnmounted(() => {
                         v-if="block.msg.text"
                         :variant="block.msg.side === 'out' ? 'default' : block.msg.isUrgent ? 'destructive' : 'secondary'"
                         :align="block.msg.side === 'out' ? 'end' : 'start'"
-                        class="chat-page__bubble max-w-full"
+                        class="max-w-full"
                       >
                         <BubbleContent class="break-words whitespace-pre-wrap">
-                          <Badge v-if="block.msg.isUrgent && block.msg.side === 'in'" variant="destructive" class="mb-1">Важно: проблема</Badge>
-                          <p class="m-0">{{ block.msg.text }}</p>
+                          <UiBadge v-if="block.msg.isUrgent && block.msg.side === 'in'" tone="danger" class="mb-1">Важно: проблема</UiBadge>
+                          <p>{{ block.msg.text }}</p>
                         </BubbleContent>
                       </Bubble>
                       <a
-                        v-if="
-                          block.msg.attachment?.url &&
-                          isImageAttachmentName(block.msg.attachment.name) &&
-                          !failedImagePreviewIds[block.msg.id]
-                        "
+                        v-if="block.msg.attachment?.url && isImageAttachmentName(block.msg.attachment.name) && !failedImagePreviewIds[block.msg.id]"
                         :href="block.msg.attachment.url"
-                        class="chat-page__attach-preview"
-                        :class="block.msg.side === 'out' ? 'chat-page__attach-preview--out' : ''"
+                        class="block overflow-hidden rounded-xl border bg-muted no-underline"
                         target="_blank"
                         rel="noopener noreferrer"
                         :download="block.msg.attachment.name"
+                        :title="`Открыть ${block.msg.attachment.name}`"
                       >
                         <img
                           :src="block.msg.attachment.url"
                           :alt="block.msg.attachment.name"
-                          class="chat-page__attach-preview-img"
+                          class="block max-h-64 w-auto max-w-full object-cover sm:max-w-72"
                           loading="lazy"
+                          @load="onAttachmentLayoutChange"
                           @error="markImagePreviewFailed(block.msg.id)"
                         />
-                        <span class="chat-page__attach-preview-name">{{ block.msg.attachment.name }}</span>
                       </a>
-                      <a
-                        v-else-if="block.msg.attachment?.url"
-                        :href="block.msg.attachment.url"
-                        class="chat-page__attach"
-                        :class="block.msg.side === 'out' ? 'chat-page__attach--out' : ''"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        :download="block.msg.attachment.name"
-                      >
-                        <div class="chat-page__attach-icon" aria-hidden="true">
-                          <FileIcon :size="24" />
-                        </div>
-                        <div class="chat-page__attach-meta">
-                          <p class="chat-page__attach-name">{{ block.msg.attachment.name }}</p>
-                          <p class="chat-page__attach-size">{{ block.msg.attachment.size }}</p>
-                          <p class="chat-page__attach-hint">Скачать</p>
-                        </div>
-                      </a>
-                      <div
+                      <component
+                        :is="block.msg.attachment.url ? 'a' : 'div'"
                         v-else-if="block.msg.attachment"
-                        class="chat-page__attach"
-                        :class="block.msg.side === 'out' ? 'chat-page__attach--out' : ''"
-                        role="group"
-                        :aria-label="`Вложение: ${block.msg.attachment.name}`"
+                        v-bind="block.msg.attachment.url ? { href: block.msg.attachment.url, target: '_blank', rel: 'noopener noreferrer', download: block.msg.attachment.name } : {}"
+                        class="flex max-w-full min-w-0 items-center gap-3 rounded-xl border bg-background p-3 text-foreground no-underline"
+                        :class="block.msg.attachment.url ? 'transition-colors hover:bg-muted/60' : ''"
                       >
-                        <div class="chat-page__attach-icon" aria-hidden="true">
-                          <FileIcon :size="24" />
-                        </div>
-                        <div class="chat-page__attach-meta">
-                          <p class="chat-page__attach-name">{{ block.msg.attachment.name }}</p>
-                          <p class="chat-page__attach-size">{{ block.msg.attachment.size }}</p>
-                        </div>
-                      </div>
-                      <div class="chat-page__msg-foot" :class="{ 'chat-page__msg-foot--out': block.msg.side === 'out' }">
+                        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                          <FileIcon class="size-4" />
+                        </span>
+                        <span class="grid min-w-0">
+                          <span class="truncate text-sm font-medium">{{ block.msg.attachment.name }}</span>
+                          <span class="text-xs text-muted-foreground">
+                            {{ block.msg.attachment.size }}<template v-if="block.msg.attachment.url"> · скачать</template>
+                          </span>
+                        </span>
+                        <DownloadIcon v-if="block.msg.attachment.url" class="size-4 shrink-0 text-muted-foreground" />
+                      </component>
+                      <div v-if="block.showTime" class="flex items-center gap-1 px-1 text-xs text-muted-foreground tabular-nums">
                         <span>{{ block.msg.time }}</span>
-                        <CheckIcon v-if="block.msg.side === 'out' && block.msg.read" class="chat-page__read-icon" aria-label="Прочитано" :size="16" />
+                        <CheckCheckIcon v-if="block.msg.side === 'out' && block.msg.read" class="size-3.5 text-primary dark:text-emerald-400" aria-label="Прочитано" />
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <template v-if="block.msg.side === 'out'">
-                  <UserAvatar v-if="block.showAvatar" class="chat-page__msg-av chat-page__msg-av--me" :url="myAvatarUrl" :initials="userInitials" />
-                  <div v-else class="chat-page__msg-av-spacer" />
-                </template>
-              </div>
+              </template>
             </div>
 
-            <footer class="chat-page__composer-wrap">
+            <footer class="shrink-0 border-t p-3 md:p-4">
               <input
                 ref="chatFileInput"
                 type="file"
-                class="chat-page__file-input-hidden"
+                class="hidden"
                 tabindex="-1"
                 aria-hidden="true"
                 @change="onAttachmentInputChange"
               />
-              <div v-if="pendingAttachment" class="chat-page__pending-file" role="status">
-                <span class="chat-page__pending-file-name" :title="pendingAttachment.name">{{ pendingAttachment.name }}</span>
-                <Button variant="ghost" size="icon-sm" type="button" class="chat-page__pending-file-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать файл" :disabled="attachBusy" @click="clearPendingAttachment">
-                  ×
+              <div v-if="pendingAttachment" class="mb-2 flex min-w-0 items-center gap-2 rounded-md border bg-muted/40 py-1 pr-1 pl-3 text-sm" role="status">
+                <PaperclipIcon class="size-4 shrink-0 text-muted-foreground" />
+                <span class="truncate" :title="pendingAttachment.name">{{ pendingAttachment.name }}</span>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  type="button"
+                  class="ml-auto shrink-0 text-muted-foreground hover:text-destructive"
+                  aria-label="Убрать файл"
+                  :disabled="attachBusy"
+                  @click="clearPendingAttachment"
+                >
+                  <XIcon />
                 </Button>
               </div>
-              <InputGroup class="chat-page__composer" :class="{ 'opacity-70': attachBusy }">
+              <InputGroup :class="{ 'opacity-70': attachBusy }">
                 <InputGroupTextarea
                   v-model="draft"
                   rows="1"
                   class="max-h-40 min-h-10"
                   :maxlength="CHAT_MESSAGE_MAX_CHARS"
-                  :placeholder="pendingAttachment ? 'Подпись к файлу (необязательно)…' : composerPlaceholder"
+                  :placeholder="pendingAttachment ? 'Подпись к файлу (необязательно)' : composerPlaceholder"
                   :disabled="chatLoading || attachBusy"
                   @keydown="onKeydown"
                 />
@@ -1310,48 +1328,45 @@ onUnmounted(() => {
                   <InputGroupButton
                     variant="ghost"
                     size="icon-sm"
-                    title="Прикрепить файл"
+                    title="Прикрепить файл до 10 МБ"
                     aria-label="Прикрепить файл"
                     :disabled="chatLoading || attachBusy"
                     @click="triggerAttachmentPick"
                   >
                     <PaperclipIcon />
                   </InputGroupButton>
-                  <span class="ml-auto text-xs tabular-nums" :class="draftAtLimit ? 'text-destructive' : 'text-muted-foreground'" aria-live="polite">
+                  <span
+                    v-if="draftLength > CHAT_MESSAGE_MAX_CHARS * 0.8"
+                    class="ml-auto text-xs tabular-nums"
+                    :class="draftAtLimit ? 'text-destructive' : 'text-muted-foreground'"
+                    aria-live="polite"
+                  >
                     {{ draftLength }}/{{ CHAT_MESSAGE_MAX_CHARS }}
                   </span>
                   <InputGroupButton
                     variant="default"
                     size="icon-sm"
                     class="rounded-full"
+                    :class="draftLength > CHAT_MESSAGE_MAX_CHARS * 0.8 ? '' : 'ml-auto'"
                     aria-label="Отправить"
                     :disabled="chatLoading || attachBusy || (!pendingAttachment && !draft.trim()) || draftLength > CHAT_MESSAGE_MAX_CHARS"
                     @click="onSend"
                   >
-                    <ArrowUpIcon />
+                    <Spinner v-if="attachBusy" class="size-4" />
+                    <ArrowUpIcon v-else />
                   </InputGroupButton>
                 </InputGroupAddon>
               </InputGroup>
-              <div class="chat-page__composer-meta">
-                <p class="chat-page__hint">
-                  <template v-if="isMobileChatLayout && mobileChatPanel === 'thread'">
-                    Свайп вправо по ленте сообщений — вернуться к списку. Свои сообщения: долгое нажатие — меню, свайп
-                    влево — удалить.
-                  </template>
-                  <template v-else>
-                    Enter — отправить, Shift+Enter — перенос. До {{ CHAT_MESSAGE_MAX_CHARS }} символов. Файл до 10 МБ.
-                    Свои сообщения: ПКМ — меню, на телефоне — свайп влево.
-                  </template>
-                </p>
-              </div>
+              <p class="mt-2 hidden text-xs text-muted-foreground md:block">
+                Enter — отправить, Shift+Enter — новая строка. Своё сообщение можно удалить через правую кнопку мыши.
+              </p>
+              <p class="mt-2 text-xs text-muted-foreground md:hidden">Своё сообщение: свайп влево или долгое нажатие — удалить.</p>
             </footer>
-            </div>
           </template>
-        </div>
-      </template>
-    </section>
+        </template>
+      </section>
+    </div>
 
-    <!-- Личный диалог — Dialog + Command shadcn -->
     <ChatDmDialog
       v-if="dmModalOpen"
       v-model:search="dmSearch"
@@ -1361,7 +1376,6 @@ onUnmounted(() => {
       @pick="pickDmPeer"
     />
 
-    <!-- Новая команда (только руководитель) — Dialog shadcn -->
     <ChatGroupDialog
       v-if="groupModalOpen"
       v-model:title="groupTitle"
@@ -1374,28 +1388,23 @@ onUnmounted(() => {
     />
 
     <Teleport to="body">
-      <Transition name="chat-ctx">
-        <div v-if="msgContextMenu" class="chat-page__ctx-layer">
-          <div
-            class="chat-page__ctx-menu"
-            role="menu"
-            :style="{ left: msgContextMenu.x + 'px', top: msgContextMenu.y + 'px' }"
-            @pointerdown.stop
-          >
-            <!-- Та же кнопка, что в полосе свайпа (Uiverse / boryanakrasteva), цвета под панель -->
-            <button
-              type="button"
-              class="btn chat-page__ctx-delete-btn"
-              role="menuitem"
-              aria-label="Удалить сообщение"
-              @click="ctxMenuDeleteClick"
-            >
-              <span class="chat-page__del-pill chat-page__del-pill--ctx" aria-hidden="true">Удалить</span>
-              <UiTrashIcon class="icon" width="15.43" height="18" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </Transition>
+      <div
+        v-if="msgContextMenu"
+        class="chat-ctx-menu tw-scope fixed z-[2600] min-w-40 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+        role="menu"
+        :style="{ left: msgContextMenu.x + 'px', top: msgContextMenu.y + 'px' }"
+        @pointerdown.stop
+      >
+        <button
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive outline-none hover:bg-destructive/10 focus-visible:bg-destructive/10"
+          @click="ctxMenuDeleteClick"
+        >
+          <Trash2Icon class="size-4" />
+          Удалить сообщение
+        </button>
+      </div>
     </Teleport>
 
     <UiConfirmModal
@@ -1411,4 +1420,3 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped src="./ChatPage.css"></style>
