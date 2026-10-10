@@ -4,6 +4,11 @@ import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Separator } from '@/components/ui/shadcn/separator'
+import { BoldIcon, CodeIcon, ImagePlusIcon, ImageUpIcon, ItalicIcon, ListIcon, QuoteIcon } from '@lucide/vue'
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAuthUser } from '@/stores/auth'
@@ -28,6 +33,7 @@ const showHtmlInsertPanel = ref(false)
 const htmlInsertDraft = ref('')
 const selectedImage = ref<HTMLImageElement | null>(null)
 const defaultImageSize = ref<'100' | '75' | '50'>('100')
+let savedEditorRange: Range | null = null
 
 const form = ref({
   title: '',
@@ -39,11 +45,27 @@ const form = ref({
   galleryText: '',
 })
 
-const pageTitle = computed(() => (isEdit.value ? 'Редактирование новости' : 'Новая новость'))
 const hasSelectedImage = computed(() => Boolean(selectedImage.value))
+const busy = computed(() => saving.value || publishing.value || loading.value)
+const coverInput = ref<HTMLInputElement | null>(null)
+const galleryInput = ref<HTMLInputElement | null>(null)
+const imageSizes = ['100', '75', '50'] as const
+const currentImageSize = computed(() => selectedImage.value?.getAttribute('data-size') ?? defaultImageSize.value)
+const coverPositionOptions = [
+  { value: 'left-top', label: 'Слева сверху' },
+  { value: 'right-top', label: 'Справа сверху' },
+  { value: 'left-bottom', label: 'Слева снизу' },
+  { value: 'right-bottom', label: 'Справа снизу' },
+]
 
 function nowLocalDateTime(): string {
-  const d = new Date()
+  return toLocalDateTime(new Date())
+}
+
+/** Дата для поля «Дата публикации» — в местном времени, а не в UTC из базы. */
+function toLocalDateTime(value: Date | string): string {
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return nowLocalDateTime()
   const pad = (v: number) => String(v).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
@@ -71,7 +93,7 @@ async function loadData() {
       excerpt: row.excerpt ?? '',
       coverExcerptPosition: row.cover_excerpt_position ?? 'left-bottom',
       coverImageUrl: row.cover_image_url ?? '',
-      publishedAt: row.published_at.slice(0, 16),
+      publishedAt: toLocalDateTime(row.published_at),
       content: normalizeNewsContentToHtml(row.content),
       galleryText: (row.gallery_urls ?? []).join('\n'),
     }
@@ -131,7 +153,7 @@ async function persistPost(publishNow: boolean) {
         gallery_urls: galleryUrls,
         published_at: publishedIso,
       })
-      form.value.publishedAt = publishedIso.slice(0, 16)
+      form.value.publishedAt = toLocalDateTime(publishedIso)
       void router.push({ name: 'news-details', params: { id: postId.value } })
     } else {
       const createdBy = getAuthUser()?.id ?? null
@@ -145,7 +167,7 @@ async function persistPost(publishNow: boolean) {
         published_at: publishedIso,
         created_by: createdBy,
       })
-      form.value.publishedAt = publishedIso.slice(0, 16)
+      form.value.publishedAt = toLocalDateTime(publishedIso)
       void router.push({ name: 'news-details', params: { id: row.id } })
     }
   } catch (e) {
@@ -234,10 +256,24 @@ function triggerBodyImagePicker() {
   bodyImageInput.value?.click()
 }
 
+function rememberEditorCaret() {
+  const selection = window.getSelection()
+  if (!selection?.rangeCount || !contentEditor.value) return
+  const range = selection.getRangeAt(0)
+  if (contentEditor.value.contains(range.commonAncestorContainer)) savedEditorRange = range.cloneRange()
+}
+
 function insertHtmlAtCursor(html: string) {
   const selection = window.getSelection()
-  if (!selection || !selection.rangeCount || !contentEditor.value) {
-    contentEditor.value?.insertAdjacentHTML('beforeend', html)
+  const editor = contentEditor.value
+  if (!editor) return
+  // Курсор мог уйти в поле HTML — вставляем туда, где он стоял в тексте, иначе в конец.
+  if (savedEditorRange && editor.contains(savedEditorRange.commonAncestorContainer)) {
+    selection?.removeAllRanges()
+    selection?.addRange(savedEditorRange)
+  }
+  if (!selection || !selection.rangeCount || !editor.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+    editor.insertAdjacentHTML('beforeend', html)
     return
   }
   const range = selection.getRangeAt(0)
@@ -308,131 +344,133 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="news-editor">
-    <header class="news-editor-top">
-      <h1 class="page-title">{{ pageTitle }}</h1>
-      <Button variant="ghost" size="sm" type="button" class="news-editor-back" @click="goBack">Отмена</Button>
-    </header>
+  <section class="tw-scope flex min-w-0 flex-col gap-6">
+    <form class="flex min-w-0 flex-col gap-6 rounded-xl border bg-card p-4 shadow-xs md:p-6" @submit.prevent="savePost">
+      <FormGrid :cols="2">
+        <FormField label="Заголовок" for="news-title" wide required :count="form.title.length" :max="160">
+          <Input id="news-title" v-model.trim="form.title" type="text" maxlength="160" placeholder="Например: Агропромкомплектация готовится к посевной кампании — 2026" />
+        </FormField>
 
-    <p class="news-editor-hint">
-      Вставляйте текст прямо из источника: базовое форматирование сохранится. Фото можно добавить в обложку, галерею и в основной текст.
-    </p>
-    <p v-if="error" class="news-editor-error">{{ error }}</p>
+        <FormField label="Короткое описание" for="news-excerpt" wide hint="Подводка на обложке и в карточке новости" :count="form.excerpt.length" :max="220">
+          <Input id="news-excerpt" v-model.trim="form.excerpt" type="text" maxlength="220" placeholder="Коротко о главном" />
+        </FormField>
 
-    <form class="news-editor-form" @submit.prevent="savePost">
-      <label class="news-field">
-        <span>Заголовок</span>
-        <Input v-model.trim="form.title" type="text" maxlength="160" placeholder="Например: Агропромкомплектация готовится к посевной кампании - 2026" />
-      </label>
+        <FormField label="Где показать описание на обложке">
+          <UiSelect v-model="form.coverExcerptPosition" :options="coverPositionOptions" />
+        </FormField>
 
-      <label class="news-field">
-        <span>Короткое описание</span>
-        <Input v-model.trim="form.excerpt" type="text" maxlength="220" placeholder="Короткая подводка для карточки новости" />
-      </label>
-
-      <label class="news-field">
-        <span>Позиция короткого описания на обложке</span>
-        <UiSelect v-model="form.coverExcerptPosition" :options="[{ value: 'left-top', label: 'Слева сверху' }, { value: 'right-top', label: 'Справа сверху' }, { value: 'left-bottom', label: 'Слева снизу' }, { value: 'right-bottom', label: 'Справа снизу' }]" class="news-select" />
-      </label>
-
-      <div class="news-grid-two">
-        <label class="news-field">
-          <span>URL обложки</span>
-          <Input v-model.trim="form.coverImageUrl" type="url" placeholder="https://..." />
-          <div class="news-upload-row">
-            <label class="news-upload-btn">
-              <input type="file" accept="image/*" :disabled="uploadingCover || saving || publishing || loading" @change="onCoverFilePick" />
-              {{ uploadingCover ? 'Загрузка...' : 'Загрузить обложку' }}
-            </label>
-          </div>
-        </label>
-        <label class="news-field">
-          <span>Дата публикации</span>
+        <FormField label="Дата публикации" hint="«Опубликовать сейчас» поставит текущее время">
           <UiDateTimePicker v-model="form.publishedAt" />
-        </label>
-      </div>
+        </FormField>
 
-      <div class="news-field">
-        <span>Основной текст новости</span>
-        <div class="news-editor-toolbar">
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('bold')">
-            Ж
-          </Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('italic')">
-            К
-          </Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('insertUnorderedList')">
-            • Список
-          </Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="applyTextStyle('formatBlock')">
-            Цитата
-          </Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="uploadingBodyImage || saving || publishing || loading" @click="triggerBodyImagePicker">
-            {{ uploadingBodyImage ? 'Загрузка фото...' : 'Фото в текст' }}
-          </Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="toggleHtmlInsertPanel">
-            Вставить HTML контент
-          </Button>
-          <input ref="bodyImageInput" type="file" accept="image/*" class="news-hidden-input" :disabled="uploadingBodyImage || saving || publishing || loading" @change="onBodyImagePick" />
-        </div>
-        <div v-if="showHtmlInsertPanel" class="news-html-insert-panel">
-          <Textarea
-            v-model="htmlInsertDraft"
-            class="news-html-insert-textarea"
-            rows="6"
-            placeholder="<h2>Заголовок</h2><p>Текст...</p><img src='https://...'>" />
-          <div class="news-html-insert-actions">
-            <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="insertHtmlContent">
-              Вставить HTML
+        <FormField label="Обложка" for="news-cover" wide hint="Ссылка на картинку или файл с компьютера">
+          <div class="flex flex-col gap-2 sm:flex-row">
+            <Input id="news-cover" v-model.trim="form.coverImageUrl" type="url" placeholder="https://..." class="min-w-0 flex-1" />
+            <Button variant="outline" type="button" :disabled="uploadingCover || busy" @click="coverInput?.click()">
+              <ImageUpIcon />
+              {{ uploadingCover ? 'Загрузка…' : 'Загрузить файл' }}
             </Button>
-            <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="toggleHtmlInsertPanel">
-              Закрыть
-            </Button>
+            <input ref="coverInput" type="file" accept="image/*" class="hidden" :disabled="uploadingCover || busy" @change="onCoverFilePick" />
           </div>
-        </div>
-        <div class="news-image-size-row">
-          <span>{{ hasSelectedImage ? 'Размер выбранного фото:' : 'Размер нового фото:' }}</span>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('100')">
-            100%
-          </Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('75')">
-            75%
-          </Button>
-          <Button variant="ghost" size="icon-sm" type="button" class="news-toolbar-btn" :disabled="saving || publishing || loading" @click="setSelectedImageSize('50')">
-            50%
-          </Button>
-        </div>
-        <div
-          ref="contentEditor"
-          class="news-rich-editor"
-          contenteditable="true"
-          role="textbox"
-          aria-multiline="true"
-          data-placeholder="Вставьте текст новости — форматирование, заголовки, списки и абзацы сохранятся приблизительно как в источнике."
-          @input="onContentInput"
-          @paste="onContentPaste"
-          @click="onEditorClick"
-        ></div>
-      </div>
+        </FormField>
 
-      <label class="news-field">
-        <span>Галерея (по одному URL на строку)</span>
-        <textarea v-model="form.galleryText" rows="5" placeholder="https://...\nhttps://..." />
-        <div class="news-upload-row">
-          <label class="news-upload-btn">
-            <input type="file" multiple accept="image/*" :disabled="uploadingGallery || saving || publishing || loading" @change="onGalleryFilesPick" />
-            {{ uploadingGallery ? 'Загрузка фото...' : 'Добавить фото в галерею' }}
-          </label>
-        </div>
-      </label>
+        <FormField label="Основной текст" wide hint="Вставляйте текст прямо из источника — заголовки, списки и абзацы сохранятся. Нажмите на фото в тексте, чтобы поменять его размер.">
+          <div class="news-editor-box min-w-0 overflow-hidden rounded-md border bg-background shadow-xs dark:border-input dark:bg-input/30">
+            <div class="flex flex-wrap items-center gap-1 border-b bg-muted/40 p-1">
+              <Button variant="ghost" size="icon-sm" type="button" title="Жирный" aria-label="Жирный" :disabled="busy" @click="applyTextStyle('bold')">
+                <BoldIcon />
+              </Button>
+              <Button variant="ghost" size="icon-sm" type="button" title="Курсив" aria-label="Курсив" :disabled="busy" @click="applyTextStyle('italic')">
+                <ItalicIcon />
+              </Button>
+              <Button variant="ghost" size="icon-sm" type="button" title="Список" aria-label="Список" :disabled="busy" @click="applyTextStyle('insertUnorderedList')">
+                <ListIcon />
+              </Button>
+              <Button variant="ghost" size="icon-sm" type="button" title="Цитата" aria-label="Цитата" :disabled="busy" @click="applyTextStyle('formatBlock')">
+                <QuoteIcon />
+              </Button>
+              <Separator orientation="vertical" class="mx-1 !h-5" />
+              <Button variant="ghost" size="sm" type="button" :disabled="uploadingBodyImage || busy" @click="triggerBodyImagePicker">
+                <ImagePlusIcon />
+                {{ uploadingBodyImage ? 'Загрузка…' : 'Фото' }}
+              </Button>
+              <Button variant="ghost" size="sm" type="button" :class="showHtmlInsertPanel ? 'bg-accent' : ''" :aria-pressed="showHtmlInsertPanel" :disabled="busy" @click="toggleHtmlInsertPanel">
+                <CodeIcon />
+                HTML
+              </Button>
+              <Separator orientation="vertical" class="mx-1 hidden !h-5 sm:block" />
+              <div class="flex items-center gap-1">
+                <span class="px-1 text-xs text-muted-foreground">{{ hasSelectedImage ? 'Выбранное фото' : 'Новое фото' }}</span>
+                <Button
+                  v-for="size in imageSizes"
+                  :key="size"
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  class="px-2 tabular-nums"
+                  :class="currentImageSize === size ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
+                  :aria-pressed="currentImageSize === size"
+                  :disabled="busy"
+                  @click="setSelectedImageSize(size)"
+                >
+                  {{ size }}%
+                </Button>
+              </div>
+              <input ref="bodyImageInput" type="file" accept="image/*" class="hidden" :disabled="uploadingBodyImage || busy" @change="onBodyImagePick" />
+            </div>
+            <div v-if="showHtmlInsertPanel" class="flex flex-col gap-2 border-b p-2">
+              <Textarea
+                v-model="htmlInsertDraft"
+                class="min-h-32 font-mono text-xs"
+                rows="6"
+                aria-label="HTML для вставки"
+                placeholder="<h2>Заголовок</h2><p>Текст…</p><img src='https://…'>" />
+              <div class="flex justify-end gap-2">
+                <Button variant="outline" size="sm" type="button" :disabled="busy" @click="toggleHtmlInsertPanel">Закрыть</Button>
+                <Button size="sm" type="button" :disabled="busy || !htmlInsertDraft.trim()" @click="insertHtmlContent">Вставить в текст</Button>
+              </div>
+            </div>
+            <div
+              ref="contentEditor"
+              class="news-rich-editor"
+              contenteditable="true"
+              role="textbox"
+              aria-multiline="true"
+              aria-label="Основной текст новости"
+              data-placeholder="Вставьте или напишите текст новости"
+              @input="onContentInput"
+              @paste="onContentPaste"
+              @click="onEditorClick"
+              @keyup="rememberEditorCaret"
+              @mouseup="rememberEditorCaret"
+              @blur="rememberEditorCaret"
+            ></div>
+          </div>
+        </FormField>
 
-      <div class="news-editor-actions">
-        <Button variant="outline" type="button" class="news-editor-btn news-editor-btn--ghost" :disabled="saving || publishing || loading" @click="goBack">Отмена</Button>
-        <Button variant="default" type="submit" class="news-editor-btn news-editor-btn--primary" :disabled="saving || publishing || loading">
-          {{ saving ? 'Сохранение...' : 'Сохранить новость' }}
+        <FormField label="Галерея" for="news-gallery" wide hint="По одной ссылке на строку">
+          <template #label-actions>
+            <Button variant="outline" size="sm" type="button" :disabled="uploadingGallery || busy" @click="galleryInput?.click()">
+              <ImagePlusIcon />
+              {{ uploadingGallery ? 'Загрузка…' : 'Добавить фото' }}
+            </Button>
+            <input ref="galleryInput" type="file" multiple accept="image/*" class="hidden" :disabled="uploadingGallery || busy" @change="onGalleryFilesPick" />
+          </template>
+          <Textarea id="news-gallery" v-model="form.galleryText" rows="4" class="min-h-24" placeholder="https://...&#10;https://..." />
+        </FormField>
+      </FormGrid>
+
+      <Alert v-if="error" variant="destructive">
+        <AlertDescription>{{ error }}</AlertDescription>
+      </Alert>
+
+      <div class="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end md:pt-6">
+        <Button variant="outline" type="button" :disabled="busy" @click="goBack">Отмена</Button>
+        <Button variant="outline" type="button" :disabled="busy" @click="publishPost">
+          {{ publishing ? 'Публикация…' : 'Опубликовать сейчас' }}
         </Button>
-        <Button variant="outline" type="button" class="news-editor-btn news-editor-btn--publish" :disabled="saving || publishing || loading" @click="publishPost">
-          {{ publishing ? 'Публикация...' : 'Опубликовать' }}
+        <Button type="submit" :disabled="busy">
+          {{ saving ? 'Сохранение…' : 'Сохранить' }}
         </Button>
       </div>
     </form>
@@ -440,365 +478,58 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@layer legacy {
-.news-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  min-width: 0;
-}
-.news-editor-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.news-editor-back {
-  height: var(--control-h);
-  padding: 0 14px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
-}
-.news-editor-back:hover {
-  transform: translateY(-1px);
-  background: var(--bg-panel-hover);
-  border-color: color-mix(in srgb, var(--accent-green) 40%, var(--border-color));
-}
-.news-editor-hint {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.9375rem;
-}
-.news-editor-error {
-  margin: 0;
-  color: var(--danger-red);
-  font-size: 0.9rem;
-}
-.news-editor-form {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--shadow-sm);
-  min-width: 0;
-}
-.news-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.news-field > span {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.news-field input,
-.news-field textarea,
-.news-select {
-  width: 100%;
-  border: 1px solid var(--input-border);
-  border-radius: 10px;
-  padding: 7px 12px;
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--text-primary);
-  background: var(--bg-elevated);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.2s ease;
-}
-.news-field input::placeholder,
-.news-field textarea::placeholder {
-  color: var(--text-secondary);
-}
-.news-field input:focus,
-.news-field textarea:focus,
-.news-select:focus {
-  outline: none;
-  border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-.news-field textarea {
-  resize: vertical;
-  min-height: 140px;
-  line-height: 1.45;
-}
-.news-editor-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.news-toolbar-btn {
-  height: 32px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  padding: 0 10px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
-}
-.news-toolbar-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: var(--bg-panel-hover);
-  border-color: color-mix(in srgb, var(--accent-green) 38%, var(--border-color));
-}
-.news-toolbar-btn:disabled {
-  opacity: 0.62;
-  cursor: not-allowed;
-}
-.news-hidden-input {
-  display: none;
-}
-.news-html-insert-panel {
-  border: 1px dashed var(--border-color);
-  border-radius: 10px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.news-html-insert-textarea,
-.news-html-editor {
-  width: 100%;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.9rem;
-  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  color: var(--text-primary);
-  background: var(--bg-elevated);
-  line-height: 1.45;
-}
-.news-html-insert-actions,
-.news-image-size-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.news-image-size-row > span {
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-}
+/* Вне слоёв: оформление вставленного текста сильнее сброса tw-scope. */
 .news-rich-editor {
-  width: 100%;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 10px 12px;
+  min-height: 240px;
+  padding: 12px;
   font-size: 0.9375rem;
-  font-weight: 400;
-  color: var(--text-primary);
-  background: var(--bg-elevated);
-  min-height: 220px;
-  line-height: 1.48;
+  line-height: 1.5;
+  color: var(--foreground);
   overflow-wrap: anywhere;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.2s ease;
+  outline: none;
+}
+.news-editor-box:has(.news-rich-editor:focus) {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
 }
 .news-rich-editor:empty::before {
   content: attr(data-placeholder);
-  color: var(--text-secondary);
-}
-.news-rich-editor:focus {
-  outline: none;
-  border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  color: var(--muted-foreground);
 }
 .news-rich-editor :deep(p) {
-  margin: 0 0 0.8rem;
+  margin: 0 0 12px;
 }
+.news-rich-editor :deep(h2),
+.news-rich-editor :deep(h3) {
+  margin: 16px 0 8px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.news-rich-editor :deep(h2) { font-size: 1.25rem; }
+.news-rich-editor :deep(h3) { font-size: 1.0625rem; }
+.news-rich-editor :deep(ul),
+.news-rich-editor :deep(ol) {
+  margin: 0 0 12px;
+  padding-left: 24px;
+}
+.news-rich-editor :deep(ul) { list-style: disc; }
+.news-rich-editor :deep(ol) { list-style: decimal; }
 .news-rich-editor :deep(blockquote) {
-  margin: 0 0 0.8rem;
-  padding: 0.6rem 0.8rem;
-  border-left: 3px solid var(--accent-green);
-  background: color-mix(in srgb, var(--accent-green) 8%, transparent);
-  border-radius: 8px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--primary);
+  background: var(--muted);
+  border-radius: 6px;
 }
 .news-rich-editor :deep(img) {
   display: block;
   max-width: 100%;
   height: auto;
-  margin: 0.4rem 0 0.8rem;
-  border-radius: 10px;
+  margin: 8px 0 12px;
+  border-radius: 8px;
   cursor: pointer;
 }
-.news-rich-editor :deep(img[data-size='100']) {
-  width: 100%;
-}
-.news-rich-editor :deep(img[data-size='75']) {
-  width: 75%;
-}
-.news-rich-editor :deep(img[data-size='50']) {
-  width: 50%;
-}
-.news-select {
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
-  background-position: calc(100% - 18px) calc(1em + 1px), calc(100% - 13px) calc(1em + 1px);
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-}
-.news-grid-two {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.news-editor-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 6px;
-  border-top: 1px solid var(--border-color);
-}
-.news-upload-row {
-  margin-top: 2px;
-}
-.news-upload-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: var(--control-h);
-  padding: 0 12px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  background: var(--bg-elevated);
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
-}
-.news-upload-btn:hover {
-  transform: translateY(-1px);
-  background: var(--bg-panel-hover);
-  border-color: color-mix(in srgb, var(--accent-green) 38%, var(--border-color));
-}
-.news-upload-btn input {
-  display: none;
-}
-.news-editor-btn {
-  height: var(--control-h);
-  border-radius: var(--radius-md);
-  padding: 0 14px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.16s ease, box-shadow 0.2s ease;
-}
-.news-editor-btn:disabled {
-  opacity: 0.62;
-  cursor: not-allowed;
-}
-.news-editor-btn--ghost {
-  border-color: var(--border-color);
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
-.news-editor-btn--ghost:hover:not(:disabled) {
-  background: var(--bg-panel-hover);
-  border-color: color-mix(in srgb, var(--accent-green) 35%, var(--border-color));
-}
-
-[data-theme='dark'] .news-editor-form,
-[data-theme='dark'] .news-field input,
-[data-theme='dark'] .news-field textarea,
-[data-theme='dark'] .news-html-insert-textarea,
-[data-theme='dark'] .news-rich-editor,
-[data-theme='dark'] .news-toolbar-btn,
-[data-theme='dark'] .news-select,
-[data-theme='dark'] .news-upload-btn,
-[data-theme='dark'] .news-editor-btn--ghost,
-[data-theme='dark'] .news-editor-btn--ghost:hover:not(:disabled) {
-  background: var(--bg-elevated);
-}
-[data-theme='dark'] .news-editor-hint,
-[data-theme='dark'] .news-image-size-row > span {
-  color: var(--text-secondary);
-}
-[data-theme='dark'] .news-field input,
-[data-theme='dark'] .news-field textarea,
-[data-theme='dark'] .news-select,
-[data-theme='dark'] .news-html-insert-textarea,
-[data-theme='dark'] .news-rich-editor {
-  background: color-mix(in srgb, var(--bg-elevated) 86%, black);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-[data-theme='dark'] .news-field input::placeholder,
-[data-theme='dark'] .news-field textarea::placeholder,
-[data-theme='dark'] .news-rich-editor:empty::before {
-  color: var(--text-muted);
-}
-[data-theme='dark'] .news-field input:focus,
-[data-theme='dark'] .news-field textarea:focus,
-[data-theme='dark'] .news-select:focus,
-[data-theme='dark'] .news-rich-editor:focus {
-  background: color-mix(in srgb, var(--bg-elevated) 94%, black);
-}
-[data-theme='dark'] .news-toolbar-btn,
-[data-theme='dark'] .news-upload-btn,
-[data-theme='dark'] .news-editor-btn--ghost {
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-[data-theme='dark'] .news-html-insert-panel {
-  border-color: var(--border-color);
-  background: color-mix(in srgb, var(--bg-elevated) 92%, black);
-}
-.news-editor-btn--primary {
-  background: var(--accent-green);
-  color: #fff;
-}
-.news-editor-btn--primary:hover:not(:disabled) {
-  background: var(--accent-green-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(61, 92, 64, 0.28);
-}
-.news-editor-btn--publish {
-  background: var(--accent-green);
-  color: #fff;
-}
-.news-editor-btn--publish:hover:not(:disabled) {
-  background: var(--accent-green-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(61, 92, 64, 0.28);
-}
-@media (max-width: 980px) {
-  .news-editor-form {
-    padding: 12px;
-    gap: 11px;
-  }
-  .news-field textarea {
-    min-height: 120px;
-  }
-}
-@media (max-width: 760px) {
-  .news-grid-two {
-    grid-template-columns: 1fr;
-  }
-  .news-editor-form {
-    padding: 10px;
-    gap: 10px;
-  }
-  .news-editor-actions {
-    flex-wrap: wrap;
-    justify-content: stretch;
-  }
-  .news-editor-btn {
-    flex: 1;
-    min-width: 130px;
-  }
-}
-}
+.news-rich-editor :deep(img[data-size='100']) { width: 100%; }
+.news-rich-editor :deep(img[data-size='75']) { width: 75%; }
+.news-rich-editor :deep(img[data-size='50']) { width: 50%; }
 </style>
