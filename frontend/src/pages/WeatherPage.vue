@@ -431,9 +431,15 @@ const weatherHistoryCards = computed(() => {
   return [
     { label: 'Осадки за 7 дней', value: formatValue(h.precipitationSum, ' мм', 1), sub: `${h.rainyDays} дн. с дождем` },
     { label: 'Испарение за 7 дней', value: formatValue(h.evapotranspirationSum, ' мм', 1), sub: 'ET₀ по архиву' },
-    { label: 'Температурный диапазон', value: `${formatValue(h.tempMin, '°')} / ${formatValue(h.tempMax, '°')}`, sub: `${h.startDate} — ${h.endDate}` },
+    { label: 'Температурный диапазон', value: `${formatValue(h.tempMin, '°')} / ${formatValue(h.tempMax, '°')}`, sub: `${shortRuDate(h.startDate)} — ${shortRuDate(h.endDate)}` },
   ]
 })
+
+/** «2026-10-03» → «03.10». */
+function shortRuDate(ymd: string | null | undefined): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymd ?? '')
+  return m ? `${m[3]}.${m[2]}` : (ymd ?? '')
+}
 
 /** Класс сценки неба по condition из API (Clear, Clouds, Rain, Snow, Mist и т.д.) */
 const weatherSkyClass = computed(() => {

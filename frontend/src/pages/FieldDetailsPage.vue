@@ -1173,24 +1173,6 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 .field-details {
   padding-bottom: 24px;
 }
-.field-details-header {
-  margin-bottom: 20px;
-}
-.field-details-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border: none;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.field-details-back:hover {
-  color: var(--text-primary);
-}
 
 .field-details-grid {
   display: grid;
@@ -1298,28 +1280,6 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   gap: 10px;
   margin-bottom: 8px;
   flex-wrap: wrap;
-}
-.field-details-geometry-switch {
-  display: inline-flex;
-  border: 1px solid var(--topbar-border);
-  border-radius: 9px;
-  overflow: hidden;
-}
-.field-details-geometry-switch-btn {
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  padding: 7px 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.field-details-geometry-switch-btn + .field-details-geometry-switch-btn {
-  border-left: 1px solid var(--topbar-border);
-}
-.field-details-geometry-switch-btn--active {
-  background: color-mix(in srgb, var(--accent-green) 14%, transparent);
-  color: var(--accent-green);
 }
 .field-details-geometry-area-hint {
   margin-top: 4px;
@@ -1471,11 +1431,6 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
 .field-details-save-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-}
-.field-details-cancel-btn--compact,
-.field-details-save-btn--compact {
-  padding: 6px 12px;
-  font-size: 0.75rem;
 }
 .field-details-title-icon {
   flex-shrink: 0;
@@ -1926,100 +1881,6 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   background: rgba(76, 175, 80, 0.22);
 }
 
-.field-history-pagination {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  margin-top: var(--space-md);
-  padding: var(--space-md) 0 0;
-  border-top: 1px solid var(--border-color);
-}
-
-.field-history-pagination-info {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.field-history-pagination-right {
-  display: flex;
-  align-items: center;
-  gap: var(--space-lg);
-  flex-wrap: wrap;
-}
-
-.field-history-pagination-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.field-history-pagination-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--control-h);
-  height: var(--control-h);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-base);
-  color: var(--text-primary);
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.field-history-pagination-arrow:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.field-history-pagination-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  height: var(--control-h);
-  padding: 0 8px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-
-.field-history-pagination-num--active {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: rgba(76, 175, 80, 0.5);
-}
-
-.field-history-pagination-ellipsis {
-  min-width: 28px;
-  text-align: center;
-  color: var(--text-secondary);
-}
-
-.field-history-pagination-size {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.field-history-pagination-select {
-  min-width: 72px;
-  height: var(--control-h);
-  padding: 0 28px 0 10px;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  border: 1px solid var(--input-border);
-  background: var(--input-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-xs);
-}
-
 @media (max-width: 900px) {
   .field-history-grid {
     grid-template-columns: 1fr;
@@ -2027,25 +1888,6 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   .field-history-head {
     flex-wrap: wrap;
     align-items: flex-start;
-  }
-}
-
-@media (max-width: 640px) {
-  .field-history-pagination {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .field-history-pagination-right {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  .field-history-pagination-nav {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .field-history-pagination-size {
-    justify-content: space-between;
   }
 }
 }

@@ -1078,51 +1078,6 @@ function formatIsoDate(value: string | null | undefined): string {
   width: 100%;
 }
 
-.equipment-header {
-  margin-bottom: var(--space-xl);
-}
-
-.equipment-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  margin-bottom: var(--space-lg);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.equipment-tab {
-  padding: 10px 16px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  cursor: pointer;
-  border-radius: 8px 8px 0 0;
-  transition:
-    color 0.26s ease,
-    border-color 0.26s ease,
-    background 0.26s ease,
-    transform 0.22s ease,
-    box-shadow 0.26s ease;
-}
-
-.equipment-tab:hover {
-  color: var(--text-primary);
-  background: color-mix(in srgb, var(--accent-green) 2.5%, transparent);
-  transform: translateY(-1px);
-}
-
-.equipment-tab--active {
-  color: var(--accent-green);
-  border-bottom-color: var(--accent-green);
-  background: color-mix(in srgb, var(--accent-green) 4%, transparent);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--accent-green) 8%, transparent);
-  animation: equipment-tab-pill-in 0.28s ease;
-}
-
 .equipment-form-card,
 .equipment-list-card {
   background: #ffffff;
@@ -1161,35 +1116,9 @@ function formatIsoDate(value: string | null | undefined): string {
   background: var(--bg-panel);
 }
 
-.equipment-section-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-  flex-wrap: wrap;
-}
-
-.equipment-form-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
 .equipment-section-icon {
   width: 22px;
   height: 22px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-.equipment-form-hint {
-  margin: 0;
-  font-size: 0.875rem;
   color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -1289,88 +1218,6 @@ function formatIsoDate(value: string | null | undefined): string {
   padding-right: 36px;
 }
 
-.equipment-form-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.equipment-form-actions--implements {
-  margin-bottom: var(--space-lg);
-}
-
-.equipment-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
-}
-
-.equipment-btn-clear {
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  border-color: #d1d5db;
-  border: 1px solid var(--input-border);
-  box-shadow: var(--shadow-xs);
-}
-
-.equipment-btn-clear:hover {
-  background: #d1d5db;
-  color: #374151;
-}
-
-.equipment-btn-clear .equipment-btn-icon {
-  width: 1.125rem;
-  height: 1.125rem;
-  color: #6b7280;
-}
-
-.equipment-btn-save {
-  background: var(--accent-green);
-  color: #fff;
-  border-color: var(--accent-green);
-}
-
-.equipment-btn-save:hover:not(:disabled) {
-  background: var(--accent-green-hover);
-  border-color: var(--accent-green-hover);
-  color: #fff;
-}
-
-.equipment-btn-save:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.equipment-btn-save .equipment-btn-icon {
-  width: 1.125rem;
-  height: 1.125rem;
-  color: #fff;
-}
-
-.equipment-btn-icon {
-  width: 1.125rem;
-  height: 1.125rem;
-  flex-shrink: 0;
-}
-
-[data-theme='dark'] .equipment-btn-clear {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-[data-theme='dark'] .equipment-btn-clear:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
 .equipment-list-header {
   display: flex;
   flex-wrap: wrap;
@@ -1421,30 +1268,6 @@ function formatIsoDate(value: string | null | undefined): string {
   position: relative;
   display: flex;
   align-items: center;
-}
-
-.equipment-search-icon {
-  position: absolute;
-  left: 10px;
-  width: 18px;
-  height: 18px;
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.equipment-search-input {
-  padding: 10px 12px 10px 38px;
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  min-width: 240px;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-xs);
-}
-
-[data-theme='dark'] .equipment-search-input {
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .equipment-export-btn {
@@ -1719,97 +1542,6 @@ function formatIsoDate(value: string | null | undefined): string {
   padding: var(--space-lg);
 }
 
-.equipment-pagination {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  margin-top: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--border-color);
-}
-
-.equipment-pagination-info {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.equipment-pagination-btns {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.equipment-pagination-right {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-}
-
-.equipment-pagination-size {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.equipment-pagination-size-label {
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-}
-
-.equipment-pagination-select {
-  padding: 7px 10px;
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  box-shadow: var(--shadow-xs);
-}
-
-[data-theme='dark'] .equipment-pagination-select {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.equipment-page-btn {
-  min-width: 36px;
-  padding: 8px 10px;
-  border: 1px solid var(--input-border);
-  border-radius: 6px;
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  cursor: pointer;
-  box-shadow: var(--shadow-xs);
-}
-
-.equipment-page-btn:hover:not(:disabled) {
-  background: var(--bg-panel-hover);
-}
-
-.equipment-page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.equipment-page-btn--active {
-  background: var(--accent-green);
-  border-color: var(--accent-green);
-  color: white;
-}
-
-.equipment-page-btn--active:hover:not(:disabled) {
-  background: var(--accent-green-hover);
-  border-color: var(--accent-green-hover);
-}
-
-.equipment-pagination-dots {
-  padding: 0 4px;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
 @media (max-width: 600px) {
   /* На телефоне сначала список техники, форма добавления — под ним:
      иначе список уезжает на несколько экранов вниз. */
@@ -1822,10 +1554,6 @@ function formatIsoDate(value: string | null | undefined): string {
     order: 1;
   }
 
-  .equipment-form-card {
-    order: 2;
-  }
-
   .equipment-page {
     padding: 0 var(--space-md);
     padding-bottom: var(--space-lg);
@@ -1835,20 +1563,6 @@ function formatIsoDate(value: string | null | undefined): string {
   .equipment-list-card {
     padding: var(--space-lg);
     margin-bottom: var(--space-lg);
-  }
-
-  .equipment-section-head {
-    align-items: flex-start;
-  }
-
-  .equipment-form-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-  }
-
-  .equipment-btn {
-    width: 100%;
-    justify-content: center;
   }
 
   .equipment-list-header {
@@ -1866,21 +1580,6 @@ function formatIsoDate(value: string | null | undefined): string {
   .equipment-search-wrap {
     flex: 1 1 100%;
     width: 100%;
-  }
-
-  .equipment-search-input {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .equipment-pagination {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .equipment-pagination-right {
-    width: 100%;
-    justify-content: space-between;
   }
 }
 }

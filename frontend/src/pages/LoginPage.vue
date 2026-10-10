@@ -199,15 +199,6 @@ async function submit() {
   box-sizing: border-box;
 }
 
-.title_container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 4px;
-}
-
 .title {
   margin: 0;
   font-size: 1.25rem;
@@ -222,23 +213,6 @@ async function submit() {
   text-align: center;
   line-height: 1.1rem;
   color: #8b8e98;
-}
-
-.input_container {
-  width: 100%;
-  height: fit-content;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.input_container--select .role_hint {
-  margin: 0;
-  font-size: 0.7rem;
-  line-height: 1.25;
-  color: #8b8e98;
-  padding-left: 2px;
 }
 
 .icon {
@@ -285,16 +259,6 @@ async function submit() {
   background-color: transparent;
 }
 
-.input_field--select {
-  padding-left: 12px;
-  padding-right: 36px;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-}
-
 .auth_error {
   margin: 0;
   font-size: 0.8rem;
@@ -304,30 +268,6 @@ async function submit() {
   border-radius: 7px;
   background: rgba(185, 28, 28, 0.08);
   border: 1px solid rgba(185, 28, 28, 0.2);
-}
-
-.sign-in_btn {
-  width: 100%;
-  height: 40px;
-  border: 0;
-  background: var(--accent-green);
-  border-radius: 7px;
-  outline: none;
-  color: #ffffff;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: background 0.2s ease, opacity 0.2s ease;
-}
-
-.sign-in_btn:hover:not(:disabled) {
-  background: var(--accent-green-hover);
-}
-
-.sign-in_btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
 }
 
 .separator {
