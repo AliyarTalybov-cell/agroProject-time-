@@ -1105,9 +1105,6 @@ a {
   .topbar-user-meta {
     display: none;
   }
-  .main-content-inner {
-    padding: 12px;
-  }
 }
 
 /* ——— Каркас на Sidebar shadcn-vue (SidebarProvider + SidebarInset) ———

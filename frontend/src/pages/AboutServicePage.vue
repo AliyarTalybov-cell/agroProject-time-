@@ -285,18 +285,19 @@ const marqueeParts = [
   overflow-x: hidden;
 }
 
+/* Во всю ширину: компенсирует поле контента .main-content-inner (канон 16 / 24 от 768px). */
 .about-landing--embedded {
-  width: calc(100% + 64px);
+  width: calc(100% + 48px);
   max-width: none;
-  margin-left: -32px;
-  margin-right: -32px;
+  margin-left: -24px;
+  margin-right: -24px;
 }
 
 @media (max-width: 767px) {
   .about-landing--embedded {
-    width: calc(100% + 48px);
-    margin-left: -24px;
-    margin-right: -24px;
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    margin-right: -16px;
   }
 }
 

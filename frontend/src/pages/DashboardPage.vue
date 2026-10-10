@@ -19,25 +19,11 @@ function goAboutTab() {
 </script>
 
 <template>
-  <div class="dashboard-page page-enter-item">
-    <Tabs :model-value="(!isAboutTab) ? 't0' : (isAboutTab) ? 't1' : ''">
+  <div class="dashboard-page flex flex-col gap-6">
+    <Tabs :model-value="isAboutTab ? 'about' : 'overview'">
       <TabsList aria-label="Вкладки раздела «Обзор»">
-        <TabsTrigger value="t0"
-        :id="'dashboard-tab-overview'"
-       
-        @click="goOverviewTab">
-        Обзор
-      </TabsTrigger>
-        <TabsTrigger value="t1"
-        :id="'dashboard-tab-about'"
-       
-        @click="goAboutTab">
-        <span class="dashboard-tab-pulse-line" aria-hidden="true" />
-        <span class="dashboard-tab-pulse-line" aria-hidden="true" />
-        <span class="dashboard-tab-pulse-line" aria-hidden="true" />
-        <span class="dashboard-tab-pulse-line" aria-hidden="true" />
-        <span class="dashboard-tab-pulse-label">О сервисе</span>
-      </TabsTrigger>
+        <TabsTrigger id="dashboard-tab-overview" value="overview" @click="goOverviewTab">Обзор</TabsTrigger>
+        <TabsTrigger id="dashboard-tab-about" value="about" @click="goAboutTab">О сервисе</TabsTrigger>
       </TabsList>
     </Tabs>
 
@@ -47,7 +33,7 @@ function goAboutTab() {
       role="tabpanel"
       aria-labelledby="dashboard-tab-overview"
     >
-      <h1 id="dashboard-wip-title" class="visually-hidden">Обзор</h1>
+      <h1 id="dashboard-wip-title" class="sr-only">Обзор</h1>
       <div class="dashboard-wip-inner">
         <!-- From Uiverse.io by SelfMadeSystem -->
         <svg
@@ -118,7 +104,7 @@ function goAboutTab() {
             d="M 30.2223 21.2875 C 30.5674 21.2875 30.8471 21.0195 30.8471 20.6889 V 18.92 L 31.9916 18.9675 C 32.3376 18.9833 32.628 18.7259 32.643 18.3956 C 32.658 18.0654 32.3907 17.786 32.0459 17.7717 L 30.2495 17.6969 C 30.077 17.6889 29.9133 17.7497 29.7902 17.8624 C 29.6671 17.9753 29.5976 18.1315 29.5976 18.2948 V 20.6889 C 29.5974 21.0195 29.8772 21.2875 30.2223 21.2875 Z"
           />
         </svg>
-        <p class="dashboard-wip-caption" role="status">Страница в разработке</p>
+        <p class="text-lg font-semibold text-muted-foreground" role="status">Страница в разработке</p>
       </div>
     </section>
 
@@ -135,204 +121,32 @@ function goAboutTab() {
 
 <style scoped>
 @layer legacy {
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.dashboard-page {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  min-height: 0;
-}
-
-.dashboard-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 0 16px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.dashboard-tab {
-  appearance: none;
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 10px 18px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.dashboard-tab:hover {
-  color: var(--text-primary);
-  border-color: color-mix(in srgb, var(--accent-green) 35%, var(--border-color));
-}
-
-.dashboard-tab--active {
-  color: var(--text-primary);
-  background: color-mix(in srgb, var(--accent-green) 10%, var(--bg-panel));
-  border-color: color-mix(in srgb, var(--accent-green) 40%, var(--border-color));
-}
-
-/* «О сервисе» как «Обзор» + чуть ярче пульсация; по hover — тонкая линия по периметру */
-.dashboard-tab--about-pulse {
-  position: relative;
-  overflow: hidden;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dashboard-tab--about-pulse .dashboard-tab-pulse-label {
-  position: relative;
-  z-index: 2;
-}
-
-.dashboard-tab--about-pulse .dashboard-tab-pulse-line {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* верх: слева направо */
-.dashboard-tab--about-pulse .dashboard-tab-pulse-line:nth-child(1) {
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-green));
-}
-
-.dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(1) {
-  left: 100%;
-  transition: left 0.65s ease;
-}
-
-/* справа: сверху вниз */
-.dashboard-tab--about-pulse .dashboard-tab-pulse-line:nth-child(2) {
-  top: -100%;
-  right: 0;
-  width: 2px;
-  height: 100%;
-  background: linear-gradient(180deg, transparent, var(--accent-green));
-}
-
-.dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(2) {
-  top: 100%;
-  transition: top 0.65s ease 0.14s;
-}
-
-/* низ: справа налево */
-.dashboard-tab--about-pulse .dashboard-tab-pulse-line:nth-child(3) {
-  bottom: 0;
-  right: -100%;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(
-    270deg,
-    transparent,
-    color-mix(in srgb, var(--accent-green) 88%, var(--agri-primary))
-  );
-}
-
-.dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(3) {
-  right: 100%;
-  transition: right 0.65s ease 0.3s;
-}
-
-/* слева: снизу вверх */
-.dashboard-tab--about-pulse .dashboard-tab-pulse-line:nth-child(4) {
-  bottom: -100%;
-  left: 0;
-  width: 2px;
-  height: 100%;
-  background: linear-gradient(
-    0deg,
-    transparent,
-    color-mix(in srgb, var(--accent-green) 75%, white)
-  );
-}
-
-.dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(4) {
-  bottom: 100%;
-  transition: bottom 0.65s ease 0.46s;
-}
-
-.dashboard-tab--about-pulse:not(.dashboard-tab--active) {
-  animation: dashboard-tab-about-pulse 2.5s ease-in-out infinite;
-}
-
-@keyframes dashboard-tab-about-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-
-  50% {
-    /* ≈ на 20% сильнее прежних 36% / 20% и размытия */
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--accent-green) 43%, transparent),
-      0 0 17px color-mix(in srgb, var(--accent-green) 24%, transparent);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dashboard-tab--about-pulse:not(.dashboard-tab--active) {
-    animation: none;
-  }
-
-  .dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(1),
-  .dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(2),
-  .dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(3),
-  .dashboard-tab--about-pulse:hover .dashboard-tab-pulse-line:nth-child(4) {
-    transition: none !important;
-  }
-}
-
 .dashboard-wip {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: min(70vh, calc(100vh - 200px));
-  padding: var(--space-xl) var(--space-md);
 }
 
 .dashboard-wip-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-lg);
+  gap: 24px;
   text-align: center;
 }
 
 .dashboard-wip-loader {
-  width: min(12em, 72vw);
-  height: min(12em, 72vw);
+  width: min(12em, 60vw);
+  height: min(12em, 60vw);
   max-width: 220px;
   max-height: 220px;
   flex-shrink: 0;
+  color: var(--foreground);
 }
 
 .dashboard-wip-loader path {
-  stroke: #000;
+  stroke: currentColor;
   stroke-width: 0.6px;
   fill: none;
   animation:
@@ -340,42 +154,15 @@ function goAboutTab() {
     dashboard-wip-dash-offset 4s linear infinite;
 }
 
-[data-theme='dark'] .dashboard-wip-loader path {
-  stroke: rgba(255, 255, 255, 0.88);
-}
-
 @keyframes dashboard-wip-dash-array {
-  0% {
-    stroke-dasharray: 0 1 359 0;
-  }
-  50% {
-    stroke-dasharray: 0 359 1 0;
-  }
-  100% {
-    stroke-dasharray: 359 1 0 0;
-  }
+  0% { stroke-dasharray: 0 1 359 0; }
+  50% { stroke-dasharray: 0 359 1 0; }
+  100% { stroke-dasharray: 359 1 0 0; }
 }
 
 @keyframes dashboard-wip-dash-offset {
-  0% {
-    stroke-dashoffset: 365;
-  }
-  100% {
-    stroke-dashoffset: 5;
-  }
-}
-
-.dashboard-wip-caption {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-}
-
-.dashboard-about-panel {
-  flex: 1;
-  min-height: 0;
+  0% { stroke-dashoffset: 365; }
+  100% { stroke-dashoffset: 5; }
 }
 }
 </style>
