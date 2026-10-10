@@ -3,7 +3,11 @@ import StatusDonutChart from '@/components/ui/charts/StatusDonutChart.vue'
 import CountBarChart from '@/components/ui/charts/CountBarChart.vue'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
-import { ClockIcon } from '@lucide/vue'
+import { ChevronLeftIcon, ChevronRightIcon, ClockIcon, RefreshCcwIcon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Progress } from '@/components/ui/shadcn/progress'
+import PageToolbar from '@/components/ui/layout/PageToolbar.vue'
+import UiBadge, { type UiBadgeTone } from '@/components/ui/UiBadge.vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, onActivated, onUnmounted, ref, watch } from 'vue'
@@ -349,10 +353,11 @@ const tasksKpiRangeHint = computed(() => {
     const d = parseYmd(dateTo.value)
     return `срок не позже ${d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
   }
+  const ru = (ymd: string) => parseYmd(ymd).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
   if (dateFrom.value) {
-    return `срок: ${dateFrom.value} — ${dateTo.value}`
+    return `срок с ${ru(dateFrom.value)} по ${ru(dateTo.value)}`
   }
-  return `срок до ${dateTo.value}`
+  return `срок до ${ru(dateTo.value)}`
 })
 
 /** Для одного дня — на странице задач открываем фильтр «до даты» без нижней границы по сроку. */
@@ -630,10 +635,19 @@ function equipmentDashStateText(eq: EquipmentRow, metrics: EquipmentLastOpMetric
   return equipmentCatalogStateLabel(eq)
 }
 
-function equipmentDashFuelBarClass(pct: number): string {
-  if (pct < 34) return 'dash-eq-fuel-fill--low'
-  if (pct < 67) return 'dash-eq-fuel-fill--mid'
-  return 'dash-eq-fuel-fill--high'
+function fuelBarClass(pct: number): string {
+  if (pct < 34) return 'bg-red-500'
+  if (pct < 67) return 'bg-amber-500'
+  return 'bg-emerald-500'
+}
+
+function equipmentBadgeTone(tone: 'ok' | 'warn' | 'muted' | 'active'): UiBadgeTone {
+  return ({ ok: 'success', warn: 'danger', muted: 'neutral', active: 'info' } as const)[tone]
+}
+
+/** Часы по-русски: «0,0», «12,5». */
+function formatHours(h: number): string {
+  return h.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 }
 
 const equipmentRows = computed(() => {
@@ -745,6 +759,13 @@ function fieldsCountLabelRu(n: number): string {
 }
 
 const operationStatsSortKey = ref<OperationStatSortKey>('ended')
+const OPERATION_SORT_OPTIONS: { key: OperationStatSortKey; label: string }[] = [
+  { key: 'employee', label: 'Сотрудник' },
+  { key: 'operation', label: 'Число операций' },
+  { key: 'field', label: 'Полей' },
+  { key: 'duration', label: 'Время' },
+  { key: 'ended', label: 'Последняя' },
+]
 const operationStatsSortDir = ref<'asc' | 'desc'>('desc')
 
 function setOperationStatsSort(key: OperationStatSortKey) {
@@ -971,553 +992,368 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="dash-page">
-    <header class="dash-header page-enter-item">
-      <div>
-        <!-- Заголовок страницы уже в шапке приложения (new-pages-ui-ux.mdc) -->
-        <p v-if="auth.user && isManager" class="dash-sub">Задачи, операции и техника за выбранный период</p>
-        <p v-else-if="auth.user" class="dash-sub">Ваши задачи и статус (ограниченный вид)</p>
-      </div>
-    </header>
+  <section class="tw-scope flex min-w-0 flex-col gap-6">
+    <Alert v-if="supabaseStatus === 'error'" variant="destructive">
+      <AlertDescription class="flex flex-wrap items-center gap-2">
+        Нет связи с сервером: {{ supabaseError }}
+        <Button variant="outline" size="sm" type="button" @click="checkSupabase">Повторить</Button>
+      </AlertDescription>
+    </Alert>
 
-    <!-- Полоса видна только при сбое связи: «база подключена» — служебная
-         информация, пользователю она ничего не говорит. -->
-    <div v-if="supabaseStatus === 'error'" class="supabase-strip page-enter-item">
-      <template v-if="supabaseStatus === 'error'">
-        Ошибка: {{ supabaseError }}
-        <Button variant="ghost" size="sm" type="button" class="dash-link-btn" @click="checkSupabase">Повторить</Button>
+    <PageToolbar>
+      <UiSelect
+        v-if="isManager"
+        v-model="selectedEmployeeId"
+        block
+        class="sm:w-56"
+        :options="[{ value: '', label: 'Все сотрудники' }, ...profilesForEmployeeFilter.map((p) => ({ value: p.id, label: `${p.display_name || p.email}${p.role === 'manager' ? ' (руководитель)' : ''}` }))]"
+        aria-label="Сотрудник"
+      />
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        aria-label="Период"
+        :model-value="periodPreset"
+        @update:model-value="(v) => { if (v === 'today' || v === 'week' || v === 'month') { periodPreset = v; applyPeriodPreset() } }"
+      >
+        <ToggleGroupItem value="today" class="px-3">Сегодня</ToggleGroupItem>
+        <ToggleGroupItem value="week" class="px-3">Неделя</ToggleGroupItem>
+        <ToggleGroupItem value="month" class="px-3">Месяц</ToggleGroupItem>
+      </ToggleGroup>
+      <div class="flex items-center gap-2">
+        <UiDatePicker v-model="dateFrom" aria-label="Начало периода" />
+        <span class="text-sm text-muted-foreground">—</span>
+        <UiDatePicker v-model="dateTo" aria-label="Конец периода" />
+      </div>
+      <template #actions>
+        <Button variant="outline" type="button" :disabled="loading" @click="loadDashboard">
+          <RefreshCcwIcon :class="{ 'animate-spin': loading }" />
+          Обновить
+        </Button>
       </template>
-    </div>
+    </PageToolbar>
 
-    <div class="dash-toolbar page-enter-item" style="--enter-delay: 40ms">
-      <div class="dash-toolbar-left">
-        <div v-if="isManager" class="dash-select-wrap">
-          <UiSelect v-model="selectedEmployeeId" :options="[{ value: '', label: 'Все сотрудники' }, ...(profilesForEmployeeFilter).map((p) => ({ value: p.id, label: `${p.display_name || p.email}${p.role === 'manager' ? ' (руководитель)' : ''}` }))]" class="dash-select" aria-label="Сотрудник" />
-        </div>
-        <ToggleGroup type="single" variant="outline" size="sm" aria-label="Период"
-          :model-value="(periodPreset === 'today') ? 'b0' : (periodPreset === 'week') ? 'b1' : (periodPreset === 'month') ? 'b2' : ''"
-          @update:model-value="(v) => { if (v === 'b0') { (periodPreset = 'today'), applyPeriodPreset() } else if (v === 'b1') { (periodPreset = 'week'), applyPeriodPreset() } else if (v === 'b2') { (periodPreset = 'month'), applyPeriodPreset() } }"
-        >
-          <ToggleGroupItem value="b0" class="px-3">Сегодня</ToggleGroupItem>
-          <ToggleGroupItem value="b1" class="px-3">Неделя</ToggleGroupItem>
-          <ToggleGroupItem value="b2" class="px-3">Месяц</ToggleGroupItem>
-        </ToggleGroup>
-        <div class="dash-dates">
-          <label class="dash-date-label"
-            >С:
-            <UiDatePicker v-model="dateFrom" class="dash-date-input" /></label>
-          <label class="dash-date-label"
-            >По:
-            <UiDatePicker v-model="dateTo" class="dash-date-input" /></label>
-        </div>
+    <div class="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <div class="grid content-start gap-1 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <span class="text-sm text-muted-foreground">Люди в полях</span>
+        <span class="text-2xl font-semibold tabular-nums">{{ kpiInOperationCount }} <span class="text-sm font-normal text-muted-foreground">из {{ kpiTotalWorkers }}</span></span>
       </div>
-      <Button variant="default" type="button" class="dash-refresh" :disabled="loading" @click="loadDashboard">
-        <span class="dash-refresh-icon" aria-hidden="true">↻</span>
-        {{ loading ? 'Загрузка…' : 'Обновить данные' }}
-      </Button>
-    </div>
-
-    <div class="dash-kpis page-enter-item" style="--enter-delay: 80ms">
-      <div class="dash-kpi">
-        <div>
-          <p class="dash-kpi-label">Люди в полях</p>
-          <div class="dash-kpi-value-row">
-            <span class="dash-kpi-num">{{ kpiInOperationCount }}</span>
-            <span class="dash-kpi-of">из {{ kpiTotalWorkers }}</span>
-          </div>
-        </div>
+      <div class="grid content-start gap-1 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <span class="text-sm text-muted-foreground">Техника в работе</span>
+        <span class="text-2xl font-semibold tabular-nums">{{ kpiEquipmentInUse }} <span class="text-sm font-normal text-muted-foreground">из {{ kpiTotalEquipment }}</span></span>
       </div>
-      <div class="dash-kpi">
-        <div>
-          <p class="dash-kpi-label">Техника в работе</p>
-          <div class="dash-kpi-value-row">
-            <span class="dash-kpi-num">{{ kpiEquipmentInUse }}</span>
-            <span class="dash-kpi-of">из {{ kpiTotalEquipment }} ед.</span>
-          </div>
-        </div>
-      </div>
-      <div class="dash-kpi">
-        <div>
-          <p class="dash-kpi-label">Простои (период)</p>
-          <div class="dash-kpi-value-row">
-            <span class="dash-kpi-num">{{ kpiDowntimeHours.toFixed(1) }}</span>
-            <span class="dash-kpi-of">ч</span>
-            <span v-if="kpiDowntimeTrend" class="dash-kpi-trend" :class="{ 'dash-kpi-trend--down': !kpiDowntimeTrend.up }">
-              {{ kpiDowntimeTrend.up ? '↑' : '↓' }} {{ kpiDowntimeTrend.pct }}%
-            </span>
-          </div>
-        </div>
+      <div class="grid content-start gap-1 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <span class="text-sm text-muted-foreground">Простои за период</span>
+        <span class="flex flex-wrap items-baseline gap-x-2 text-2xl font-semibold tabular-nums">
+          <span>{{ formatHours(kpiDowntimeHours) }} <span class="text-sm font-normal text-muted-foreground">ч</span></span>
+          <UiBadge v-if="kpiDowntimeTrend" :tone="kpiDowntimeTrend.up ? 'danger' : 'success'">
+            {{ kpiDowntimeTrend.up ? '↑' : '↓' }} {{ kpiDowntimeTrend.pct }}%
+          </UiBadge>
+        </span>
       </div>
       <RouterLink
-        class="dash-kpi dash-kpi--click"
+        class="grid content-start gap-1 rounded-xl border bg-card p-4 text-foreground no-underline shadow-xs transition-colors hover:bg-muted/40 md:p-6"
         :to="{ name: 'task-management', query: tasksKpiLinkQuery }"
       >
-        <div>
-          <p class="dash-kpi-label">{{ tasksKpiTitle }}</p>
-          <p class="dash-kpi-sublabel">{{ tasksKpiRangeHint }}</p>
-          <div class="dash-kpi-value-row">
-            <span class="dash-kpi-num">{{ tasksCompletedDueInFilter }}</span>
-            <span class="dash-kpi-of">выполнено</span>
-          </div>
-        </div>
+        <span class="text-sm text-muted-foreground">Выполнено задач</span>
+        <span class="text-2xl font-semibold tabular-nums">{{ tasksCompletedDueInFilter }}</span>
+        <span class="text-xs text-muted-foreground">{{ tasksKpiRangeHint }}</span>
       </RouterLink>
     </div>
 
-    <section class="dash-live page-enter-item" style="--enter-delay: 120ms">
-      <h2 class="dash-section-title">
-        Статус работы сотрудников
-      </h2>
-      <p v-if="!isSupabaseConfigured()" class="dash-muted">Подключите Supabase, чтобы видеть статусы с экрана оператора.</p>
-      <div v-else-if="loading" class="dash-live-loading">
-        <UiLoadingBar size="md" />
-      </div>
-      <div v-else class="dash-live-grid">
+    <section class="flex flex-col gap-4">
+      <h2 class="text-base font-semibold">Статус работы сотрудников</h2>
+      <p v-if="!isSupabaseConfigured()" class="text-sm text-muted-foreground">Подключите базу, чтобы видеть статусы с экрана оператора.</p>
+      <UiLoadingBar v-else-if="loading" size="md" />
+      <div v-else-if="filteredWorkersForLive.length" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div
           v-for="p in filteredWorkersForLive"
           :key="p.id"
-          class="dash-live-card"
+          class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6"
           :class="{
-            'dash-live-card--work': statusByUserId.get(p.id)?.kind === 'operation',
-            'dash-live-card--down': statusByUserId.get(p.id)?.kind === 'downtime',
-            'dash-live-card--idle': !statusByUserId.get(p.id),
+            'border-t-4 border-t-emerald-500': statusByUserId.get(p.id)?.kind === 'operation',
+            'border-t-4 border-t-destructive': statusByUserId.get(p.id)?.kind === 'downtime',
           }"
         >
-          <div class="dash-live-topbar" />
-          <div class="dash-live-head">
-            <UserAvatar class="dash-live-avatar" :style="{ background: avatarBg(p) }" :url="p.avatar_url" :initials="initials(p)" />
-            <div>
-              <h3 class="dash-live-name">{{ p.display_name || p.email }}</h3>
-              <span
-                v-if="statusByUserId.get(p.id)?.kind === 'operation'"
-                class="dash-live-badge dash-live-badge--ok"
-              >
-                В работе
-              </span>
-              <span
-                v-else-if="statusByUserId.get(p.id)?.kind === 'downtime'"
-                class="dash-live-badge dash-live-badge--bad"
-              >
-                Простой
-              </span>
-              <span v-else class="dash-live-badge dash-live-badge--muted">Ожидание задачи</span>
+          <div class="flex min-w-0 items-center gap-3">
+            <UserAvatar class="size-9 text-sm font-medium text-white" :style="{ background: avatarBg(p) }" :url="p.avatar_url" :initials="initials(p)" />
+            <div class="grid min-w-0 gap-1">
+              <h3 class="truncate text-sm font-medium">{{ p.display_name || p.email }}</h3>
+              <UiBadge v-if="statusByUserId.get(p.id)?.kind === 'operation'" tone="success" class="w-fit">В работе</UiBadge>
+              <UiBadge v-else-if="statusByUserId.get(p.id)?.kind === 'downtime'" tone="danger" class="w-fit">Простой</UiBadge>
+              <UiBadge v-else tone="neutral" class="w-fit">Ожидание задачи</UiBadge>
             </div>
           </div>
 
           <template v-if="statusByUserId.get(p.id)?.kind === 'operation'">
-            <RouterLink
-              v-if="fieldDetailLinkForStatus(statusByUserId.get(p.id))"
-              :to="{ name: 'field-details', params: { id: fieldDetailLinkForStatus(statusByUserId.get(p.id))! } }"
-              class="dash-live-box dash-live-box--link"
+            <component
+              :is="fieldDetailLinkForStatus(statusByUserId.get(p.id)) ? RouterLink : 'div'"
+              v-bind="fieldDetailLinkForStatus(statusByUserId.get(p.id)) ? { to: { name: 'field-details', params: { id: fieldDetailLinkForStatus(statusByUserId.get(p.id))! } } } : {}"
+              class="grid gap-0.5 rounded-lg bg-muted/60 p-3 text-foreground no-underline"
             >
-              <div class="dash-live-box-meta">{{ statusByUserId.get(p.id)?.field_name || 'Поле' }}</div>
-              <div class="dash-live-box-title">{{ statusByUserId.get(p.id)?.operation || 'Операция' }}</div>
-            </RouterLink>
-            <div v-else class="dash-live-box">
-              <div class="dash-live-box-meta">{{ statusByUserId.get(p.id)?.field_name || 'Поле' }}</div>
-              <div class="dash-live-box-title">{{ statusByUserId.get(p.id)?.operation || 'Операция' }}</div>
-            </div>
-            <div class="dash-live-progress">
-              <div class="dash-live-progress-label">
+              <span class="text-xs text-muted-foreground">{{ statusByUserId.get(p.id)?.field_name || 'Поле' }}</span>
+              <span class="text-sm font-medium">{{ statusByUserId.get(p.id)?.operation || 'Операция' }}</span>
+            </component>
+            <div class="grid gap-2">
+              <div class="flex justify-between text-xs text-muted-foreground">
                 <span>Прогресс смены (оценка)</span>
-                <span>{{ shiftProgressForUser(p.id) }}%</span>
+                <span class="tabular-nums">{{ shiftProgressForUser(p.id) }}%</span>
               </div>
-              <div class="dash-live-track">
-                <div
-                  class="dash-live-fill dash-live-fill--green"
-                  :style="{ width: `${shiftProgressForUser(p.id)}%` }"
-                />
-              </div>
+              <Progress :model-value="shiftProgressForUser(p.id)" class="h-1.5" />
             </div>
-            <div class="dash-live-foot">
+            <div class="flex items-center justify-between gap-2 text-xs text-muted-foreground">
               <RouterLink
                 v-if="statusByUserId.get(p.id)?.equipment_id"
                 :to="{ name: 'equipment-details', params: { id: statusByUserId.get(p.id)!.equipment_id! } }"
-                class="dash-inline-link"
+                class="truncate text-primary no-underline hover:underline dark:text-ring"
               >
                 {{ equipmentTitle(statusByUserId.get(p.id)?.equipment_id) }}
               </RouterLink>
-              <span v-else>{{ equipmentTitle(statusByUserId.get(p.id)?.equipment_id) }}</span>
-              <span style="display:inline-flex;align-items:center;gap:4px"><ClockIcon :size="14" aria-hidden="true" /> {{ elapsedLabel(statusByUserId.get(p.id)!.started_at) }}</span>
+              <span v-else class="truncate">{{ equipmentTitle(statusByUserId.get(p.id)?.equipment_id) }}</span>
+              <span class="flex shrink-0 items-center gap-1 tabular-nums"><ClockIcon class="size-3.5" aria-hidden="true" />{{ elapsedLabel(statusByUserId.get(p.id)!.started_at) }}</span>
             </div>
           </template>
 
           <template v-else-if="statusByUserId.get(p.id)?.kind === 'downtime'">
-            <RouterLink
-              v-if="fieldDetailLinkForStatus(statusByUserId.get(p.id))"
-              :to="{ name: 'field-details', params: { id: fieldDetailLinkForStatus(statusByUserId.get(p.id))! } }"
-              class="dash-live-box dash-live-box--alert dash-live-box--link"
+            <component
+              :is="fieldDetailLinkForStatus(statusByUserId.get(p.id)) ? RouterLink : 'div'"
+              v-bind="fieldDetailLinkForStatus(statusByUserId.get(p.id)) ? { to: { name: 'field-details', params: { id: fieldDetailLinkForStatus(statusByUserId.get(p.id))! } } } : {}"
+              class="grid gap-0.5 rounded-lg bg-destructive/10 p-3 text-foreground no-underline"
             >
-              <div class="dash-live-box-meta">{{ categoryLabelRu(statusByUserId.get(p.id)?.downtime_category) }}</div>
-              <div class="dash-live-box-title">{{ statusByUserId.get(p.id)?.downtime_reason || '—' }}</div>
-            </RouterLink>
-            <div v-else class="dash-live-box dash-live-box--alert">
-              <div class="dash-live-box-meta">{{ categoryLabelRu(statusByUserId.get(p.id)?.downtime_category) }}</div>
-              <div class="dash-live-box-title">{{ statusByUserId.get(p.id)?.downtime_reason || '—' }}</div>
-            </div>
-            <div class="dash-live-progress">
-              <div class="dash-live-progress-label">
-                <span>Длительность простоя</span>
-                <span class="dash-live-bad">{{ elapsedLabel(statusByUserId.get(p.id)!.started_at) }}</span>
-              </div>
-              <div class="dash-live-track">
-                <div class="dash-live-fill dash-live-fill--red" style="width: 100%" />
-              </div>
-            </div>
-            <div class="dash-live-foot">
-              <RouterLink
-                v-if="fieldDetailLinkForStatus(statusByUserId.get(p.id))"
-                :to="{ name: 'field-details', params: { id: fieldDetailLinkForStatus(statusByUserId.get(p.id))! } }"
-                class="dash-inline-link"
-              >
-                {{ statusByUserId.get(p.id)?.field_name || 'База' }}
-              </RouterLink>
-              <span v-else>{{ statusByUserId.get(p.id)?.field_name || 'База' }}</span>
+              <span class="text-xs text-destructive">{{ categoryLabelRu(statusByUserId.get(p.id)?.downtime_category) }}</span>
+              <span class="text-sm font-medium">{{ statusByUserId.get(p.id)?.downtime_reason || '—' }}</span>
+            </component>
+            <div class="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span class="truncate">{{ statusByUserId.get(p.id)?.field_name || 'База' }}</span>
+              <span class="flex shrink-0 items-center gap-1 text-destructive tabular-nums"><ClockIcon class="size-3.5" aria-hidden="true" />{{ elapsedLabel(statusByUserId.get(p.id)!.started_at) }}</span>
             </div>
           </template>
 
           <template v-else>
-            <div class="dash-live-box dash-live-box--empty">
-              <span>Нет активной операции</span>
-            </div>
-            <div class="dash-live-progress">
-              <div class="dash-live-progress-label">
+            <p class="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">Нет активной операции</p>
+            <div class="grid gap-2">
+              <div class="flex justify-between text-xs text-muted-foreground">
                 <span>Прогресс смены</span>
-                <span>{{ shiftProgressForUser(p.id) }}%</span>
+                <span class="tabular-nums">{{ shiftProgressForUser(p.id) }}%</span>
               </div>
-              <div class="dash-live-track">
-                <div
-                  class="dash-live-fill dash-live-fill--muted"
-                  :style="{ width: `${shiftProgressForUser(p.id)}%` }"
-                />
-              </div>
+              <Progress :model-value="shiftProgressForUser(p.id)" class="h-1.5" />
             </div>
-            <div class="dash-live-foot muted">Техника не назначена</div>
           </template>
         </div>
       </div>
-      <p v-if="isManager && !loading && isSupabaseConfigured() && !filteredWorkersForLive.length" class="dash-muted">
-        Нет работников в справочнике и нет исполнителей в задачах — добавьте профили или назначьте задачи.
+      <p v-else-if="isManager && isSupabaseConfigured()" class="text-sm text-muted-foreground">
+        Сотрудников с ролью «Сотрудник» и исполнителей задач пока нет.
       </p>
     </section>
 
-    <div class="dash-split page-enter-item" style="--enter-delay: 160ms">
-      <div class="dash-panel">
-        <div class="dash-panel-head">
-          <h2 class="dash-panel-title">Активные поля (по операциям)</h2>
-          <RouterLink to="/fields" class="dash-panel-link">Все поля</RouterLink>
+    <div class="grid items-start gap-6 lg:grid-cols-2">
+      <div class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-base font-semibold">Активные поля</h2>
+          <RouterLink to="/fields" class="text-sm font-medium text-primary no-underline hover:underline dark:text-ring">Все поля</RouterLink>
         </div>
-        <div class="dash-table-wrap">
-          <table class="dash-table" v-card-table>
-            <thead>
-              <tr>
-                <th>Поле / объект</th>
-                <th>Операция</th>
-                <th>Выполнение</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in activeFieldsRows" :key="row.st.user_id">
-                <td>
-                  <RouterLink
-                    v-if="row.fieldDetailId"
-                    :to="{ name: 'field-details', params: { id: row.fieldDetailId } }"
-                    class="dash-field-link"
-                  >
-                    <div class="dash-td-main">{{ row.fieldLabel }}</div>
-                  </RouterLink>
-                  <template v-else>
-                    <div class="dash-td-main">{{ row.fieldLabel }}</div>
-                  </template>
-                  <span class="dash-chip dash-chip--green">В работе</span>
-                </td>
-                <td>
-                  <div>{{ row.st.operation || 'Операция' }}</div>
-                  <div class="dash-td-sub">{{ row.assigneeName }}</div>
-                </td>
-                <td>
-                  <div class="dash-pbar-wrap">
-                    <div class="dash-pbar">
-                      <div class="dash-pbar-fill" :style="{ width: `${row.progress}%` }" />
-                    </div>
-                    <span>{{ row.progress }}%</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p v-if="!activeFieldsRows.length" class="dash-empty">Нет активных операций на полях.</p>
-        </div>
+        <ul v-if="activeFieldsRows.length" class="grid divide-y divide-border">
+          <li v-for="row in activeFieldsRows" :key="row.st.user_id" class="grid gap-2 py-3 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_8rem] sm:items-center sm:gap-4">
+            <div class="grid min-w-0 gap-0.5">
+              <RouterLink
+                v-if="row.fieldDetailId"
+                :to="{ name: 'field-details', params: { id: row.fieldDetailId } }"
+                class="truncate text-sm font-medium text-foreground no-underline hover:underline"
+              >
+                {{ row.fieldLabel }}
+              </RouterLink>
+              <span v-else class="truncate text-sm font-medium">{{ row.fieldLabel }}</span>
+              <span class="truncate text-xs text-muted-foreground">{{ row.assigneeName }}</span>
+            </div>
+            <span class="truncate text-sm">{{ row.st.operation || 'Операция' }}</span>
+            <div class="flex items-center gap-2">
+              <Progress :model-value="row.progress" class="h-1.5 flex-1" />
+              <span class="w-9 text-right text-xs tabular-nums">{{ row.progress }}%</span>
+            </div>
+          </li>
+        </ul>
+        <p v-else class="text-sm text-muted-foreground">Нет активных операций на полях.</p>
       </div>
 
-      <div class="dash-panel">
-        <div class="dash-panel-head">
-          <h2 class="dash-panel-title">Статус техники</h2>
-          <div class="dash-legend-inline">
-            <span><i class="dot dot--b" /> В работе</span>
-            <span><i class="dot dot--g" /> Исправна</span>
-            <span><i class="dot dot--r" /> В ремонте</span>
-          </div>
-        </div>
-        <div class="dash-eq-list-scroll">
-          <ul class="dash-eq-list">
-            <li v-for="{ eq, operatorName, badge, metrics } in equipmentRows" :key="eq.id" class="dash-eq-item">
-            <RouterLink :to="{ name: 'equipment-details', params: { id: eq.id } }" class="dash-eq-link">
-              <div class="dash-eq-body">
-                <div class="dash-eq-title">{{ eq.brand }} {{ eq.model || eq.license_plate }}</div>
-                <div class="dash-eq-meta">
-                  <code class="dash-mono">{{ eq.license_plate }}</code>
-                  <span>{{ operatorName }}</span>
+      <div class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <h2 class="text-base font-semibold">Статус техники</h2>
+        <ul v-if="equipmentRows.length" class="grid max-h-[28rem] divide-y divide-border overflow-y-auto">
+          <li v-for="{ eq, operatorName, badge, metrics } in equipmentRows" :key="eq.id" class="py-3 first:pt-0 last:pb-0">
+            <RouterLink :to="{ name: 'equipment-details', params: { id: eq.id } }" class="grid gap-2 rounded-md text-foreground no-underline">
+              <div class="flex items-start justify-between gap-2">
+                <div class="grid min-w-0 gap-0.5">
+                  <span class="truncate text-sm font-medium hover:underline">{{ eq.brand }} {{ eq.model || eq.license_plate }}</span>
+                  <span class="truncate text-xs text-muted-foreground">
+                    {{ eq.license_plate }}<template v-if="operatorName && operatorName !== '—'"> · {{ operatorName }}</template>
+                  </span>
                 </div>
-                <div class="dash-eq-metrics">
-                  <div class="dash-eq-metric-row">
-                    <span class="dash-eq-metric-label">Топливо</span>
-                    <div class="dash-eq-fuel">
-                      <div v-if="metrics?.fuelPct != null" class="dash-eq-fuel-track">
-                        <div
-                          class="dash-eq-fuel-fill"
-                          :class="equipmentDashFuelBarClass(metrics.fuelPct)"
-                          :style="{
-                            width: `${Math.min(100, Math.max(0, metrics.fuelPct))}%`,
-                          }"
-                        />
-                      </div>
-                      <span class="dash-eq-metric-val">{{ equipmentDashFuelText(metrics) }}</span>
-                    </div>
-                  </div>
-                  <div class="dash-eq-metric-row">
-                    <span class="dash-eq-metric-label">Состояние</span>
-                    <span class="dash-eq-metric-val">{{ equipmentDashStateText(eq, metrics) }}</span>
-                  </div>
-                </div>
-                <p v-if="eq.condition === 'repair' && eq.notes" class="dash-eq-note">{{ eq.notes }}</p>
+                <UiBadge :tone="equipmentBadgeTone(badge.tone)" class="shrink-0">{{ badge.text }}</UiBadge>
               </div>
+              <div class="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-xs">
+                <span class="text-muted-foreground">Топливо</span>
+                <div class="h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    v-if="metrics?.fuelPct != null"
+                    class="h-full rounded-full"
+                    :class="fuelBarClass(metrics.fuelPct)"
+                    :style="{ width: `${Math.min(100, Math.max(0, metrics.fuelPct))}%` }"
+                  />
+                </div>
+                <span class="text-right tabular-nums">{{ equipmentDashFuelText(metrics) }}</span>
+                <span class="text-muted-foreground">Состояние</span>
+                <span class="col-span-2 truncate">{{ equipmentDashStateText(eq, metrics) }}</span>
+              </div>
+              <p v-if="eq.condition === 'repair' && eq.notes" class="text-xs text-destructive">{{ eq.notes }}</p>
             </RouterLink>
-            <span class="dash-eq-badge" :class="`dash-eq-badge--${badge.tone}`">{{ badge.text }}</span>
           </li>
-          </ul>
-        </div>
-        <p v-if="!equipmentRows.length" class="dash-empty">Техника не заведена в справочнике.</p>
+        </ul>
+        <p v-else class="text-sm text-muted-foreground">Техника не заведена в справочнике.</p>
       </div>
     </div>
 
-    <section class="dash-task-stats page-enter-item" style="--enter-delay: 200ms">
-      <h2 class="dash-section-title">Статистика задач</h2>
-      <div class="dash-charts">
-        <div class="dash-chart-card">
-          <h3 class="dash-chart-title">Распределение по статусам</h3>
+    <section class="flex flex-col gap-4">
+      <h2 class="text-base font-semibold">Статистика задач</h2>
+      <div class="grid items-start gap-6 lg:grid-cols-2">
+        <div class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+          <h3 class="text-sm font-medium">По статусам</h3>
           <div v-if="taskDonut.total" class="grid items-center gap-4 sm:grid-cols-[minmax(0,220px)_1fr]">
             <StatusDonutChart :slices="taskDonut.slices" :total="taskDonut.total" total-label="Всего задач" />
             <ul class="grid gap-2 text-sm">
               <li v-for="sl in taskDonut.slices" :key="sl.key" class="flex items-center gap-2">
                 <span class="size-2.5 shrink-0 rounded-sm" :style="{ background: sl.color }" />
-                <span class="text-muted-foreground flex-1">{{ sl.label }}</span>
+                <span class="flex-1 text-muted-foreground">{{ sl.label }}</span>
                 <span class="font-medium tabular-nums">{{ sl.count }}</span>
               </li>
             </ul>
           </div>
-          <p v-if="!taskDonut.total" class="dash-empty">Нет задач в выбранном периоде.</p>
+          <p v-else class="text-sm text-muted-foreground">Нет задач в выбранном периоде.</p>
         </div>
-        <div class="dash-chart-card">
-          <h3 class="dash-chart-title">Выполнение задач по сотрудникам (за период)</h3>
-          <p class="dash-chart-sub muted">
-            Столбцы — число выполненных за период (по дате обновления); сотрудники отсортированы по убыванию этого числа. Верх шкалы Y — по максимуму <strong>активных</strong> задач в периоде (к выполнению / в процессе / на проверке) среди исполнителей, чтобы масштаб отражал объём текущей работы. Разбивка статусов — слева.
-          </p>
+        <div class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+          <div class="grid gap-1">
+            <h3 class="text-sm font-medium">Выполнено по сотрудникам</h3>
+            <p class="text-xs text-muted-foreground">Сколько задач каждый закрыл за период.</p>
+          </div>
           <CountBarChart v-if="taskEmployeeBarChart.rows.length" :rows="taskEmployeeBarChart.rows" series-label="Выполнено" color="var(--chart-5)" />
-          <p v-else class="dash-empty">Нет завершённых задач в периоде.</p>
+          <p v-else class="text-sm text-muted-foreground">Нет завершённых задач в периоде.</p>
         </div>
       </div>
     </section>
 
-    <section
-      class="dash-ops-stats dash-ops-stats--accordion page-enter-item"
-      style="--enter-delay: 220ms"
-      aria-labelledby="dash-ops-stats-title"
-    >
-      <div class="dash-ops-stats-intro">
-        <h2 id="dash-ops-stats-title" class="dash-section-title dash-ops-stats-title">Операции на полях</h2>
-        <p class="dash-ops-stats-hint dash-muted">
-          Завершённые операции за выбранный период (по дате окончания). Сводка по сотрудникам подгружается с сервера
-          постранично; нажмите строку, чтобы загрузить и показать операции по полям. Учитываются «С — По» и выбор
-          сотрудника.
-        </p>
+    <section class="flex flex-col gap-4" aria-labelledby="dash-ops-stats-title">
+      <div class="grid gap-1">
+        <h2 id="dash-ops-stats-title" class="text-base font-semibold">Операции на полях</h2>
+        <p class="text-sm text-muted-foreground">Завершённые за период. Нажмите на сотрудника, чтобы увидеть его операции по полям.</p>
       </div>
 
-      <p v-if="operationStatsListLoading && !operationStatsSummaries.length" class="dash-ops-list-loading dash-muted">
-        Загрузка сводки…
-      </p>
+      <UiLoadingBar v-if="operationStatsListLoading && !operationStatsSummaries.length" size="md" />
 
       <template v-else-if="operationStatsSummaries.length">
-        <div class="dash-ops-sort-bar" role="toolbar" aria-label="Сортировка сводки по сотрудникам">
-          <span class="dash-ops-sort-bar-label">Сортировка</span>
-          <Button variant="ghost" size="sm"
+        <div class="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Сортировка">
+          <span class="text-sm text-muted-foreground">Сортировка:</span>
+          <Button
+            v-for="opt in OPERATION_SORT_OPTIONS"
+            :key="opt.key"
+            variant="outline"
+            size="sm"
             type="button"
-            :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'employee' }]"
-            @click="setOperationStatsSort('employee')"
+            :class="operationStatsSortKey === opt.key ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
+            :aria-pressed="operationStatsSortKey === opt.key"
+            @click="setOperationStatsSort(opt.key)"
           >
-            Сотрудник <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('employee') }}</span>
-          </Button>
-          <Button variant="ghost" size="sm"
-            type="button"
-            :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'operation' }]"
-            @click="setOperationStatsSort('operation')"
-          >
-            Число операций <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('operation') }}</span>
-          </Button>
-          <Button variant="ghost" size="sm"
-            type="button"
-            :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'field' }]"
-            @click="setOperationStatsSort('field')"
-          >
-            Полей задействовано <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('field') }}</span>
-          </Button>
-          <Button variant="ghost" size="sm"
-            type="button"
-            :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'duration' }]"
-            @click="setOperationStatsSort('duration')"
-          >
-            Всего времени <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('duration') }}</span>
-          </Button>
-          <Button variant="ghost" size="sm"
-            type="button"
-            :class="['dash-ops-sort-pill', { 'dash-ops-sort-pill--active': operationStatsSortKey === 'ended' }]"
-            @click="setOperationStatsSort('ended')"
-          >
-            Последняя операция <span class="dash-ops-sort-pill-mark">{{ operationStatsSortMark('ended') }}</span>
+            {{ opt.label }}
+            <span v-if="operationStatsSortMark(opt.key)" class="tabular-nums">{{ operationStatsSortMark(opt.key) }}</span>
           </Button>
         </div>
 
-        <div class="dash-ops-accordion">
-          <div
-            v-for="(g, gi) in operationStatsSummaries"
-            :key="g.key"
-            class="dash-ops-card"
-            :class="{ 'dash-ops-card--open': expandedOperationGroupKey === g.key }"
-          >
+        <div class="overflow-hidden rounded-xl border bg-card shadow-xs">
+          <div v-for="(g, gi) in operationStatsSummaries" :key="g.key" class="border-b last:border-b-0">
             <button
+              :id="'dash-ops-head-' + gi"
               type="button"
-              class="dash-ops-card-head"
+              class="flex w-full items-center gap-4 px-4 py-3 text-left outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 md:px-6"
               :aria-expanded="expandedOperationGroupKey === g.key"
               :aria-controls="'dash-ops-detail-' + gi"
-              :id="'dash-ops-head-' + gi"
               @click="toggleOperationGroup(g.key)"
             >
-              <div class="dash-ops-head-text">
-                <span class="dash-ops-head-name">{{ g.employee }}</span>
-                <span class="dash-ops-head-summary">
-                  {{ operationsCountLabelRu(g.operationCount) }} · {{ fieldsCountLabelRu(g.fieldsCount) }} · суммарно
-                  <strong>{{ formatDurationMinutesShort(g.totalMinutes) }}</strong>
+              <ChevronRightIcon class="size-4 shrink-0 text-muted-foreground transition-transform" :class="{ 'rotate-90': expandedOperationGroupKey === g.key }" />
+              <span class="grid min-w-0 flex-1 gap-0.5">
+                <span class="truncate text-sm font-medium">{{ g.employee }}</span>
+                <span class="text-xs text-muted-foreground">
+                  {{ operationsCountLabelRu(g.operationCount) }} · {{ fieldsCountLabelRu(g.fieldsCount) }} · {{ formatDurationMinutesShort(g.totalMinutes) }}
                 </span>
-              </div>
-              <div class="dash-ops-head-aside">
-                <span class="dash-ops-head-last-label">Последняя</span>
-                <span class="dash-ops-head-last-value">{{ formatOperationEndedAt(g.latestEndedAt) }}</span>
-              </div>
+              </span>
+              <span class="hidden shrink-0 text-right text-xs text-muted-foreground sm:grid">
+                <span>Последняя</span>
+                <span class="text-foreground tabular-nums">{{ formatOperationEndedAt(g.latestEndedAt) }}</span>
+              </span>
             </button>
             <div
               v-show="expandedOperationGroupKey === g.key"
               :id="'dash-ops-detail-' + gi"
-              class="dash-ops-card-detail"
+              class="border-t bg-muted/20 px-4 py-3 md:px-6"
               role="region"
               :aria-labelledby="'dash-ops-head-' + gi"
             >
-              <table class="dash-ops-detail-table" v-card-table>
-                <thead>
-                  <tr>
-                    <th>Поле</th>
-                    <th>Операция</th>
-                    <th>Длительность</th>
-                    <th>Завершено</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="operationStatsDetailLoading[g.key]">
-                    <td colspan="4" class="dash-ops-detail-loading">Загрузка операций…</td>
-                  </tr>
-                  <template v-else>
-                    <tr v-for="row in operationStatsDetailByEmployee[g.key] || []" :key="row.id">
-                      <td>
-                        <RouterLink
-                          v-if="row.fieldRouteId"
-                          :to="{ name: 'field-details', params: { id: row.fieldRouteId } }"
-                          class="dash-ops-detail-link"
-                          @click.stop
-                        >
-                          {{ row.fieldLabel }}
-                        </RouterLink>
-                        <span v-else>{{ row.fieldLabel }}</span>
-                      </td>
-                      <td>{{ row.operationLabel }}</td>
-                      <td>{{ formatDurationMinutesShort(row.durationMinutes) }}</td>
-                      <td class="dash-ops-detail-nowrap">{{ formatOperationEndedAt(row.endedAt) }}</td>
-                    </tr>
-                    <tr
-                      v-if="
-                        (operationStatsDetailByEmployee[g.key]?.length ?? 0) === 0 &&
-                        operationStatsDetailTotalByEmployee[g.key] === 0
-                      "
+              <p v-if="operationStatsDetailLoading[g.key]" class="text-sm text-muted-foreground">Загрузка операций…</p>
+              <template v-else>
+                <ul v-if="(operationStatsDetailByEmployee[g.key]?.length ?? 0) > 0" class="grid divide-y divide-border">
+                  <li
+                    v-for="row in operationStatsDetailByEmployee[g.key] || []"
+                    :key="row.id"
+                    class="grid gap-1 py-2 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_6rem_9rem] sm:items-center sm:gap-4"
+                  >
+                    <RouterLink
+                      v-if="row.fieldRouteId"
+                      :to="{ name: 'field-details', params: { id: row.fieldRouteId } }"
+                      class="truncate font-medium text-foreground no-underline hover:underline"
+                      @click.stop
                     >
-                      <td colspan="4" class="dash-ops-detail-empty">Нет операций в выбранном периоде.</td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
-              <div
-                v-if="
-                  !operationStatsDetailLoading[g.key] &&
-                  operationDetailRemaining(g.key) > 0
-                "
-                class="dash-ops-detail-more"
-              >
-                <Button variant="outline" size="sm"
-                  type="button"
-                  class="dash-ops-detail-more-btn"
-                  :disabled="!!operationStatsDetailLoadingMore[g.key]"
-                  @click="loadOperationDetailsPage(g.key, false)"
-                >
-                  {{
-                    operationStatsDetailLoadingMore[g.key]
-                      ? 'Загрузка…'
-                      : `Показать ещё ${Math.min(OPERATION_DETAIL_PAGE_SIZE, operationDetailRemaining(g.key))}`
-                  }}
-                </Button>
-                <span class="dash-ops-detail-more-meta dash-muted">
-                  Показано {{ operationStatsDetailByEmployee[g.key]?.length ?? 0 }} из
-                  {{ operationStatsDetailTotalByEmployee[g.key] ?? 0 }}
-                </span>
-              </div>
+                      {{ row.fieldLabel }}
+                    </RouterLink>
+                    <span v-else class="truncate font-medium">{{ row.fieldLabel }}</span>
+                    <span class="truncate text-muted-foreground">{{ row.operationLabel }}</span>
+                    <span class="tabular-nums">{{ formatDurationMinutesShort(row.durationMinutes) }}</span>
+                    <span class="text-xs text-muted-foreground tabular-nums sm:text-right">{{ formatOperationEndedAt(row.endedAt) }}</span>
+                  </li>
+                </ul>
+                <p v-else-if="operationStatsDetailTotalByEmployee[g.key] === 0" class="text-sm text-muted-foreground">Нет операций в выбранном периоде.</p>
+                <div v-if="operationDetailRemaining(g.key) > 0" class="mt-3 flex flex-wrap items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    :disabled="!!operationStatsDetailLoadingMore[g.key]"
+                    @click="loadOperationDetailsPage(g.key, false)"
+                  >
+                    {{ operationStatsDetailLoadingMore[g.key] ? 'Загрузка…' : `Показать ещё ${Math.min(OPERATION_DETAIL_PAGE_SIZE, operationDetailRemaining(g.key))}` }}
+                  </Button>
+                  <span class="text-xs text-muted-foreground">
+                    Показано {{ operationStatsDetailByEmployee[g.key]?.length ?? 0 }} из {{ operationStatsDetailTotalByEmployee[g.key] ?? 0 }}
+                  </span>
+                </div>
+              </template>
             </div>
           </div>
         </div>
 
-        <div v-if="operationStatsTotalPages > 1" class="dash-ops-pager">
-          <Button variant="outline" size="sm"
-            type="button"
-            class="dash-ops-pager-btn"
-            :disabled="operationStatsPage <= 1 || operationStatsListLoading"
-            @click="goOperationStatsPage(-1)"
-          >
-            Назад
-          </Button>
-          <span class="dash-ops-pager-meta">
-            Страница {{ operationStatsPage }} из {{ operationStatsTotalPages }}
-            <span class="dash-ops-pager-dot" aria-hidden="true">·</span>
-            всего в периоде: {{ operationStatsTotal }}
-          </span>
-          <Button variant="outline" size="sm"
-            type="button"
-            class="dash-ops-pager-btn"
-            :disabled="operationStatsPage >= operationStatsTotalPages || operationStatsListLoading"
-            @click="goOperationStatsPage(1)"
-          >
-            Вперёд
-          </Button>
+        <div v-if="operationStatsTotalPages > 1" class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-sm text-muted-foreground">Страница {{ operationStatsPage }} из {{ operationStatsTotalPages }} · всего {{ operationStatsTotal }}</span>
+          <div class="flex gap-2">
+            <Button variant="outline" size="sm" type="button" :disabled="operationStatsPage <= 1 || operationStatsListLoading" @click="goOperationStatsPage(-1)">
+              <ChevronLeftIcon />
+              Назад
+            </Button>
+            <Button variant="outline" size="sm" type="button" :disabled="operationStatsPage >= operationStatsTotalPages || operationStatsListLoading" @click="goOperationStatsPage(1)">
+              Вперёд
+              <ChevronRightIcon />
+            </Button>
+          </div>
         </div>
       </template>
-      <p v-else-if="!operationStatsListLoading" class="dash-empty dash-ops-empty">
-        Нет операций за выбранный период или не применена миграция RPC в Supabase.
+      <p v-else-if="!operationStatsListLoading" class="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+        Нет завершённых операций за выбранный период.
       </p>
     </section>
   </section>
 </template>
 
-<style scoped src="./ReportsPage.css"></style>
