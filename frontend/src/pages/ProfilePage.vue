@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/shadcn/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
-import { BriefcaseIcon, CameraIcon, CheckIcon, CircleAlertIcon, InfoIcon, LoaderCircleIcon, LockIcon, MailIcon, PhoneIcon } from '@lucide/vue'
+import { BriefcaseIcon, CameraIcon, CheckIcon, CircleAlertIcon, LoaderCircleIcon, LockIcon, MailIcon, PhoneIcon, Trash2Icon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
@@ -472,945 +476,247 @@ async function confirmDeleteAccount() {
 </script>
 
 <template>
-  <div class="profile-page-wrapper">
-  <section class="profile-page page-enter-item">
-    <header class="profile-header">
-      <!-- Заголовок страницы уже в шапке приложения (new-pages-ui-ux.mdc) -->
-      <p class="profile-page-subtitle">Управляйте своими личными данными и настройками учетной записи.</p>
-    </header>
-
-    <div class="profile-layout">
-      <!-- Левая колонка: карточка пользователя и активность -->
-      <aside class="profile-card-aside">
-        <Card class="profile-user-card card-rounded gap-0">
-          <div class="profile-avatar-wrap">
-            <button
-              type="button"
-              class="profile-avatar"
-              :class="{ 'profile-avatar--busy': avatarUploading }"
-              :disabled="avatarUploading"
-              :title="avatarUrl ? 'Сменить фото профиля' : 'Загрузить фото профиля'"
-              @click="triggerAvatarPick"
+  <div class="tw-scope">
+    <section class="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <!-- Левая колонка: карточка пользователя, контакты, активность -->
+      <aside class="flex min-w-0 flex-col gap-6">
+        <div class="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 text-center shadow-xs">
+          <button
+            type="button"
+            class="group relative size-24 overflow-hidden rounded-full bg-primary text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait"
+            :disabled="avatarUploading"
+            :aria-label="avatarUrl ? 'Сменить фото профиля' : 'Загрузить фото профиля'"
+            @click="triggerAvatarPick"
+          >
+            <img v-if="avatarUrl" :src="avatarUrl" alt="" class="size-full object-cover" />
+            <span v-else class="text-3xl font-semibold">{{ userInitials }}</span>
+            <span
+              class="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+              :class="{ 'opacity-100': avatarUploading }"
+              aria-hidden="true"
             >
-              <img v-if="avatarUrl" :src="avatarUrl" alt="Фото профиля" class="profile-avatar-img" />
-              <span v-else class="profile-avatar-initials">{{ userInitials }}</span>
-              <span class="profile-avatar-overlay" aria-hidden="true">
-                <CameraIcon v-if="!avatarUploading" :size="22" />
-                <LoaderCircleIcon v-else class="profile-avatar-spinner" :size="22" />
-              </span>
-            </button>
-            <input
-              ref="avatarInput"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif"
-              class="profile-avatar-input"
-              @change="onAvatarSelected"
-            />
-          </div>
-          <div class="profile-avatar-actions">
-            <button type="button" class="profile-avatar-link" :disabled="avatarUploading" @click="triggerAvatarPick">
+              <LoaderCircleIcon v-if="avatarUploading" class="size-6 animate-spin" />
+              <CameraIcon v-else class="size-6" />
+            </span>
+          </button>
+          <input
+            ref="avatarInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            class="hidden"
+            @change="onAvatarSelected"
+          />
+          <div class="flex flex-wrap justify-center gap-1">
+            <Button variant="ghost" size="sm" type="button" :disabled="avatarUploading" @click="triggerAvatarPick">
+              <CameraIcon />
               {{ avatarUploading ? 'Загрузка…' : (avatarUrl ? 'Сменить фото' : 'Загрузить фото') }}
-            </button>
-            <button v-if="avatarUrl && !avatarUploading" type="button" class="profile-avatar-link profile-avatar-link--danger" @click="deleteAvatar">
+            </Button>
+            <Button
+              v-if="avatarUrl && !avatarUploading"
+              variant="ghost"
+              size="sm"
+              type="button"
+              class="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              @click="deleteAvatar"
+            >
+              <Trash2Icon />
               Удалить
-            </button>
+            </Button>
           </div>
-          <p v-if="avatarMessage" class="profile-avatar-message" :class="avatarMessage.type === 'success' ? 'profile-avatar-message--success' : 'profile-avatar-message--error'">
+          <p
+            v-if="avatarMessage"
+            class="text-xs"
+            :class="avatarMessage.type === 'success' ? 'text-emerald-700 dark:text-ring' : 'text-destructive'"
+            role="status"
+          >
             {{ avatarMessage.text }}
           </p>
-          <div class="profile-user-name">{{ displayName }}</div>
-          <div class="profile-user-position">{{ profileForm.position || 'Главный агроном' }}</div>
-          <div class="profile-badge">
-            <CheckIcon :size="14" />
-            {{ roleLabel }}
+          <div class="grid gap-1">
+            <div class="text-lg font-semibold">{{ displayName }}</div>
+            <div v-if="profileForm.position" class="text-sm text-muted-foreground">{{ profileForm.position }}</div>
           </div>
-        </Card>
+          <UiBadge tone="primary">{{ roleLabel }}</UiBadge>
+        </div>
 
-        <div class="profile-contact-block card-rounded">
-          <h3 class="profile-block-title">Контактная информация</h3>
-          <div class="profile-contact-row">
-            <MailIcon class="profile-contact-icon" />
-            <span>{{ profileForm.email || auth.user.value?.email || '—' }}</span>
+        <div class="grid gap-3 rounded-xl border bg-card p-6 shadow-xs">
+          <h3 class="text-sm font-medium">Контактная информация</h3>
+          <div class="flex min-w-0 items-center gap-3 text-sm">
+            <MailIcon class="size-4 shrink-0 text-muted-foreground" />
+            <span class="truncate">{{ profileForm.email || auth.user.value?.email || '—' }}</span>
           </div>
-          <div class="profile-contact-row">
-            <PhoneIcon class="profile-contact-icon" />
+          <div class="flex items-center gap-3 text-sm">
+            <PhoneIcon class="size-4 shrink-0 text-muted-foreground" />
             <span>{{ profileForm.phone || '—' }}</span>
           </div>
-          <div class="profile-contact-row">
-            <BriefcaseIcon class="profile-contact-icon" />
+          <div class="flex items-center gap-3 text-sm">
+            <BriefcaseIcon class="size-4 shrink-0 text-muted-foreground" />
             <span>Агрономическая служба</span>
           </div>
         </div>
 
-        <div class="profile-activity-block card-rounded">
-          <h3 class="profile-block-title">Активность аккаунта</h3>
-          <div class="profile-activity-row">
-            <span class="profile-activity-label">Последний вход</span>
-            <span class="profile-activity-value">{{ lastSignIn }}</span>
-          </div>
-          <div class="profile-activity-row">
-            <span class="profile-activity-label">Дата регистрации</span>
-            <span class="profile-activity-value">{{ createdAt }}</span>
-          </div>
-          <div class="profile-activity-row">
-            <span class="profile-activity-label">Статус</span>
-            <span class="profile-status-active"><span class="profile-status-dot"></span>Активен</span>
-          </div>
+        <div class="grid gap-3 rounded-xl border bg-card p-6 shadow-xs">
+          <h3 class="text-sm font-medium">Активность аккаунта</h3>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
+            <dt class="text-muted-foreground">Последний вход</dt>
+            <dd class="text-right">{{ lastSignIn }}</dd>
+            <dt class="text-muted-foreground">Регистрация</dt>
+            <dd class="text-right">{{ createdAt }}</dd>
+            <dt class="text-muted-foreground">Статус</dt>
+            <dd class="flex items-center justify-end gap-1.5 text-emerald-700 dark:text-ring">
+              <span class="size-2 rounded-full bg-emerald-500" aria-hidden="true" />
+              Активен
+            </dd>
+          </dl>
         </div>
       </aside>
 
-      <!-- Правая колонка: форма -->
-      <Card class="profile-form-area card-rounded gap-0">
-        <Tabs :model-value="activeTab">
-          <TabsList>
-            <TabsTrigger value="personal" @click="activeTab = 'personal'">Личные данные</TabsTrigger>
-            <TabsTrigger value="security" @click="activeTab = 'security'">Безопасность</TabsTrigger>
-            <TabsTrigger value="notifications" @click="activeTab = 'notifications'">Уведомления</TabsTrigger>
+      <!-- Правая колонка: вкладки и формы -->
+      <div class="flex min-w-0 flex-col gap-6 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <Tabs :model-value="activeTab" @update:model-value="(v) => (activeTab = v as typeof activeTab)">
+          <TabsList class="w-full sm:w-fit">
+            <TabsTrigger value="personal">Личные данные</TabsTrigger>
+            <TabsTrigger value="security">Безопасность</TabsTrigger>
+            <TabsTrigger value="notifications">Уведомления</TabsTrigger>
           </TabsList>
         </Tabs>
 
-        <div v-show="activeTab === 'personal'" class="profile-tab-panel">
-          <h2 class="profile-form-section-title">Основная информация</h2>
-          <p class="profile-form-section-desc">Обновите ваши персональные данные и контактную информацию.</p>
-
-          <div v-if="saveMessage" class="profile-save-message" :class="saveMessage.type === 'success' ? 'profile-save-message--success' : 'profile-save-message--error'" role="alert">
-            <CheckIcon v-if="saveMessage.type === 'success'" class="profile-save-message-icon" />
-            <CircleAlertIcon v-else class="profile-save-message-icon" />
-            <span>{{ saveMessage.text }}</span>
+        <div v-show="activeTab === 'personal'" class="flex flex-col gap-6">
+          <div class="grid gap-1">
+            <h2 class="text-lg font-semibold">Основная информация</h2>
+            <p class="text-sm text-muted-foreground">Обновите личные данные и контакты.</p>
           </div>
 
-          <div class="profile-form-grid">
-            <div class="profile-field">
-              <label class="profile-label" for="pf-first">Имя</label>
-              <Input id="pf-first" v-model="profileForm.firstName" type="text" class="profile-input" placeholder="Имя" />
-            </div>
-            <div class="profile-field">
-              <label class="profile-label" for="pf-last">Фамилия</label>
-              <Input id="pf-last" v-model="profileForm.lastName" type="text" class="profile-input" placeholder="Фамилия" />
-            </div>
-            <div class="profile-field">
-              <label class="profile-label" for="pf-patronymic">Отчество (необязательно)</label>
-              <Input id="pf-patronymic" v-model="profileForm.patronymic" type="text" class="profile-input" placeholder="Отчество" />
-            </div>
-            <div class="profile-field profile-field--full">
-              <label class="profile-label" for="pf-email">Электронная почта</label>
-              <div class="profile-input-wrap">
-                <MailIcon class="profile-input-icon" />
-                <Input id="pf-email" v-model="profileForm.email" type="email" class="profile-input pl-9" placeholder="email@example.com" />
-              </div>
-            </div>
-            <div class="profile-field profile-field--full">
-              <label class="profile-label" for="pf-phone">Номер телефона</label>
-              <div class="profile-input-wrap">
-                <PhoneIcon class="profile-input-icon" />
-                <Input id="pf-phone" v-model="profileForm.phone" type="tel" class="profile-input pl-9" placeholder="+7 (___) ___-__-__" />
-              </div>
-            </div>
-            <div class="profile-field">
-              <label class="profile-label" for="pf-position">Должность</label>
-              <UiSelect v-model="profileForm.position" :options="[...(POSITIONS).map((p) => ({ value: p, label: String(p) }))]" id="pf-position" class="profile-input profile-select" />
-            </div>
-            <div class="profile-field profile-field--full">
-              <label class="profile-label profile-label--with-info" for="pf-role">
-                Роль в системе
-                <InfoIcon class="profile-info-icon" title="Для изменения роли обратитесь в ИТ-отдел" :size="16" />
-              </label>
-              <div class="profile-input-wrap profile-input-wrap--readonly">
-                <LockIcon class="profile-input-icon profile-input-icon--lock" />
-                <input id="pf-role" type="text" class="profile-input" :value="roleLabel" readonly />
-              </div>
-              <p class="profile-field-hint">Для изменения роли обратитесь в ИТ-отдел.</p>
-            </div>
-            <div class="profile-field profile-field--full">
-              <label class="profile-label" for="pf-info">Дополнительная информация</label>
-              <Textarea id="pf-info" v-model="profileForm.additionalInfo" class="profile-input profile-textarea" rows="3" placeholder="Краткая информация о себе или обязанностях" />
-            </div>
-          </div>
+          <Alert v-if="saveMessage" :variant="saveMessage.type === 'success' ? 'default' : 'destructive'">
+            <CheckIcon v-if="saveMessage.type === 'success'" />
+            <CircleAlertIcon v-else />
+            <AlertDescription>{{ saveMessage.text }}</AlertDescription>
+          </Alert>
 
-          <div class="profile-form-actions">
-            <Button variant="default" type="button" class="profile-btn profile-btn--primary" :disabled="saving" @click="openSaveConfirmModal">
+          <FormGrid :cols="2">
+            <FormField label="Имя" for="pf-first">
+              <Input id="pf-first" v-model="profileForm.firstName" type="text" placeholder="Имя" />
+            </FormField>
+            <FormField label="Фамилия" for="pf-last">
+              <Input id="pf-last" v-model="profileForm.lastName" type="text" placeholder="Фамилия" />
+            </FormField>
+            <FormField label="Отчество" for="pf-patronymic" hint="Необязательно">
+              <Input id="pf-patronymic" v-model="profileForm.patronymic" type="text" placeholder="Отчество" />
+            </FormField>
+            <FormField label="Должность" for="pf-position">
+              <UiSelect id="pf-position" v-model="profileForm.position" block :options="POSITIONS.map((p) => ({ value: p, label: String(p) }))" />
+            </FormField>
+            <FormField label="Электронная почта" for="pf-email">
+              <InputGroup>
+                <InputGroupAddon><MailIcon /></InputGroupAddon>
+                <InputGroupInput id="pf-email" v-model="profileForm.email" type="email" placeholder="email@example.com" />
+              </InputGroup>
+            </FormField>
+            <FormField label="Телефон" for="pf-phone">
+              <InputGroup>
+                <InputGroupAddon><PhoneIcon /></InputGroupAddon>
+                <InputGroupInput id="pf-phone" v-model="profileForm.phone" type="tel" placeholder="+7 (___) ___-__-__" />
+              </InputGroup>
+            </FormField>
+            <FormField label="Роль в системе" for="pf-role" wide hint="Роль меняет ИТ-отдел.">
+              <InputGroup class="bg-muted/50">
+                <InputGroupAddon><LockIcon /></InputGroupAddon>
+                <InputGroupInput id="pf-role" :model-value="roleLabel" readonly class="cursor-default" />
+              </InputGroup>
+            </FormField>
+            <FormField label="Дополнительная информация" for="pf-info" wide>
+              <Textarea id="pf-info" v-model="profileForm.additionalInfo" rows="3" placeholder="Коротко о себе или обязанностях" />
+            </FormField>
+          </FormGrid>
+
+          <div class="flex justify-end border-t pt-6">
+            <Button type="button" :disabled="saving" @click="openSaveConfirmModal">
               {{ saving ? 'Сохранение…' : 'Сохранить изменения' }}
             </Button>
           </div>
         </div>
 
-        <div v-show="activeTab === 'security'" class="profile-tab-panel">
-          <h2 class="profile-form-section-title">Безопасность</h2>
-          <p class="profile-form-section-desc">Смена пароля и настройки входа.</p>
-
-          <div class="profile-password-section">
-            <h3 class="profile-password-heading">Смена пароля</h3>
-            <div v-if="passwordMessage" class="profile-save-message" :class="passwordMessage.type === 'success' ? 'profile-save-message--success' : 'profile-save-message--error'" role="alert">
-              <CheckIcon v-if="passwordMessage.type === 'success'" class="profile-save-message-icon" />
-              <CircleAlertIcon v-else class="profile-save-message-icon" />
-              <span>{{ passwordMessage.text }}</span>
-            </div>
-            <div class="profile-form-grid">
-              <div class="profile-field profile-field--full">
-                <label class="profile-label" for="pw-current">Текущий пароль</label>
-                <Input
-                  id="pw-current"
-                  v-model="passwordForm.currentPassword"
-                  type="password"
-                  class="profile-input"
-                  placeholder="Введите текущий пароль"
-                  autocomplete="current-password" />
-              </div>
-              <div class="profile-field profile-field--full">
-                <label class="profile-label" for="pw-new">Новый пароль</label>
-                <Input
-                  id="pw-new"
-                  v-model="passwordForm.newPassword"
-                  type="password"
-                  class="profile-input"
-                  placeholder="Не менее 6 символов"
-                  autocomplete="new-password" />
-              </div>
-              <div class="profile-field profile-field--full">
-                <label class="profile-label" for="pw-confirm">Подтвердите новый пароль</label>
-                <Input
-                  id="pw-confirm"
-                  v-model="passwordForm.confirmPassword"
-                  type="password"
-                  class="profile-input"
-                  placeholder="Повторите новый пароль"
-                  autocomplete="new-password" />
-              </div>
-            </div>
-            <div class="profile-form-actions">
-              <Button variant="default"
-                type="button"
-                class="profile-btn profile-btn--primary"
-                :disabled="changingPassword || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword"
-                @click="changePassword"
-              >
-                {{ changingPassword ? 'Сохранение…' : 'Изменить пароль' }}
-              </Button>
-            </div>
+        <div v-show="activeTab === 'security'" class="flex flex-col gap-6">
+          <div class="grid gap-1">
+            <h2 class="text-lg font-semibold">Смена пароля</h2>
+            <p class="text-sm text-muted-foreground">Новый пароль — не короче 6 символов.</p>
           </div>
 
-          <div class="profile-danger-zone">
-            <h3 class="profile-password-heading">Удаление аккаунта</h3>
-            <p class="profile-form-section-desc">
-              Аккаунт будет удалён без возможности восстановления. Связи с пользователем в задачах, полях и журналах будут очищены автоматически.
-            </p>
-            <Button variant="destructive" type="button" class="profile-btn profile-btn--danger" :disabled="deletingAccount" @click="openDeleteAccountModal">
+          <Alert v-if="passwordMessage" :variant="passwordMessage.type === 'success' ? 'default' : 'destructive'">
+            <CheckIcon v-if="passwordMessage.type === 'success'" />
+            <CircleAlertIcon v-else />
+            <AlertDescription>{{ passwordMessage.text }}</AlertDescription>
+          </Alert>
+
+          <FormGrid class="max-w-md">
+            <FormField label="Текущий пароль" for="pw-current">
+              <Input id="pw-current" v-model="passwordForm.currentPassword" type="password" autocomplete="current-password" />
+            </FormField>
+            <FormField label="Новый пароль" for="pw-new">
+              <Input id="pw-new" v-model="passwordForm.newPassword" type="password" autocomplete="new-password" />
+            </FormField>
+            <FormField label="Повторите новый пароль" for="pw-confirm">
+              <Input id="pw-confirm" v-model="passwordForm.confirmPassword" type="password" autocomplete="new-password" />
+            </FormField>
+          </FormGrid>
+          <div>
+            <Button
+              type="button"
+              :disabled="changingPassword || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword"
+              @click="changePassword"
+            >
+              {{ changingPassword ? 'Сохранение…' : 'Изменить пароль' }}
+            </Button>
+          </div>
+
+          <div class="flex flex-col gap-3 rounded-lg border border-destructive/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="grid gap-1">
+              <h3 class="text-sm font-medium">Удаление аккаунта</h3>
+              <p class="text-sm text-muted-foreground">
+                Аккаунт будет удалён без возможности восстановления. Связи с вами в задачах, полях и журналах очистятся автоматически.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              type="button"
+              class="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              :disabled="deletingAccount"
+              @click="openDeleteAccountModal"
+            >
               {{ deletingAccount ? 'Удаление…' : 'Удалить аккаунт' }}
             </Button>
           </div>
         </div>
 
-        <div v-show="activeTab === 'notifications'" class="profile-tab-panel">
-          <h2 class="profile-form-section-title">Уведомления</h2>
-          <p class="profile-form-section-desc">Настройте способ и частоту уведомлений.</p>
-          <p class="profile-placeholder">Раздел в разработке.</p>
+        <div v-show="activeTab === 'notifications'" class="flex flex-col gap-1">
+          <h2 class="text-lg font-semibold">Уведомления</h2>
+          <p class="text-sm text-muted-foreground">Раздел в разработке.</p>
         </div>
-      </Card>
-    </div>
-  </section>
+      </div>
+    </section>
 
-  <UiConfirmModal
-    v-if="showSaveConfirmModal"
-    title="Сохранить изменения?"
-    text="Изменения будут сохранены в вашем профиле."
-    confirm-label="Да, сохранить"
-    busy-label="Сохранение…"
-    :danger="false"
-    :busy="saving"
-    @cancel="closeSaveConfirmModal"
-    @confirm="confirmSaveProfile"
-  />
+    <UiConfirmModal
+      v-if="showSaveConfirmModal"
+      title="Сохранить изменения?"
+      text="Изменения будут сохранены в вашем профиле."
+      confirm-label="Сохранить"
+      busy-label="Сохранение…"
+      :danger="false"
+      :busy="saving"
+      @cancel="closeSaveConfirmModal"
+      @confirm="confirmSaveProfile"
+    />
 
-  <UiConfirmModal
-    v-if="showDeleteAccountModal"
-    title="Удалить аккаунт?"
-    confirm-label="Да, удалить"
-    :busy="deletingAccount"
-    @cancel="closeDeleteAccountModal"
-    @confirm="confirmDeleteAccount"
-  >
-    Вы удалите свой профиль и вход в систему. Это действие необратимо.
-    <span v-if="deleteAccountMessage" class="text-destructive mt-2 block">{{ deleteAccountMessage.text }}</span>
-  </UiConfirmModal>
+    <UiConfirmModal
+      v-if="showDeleteAccountModal"
+      title="Удалить аккаунт?"
+      confirm-label="Удалить аккаунт"
+      :busy="deletingAccount"
+      @cancel="closeDeleteAccountModal"
+      @confirm="confirmDeleteAccount"
+    >
+      Вы удалите свой профиль и вход в систему. Это действие необратимо.
+      <span v-if="deleteAccountMessage" class="mt-2 block text-destructive">{{ deleteAccountMessage.text }}</span>
+    </UiConfirmModal>
   </div>
 </template>
 
-<style scoped>
-@layer legacy {
-.profile-page-wrapper {
-  /* Один корневой элемент для Vue Transition — иначе переходы между страницами ломаются */
-  min-height: 0;
-}
-
-.profile-page {
-  padding: 0 var(--space-lg);
-  padding-bottom: var(--space-xl);
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.profile-header {
-  margin-bottom: var(--space-xl);
-}
-
-.profile-page-title {
-  margin: 0 0 4px 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.profile-page-subtitle {
-  margin: 0;
-  font-size: 0.9375rem;
-  color: var(--text-secondary);
-}
-
-.profile-layout {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: var(--space-xl);
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .profile-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-.profile-card-aside {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-}
-
-.card-rounded {
-  background: #fff;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: var(--space-lg);
-  box-shadow: var(--shadow-card);
-}
-
-[data-theme='dark'] .card-rounded {
-  background: var(--bg-panel);
-}
-
-.profile-user-card {
-  text-align: center;
-  padding: var(--space-xl);
-}
-
-.profile-avatar-wrap {
-  display: flex;
-  justify-content: center;
-}
-
-.profile-avatar {
-  position: relative;
-  width: 100%;
-  max-width: 200px;
-  aspect-ratio: 1 / 1;
-  height: auto;
-  border-radius: 50%;
-  background: var(--accent-green);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.75rem;
-  font-weight: 700;
-  margin: 0 auto 16px;
-  padding: 0;
-  border: none;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.profile-avatar:disabled {
-  cursor: progress;
-}
-
-.profile-avatar-initials {
-  line-height: 1;
-}
-
-.profile-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.profile-avatar-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.42);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.profile-avatar:hover .profile-avatar-overlay,
-.profile-avatar:focus-visible .profile-avatar-overlay,
-.profile-avatar--busy .profile-avatar-overlay {
-  opacity: 1;
-}
-
-.profile-avatar-spinner {
-  animation: profile-avatar-spin 0.8s linear infinite;
-}
-
-@keyframes profile-avatar-spin {
-  to { transform: rotate(360deg); }
-}
-
-.profile-avatar-input {
-  display: none;
-}
-
-.profile-avatar-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.profile-avatar-link {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--accent-green);
-  cursor: pointer;
-}
-
-.profile-avatar-link:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.profile-avatar-link:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.profile-avatar-link--danger {
-  color: var(--danger-red);
-}
-
-.profile-avatar-message {
-  margin: 0 0 10px 0;
-  font-size: 0.8125rem;
-}
-
-.profile-avatar-message--success {
-  color: var(--accent-green);
-}
-
-.profile-avatar-message--error {
-  color: var(--danger-red);
-}
-
-[data-theme='dark'] .profile-avatar {
-  color: #fff;
-}
-
-.profile-user-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.profile-user-position {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
-}
-
-.profile-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: var(--accent-green);
-  color: #fff;
-  font-size: 0.8125rem;
-  font-weight: 500;
-}
-
-.profile-block-title {
-  margin: 0 0 12px 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.profile-contact-row,
-.profile-activity-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-}
-
-.profile-contact-row:not(:last-child),
-.profile-activity-row:not(:last-child) {
-  border-bottom: 1px solid var(--border-color);
-}
-
-.profile-contact-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  color: var(--text-secondary);
-}
-
-.profile-activity-label {
-  color: var(--text-secondary);
-  min-width: 120px;
-}
-
-.profile-activity-value {
-  color: var(--text-primary);
-}
-
-.profile-status-active {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--accent-green);
-  font-weight: 500;
-}
-
-.profile-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-green);
-}
-
-.profile-form-area {
-  padding: var(--space-xl);
-}
-
-.profile-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: var(--space-lg);
-}
-
-.profile-tab {
-  padding: 10px 16px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
-  cursor: pointer;
-}
-
-.profile-tab:hover {
-  color: var(--text-primary);
-}
-
-.profile-tab--active {
-  color: var(--accent-green);
-  border-bottom-color: var(--accent-green);
-}
-
-.profile-form-section-title {
-  margin: 0 0 4px 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.profile-form-section-desc {
-  margin: 0 0 var(--space-lg) 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.profile-save-message {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  margin-bottom: var(--space-lg);
-}
-
-.profile-save-message--success {
-  background: color-mix(in srgb, var(--accent-green) 14%, transparent);
-  color: #166534;
-  border: 1px solid color-mix(in srgb, var(--accent-green) 28%, var(--border-color));
-}
-
-.profile-save-message--error {
-  background: color-mix(in srgb, var(--danger-red) 12%, transparent);
-  color: var(--danger-red);
-  border: 1px solid color-mix(in srgb, var(--danger-red) 30%, transparent);
-}
-
-.profile-save-message-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-[data-theme='dark'] .profile-save-message--success {
-  background: color-mix(in srgb, var(--accent-green) 18%, transparent);
-  color: color-mix(in srgb, white 82%, var(--accent-green));
-  border-color: color-mix(in srgb, var(--accent-green) 34%, var(--border-color));
-}
-
-[data-theme='dark'] .profile-save-message--error {
-  background: color-mix(in srgb, var(--danger-red) 22%, transparent);
-  color: color-mix(in srgb, white 80%, var(--danger-red));
-  border-color: color-mix(in srgb, var(--danger-red) 42%, transparent);
-}
-
-.profile-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-}
-
-.profile-field--full {
-  grid-column: 1 / -1;
-}
-
-.profile-label {
-  display: block;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-
-.profile-label--with-info {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.profile-info-icon {
-  color: var(--text-secondary);
-  cursor: help;
-}
-
-.profile-input {
-  width: 100%;
-  padding: 7px 12px;
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-xs);
-}
-
-.profile-input:focus {
-  outline: none;
-  border-color: var(--accent-green);
-  background: var(--bg-elevated);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-.profile-input[readonly] {
-  background: var(--chip-bg);
-  cursor: default;
-}
-
-[data-theme='dark'] .profile-input {
-  background: color-mix(in srgb, var(--bg-elevated) 86%, black);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-[data-theme='dark'] .profile-input:focus {
-  background: color-mix(in srgb, var(--bg-elevated) 94%, black);
-  border-color: var(--accent-green);
-}
-
-[data-theme='dark'] .profile-input[readonly] {
-  background: color-mix(in srgb, var(--bg-elevated) 70%, black);
-  color: var(--text-muted);
-}
-
-[data-theme='dark'] .profile-input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.8;
-}
-
-.profile-input-wrap {
-  position: relative;
-}
-
-.profile-input-wrap .profile-input {
-  padding-left: 40px;
-}
-
-.profile-input-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.profile-input-wrap--readonly .profile-input-icon--lock {
-  color: var(--text-secondary);
-}
-
-.profile-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
-
-[data-theme='dark'] .profile-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-}
-
-.profile-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-[data-theme='dark'] .profile-textarea {
-  background: color-mix(in srgb, var(--bg-elevated) 86%, black);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-[data-theme='dark'] .profile-textarea:focus {
-  background: color-mix(in srgb, var(--bg-elevated) 94%, black);
-}
-
-.profile-field-hint {
-  margin: 6px 0 0 0;
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-}
-
-.profile-form-actions {
-  margin-top: var(--space-md);
-}
-
-.profile-btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.profile-btn--primary {
-  background: var(--accent-green);
-  color: #fff;
-  border-color: var(--accent-green);
-}
-
-.profile-btn--primary:hover:not(:disabled) {
-  background: var(--accent-green-hover);
-  border-color: var(--accent-green-hover);
-}
-
-.profile-btn--secondary {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-.profile-btn--secondary:hover {
-  background: var(--border-color);
-}
-
-.profile-btn--danger {
-  background: color-mix(in srgb, var(--danger-red) 92%, #6e0f0f);
-  color: #fff;
-  border-color: color-mix(in srgb, var(--danger-red) 80%, #6e0f0f);
-}
-
-.profile-btn--danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--danger-red) 100%, #5f0d0d);
-  border-color: color-mix(in srgb, var(--danger-red) 95%, #5f0d0d);
-}
-
-[data-theme='dark'] .profile-btn--primary {
-  color: #fff;
-}
-
-[data-theme='dark'] .profile-btn--secondary {
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-.profile-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.profile-placeholder {
-  font-size: 0.9375rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.profile-password-section {
-  max-width: 480px;
-}
-
-.profile-password-heading {
-  margin: 0 0 var(--space-md) 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.profile-password-section .profile-save-message {
-  margin-bottom: var(--space-md);
-}
-
-.profile-danger-zone {
-  margin-top: var(--space-xl);
-  padding-top: var(--space-lg);
-  border-top: 1px dashed var(--border-color);
-}
-
-[data-theme='dark'] .profile-page-title,
-[data-theme='dark'] .profile-form-section-title {
-  color: var(--text-primary);
-}
-
-[data-theme='dark'] .profile-page-subtitle,
-[data-theme='dark'] .profile-form-section-desc,
-[data-theme='dark'] .profile-field-hint {
-  color: var(--text-secondary);
-}
-
-[data-theme='dark'] .profile-input-icon {
-  color: var(--text-secondary);
-}
-
-/* Модальное окно подтверждения сохранения профиля */
-.profile-confirm-backdrop {
-  z-index: 1000;
-  padding: var(--space-lg);
-}
-
-.profile-confirm-modal {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  max-width: 400px;
-  width: 100%;
-  box-shadow: var(--shadow-sm);
-}
-
-.profile-confirm-modal--danger {
-  border-color: color-mix(in srgb, var(--danger-red) 40%, var(--border-color));
-}
-
-.profile-confirm-title {
-  margin: 0 0 var(--space-sm) 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.profile-confirm-text {
-  margin: 0 0 var(--space-lg) 0;
-  font-size: 0.9375rem;
-  color: var(--text-secondary);
-}
-
-.profile-confirm-error {
-  margin: 0 0 var(--space-md) 0;
-  color: var(--danger-red);
-  font-size: 0.875rem;
-}
-
-.profile-confirm-actions {
-  display: flex;
-  gap: var(--space-md);
-  justify-content: flex-end;
-}
-
-@media (max-width: 600px) {
-  .profile-page {
-    padding: 0 var(--space-md);
-    padding-bottom: var(--space-lg);
-  }
-
-  .profile-user-card {
-    padding: var(--space-lg);
-  }
-
-  .profile-avatar {
-    max-width: 112px;
-    font-size: 2rem;
-    margin-bottom: 12px;
-  }
-
-  .profile-form-area {
-    padding: var(--space-lg);
-  }
-
-  .profile-form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .profile-contact-row,
-  .profile-activity-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .profile-activity-label {
-    min-width: 0;
-  }
-
-  .profile-tabs {
-    flex-wrap: wrap;
-  }
-
-  .profile-tab {
-    flex: 1 1 auto;
-    text-align: center;
-  }
-
-  .profile-page-title {
-    font-size: 1.25rem;
-  }
-}
-}
-</style>
