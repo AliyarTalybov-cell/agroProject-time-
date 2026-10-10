@@ -12,7 +12,8 @@ import './styles/ui.css'
 
 // Применить сохранённую тему до рендера
 const saved = localStorage.getItem('agro:theme')
-const theme = saved === 'light' || saved === 'dark' ? saved : 'dark'
+// По умолчанию светлая — как в useTheme, иначе при первом входе экран мигает тёмным.
+const theme = saved === 'light' || saved === 'dark' ? saved : 'light'
 document.documentElement.setAttribute('data-theme', theme)
 document.documentElement.style.colorScheme = theme
 

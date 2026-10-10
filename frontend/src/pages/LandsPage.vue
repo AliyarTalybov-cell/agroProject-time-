@@ -577,9 +577,9 @@ const cropRotationTypeOptions = computed(() => (
     : [...DEFAULT_CROP_ROTATION_TYPE_OPTIONS]
 ))
 const MELIORATION_TABS = [
-  { id: 'systems', label: 'Мелиоративные системы, расположенные на земельном участке' },
-  { id: 'forest', label: 'Мелиоративные защитные лесные насаждения' },
-  { id: 'events', label: 'Мелиоративные мероприятия' },
+  { id: 'systems', label: 'Мелиоративные системы, расположенные на земельном участке', short: 'Системы' },
+  { id: 'forest', label: 'Мелиоративные защитные лесные насаждения', short: 'Защитные лесные насаждения' },
+  { id: 'events', label: 'Мелиоративные мероприятия', short: 'Мероприятия' },
 ] as const
 const MELIORATION_KIND_MAP: Record<(typeof MELIORATION_TABS)[number]['id'], string> = {
   systems: 'systems',
@@ -3728,7 +3728,6 @@ onMounted(() => void reloadAll())
   <section class="lands-page">
     <header class="lands-top page-enter-item">
       <div class="lands-top-text">
-        <p v-if="!isDetailsMode" class="lands-subtitle">{{ landsListSubtitle }}</p>
       </div>
       <div class="lands-top-actions">
         <Button variant="outline"
@@ -3748,7 +3747,6 @@ onMounted(() => void reloadAll())
         >
           Отменить редактирование
         </Button>
-        <Button variant="default" v-if="!isDetailsMode && landsRootTab === 'registry'" type="button" class="lands-create-btn lands-btn--add" @click="openCreateLand">Новая земля</Button>
       </div>
     </header>
 
@@ -3756,7 +3754,7 @@ onMounted(() => void reloadAll())
     <div v-if="loading"><UiLoadingBar /></div>
 
     <div v-else class="lands-content">
-      <Card v-if="!isDetailsMode" class="lands-card page-enter-item gap-0">
+      <div v-if="!isDetailsMode" class="lands-list-shell">
         <div v-if="isPhone && (landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs')" class="mb-4">
           <UiSelect
             :model-value="landsRootTab"
@@ -3805,30 +3803,22 @@ onMounted(() => void reloadAll())
 
         <template v-if="landsRootTab === 'registry'">
           <div class="lands-table-top">
-            <h2>Реестр земель</h2>
+            <h2 class="sr-only">Реестр земель</h2>
             <div class="lands-table-tools">
-              <Input v-model.trim="landsSearch" class="lands-search" type="text" placeholder="Поиск по адресу или кадастровому номеру..." />
-              <div class="lands-export-btns">
-                <button
-                  type="button"
-                  class="lands-export-btn action_has has_saved"
-                  :disabled="!lands.length"
-                  title="Экспорт в PDF"
-                  @click="exportLandsToPdf"
-                >
-                  <FileTextIcon class="lands-export-icon" />
+              <Input v-model.trim="landsSearch" class="lands-search" type="text" placeholder="Поиск по адресу или кадастровому номеру" />
+              <div class="tw-scope flex flex-wrap items-center gap-2">
+                <Button variant="outline" type="button" :disabled="!lands.length" @click="exportLandsToPdf">
+                  <FileTextIcon />
                   PDF
-                </button>
-                <button
-                  type="button"
-                  class="lands-export-btn action_has has_saved"
-                  :disabled="!lands.length"
-                  title="Экспорт в Excel"
-                  @click="exportLandsToExcel"
-                >
-                  <FileSpreadsheetIcon class="lands-export-icon" />
+                </Button>
+                <Button variant="outline" type="button" :disabled="!lands.length" @click="exportLandsToExcel">
+                  <FileSpreadsheetIcon />
                   Excel
-                </button>
+                </Button>
+                <Button type="button" @click="openCreateLand">
+                  <PlusIcon />
+                  Новая земля
+                </Button>
               </div>
             </div>
           </div>
@@ -3869,29 +3859,28 @@ onMounted(() => void reloadAll())
         </template>
 
         <template v-else-if="landsRootTab === 'melioration'">
-          <Tabs :model-value="meliorationTab">
-            <TabsList>
-              <TabsTrigger :value="tab.id"
-              v-for="tab in MELIORATION_TABS"
-              :key="tab.id"
-             
-              @click="meliorationTab = tab.id">
-              {{ tab.label }}
-            </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div class="lands-melioration-head">
-            <div class="lands-export-btns">
-              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
-                <FileTextIcon class="lands-export-icon" />
+          <div class="tw-scope flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+            <Tabs :model-value="meliorationTab" class="min-w-0">
+              <TabsList class="h-auto max-w-full flex-wrap justify-start">
+                <TabsTrigger v-for="tab in MELIORATION_TABS" :key="tab.id" :value="tab.id" class="flex-none" :title="tab.label" @click="meliorationTab = tab.id">
+                  {{ tab.short }}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div class="flex flex-wrap items-center gap-2">
+              <Button variant="outline" type="button" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
+                <FileTextIcon />
                 PDF
-              </button>
-              <button type="button" class="lands-export-btn action_has has_saved" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
-                <FileSpreadsheetIcon class="lands-export-icon" />
+              </Button>
+              <Button variant="outline" type="button" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
+                <FileSpreadsheetIcon />
                 Excel
-              </button>
+              </Button>
+              <Button type="button" @click="openMeliorationModal">
+                <PlusIcon />
+                Добавить
+              </Button>
             </div>
-            <Button variant="default" type="button" class="lands-btn lands-btn--save lands-btn--add" @click="openMeliorationModal">Добавить</Button>
           </div>
           <div class="lands-table-wrap lands-table-wrap--melioration">
             <table class="lands-table" v-card-table>
@@ -4381,7 +4370,7 @@ onMounted(() => void reloadAll())
             <p v-else class="rounded-xl border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">Правообладателей пока нет.</p>
           </section>
         </template>
-      </Card>
+      </div>
 
       <Card v-if="isDetailsMode" class="lands-card page-enter-item gap-0">
         <template v-if="selectedLand">

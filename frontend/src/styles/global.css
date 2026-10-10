@@ -1,5 +1,12 @@
 /* Старые стили сайта — в нижнем слое legacy: классы компонентов shadcn-vue
    (слои Tailwind выше) их перекрывают, остальная вёрстка выглядит как раньше. */
+/* Смена темы — без переходов (см. useTheme.applyTheme). Вне слоёв, чтобы перебить любые transition. */
+[data-theme-switching] *,
+[data-theme-switching] *::before,
+[data-theme-switching] *::after {
+  transition: none !important;
+}
+
 @layer legacy {
 /* ——— Светлая тема по умолчанию ———
    Серые — палитра Zinc из shadcn-vue (эталон интерфейса, см. UI_PLAN.md),

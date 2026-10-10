@@ -30,7 +30,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       data-slot="drawer-content"
       v-bind="{ ...$attrs, ...forwarded }"
       :class="cn(
-        'group/drawer-content bg-background fixed z-50 flex h-auto flex-col',
+        'group/drawer-content bg-popover text-popover-foreground fixed z-50 flex h-auto flex-col',
         'will-change-transform transform-[translate3d(var(--drawer-swipe-movement-x,0px),var(--drawer-swipe-movement-y,0px),0)]',
         'transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] data-swiping:duration-0 data-swiping:select-none',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
