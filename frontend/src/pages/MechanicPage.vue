@@ -2,7 +2,16 @@
 import { Button } from '@/components/ui/shadcn/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu'
 import { Checkbox } from '@/components/ui/shadcn/checkbox'
-import { CheckIcon, ChevronDownIcon, PlusIcon, SaveIcon, XIcon } from '@lucide/vue'
+import { CheckIcon, ChevronDownIcon, CirclePauseIcon, PaperclipIcon, PlayIcon, PlusIcon, SendIcon, SquareIcon, XIcon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Input } from '@/components/ui/shadcn/input'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/shadcn/native-select'
+import { Progress } from '@/components/ui/shadcn/progress'
+import { Separator } from '@/components/ui/shadcn/separator'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import UiBadge, { type UiBadgeTone } from '@/components/ui/UiBadge.vue'
 import PickSheet from '@/components/ui/dialogs/PickSheet.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -623,6 +632,18 @@ function validatePlannedHectares(): number | null {
 
 function priorityLabel(priority: string): string {
   return priority === 'high' ? 'Высокий' : priority === 'low' ? 'Низкий' : 'Обычный'
+}
+
+function priorityTone(priority: string): UiBadgeTone {
+  return priority === 'high' ? 'danger' : priority === 'low' ? 'neutral' : 'warning'
+}
+
+/** Должность, а без неё — роль по-русски (в базе роли хранятся как manager / worker). */
+function employeeRoleLabel(row: EmployeeRow): string {
+  if (row.position?.trim()) return row.position.trim()
+  if (row.role === 'manager') return 'Руководитель'
+  if (row.role === 'worker') return 'Сотрудник'
+  return 'Сотрудник'
 }
 
 function isCalendarTaskSaving(taskId: string): boolean {
@@ -1335,396 +1356,326 @@ function addField() {
 </script>
 
 <template>
-  <section class="mechanic-page">
-    <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
-    <div class="mechanic-shell">
-      <main class="mechanic-main">
-        <section class="operator-hero page-enter-item" style="--enter-delay: 60ms">
-          <div class="operator-hero-left">
-            <span class="operator-pill">Текущая задача</span>
-            <h2 class="operator-title">{{ circleFieldLabel }}</h2>
-            <p class="operator-subtitle">{{ circleTaskLabel }}</p>
+  <section class="mechanic-page tw-scope flex min-w-0 flex-col gap-6">
+    <Alert v-if="loadError" variant="destructive">
+      <AlertDescription>{{ loadError }}</AlertDescription>
+    </Alert>
 
-            <div class="operator-time-box">
-              <div class="operator-time-label">Время в работе</div>
-              <div class="operator-time-value">{{ timerStartISO ? timerLabel : '00:00:00' }}</div>
-            </div>
-
-            <div class="operator-notes">
-              <label class="operator-notes-label" for="operator-note">Заметки оператора</label>
-              <div class="mechanic-dispatcher-wip" role="status" aria-live="polite">
-                <svg
-                  class="mechanic-wip-loader"
-                  viewBox="0 0 64 64"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path pathLength="360" d="M 56.3752 2 H 7.6248 C 7.2797 2 6.9999 2.268 6.9999 2.5985 V 61.4015 C 6.9999 61.7321 7.2797 62 7.6248 62 H 56.3752 C 56.7203 62 57.0001 61.7321 57.0001 61.4015 V 2.5985 C 57.0001 2.268 56.7203 2 56.3752 2 Z" />
-                  <path pathLength="360" d="M 55.7503 60.803 H 8.2497 V 3.1971 H 55.7503 V 60.803 Z" />
-                  <path pathLength="360" d="M 13.1528 55.5663 C 13.1528 55.8968 13.4326 56.1648 13.7777 56.1648 H 50.2223 C 50.5674 56.1648 50.8472 55.8968 50.8472 55.5663 V 8.4339 C 50.8472 8.1034 50.5674 7.8354 50.2223 7.8354 H 13.7777 C 13.4326 7.8354 13.1528 8.1034 13.1528 8.4339 V 55.5663 Z" />
-                </svg>
-                <div class="mechanic-dispatcher-wip-text">В разработке</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="operator-hero-sep" />
-
-          <div class="operator-hero-right">
-            <div class="operator-progress-head">
-              <div>
-                <div class="operator-progress-title">Прогресс выполнения</div>
-                <div class="operator-progress-meta" v-if="activeOperation?.plannedHectares && progressTotal > 0">
-                  Обработано {{ formatHectares(progressDone) }} из {{ formatHectares(activeOperation.plannedHectares) }} Га
-                </div>
-                <div class="operator-progress-meta" v-else-if="progressTotal > 0">
-                  Площадь поля: {{ formatHectares(progressTotal) }} Га
-                </div>
-                <div class="operator-progress-meta" v-else>
-                  Укажите площадь в карточке поля для расчета плана.
-                </div>
-              </div>
-              <div class="operator-progress-value">{{ progressPercent }}%</div>
-            </div>
-            <div class="operator-progress-track">
-              <div class="operator-progress-fill" :style="{ width: progressPercent + '%' }" />
-            </div>
-
-            <div class="operator-stats">
-              <div class="operator-stat-card">
-                <div class="operator-stat-label">Топливо</div>
-                <div class="operator-stat-value">{{ activeOperation?.equipmentFuelPercent ?? '—' }}%</div>
-              </div>
-            </div>
-
-            <div class="operator-actions">
-              <template v-if="!active && !workStartedAt">
-                <button
-                  class="operator-btn operator-btn-danger"
-                  type="button"
-                  :disabled="!currentField"
-                  @click="isReasonsOpen = true"
-                >
-                  Начать простой
-                </button>
-                <button
-                  class="operator-btn operator-btn-success"
-                  type="button"
-                  :disabled="!workOperationsList.length && !fields.length"
-                  @click="isOperationsOpen = true"
-                >
-                  Начать операцию
-                </button>
-              </template>
-              <template v-else-if="!active && workStartedAt">
-                <button
-                  class="operator-btn operator-btn-danger"
-                  type="button"
-                  @click="openFinishNotesModal('operation')"
-                >
-                  Завершить операцию
-                </button>
-                <button
-                  v-if="!isOperationPaused"
-                  class="operator-btn operator-btn-warning"
-                  type="button"
-                  @click="pauseOperation"
-                >
-                  Пауза / Простой
-                </button>
-                <button
-                  v-else
-                  class="operator-btn operator-btn-success"
-                  type="button"
-                  @click="resumeOperation"
-                >
-                  Продолжить
-                </button>
-              </template>
-              <button
-                v-else
-                class="operator-btn operator-btn-danger"
-                type="button"
-                @click="openFinishNotesModal('downtime')"
-              >
-                Завершить простой
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section class="operator-fields page-enter-item" style="--enter-delay: 80ms">
-          <div class="operator-fields-head">
-            <div class="operator-fields-title">Поля</div>
-            <div class="operator-fields-hint">Листайте и выберите поле</div>
-          </div>
-          <div ref="fieldsDropdownRef" class="operator-fields-dropdown">
-            <DropdownMenu v-model:open="isFieldsOpen">
-              <DropdownMenuTrigger as-child :disabled="isFieldLocked">
-                <button type="button" class="operator-fields-trigger" :disabled="isFieldLocked">
-                  <span class="operator-fields-trigger-main">{{ currentField?.name ?? 'Выберите поле' }}</span>
-                  <span class="operator-fields-trigger-sub">{{ currentField?.operation ?? 'Операция не выбрана' }}</span>
-                  <span class="operator-fields-trigger-chev" :class="{ 'operator-fields-trigger-chev--open': isFieldsOpen }">
-                    <ChevronDownIcon :size="16" />
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" class="operator-fields-menu-content">
-                <DropdownMenuItem
-                  v-for="field in dropdownFields"
-                  :key="field.id"
-                  :disabled="isFieldLocked"
-                  class="operator-fields-menu-item"
-                  @select="pickField(field.id)"
-                >
-                  <span class="operator-fields-menu-name">{{ field.name }}</span>
-                  <span class="operator-fields-menu-op">{{ field.operation }}</span>
-                  <CheckIcon v-if="currentField?.id === field.id" :size="16" class="operator-fields-menu-check" />
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem @select="openAddField">
-                  <PlusIcon :size="16" />
-                  Добавить поле
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </section>
-
-        <section class="mechanic-dashboard-grid page-enter-item" style="--enter-delay: 90ms">
-          <article class="mechanic-panel mechanic-panel-next">
-            <div class="mechanic-panel-head">
-              <h3 class="mechanic-panel-title">Следующая задача</h3>
-              <router-link to="/task-management" class="mechanic-panel-link">Все задачи</router-link>
-            </div>
-            <div v-if="userTasksLoading" class="mechanic-today-tasks-loading">
-              <UiLoadingBar size="compact" />
-            </div>
-            <ul v-else-if="nextUserTasks.length" class="mechanic-next-list">
-              <li
-                v-for="t in nextUserTasks"
-                :key="t.id"
-                class="mechanic-next-item mechanic-next-item--clickable"
-                role="button"
-                tabindex="0"
-                @click="openTaskInTaskManagement(t)"
-                @keydown.enter="openTaskInTaskManagement(t)"
-              >
-                <div class="mechanic-next-meta">
-                  <span class="mechanic-next-number">#{{ t.number }}</span>
-                  <span class="mechanic-next-field">{{ t.field }}</span>
-                </div>
-                <div class="mechanic-next-title">{{ t.title }}</div>
-                <div class="mechanic-next-actions">
-                  <span
-                    class="mechanic-today-task-priority"
-                    :class="{
-                      'mechanic-today-task-priority--high': t.priority === 'high',
-                      'mechanic-today-task-priority--low': t.priority === 'low',
-                    }"
-                  >
-                    {{ priorityLabel(t.priority) }}
-                  </span>
-                  <Button variant="default"
-                    type="button"
-                    class="mechanic-task-run-btn"
-                    :disabled="!!workStartedAt || !!active"
-                    @click.stop
-                    @click="startOperationByTask(t)"
-                  >
-                    В работу
-                  </Button>
-                </div>
-              </li>
-            </ul>
-            <p v-else class="mechanic-today-tasks-empty">Нет активных задач, назначенных на вас</p>
-
-            <div class="mechanic-calendar-block">
-              <div class="mechanic-calendar-title">Задачи из календаря (сегодня)</div>
-              <div v-if="calendarTasksLoading" class="mechanic-today-tasks-loading">
-                <UiLoadingBar size="compact" />
-              </div>
-              <ul v-else-if="calendarTasksToday.length" class="mechanic-calendar-list">
-                <li
-                  v-for="task in calendarTasksToday"
-                  :key="task.id"
-                  class="mechanic-calendar-item"
-                  :class="{ 'mechanic-calendar-item--done': !!task.completedAt }"
-                >
-                  <Checkbox
-                    :id="`calendar-task-${task.id}`"
-                    class="size-5"
-                    :model-value="!!task.completedAt"
-                    :disabled="isCalendarTaskSaving(task.id)"
-                    aria-label="Задача выполнена"
-                    @update:model-value="toggleCalendarTaskCompleted(task.id)"
-                  />
-                  <div class="mechanic-calendar-meta">
-                    <span class="mechanic-calendar-time">{{ formatCalendarTaskTime(task) }}</span>
-                    <span
-                      class="mechanic-today-task-priority"
-                      :class="{
-                        'mechanic-today-task-priority--high': task.priority === 'high',
-                        'mechanic-today-task-priority--low': task.priority === 'low',
-                      }"
-                    >
-                      {{ priorityLabel(task.priority) }}
-                    </span>
-                    <span v-if="isCalendarTaskSaving(task.id)" class="mechanic-calendar-saving">Сохранение...</span>
-                  </div>
-                </li>
-              </ul>
-              <p v-else class="mechanic-today-tasks-empty">На сегодня в календаре задач нет</p>
-            </div>
-          </article>
-
-          <article class="mechanic-panel mechanic-panel-middle">
-            <div class="mechanic-panel-head">
-              <h3 class="mechanic-panel-title">Техника</h3>
-            </div>
-            <div v-if="hasActiveEquipmentOperation" class="mechanic-equipment-hero">
-              <div class="mechanic-equipment-hero-label">{{ hasActiveTaskOperation ? 'Активная задача' : 'Активная операция' }}</div>
-              <div class="mechanic-equipment-hero-title">{{ hasActiveTaskOperation ? activeTaskLabel : (activeOperation?.operation || 'Операция без задачи') }}</div>
-              <div class="mechanic-equipment-hero-sub">{{ activeEquipmentLabel }}</div>
-              <div class="mechanic-equipment-hero-chip">
-                Топливо: {{ activeOperation?.equipmentFuelPercent ?? '—' }}%
-              </div>
-            </div>
-            <div v-else class="mechanic-equipment-empty">
-              Техника появится после старта операции и выбора техники.
-            </div>
-            <div class="mechanic-dispatcher-card">
-              <div class="mechanic-dispatcher-title">
-                <span>Сообщить о проблеме</span>
-              </div>
-              <p class="mechanic-dispatcher-desc">Поломка техники, препятствие на поле или другие трудности.</p>
-              <textarea
-                v-model="issueReportText"
-                class="mechanic-dispatcher-textarea"
-                placeholder="Опишите проблему коротко..."
-                maxlength="300"
-              />
-              <div v-if="issueReportFile" class="mechanic-dispatcher-file-pill">
-                <span class="mechanic-dispatcher-file-name">{{ issueReportFile.name }}</span>
-                <span class="mechanic-dispatcher-file-size">{{ formatIssueFileSize(issueReportFile.size) }}</span>
-                <Button variant="ghost" size="icon-sm" type="button" class="mechanic-dispatcher-file-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" @click="removeIssueFile"><XIcon :size="16" aria-label="Убрать файл" /></Button>
-              </div>
-              <input
-                ref="issueFileInputRef"
-                class="mechanic-dispatcher-file-input"
-                type="file"
-                @change="onIssueFilePicked"
-              />
-              <div class="mechanic-dispatcher-actions">
-                <button
-                  type="button"
-                  class="action_has has_saved mechanic-dispatcher-attach"
-                  :disabled="issueReportBusy"
-                  @click="openIssueFilePicker"
-                  aria-label="Добавить файл"
-                >
-                  <SaveIcon aria-hidden="true" :size="20" />
-                </button>
-                <Button variant="default"
-                  type="button"
-                  class="mechanic-dispatcher-send"
-                  :disabled="!issueCanSubmit || issueReportBusy"
-                  @click="openIssueDispatcherPicker"
-                >
-                  <span class="mechanic-dispatcher-send-msg" aria-hidden="true"></span>
-                  <span class="mechanic-dispatcher-send-text">{{ issueReportBusy ? 'Отправка...' : 'Отправить диспетчеру' }}</span>
-                </Button>
-              </div>
-              <p v-if="issueReportError" class="mechanic-dispatcher-error">{{ issueReportError }}</p>
-              <p v-else-if="issueReportSuccess" class="mechanic-dispatcher-success">{{ issueReportSuccess }}</p>
-            </div>
-          </article>
-
-          <article class="mechanic-panel mechanic-panel-journal">
-            <div class="mechanic-panel-head">
-              <h3 class="mechanic-panel-title">Журнал смены</h3>
-            </div>
-            <ul class="mechanic-journal-list">
-              <li v-if="!shiftJournalItems.length" class="mechanic-journal-empty">
-                Записей пока нет. После начала или завершения операции здесь появится история смены.
-              </li>
-              <li v-for="item in shiftJournalItems" :key="item.id" class="mechanic-journal-item">
-                <span class="mechanic-journal-dot" :class="{ 'mechanic-journal-dot--active': item.isActive }" />
-                <div class="mechanic-journal-content">
-                  <div class="mechanic-journal-time">{{ item.timeLabel }}</div>
-                  <div class="mechanic-journal-title">{{ item.title }}</div>
-                  <div class="mechanic-journal-sub">{{ item.subtitle }}</div>
-                </div>
-              </li>
-            </ul>
-          </article>
-        </section>
-      </main>
-    </div>
-
-    <UiModal v-if="issueDispatcherModalOpen" title="Кому отправить сообщение о проблеме?" :max-width="560" @close="closeIssueDispatcherPicker">
-      <div class="mechanic-modal modal--issue-recipients">
-        
-        <p class="modal-text modal-text-muted">Выберите одного или нескольких сотрудников. Сообщение будет отправлено в чат как важное.</p>
-        <div class="modal-form modal-form--issue-filters">
-          <label class="modal-field">
-            <span class="modal-label">Должность</span>
-            <select v-model="issuePositionFilter" class="modal-select" @change="loadIssueRecipients">
-              <option value="">Все должности</option>
-              <option v-for="pos in issuePositions" :key="pos.id" :value="pos.name">{{ pos.name }}</option>
-            </select>
-          </label>
-          <label class="modal-field">
-            <span class="modal-label">Поиск</span>
-            <input
-              v-model.trim="issueSearch"
-              class="modal-input"
-              type="search"
-              placeholder="ФИО, email, телефон..."
-              @input="loadIssueRecipients"
-            />
-          </label>
+    <!-- Текущая работа -->
+    <section class="grid gap-6 rounded-xl border bg-card p-4 shadow-xs md:p-6 lg:grid-cols-2 lg:gap-8">
+      <div class="flex min-w-0 flex-col gap-4">
+        <div class="grid gap-1">
+          <span class="text-xs text-muted-foreground">Текущая задача</span>
+          <h2 class="text-2xl leading-tight font-semibold">{{ circleFieldLabel }}</h2>
+          <p class="text-base font-medium text-primary dark:text-ring">{{ circleTaskLabel }}</p>
         </div>
-        <div v-if="issueDispatchersLoading" class="modal-text modal-text--loading">
-          <UiLoadingBar size="compact" />
+
+        <div class="rounded-lg bg-muted/60 p-4">
+          <div class="text-xs text-muted-foreground">Время в работе</div>
+          <div class="mt-1 text-3xl font-semibold tabular-nums">{{ timerStartISO ? timerLabel : '00:00:00' }}</div>
         </div>
-        <div v-else-if="!issueDispatchers.length" class="modal-text modal-text-muted">
-          Подходящих сотрудников не найдено.
+
+        <div class="grid gap-2">
+          <span class="text-sm font-medium">Заметки оператора</span>
+          <p class="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground" role="status">В разработке</p>
         </div>
-        <div v-else class="modal-issue-recipient-list">
-          <label
-            v-for="d in issueDispatchers"
-            :key="d.id"
-            class="modal-issue-recipient-item"
-            :class="{ 'modal-issue-recipient-item--selected': selectedIssueRecipientIds.includes(d.id) }"
-          >
-            <Checkbox
-              :model-value="selectedIssueRecipientIds.includes(d.id)"
-              @update:model-value="toggleIssueRecipient(d.id)"
-            />
-            <span class="modal-issue-recipient-main">{{ d.display_name || d.email || 'Сотрудник' }}</span>
-            <span class="modal-issue-recipient-meta">{{ d.position || d.role || '—' }} · {{ d.email || 'без email' }}</span>
-          </label>
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-4 lg:border-l lg:pl-8">
+        <div class="flex items-start justify-between gap-4">
+          <div class="grid gap-1">
+            <span class="text-sm font-medium">Прогресс выполнения</span>
+            <span v-if="activeOperation?.plannedHectares && progressTotal > 0" class="text-xs text-muted-foreground">
+              Обработано {{ formatHectares(progressDone) }} из {{ formatHectares(activeOperation.plannedHectares) }} га
+            </span>
+            <span v-else-if="progressTotal > 0" class="text-xs text-muted-foreground">Площадь поля: {{ formatHectares(progressTotal) }} га</span>
+            <span v-else class="text-xs text-muted-foreground">Укажите площадь в карточке поля для расчёта плана.</span>
+          </div>
+          <span class="text-3xl font-semibold text-primary tabular-nums dark:text-ring">{{ progressPercent }}%</span>
         </div>
-        <p v-if="selectedIssueRecipientIds.length" class="modal-issue-selected">
-          Выбрано получателей: {{ selectedIssueRecipientIds.length }}
-        </p>
-        <div class="modal-actions modal-actions--two">
-          <UiButton size="lg" :disabled="issueReportBusy" @click="closeIssueDispatcherPicker">
-            Отмена
-          </UiButton>
-          <Button variant="default"
-            type="button"
-            class="mechanic-dispatcher-send modal-issue-submit"
-            :disabled="issueReportBusy || !issueCanSendNow"
-            @click="submitIssueToDispatcher"
-          >
-            <span class="mechanic-dispatcher-send-msg" aria-hidden="true"></span>
-            <span class="mechanic-dispatcher-send-text">{{ issueReportBusy ? 'Отправка...' : 'Отправить' }}</span>
+        <Progress :model-value="progressPercent" class="h-2" aria-label="Прогресс выполнения" />
+
+        <div class="w-fit min-w-36 rounded-lg border p-3">
+          <div class="text-xs text-muted-foreground">Топливо</div>
+          <div class="mt-1 text-xl font-semibold tabular-nums">{{ activeOperation?.equipmentFuelPercent ?? '—' }}%</div>
+        </div>
+
+        <div class="mt-auto grid gap-2 sm:grid-cols-2">
+          <template v-if="!active && !workStartedAt">
+            <Button
+              variant="outline"
+              size="lg"
+              type="button"
+              class="h-12 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              :disabled="!currentField"
+              @click="isReasonsOpen = true"
+            >
+              <CirclePauseIcon />
+              Начать простой
+            </Button>
+            <Button size="lg" type="button" class="h-12" :disabled="!workOperationsList.length && !fields.length" @click="isOperationsOpen = true">
+              <PlayIcon />
+              Начать операцию
+            </Button>
+          </template>
+          <template v-else-if="!active && workStartedAt">
+            <Button
+              v-if="!isOperationPaused"
+              variant="outline"
+              size="lg"
+              type="button"
+              class="h-12"
+              @click="pauseOperation"
+            >
+              <CirclePauseIcon />
+              Пауза / простой
+            </Button>
+            <Button v-else size="lg" type="button" class="h-12" @click="resumeOperation">
+              <PlayIcon />
+              Продолжить
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              type="button"
+              class="h-12 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              @click="openFinishNotesModal('operation')"
+            >
+              <SquareIcon />
+              Завершить операцию
+            </Button>
+          </template>
+          <Button v-else size="lg" type="button" class="h-12 sm:col-span-2" @click="openFinishNotesModal('downtime')">
+            <SquareIcon />
+            Завершить простой
           </Button>
         </div>
       </div>
+    </section>
+
+    <!-- Выбор поля -->
+    <section class="grid gap-2">
+      <div class="flex items-baseline justify-between gap-2">
+        <span class="text-sm font-medium">Поле</span>
+        <span v-if="isFieldLocked" class="text-xs text-muted-foreground">Поле меняется после завершения работы</span>
+      </div>
+      <div ref="fieldsDropdownRef">
+        <DropdownMenu v-model:open="isFieldsOpen">
+          <DropdownMenuTrigger as-child :disabled="isFieldLocked">
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left shadow-xs outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="isFieldLocked"
+            >
+              <span class="grid min-w-0 flex-1">
+                <span class="truncate text-sm font-medium">{{ currentField?.name ?? 'Выберите поле' }}</span>
+                <span class="truncate text-xs text-muted-foreground">{{ currentField?.operation ?? 'Операция не выбрана' }}</span>
+              </span>
+              <ChevronDownIcon class="size-4 shrink-0 text-muted-foreground transition-transform" :class="{ 'rotate-180': isFieldsOpen }" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" class="max-h-80 w-(--reka-dropdown-menu-trigger-width) overflow-y-auto">
+            <DropdownMenuItem
+              v-for="field in dropdownFields"
+              :key="field.id"
+              :disabled="isFieldLocked"
+              class="items-start py-2"
+              @select="pickField(field.id)"
+            >
+              <span class="grid min-w-0 flex-1">
+                <span class="truncate font-medium">{{ field.name }}</span>
+                <span class="truncate text-xs text-muted-foreground">{{ field.operation }}</span>
+              </span>
+              <CheckIcon v-if="currentField?.id === field.id" class="mt-0.5 size-4 shrink-0 text-primary" />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @select="openAddField">
+              <PlusIcon />
+              Добавить поле
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </section>
+
+    <section class="grid items-start gap-6 lg:grid-cols-3">
+      <!-- Задачи -->
+      <article class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-base font-semibold">Следующая задача</h3>
+          <router-link to="/task-management" class="text-sm font-medium text-primary no-underline hover:underline dark:text-ring">Все задачи</router-link>
+        </div>
+        <UiLoadingBar v-if="userTasksLoading" size="compact" />
+        <ul v-else-if="nextUserTasks.length" class="grid gap-2">
+          <li
+            v-for="t in nextUserTasks"
+            :key="t.id"
+            class="grid cursor-pointer gap-2 rounded-lg border p-3 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+            role="button"
+            tabindex="0"
+            @click="openTaskInTaskManagement(t)"
+            @keydown.enter="openTaskInTaskManagement(t)"
+          >
+            <div class="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+              <span class="tabular-nums">#{{ t.number }}</span>
+              <span class="truncate">{{ t.field }}</span>
+            </div>
+            <div class="text-sm font-medium">{{ t.title }}</div>
+            <div class="flex items-center justify-between gap-2">
+              <UiBadge :tone="priorityTone(t.priority)">{{ priorityLabel(t.priority) }}</UiBadge>
+              <Button size="sm" type="button" :disabled="!!workStartedAt || !!active" @click.stop="startOperationByTask(t)">
+                <PlayIcon />
+                В работу
+              </Button>
+            </div>
+          </li>
+        </ul>
+        <p v-else class="text-sm text-muted-foreground">Нет активных задач, назначенных на вас</p>
+
+        <Separator />
+
+        <div class="grid gap-3">
+          <h4 class="text-sm font-medium">Задачи из календаря на сегодня</h4>
+          <UiLoadingBar v-if="calendarTasksLoading" size="compact" />
+          <ul v-else-if="calendarTasksToday.length" class="grid gap-2">
+            <li
+              v-for="task in calendarTasksToday"
+              :key="task.id"
+              class="flex items-center gap-3"
+              :class="{ 'opacity-60': !!task.completedAt }"
+            >
+              <Checkbox
+                :id="`calendar-task-${task.id}`"
+                class="size-5"
+                :model-value="!!task.completedAt"
+                :disabled="isCalendarTaskSaving(task.id)"
+                aria-label="Задача выполнена"
+                @update:model-value="toggleCalendarTaskCompleted(task.id)"
+              />
+              <label :for="`calendar-task-${task.id}`" class="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-sm">
+                <span class="tabular-nums" :class="{ 'line-through': !!task.completedAt }">{{ formatCalendarTaskTime(task) }}</span>
+                <UiBadge :tone="priorityTone(task.priority)">{{ priorityLabel(task.priority) }}</UiBadge>
+                <span v-if="isCalendarTaskSaving(task.id)" class="text-xs text-muted-foreground">Сохранение…</span>
+              </label>
+            </li>
+          </ul>
+          <p v-else class="text-sm text-muted-foreground">На сегодня в календаре задач нет</p>
+        </div>
+      </article>
+
+      <div class="flex min-w-0 flex-col gap-6">
+        <!-- Техника -->
+        <article class="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+          <h3 class="text-base font-semibold">Техника</h3>
+          <div v-if="hasActiveEquipmentOperation" class="grid gap-1 rounded-lg bg-muted/60 p-3">
+            <span class="text-xs text-muted-foreground">{{ hasActiveTaskOperation ? 'Активная задача' : 'Активная операция' }}</span>
+            <span class="text-sm font-medium">{{ hasActiveTaskOperation ? activeTaskLabel : (activeOperation?.operation || 'Операция без задачи') }}</span>
+            <span class="text-xs text-muted-foreground">{{ activeEquipmentLabel }}</span>
+            <UiBadge tone="neutral" class="mt-1 w-fit">Топливо: {{ activeOperation?.equipmentFuelPercent ?? '—' }}%</UiBadge>
+          </div>
+          <p v-else class="text-sm text-muted-foreground">Техника появится после старта операции и выбора техники.</p>
+        </article>
+
+        <!-- Сообщить о проблеме -->
+        <article class="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+          <div class="grid gap-1">
+            <h3 class="text-base font-semibold">Сообщить о проблеме</h3>
+            <p class="text-sm text-muted-foreground">Поломка техники, препятствие на поле или другие трудности.</p>
+          </div>
+          <FormField label="Что случилось" for="issue-text" :count="issueReportText.length" :max="300">
+            <Textarea id="issue-text" v-model="issueReportText" class="min-h-24" placeholder="Опишите проблему коротко" maxlength="300" />
+          </FormField>
+          <div v-if="issueReportFile" class="flex min-w-0 items-center gap-2 rounded-md border bg-muted/40 py-1 pr-1 pl-3 text-sm">
+            <PaperclipIcon class="size-4 shrink-0 text-muted-foreground" />
+            <span class="truncate">{{ issueReportFile.name }}</span>
+            <span class="shrink-0 text-xs text-muted-foreground">{{ formatIssueFileSize(issueReportFile.size) }}</span>
+            <Button variant="ghost" size="icon-sm" type="button" class="ml-auto shrink-0 text-muted-foreground hover:text-destructive" aria-label="Убрать файл" @click="removeIssueFile">
+              <XIcon />
+            </Button>
+          </div>
+          <input ref="issueFileInputRef" class="hidden" type="file" @change="onIssueFilePicked" />
+          <div class="grid gap-2">
+            <Button variant="outline" type="button" :disabled="issueReportBusy" @click="openIssueFilePicker">
+              <PaperclipIcon />
+              Прикрепить файл
+            </Button>
+            <Button type="button" :disabled="!issueCanSubmit || issueReportBusy" @click="openIssueDispatcherPicker">
+              <SendIcon />
+              {{ issueReportBusy ? 'Отправка…' : 'Отправить диспетчеру' }}
+            </Button>
+          </div>
+          <p v-if="issueReportError" class="text-sm text-destructive" role="alert">{{ issueReportError }}</p>
+          <p v-else-if="issueReportSuccess" class="text-sm text-emerald-700 dark:text-ring" role="status">{{ issueReportSuccess }}</p>
+        </article>
+      </div>
+
+      <!-- Журнал смены -->
+      <article class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+        <h3 class="text-base font-semibold">Журнал смены</h3>
+        <p v-if="!shiftJournalItems.length" class="text-sm text-muted-foreground">
+          Записей пока нет. После начала или завершения операции здесь появится история смены.
+        </p>
+        <ol v-else class="grid gap-4">
+          <li v-for="item in shiftJournalItems" :key="item.id" class="flex gap-3">
+            <span
+              class="mt-1.5 size-2 shrink-0 rounded-full"
+              :class="item.isActive ? 'bg-primary ring-4 ring-primary/15 dark:bg-ring' : 'bg-muted-foreground/40'"
+              aria-hidden="true"
+            />
+            <div class="grid min-w-0 gap-0.5">
+              <span class="text-xs text-muted-foreground tabular-nums">{{ item.timeLabel }}</span>
+              <span class="text-sm font-medium">{{ item.title }}</span>
+              <span class="text-xs text-muted-foreground">{{ item.subtitle }}</span>
+            </div>
+          </li>
+        </ol>
+      </article>
+    </section>
+
+    <UiModal
+      v-if="issueDispatcherModalOpen"
+      title="Кому отправить сообщение о проблеме?"
+      description="Выберите одного или нескольких сотрудников — сообщение придёт им в чат как важное."
+      :max-width="560"
+      @close="closeIssueDispatcherPicker"
+    >
+      <div class="tw-scope grid gap-4">
+        <FormGrid :cols="2">
+          <FormField label="Должность" for="issue-position">
+            <NativeSelect id="issue-position" v-model="issuePositionFilter" @change="loadIssueRecipients">
+              <NativeSelectOption value="">Все должности</NativeSelectOption>
+              <NativeSelectOption v-for="pos in issuePositions" :key="pos.id" :value="pos.name">{{ pos.name }}</NativeSelectOption>
+            </NativeSelect>
+          </FormField>
+          <FormField label="Поиск" for="issue-search">
+            <Input id="issue-search" v-model.trim="issueSearch" type="search" placeholder="ФИО, email, телефон" @input="loadIssueRecipients" />
+          </FormField>
+        </FormGrid>
+        <UiLoadingBar v-if="issueDispatchersLoading" size="compact" />
+        <p v-else-if="!issueDispatchers.length" class="py-6 text-center text-sm text-muted-foreground">Подходящих сотрудников не найдено.</p>
+        <div v-else class="grid max-h-72 overflow-y-auto rounded-lg border p-1">
+          <label
+            v-for="d in issueDispatchers"
+            :key="d.id"
+            class="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/60"
+            :class="{ 'bg-muted': selectedIssueRecipientIds.includes(d.id) }"
+          >
+            <Checkbox :model-value="selectedIssueRecipientIds.includes(d.id)" @update:model-value="toggleIssueRecipient(d.id)" />
+            <span class="grid min-w-0">
+              <span class="truncate text-sm font-medium">{{ d.display_name || d.email || 'Сотрудник' }}</span>
+              <span class="truncate text-xs text-muted-foreground">{{ employeeRoleLabel(d) }}<template v-if="d.email && d.display_name"> · {{ d.email }}</template></span>
+            </span>
+          </label>
+        </div>
+      </div>
+      <template #actions>
+        <span v-if="selectedIssueRecipientIds.length" class="mr-auto self-center text-sm text-muted-foreground">Выбрано: {{ selectedIssueRecipientIds.length }}</span>
+        <UiButton :disabled="issueReportBusy" @click="closeIssueDispatcherPicker">Отмена</UiButton>
+        <UiButton variant="primary" :disabled="issueReportBusy || !issueCanSendNow" @click="submitIssueToDispatcher">
+          <SendIcon />
+          {{ issueReportBusy ? 'Отправка…' : 'Отправить' }}
+        </UiButton>
+      </template>
     </UiModal>
 
     <PickSheet
@@ -1744,247 +1695,168 @@ function addField() {
         : fields.map((field) => ({ key: 'f-' + field.id, title: `${field.name} — ${field.operation}`, description: 'Начать работу по этому полю', onPick: () => startOperation(field) }))"
     />
 
-    <!-- Modal: Будет ли использована техника? -->
-    <UiModal v-if="isEquipmentChoiceOpen" title="Будет ли использована техника?" :max-width="460" @close="closeEquipmentChoiceAndReturnToSheet()">
-      <div class="mechanic-modal ">
-        
-        <p class="modal-text modal-text-muted">
-          Если техника нужна — выберите её и укажите параметры (топливо и состояние).
-        </p>
-        <p v-if="startOperationPlanError" class="modal-text modal-hectares-error">
-          {{ startOperationPlanError }}
-        </p>
-        <div class="modal-actions modal-actions--two">
-          <UiButton size="lg" @click="startOperationConfirmedWithoutEquipment">
-            Нет
-          </UiButton>
-          <UiButton variant="primary" size="lg" @click="openEquipmentModal">
-            Да
-          </UiButton>
-        </div>
-      </div>
+    <UiModal
+      v-if="isEquipmentChoiceOpen"
+      title="Будет ли использована техника?"
+      description="Если техника нужна — выберите её и укажите топливо и состояние."
+      :max-width="460"
+      @close="closeEquipmentChoiceAndReturnToSheet()"
+    >
+      <Alert v-if="startOperationPlanError" variant="destructive" class="tw-scope">
+        <AlertDescription>{{ startOperationPlanError }}</AlertDescription>
+      </Alert>
+      <template #actions>
+        <UiButton @click="startOperationConfirmedWithoutEquipment">Без техники</UiButton>
+        <UiButton variant="primary" @click="openEquipmentModal">Выбрать технику</UiButton>
+      </template>
     </UiModal>
 
-    <!-- Modal: Выбор техники + топливо/состояние -->
-    <UiModal v-if="isEquipmentModalOpen" title="Техника для операции" :max-width="460" @close="backFromEquipmentModalToChoice()">
-      <div class="mechanic-modal ">
-        
-
-        <div v-if="equipmentLoading" class="modal-text modal-text--loading">
-          <UiLoadingBar size="md" />
-        </div>
-        <div v-else-if="equipmentError" class="modal-text modal-text-muted">{{ equipmentError }}</div>
-        <div v-else>
-          <div class="modal-form">
-            <label class="modal-field">
-              <span class="modal-label">Техника</span>
-              <select v-model="selectedEquipmentId" class="modal-select">
-                <option value="" disabled>Выберите технику</option>
-                <option v-for="e in equipmentList" :key="e.id" :value="e.id">
-                  {{ e.brand }} — {{ e.license_plate }} ({{ e.model ?? '—' }})
-                </option>
-              </select>
-            </label>
-          </div>
-
-          <div class="equipment-sliders">
-            <div class="equipment-slider-block">
-              <div class="equipment-slider-row">
-                <span class="equipment-slider-label">План работ</span>
-                <span class="equipment-slider-value">
-                  {{ startPlannedHectares != null ? `${formatHectares(startPlannedHectares)} Га` : '—' }}
-                </span>
-              </div>
-              <input
-                v-model.number="startPlannedHectares"
-                type="range"
-                min="0.1"
-                :max="pendingFieldArea && pendingFieldArea > 0 ? pendingFieldArea : 0.1"
-                step="0.1"
-                class="equipment-range"
-                :disabled="!(pendingFieldArea && pendingFieldArea > 0)"
-              />
-              <div class="equipment-condition-text">
-                Доступно по полю: {{ pendingFieldArea && pendingFieldArea > 0 ? `${formatHectares(pendingFieldArea)} Га` : 'не задано' }}
-              </div>
-            </div>
-
-            <div class="equipment-slider-block">
-              <div class="equipment-slider-row">
-                <span class="equipment-slider-label">Топливо</span>
-                <span class="equipment-slider-value">{{ fuelPercent }}%</span>
-              </div>
-              <input
-                v-model.number="fuelPercent"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                class="equipment-range"
-              />
-            </div>
-
-            <div class="equipment-slider-block">
-              <div class="equipment-slider-row">
-                <span class="equipment-slider-label">Состояние техники</span>
-                <span class="equipment-slider-value">{{ conditionPercent }}%</span>
-              </div>
-              <input
-                v-model.number="conditionPercent"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                class="equipment-range"
-              />
-              <div class="equipment-condition-text">{{ equipmentConditionLabel }}</div>
-            </div>
-
-            <div v-if="equipmentConditionRequiresNotes" class="equipment-repair-notes">
-              <label class="modal-field">
-                <span class="modal-label">Что конкретно необходимо исправить</span>
-                <textarea
-                  v-model="equipmentRepairNotes"
-                  class="modal-textarea"
-                  rows="4"
-                  placeholder="Например: заменить ремень, проверить гидравлику, подтянуть крепления…"
-                />
-              </label>
-            </div>
-          </div>
-          <p v-if="startOperationPlanError" class="modal-text modal-hectares-error">
-            {{ startOperationPlanError }}
-          </p>
-        </div>
-
-        <div class="modal-actions modal-actions--two">
-          <UiButton size="lg" @click="backFromEquipmentModalToChoice">
-            Назад
-          </UiButton>
-          <UiButton variant="primary" size="lg" :disabled="!selectedEquipmentId || equipmentLoading || (equipmentConditionRequiresNotes && !equipmentRepairNotes.trim())"
-            @click="startOperationConfirmedWithEquipment">
-            Начать операцию
-          </UiButton>
-        </div>
-      </div>
-    </UiModal>
-
-    <UiModal v-if="isStartedModalOpen" title="Простой зафиксирован" :max-width="460" @close="isStartedModalOpen = false">
-      <div class="mechanic-modal ">
-        
-        <p class="modal-text">
-          Начало простоя записано по объекту «{{ circleFieldLabel }}», операция: {{ circleTaskLabel }}.
-          Данные учтены в системе.
-        </p>
-        <UiButton variant="primary" size="lg" @click="isStartedModalOpen = false">
-          Понятно
-        </UiButton>
-      </div>
-    </UiModal>
-
-    <UiModal v-if="finishNotesModalOpen" :title="finishNotesType === 'downtime' ? 'Завершить простой' : 'Остановить операцию'" :max-width="460" @close="closeFinishNotesModal">
-      <div class="mechanic-modal ">
-        
-        <p class="modal-text modal-text-muted">
-          По желанию укажите список дел, которые были выполнены. Заметки сохранятся и будут видны в журнале работ и аналитике.
-        </p>
-        <div class="modal-form">
-          <label class="modal-field">
-            <span class="modal-label">Список дел (что сделано)</span>
-            <textarea
-              v-model="finishNotesText"
-              class="modal-textarea"
-              rows="4"
-              placeholder="Например: Замена масла, проверка подшипников, дозаправка..."
-            />
-          </label>
-
-          <div v-if="shouldAskEquipmentFuelLeft" class="equipment-sliders" style="margin-top: var(--space-md);">
-            <div class="equipment-slider-block">
-              <div class="equipment-slider-row">
-                <span class="equipment-slider-label">Топливо осталось у техники</span>
-                <span class="equipment-slider-value">{{ equipmentFuelLeftPercent }}%</span>
-              </div>
-              <input
-                v-model.number="equipmentFuelLeftPercent"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                class="equipment-range"
-              />
-            </div>
-          </div>
-          <div v-if="shouldAskProcessedHectares" class="equipment-sliders" style="margin-top: var(--space-md);">
-            <div class="equipment-slider-block">
-              <div class="equipment-slider-row">
-                <span class="equipment-slider-label">Сколько Га обработано</span>
-                <span class="equipment-slider-value">{{ formatHectares(finishProcessedHectares) }} Га</span>
-              </div>
-              <input
-                v-model.number="finishProcessedHectares"
-                type="range"
-                min="0"
-                :max="finishProcessedHectaresMax"
-                step="0.1"
-                class="equipment-range"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="modal-actions">
-          <UiButton variant="primary" size="lg" @click="confirmFinishNotes(finishNotesText)">
-            Сохранить и завершить
-          </UiButton>
-        </div>
-      </div>
-    </UiModal>
-
-    <UiModal v-if="isFinishedModalOpen" :title="isFinishedModalType === 'downtime' ? 'Простой завершён' : 'Операция завершена'" :max-width="460" @close="isFinishedModalOpen = false">
-      <div class="mechanic-modal ">
-        
-        <p class="modal-text">
-          Запись сохранена. Данные отображаются в разделе «Аналитика» и в журнале работ.
-        </p>
-        <UiButton variant="primary" size="lg" @click="isFinishedModalOpen = false">
-          Закрыть
-        </UiButton>
-      </div>
-    </UiModal>
-
-    <UiModal v-if="isAddFieldOpen" title="Новое поле" :max-width="460" @close="isAddFieldOpen = false">
-      <div class="mechanic-modal ">
-        
-        <p class="modal-text modal-text-muted">
-          Добавьте поле в список «Мои поля сегодня» для учёта работ и простоев.
-        </p>
-        <div class="modal-form">
-          <label class="modal-field">
-            <span class="modal-label">Название поля</span>
+    <UiModal v-if="isEquipmentModalOpen" title="Техника для операции" :max-width="560" @close="backFromEquipmentModalToChoice()">
+      <div class="tw-scope grid gap-4">
+        <UiLoadingBar v-if="equipmentLoading" size="md" />
+        <Alert v-else-if="equipmentError" variant="destructive">
+          <AlertDescription>{{ equipmentError }}</AlertDescription>
+        </Alert>
+        <FormGrid v-else>
+          <FormField label="Техника" for="op-equipment">
+            <NativeSelect id="op-equipment" v-model="selectedEquipmentId">
+              <NativeSelectOption value="" disabled>Выберите технику</NativeSelectOption>
+              <NativeSelectOption v-for="e in equipmentList" :key="e.id" :value="e.id">
+                {{ e.brand }} — {{ e.license_plate }} ({{ e.model ?? '—' }})
+              </NativeSelectOption>
+            </NativeSelect>
+          </FormField>
+          <FormField
+            label="План работ"
+            :hint="`Доступно по полю: ${pendingFieldArea && pendingFieldArea > 0 ? `${formatHectares(pendingFieldArea)} га` : 'не задано'}`"
+          >
+            <template #label-actions>
+              <span class="text-sm font-medium tabular-nums">{{ startPlannedHectares != null ? `${formatHectares(startPlannedHectares)} га` : '—' }}</span>
+            </template>
             <input
-              v-model="newFieldName"
-              type="text"
-              placeholder="Например: Поле №15"
+              v-model.number="startPlannedHectares"
+              type="range"
+              min="0.1"
+              :max="pendingFieldArea && pendingFieldArea > 0 ? pendingFieldArea : 0.1"
+              step="0.1"
+              class="h-5 w-full cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="План работ, га"
+              :disabled="!(pendingFieldArea && pendingFieldArea > 0)"
             />
-          </label>
-          <label class="modal-field">
-            <span class="modal-label">Операция</span>
-            <input
-              v-model="newFieldOperation"
-              type="text"
-              placeholder="Например: Посев, Уборка, Опрыскивание"
-            />
-          </label>
-        </div>
-        <div class="modal-actions">
-          <UiButton size="lg" @click="isAddFieldOpen = false">
-            Отмена
-          </UiButton>
-          <UiButton variant="primary" size="lg" @click="addField">
-            Добавить
-          </UiButton>
-        </div>
+          </FormField>
+          <FormField label="Топливо">
+            <template #label-actions>
+              <span class="text-sm font-medium tabular-nums">{{ fuelPercent }}%</span>
+            </template>
+            <input v-model.number="fuelPercent" type="range" min="0" max="100" step="1" class="h-5 w-full cursor-pointer accent-primary" aria-label="Топливо, %" />
+          </FormField>
+          <FormField label="Состояние техники" :hint="equipmentConditionLabel">
+            <template #label-actions>
+              <span class="text-sm font-medium tabular-nums">{{ conditionPercent }}%</span>
+            </template>
+            <input v-model.number="conditionPercent" type="range" min="0" max="100" step="1" class="h-5 w-full cursor-pointer accent-primary" aria-label="Состояние техники, %" />
+          </FormField>
+          <FormField v-if="equipmentConditionRequiresNotes" label="Что нужно исправить" for="op-repair" required>
+            <Textarea id="op-repair" v-model="equipmentRepairNotes" rows="4" placeholder="Например: заменить ремень, проверить гидравлику, подтянуть крепления" />
+          </FormField>
+        </FormGrid>
+        <Alert v-if="startOperationPlanError" variant="destructive">
+          <AlertDescription>{{ startOperationPlanError }}</AlertDescription>
+        </Alert>
       </div>
+      <template #actions>
+        <UiButton @click="backFromEquipmentModalToChoice">Назад</UiButton>
+        <UiButton
+          variant="primary"
+          :disabled="!selectedEquipmentId || equipmentLoading || (equipmentConditionRequiresNotes && !equipmentRepairNotes.trim())"
+          @click="startOperationConfirmedWithEquipment"
+        >
+          Начать операцию
+        </UiButton>
+      </template>
+    </UiModal>
+
+    <UiModal
+      v-if="isStartedModalOpen"
+      title="Простой зафиксирован"
+      :description="`Начало простоя записано по объекту «${circleFieldLabel}», операция: ${circleTaskLabel}.`"
+      :max-width="460"
+      @close="isStartedModalOpen = false"
+    >
+      <template #actions>
+        <UiButton variant="primary" @click="isStartedModalOpen = false">Понятно</UiButton>
+      </template>
+    </UiModal>
+
+    <UiModal
+      v-if="finishNotesModalOpen"
+      :title="finishNotesType === 'downtime' ? 'Завершить простой' : 'Завершить операцию'"
+      description="По желанию укажите, что сделано. Заметки будут видны в журнале работ и аналитике."
+      :max-width="560"
+      @close="closeFinishNotesModal"
+    >
+      <FormGrid class="tw-scope">
+        <FormField label="Что сделано" for="finish-notes">
+          <Textarea id="finish-notes" v-model="finishNotesText" rows="4" placeholder="Например: замена масла, проверка подшипников, дозаправка" />
+        </FormField>
+        <FormField v-if="shouldAskEquipmentFuelLeft" label="Топлива осталось у техники">
+          <template #label-actions>
+            <span class="text-sm font-medium tabular-nums">{{ equipmentFuelLeftPercent }}%</span>
+          </template>
+          <input v-model.number="equipmentFuelLeftPercent" type="range" min="0" max="100" step="1" class="h-5 w-full cursor-pointer accent-primary" aria-label="Топлива осталось, %" />
+        </FormField>
+        <FormField v-if="shouldAskProcessedHectares" label="Сколько обработано">
+          <template #label-actions>
+            <span class="text-sm font-medium tabular-nums">{{ formatHectares(finishProcessedHectares) }} га</span>
+          </template>
+          <input
+            v-model.number="finishProcessedHectares"
+            type="range"
+            min="0"
+            :max="finishProcessedHectaresMax"
+            step="0.1"
+            class="h-5 w-full cursor-pointer accent-primary"
+            aria-label="Обработано, га"
+          />
+        </FormField>
+      </FormGrid>
+      <template #actions>
+        <UiButton @click="closeFinishNotesModal">Отмена</UiButton>
+        <UiButton variant="primary" @click="confirmFinishNotes(finishNotesText)">Сохранить и завершить</UiButton>
+      </template>
+    </UiModal>
+
+    <UiModal
+      v-if="isFinishedModalOpen"
+      :title="isFinishedModalType === 'downtime' ? 'Простой завершён' : 'Операция завершена'"
+      description="Запись сохранена. Данные видны в разделе «Аналитика» и в журнале работ."
+      :max-width="460"
+      @close="isFinishedModalOpen = false"
+    >
+      <template #actions>
+        <UiButton variant="primary" @click="isFinishedModalOpen = false">Закрыть</UiButton>
+      </template>
+    </UiModal>
+
+    <UiModal
+      v-if="isAddFieldOpen"
+      title="Новое поле"
+      description="Поле появится в списке для учёта работ и простоев."
+      :max-width="560"
+      @close="isAddFieldOpen = false"
+    >
+      <FormGrid class="tw-scope">
+        <FormField label="Название поля" for="new-field-name">
+          <Input id="new-field-name" v-model="newFieldName" type="text" placeholder="Например: Поле №15" />
+        </FormField>
+        <FormField label="Операция" for="new-field-op">
+          <Input id="new-field-op" v-model="newFieldOperation" type="text" placeholder="Например: посев, уборка, опрыскивание" />
+        </FormField>
+      </FormGrid>
+      <template #actions>
+        <UiButton @click="isAddFieldOpen = false">Отмена</UiButton>
+        <UiButton variant="primary" @click="addField">Добавить</UiButton>
+      </template>
     </UiModal>
 
     <UiSuccessModal
@@ -1997,5 +1869,4 @@ function addField() {
   </section>
 </template>
 
-<style scoped src="./MechanicPage.css"></style>
 

@@ -92,7 +92,7 @@ function guardEscape(e: Event) {
           <slot name="header-actions" />
         </div>
       </DialogHeader>
-      <div class="ui-dialog-body">
+      <div v-if="$slots.default" class="ui-dialog-body">
         <slot />
       </div>
       <DialogFooter v-if="$slots.actions">
