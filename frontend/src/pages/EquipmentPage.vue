@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { askConfirm } from '@/composables/useConfirm'
-import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
-import { DownloadIcon, FileTextIcon, MenuIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
+import { DownloadIcon, FileTextIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, onMounted, watch } from 'vue'
@@ -829,32 +828,31 @@ function formatIsoDate(value: string | null | undefined): string {
     </UiModal>
 
     <!-- Список техники -->
-    <Card v-show="activeTab === 'equipment'" class="equipment-list-card card-rounded gap-0">
-      <div class="equipment-list-header">
-        <h2 class="equipment-list-title">
-          <MenuIcon class="equipment-section-icon" />
-          Список техники
-        </h2>
-        <span class="equipment-list-count">{{ totalCount }} {{ totalCount === 1 ? 'единица' : totalCount < 5 ? 'единицы' : 'единиц' }}</span>
-        <div class="equipment-list-toolbar">
-          <InputGroup class="equipment-search-wrap max-w-sm">
+    <div v-show="activeTab === 'equipment'" class="equipment-list-shell">
+      <h2 class="sr-only">Список техники</h2>
+      <div class="tw-scope flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+        <div class="flex min-w-0 items-center gap-3">
+          <InputGroup class="w-full lg:w-80">
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
             <InputGroupInput
               v-model="searchQuery"
               type="search"
-              placeholder="Поиск по марке, номер..."
+              placeholder="Поиск по марке или номеру"
               autocomplete="off" />
           </InputGroup>
-          <button type="button" class="equipment-export-btn task-btn-export action_has has_saved" :disabled="!filteredList.length" title="Экспорт в Excel" @click="exportToExcel">
-            <DownloadIcon class="task-header-icon" :size="18" />
+          <span class="shrink-0 text-sm text-muted-foreground tabular-nums">{{ totalCount }} {{ totalCount === 1 ? 'единица' : totalCount < 5 ? 'единицы' : 'единиц' }}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <Button variant="outline" type="button" :disabled="!filteredList.length" @click="exportToExcel">
+            <DownloadIcon />
             Excel
-          </button>
-          <button type="button" class="equipment-export-btn task-btn-export action_has has_saved" :disabled="!filteredList.length" title="Экспорт в PDF" @click="exportToPdf">
-            <FileTextIcon class="task-header-icon" :size="18" />
+          </Button>
+          <Button variant="outline" type="button" :disabled="!filteredList.length" @click="exportToPdf">
+            <FileTextIcon />
             PDF
-          </button>
+          </Button>
           <Button type="button" @click="openNewEquipment">
             <PlusIcon />
             Добавить технику
@@ -937,26 +935,25 @@ function formatIsoDate(value: string | null | undefined): string {
       </div>
 
       <UiPagination v-if="totalCount > 0" :page="currentPage" :page-size="PAGE_SIZE" :total="totalCount" hide-size @update:page="goToPage" />
-    </Card>
+    </div>
 
-    <Card v-show="activeTab === 'implements'" class="equipment-list-card card-rounded gap-0">
-      <div class="equipment-list-header">
-        <h2 class="equipment-list-title">
-          <PlusIcon class="equipment-section-icon" />
-          Орудия
-        </h2>
-        <span class="equipment-list-count">{{ implementsTotal }} {{ implementsTotal === 1 ? 'позиция' : implementsTotal < 5 ? 'позиции' : 'позиций' }}</span>
-        <div class="equipment-list-toolbar">
-          <InputGroup class="equipment-search-wrap max-w-sm">
+    <div v-show="activeTab === 'implements'" class="equipment-list-shell">
+      <h2 class="sr-only">Орудия</h2>
+      <div class="tw-scope flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+        <div class="flex min-w-0 items-center gap-3">
+          <InputGroup class="w-full lg:w-80">
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
             <InputGroupInput
               v-model="implementsSearch"
               type="search"
-              placeholder="Поиск по названию или назначению..."
+              placeholder="Поиск по названию или назначению"
               autocomplete="off" />
           </InputGroup>
+          <span class="shrink-0 text-sm text-muted-foreground tabular-nums">{{ implementsTotal }} {{ implementsTotal === 1 ? 'позиция' : implementsTotal < 5 ? 'позиции' : 'позиций' }}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
           <Button type="button" @click="openNewImplement">
             <PlusIcon />
             Добавить орудие
@@ -1009,7 +1006,7 @@ function formatIsoDate(value: string | null | undefined): string {
       </div>
 
       <UiPagination v-if="implementsTotal > 0" :page="implementsPage" :page-size="implementsPageSize" :total="implementsTotal" :page-size-options="IMPLEMENTS_PAGE_SIZE_OPTIONS" @update:page="goToImplementsPage" @update:page-size="(n) => (implementsPageSize = n)" />
-    </Card>
+    </div>
       <UiModal
       v-if="implementModalOpen"
       :title="editingImplementId ? 'Орудие' : 'Новое орудие'"
@@ -1076,6 +1073,23 @@ function formatIsoDate(value: string | null | undefined): string {
 .equipment-page {
   padding: 0;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Список техники и орудий без карточки-обёртки (канон): панель → таблица в рамке → пагинация. */
+.equipment-list-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.equipment-list-shell > .table-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding-bottom: 0;
 }
 
 .equipment-form-card,
@@ -1554,10 +1568,6 @@ function formatIsoDate(value: string | null | undefined): string {
     order: 1;
   }
 
-  .equipment-page {
-    padding: 0 var(--space-md);
-    padding-bottom: var(--space-lg);
-  }
 
   .equipment-form-card,
   .equipment-list-card {

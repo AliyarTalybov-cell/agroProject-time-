@@ -1560,36 +1560,27 @@ onMounted(async () => {
   <section class="fields-page">
     <p v-if="loadError" class="page-load-error" role="alert">{{ loadError }}</p>
     <div class="fields-page-inner">
-      <header class="fields-header page-enter-item">
-        <div class="fields-header-text">
-          <p v-show="activeTab === 'fields'" class="fields-subtitle">Реестр сельскохозяйственных угодий и назначение ответственных</p>
-        </div>
-        <Button variant="default"
+      <div class="tw-scope flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <Tabs :model-value="activeTab" class="min-w-0">
+          <TabsList aria-label="Разделы" class="h-auto max-w-full flex-wrap justify-start">
+            <TabsTrigger v-for="tab in TABS" :key="tab.id" :value="tab.id" class="flex-none" @click="activeTab = tab.id">
+              {{ tab.label }}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button
           v-show="activeTab === 'fields'"
-          class="fields-add-btn"
           :class="{ 'fields-add-btn--highlight': highlightAddField }"
           type="button"
           @click="openAddField"
         >
-          <PlusIcon class="fields-add-btn-icon" />
+          <PlusIcon />
           Добавить поле
         </Button>
-      </header>
-
-      <Tabs :model-value="activeTab">
-        <TabsList aria-label="Разделы">
-          <TabsTrigger :value="tab.id"
-          v-for="tab in TABS"
-          :key="tab.id"
-         
-          @click="activeTab = tab.id">
-          {{ tab.label }}
-        </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      </div>
 
       <div v-show="activeTab === 'fields'" class="fields-tab-panel">
-      <Card class="fields-card gap-0">
+      <div class="fields-list-shell">
         <div class="fields-toolbar">
           <InputGroup class="fields-search-wrap max-w-sm">
             <InputGroupAddon>
@@ -1602,14 +1593,14 @@ onMounted(async () => {
               autocomplete="off" />
           </InputGroup>
           <div class="fields-toolbar-actions">
-            <button type="button" class="fields-export-btn task-btn-export action_has has_saved" :disabled="!sortedFilteredFields.length" title="Экспорт в Excel" @click="exportFieldsToExcel">
-              <DownloadIcon class="task-header-icon" :size="18" />
+            <Button variant="outline" type="button" :disabled="!sortedFilteredFields.length" @click="exportFieldsToExcel">
+              <DownloadIcon />
               Excel
-            </button>
-            <button type="button" class="fields-export-btn task-btn-export action_has has_saved" :disabled="!sortedFilteredFields.length" title="Экспорт в PDF" @click="exportFieldsToPdf">
-              <FileTextIcon class="task-header-icon" :size="18" />
+            </Button>
+            <Button variant="outline" type="button" :disabled="!sortedFilteredFields.length" @click="exportFieldsToPdf">
+              <FileTextIcon />
               PDF
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -1767,7 +1758,7 @@ onMounted(async () => {
           </table>
         </div>
 
-      </Card>
+      </div>
       </div>
 
       <UiPagination v-show="activeTab === 'fields' && totalFiltered > 0" :page="currentPage" :page-size="pageSize" :total="totalFiltered" @update:page="setPage" @update:page-size="(n) => { pageSize = n; onPageSizeChange() }" />
