@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
+import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
@@ -1562,7 +1562,7 @@ onMounted(async () => {
     <div class="fields-page-inner">
       <div class="tw-scope flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <Tabs :model-value="activeTab" class="min-w-0">
-          <TabsList aria-label="Разделы" class="h-auto max-w-full flex-wrap justify-start">
+          <TabsList aria-label="Разделы" class="max-w-full justify-start overflow-x-auto">
             <TabsTrigger v-for="tab in TABS" :key="tab.id" :value="tab.id" class="flex-none" @click="activeTab = tab.id">
               {{ tab.label }}
             </TabsTrigger>
@@ -1764,17 +1764,21 @@ onMounted(async () => {
       <UiPagination v-show="activeTab === 'fields' && totalFiltered > 0" :page="currentPage" :page-size="pageSize" :total="totalFiltered" @update:page="setPage" @update:page-size="(n) => { pageSize = n; onPageSizeChange() }" />
 
       <div v-show="activeTab === 'downtime-reasons'" class="fields-tab-panel">
-        <div v-if="isSupabaseConfigured()" class="refs-card card">
-          <h2 class="refs-title">Причины простоя</h2>
-          <p class="refs-desc">Подставляются на экране «Экран оператора» при нажатии «Начать простой». Кто добавил — записывается в базу.</p>
-          <div v-if="refsError" class="refs-error">{{ refsError }}</div>
+        <div v-if="isSupabaseConfigured()" class="tw-scope flex min-w-0 flex-col gap-4">
+          <p class="text-sm text-muted-foreground">Появляются на экране оператора при нажатии «Начать простой».</p>
+          <Alert v-if="refsError" variant="destructive">
+            <AlertDescription>{{ refsError }}</AlertDescription>
+          </Alert>
+          <form class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_12rem_auto]" @submit.prevent="addReason">
+            <Input v-model="newReasonLabel" type="text" placeholder="Название, например «Поломка гидравлики»" aria-label="Название причины" />
+            <Input v-model="newReasonDesc" type="text" placeholder="Описание (необязательно)" aria-label="Описание" />
+            <UiSelect v-model="newReasonCategory" block aria-label="Категория" :options="(Object.keys(CATEGORY_LABELS) as DowntimeCategory[]).map((key) => ({ value: key, label: CATEGORY_LABELS[key] }))" />
+            <Button type="submit" :disabled="refsLoading || !newReasonLabel.trim()">
+              <PlusIcon />
+              Добавить
+            </Button>
+          </form>
           <div class="refs-block">
-            <div class="refs-add-row">
-              <Input v-model="newReasonLabel" type="text" placeholder="Название (например: Поломка гидравлики)" class="refs-input" />
-              <Input v-model="newReasonDesc" type="text" placeholder="Описание (необязательно)" class="refs-input refs-input--wide" />
-              <UiSelect v-model="newReasonCategory" :options="(Object.keys(CATEGORY_LABELS) as DowntimeCategory[]).map((key) => ({ value: key, label: CATEGORY_LABELS[key] }))" class="refs-select" />
-              <Button variant="default" type="button" class="refs-btn" :disabled="refsLoading || !newReasonLabel.trim()" @click="addReason">Добавить</Button>
-            </div>
             <div class="refs-table-wrap">
               <table class="refs-table" v-card-table>
                 <thead>
@@ -1807,19 +1811,23 @@ onMounted(async () => {
             <UiPagination v-if="downtimeReasons.length > 0" :page="refsPageReasons" :page-size="refsPageSize" :total="downtimeReasons.length" :page-size-options="REFS_PAGE_SIZE_OPTIONS" @update:page="setRefsPageReasons" @update:page-size="(n) => { refsPageSize = n; onRefsPageSizeChange() }" />
           </div>
         </div>
-        <p v-else class="refs-no-supabase">Подключите Supabase для управления справочниками.</p>
+        <p v-else class="text-sm text-muted-foreground">Подключите базу, чтобы управлять справочниками.</p>
       </div>
 
       <div v-show="activeTab === 'work-operations'" class="fields-tab-panel">
-        <div v-if="isSupabaseConfigured()" class="refs-card card">
-          <h2 class="refs-title">Операции для работы</h2>
-          <p class="refs-desc">Подставляются на экране «Экран оператора» при нажатии «Начать операцию». Кто добавил — записывается в базу.</p>
-          <div v-if="refsError" class="refs-error">{{ refsError }}</div>
+        <div v-if="isSupabaseConfigured()" class="tw-scope flex min-w-0 flex-col gap-4">
+          <p class="text-sm text-muted-foreground">Появляются на экране оператора при нажатии «Начать операцию».</p>
+          <Alert v-if="refsError" variant="destructive">
+            <AlertDescription>{{ refsError }}</AlertDescription>
+          </Alert>
+          <form class="grid gap-2 sm:grid-cols-[minmax(0,28rem)_auto] sm:justify-start" @submit.prevent="addOperation">
+            <Input v-model="newOperationName" type="text" placeholder="Название, например «Пахота»" aria-label="Название операции" />
+            <Button type="submit" :disabled="refsLoading || !newOperationName.trim()">
+              <PlusIcon />
+              Добавить
+            </Button>
+          </form>
           <div class="refs-block">
-            <div class="refs-add-row">
-              <Input v-model="newOperationName" type="text" placeholder="Название (например: Пахота, Посев)" class="refs-input refs-input--wide" />
-              <Button variant="default" type="button" class="refs-btn" :disabled="refsLoading || !newOperationName.trim()" @click="addOperation">Добавить</Button>
-            </div>
             <div class="refs-table-wrap">
               <table class="refs-table" v-card-table>
                 <thead>
@@ -1848,7 +1856,7 @@ onMounted(async () => {
             <UiPagination v-if="workOperations.length > 0" :page="refsPageOperations" :page-size="refsPageSize" :total="workOperations.length" :page-size-options="REFS_PAGE_SIZE_OPTIONS" @update:page="setRefsPageOperations" @update:page-size="(n) => { refsPageSize = n; onRefsPageSizeChange() }" />
           </div>
         </div>
-        <p v-else class="refs-no-supabase">Подключите Supabase для управления справочниками.</p>
+        <p v-else class="text-sm text-muted-foreground">Подключите базу, чтобы управлять справочниками.</p>
       </div>
 
       <UiModal

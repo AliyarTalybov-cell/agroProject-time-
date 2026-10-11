@@ -689,7 +689,9 @@
   font-size: 0.9rem;
 }
 .refs-block {
-  margin-bottom: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .refs-block:last-child {
   margin-bottom: 0;
@@ -753,7 +755,9 @@
 }
 .refs-table-wrap {
   overflow-x: auto;
-  padding-bottom: 52px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
 }
 .refs-table {
   width: 100%;

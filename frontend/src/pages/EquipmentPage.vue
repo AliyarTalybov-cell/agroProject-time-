@@ -839,7 +839,7 @@ function formatIsoDate(value: string | null | undefined): string {
             <InputGroupInput
               v-model="searchQuery"
               type="search"
-              placeholder="Поиск по марке или номеру"
+              placeholder="Марка или номер"
               autocomplete="off" />
           </InputGroup>
           <span class="shrink-0 text-sm text-muted-foreground tabular-nums">{{ totalCount }} {{ totalCount === 1 ? 'единица' : totalCount < 5 ? 'единицы' : 'единиц' }}</span>
@@ -948,7 +948,7 @@ function formatIsoDate(value: string | null | undefined): string {
             <InputGroupInput
               v-model="implementsSearch"
               type="search"
-              placeholder="Поиск по названию или назначению"
+              placeholder="Название или назначение"
               autocomplete="off" />
           </InputGroup>
           <span class="shrink-0 text-sm text-muted-foreground tabular-nums">{{ implementsTotal }} {{ implementsTotal === 1 ? 'позиция' : implementsTotal < 5 ? 'позиции' : 'позиций' }}</span>
