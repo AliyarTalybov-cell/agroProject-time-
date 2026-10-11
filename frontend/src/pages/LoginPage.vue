@@ -80,11 +80,7 @@ async function submit() {
     <div class="grid w-full max-w-sm gap-6 rounded-xl border bg-card p-6 text-card-foreground shadow-2xl sm:p-8">
       <div class="flex flex-col items-center gap-3 text-center">
         <img src="/logo-128.webp" width="56" height="56" alt="" class="size-14" />
-        <div class="grid gap-1">
-          <span class="text-sm font-bold tracking-wide">АГРО<span class="text-primary dark:text-emerald-400">СИСТЕМА</span></span>
-          <h1 class="text-xl font-semibold">Вход в портал</h1>
-          <p class="text-sm text-muted-foreground">Введите рабочую почту и пароль.</p>
-        </div>
+        <h1 class="text-base font-bold tracking-wide">АГРО<span class="text-primary dark:text-emerald-400">СИСТЕМА</span></h1>
       </div>
 
       <form class="grid gap-4" novalidate @submit.prevent="submit">
