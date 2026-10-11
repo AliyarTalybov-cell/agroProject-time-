@@ -10,7 +10,7 @@
 
 | | |
 |---|---|
-| `LandsPage.vue` | 6128 → 5177 строк |
+| `LandsPage.vue` | 6128 → 5177 → 3303 строк |
 | `LandsPage.css` | 1127 → 109 строк |
 | Окон вынесено | 10 из 11 |
 | Вкладок вынесено | 5 из 6 |
@@ -21,6 +21,11 @@
 
 Компоненты вкладок: `LandFieldsTab`, `LandRightsTab`, `LandUsersTab`,
 `LandCropRotationTab`, `LandRealEstateTab`.
+
+Справочники (2026-10-12): все вкладки «Справочники …» — `refs/LandsRefsPanel.vue`;
+списки, нужные и реестру, — `refs/landRefsStore.ts`; добавить / переименовать /
+удалить для любого простого справочника — `refs/useRefCrud.ts` (вместо ~60
+одинаковых функций в странице). Удаление значения — через `askConfirm`.
 
 Общее: `landsShared.css` (стили раздела, без `scoped`), `types.ts` (типы форм),
 `lib/fileLinks.ts` (подпись и признак картинки для вложений).
