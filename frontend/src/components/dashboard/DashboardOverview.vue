@@ -19,7 +19,6 @@ import { loadOperatorStatusesFromSupabase, type OperatorStatusRow } from '@/lib/
 import { loadWarehousesOverview, type WarehouseOverview } from '@/lib/stockLedger'
 import { loadNewsPostsPage, type NewsPostRow } from '@/lib/newsSupabase'
 import { ruDate } from '@/lib/ruDate'
-import DashboardAssistant from '@/components/dashboard/DashboardAssistant.vue'
 
 type Block<T> = { loading: boolean; error: boolean; data: T }
 
@@ -229,8 +228,6 @@ const attention = computed(() => {
         <ChevronRightIcon class="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </RouterLink>
     </div>
-
-    <DashboardAssistant :is-manager="isManager" />
 
     <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
       <!-- Мои задачи -->
