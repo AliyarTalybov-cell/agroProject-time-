@@ -369,6 +369,9 @@ function applyAnalyticsQueryParams() {
   if (q.kpi_completed_due === '1') {
     filterStatus.value = 'done'
   }
+  if (q.status === 'todo' || q.status === 'in_progress' || q.status === 'review' || q.status === 'done') {
+    filterStatus.value = q.status
+  }
 }
 
 /** Режим отдельной страницы задачи: /task-management/:taskId. */
