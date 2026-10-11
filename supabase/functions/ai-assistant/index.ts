@@ -274,6 +274,8 @@ Deno.serve(async (req) => {
       model,
       max_tokens: MAX_ANSWER_TOKENS,
       temperature: 0.3,
+      // Без «размышлений»: они съедают лимит ответа, а для сводки не нужны.
+      reasoning: { enabled: false },
       messages: [
         { role: 'system', content: `${SYSTEM_PROMPT}\n\n${who}\n${nowText}\n\nСВОДКА ДАННЫХ:\n${context.text}\n\n${weatherText}` },
         ...history,
@@ -288,7 +290,14 @@ Deno.serve(async (req) => {
     console.error('openrouter', res.status, JSON.stringify(data)?.slice(0, 500))
     return json({ error: 'Сервис ИИ не ответил. Попробуйте позже.' }, { status: 502 })
   }
-  const answer = String(data?.choices?.[0]?.message?.content ?? '').trim()
-  if (!answer) return json({ error: 'Пустой ответ сервиса ИИ' }, { status: 502 })
+  // Разметку, кроме списков, страница не рисует — убираем звёздочки и решётки.
+  const answer = String(data?.choices?.[0]?.message?.content ?? '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^#+\s*/gm, '')
+    .trim()
+  if (!answer) {
+    console.error('openrouter empty', JSON.stringify(data)?.slice(0, 1500))
+    return json({ error: 'Пустой ответ сервиса ИИ' }, { status: 502 })
+  }
   return json({ answer })
 })

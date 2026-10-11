@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { describeFunctionError } from '@/lib/employeesSupabase'
-import { fetchForecast5, fetchWeather } from '@/lib/weatherApi'
+import { conditionCategoryLabelRu, fetchForecast5, fetchWeather } from '@/lib/weatherApi'
 import { useWeatherCity } from '@/composables/useWeatherCity'
 
 export type AssistantMessage = { role: 'user' | 'assistant'; content: string }
@@ -35,7 +35,7 @@ async function weatherSnapshot(): Promise<WeatherSnapshot | null> {
           [
             `${d.dateLabel} (${d.dayLabel})`,
             `${d.tempMin}…${d.tempMax}°C`,
-            d.condition,
+            conditionCategoryLabelRu(d.condition) === '—' ? d.condition : conditionCategoryLabelRu(d.condition),
             d.windSpeed != null ? `ветер ${d.windSpeed} м/с` : '',
             d.windGusts != null ? `порывы ${d.windGusts} м/с` : '',
             `вероятность осадков ${Math.round(d.pop)}%`,
