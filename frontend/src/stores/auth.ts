@@ -231,18 +231,6 @@ export function useAuth() {
     return data
   }
 
-  async function register(email: string, password: string) {
-    if (!supabase) throw new Error('Supabase не настроен')
-    const { data, error } = await supabase!.auth.signUp({
-      email,
-      password,
-      options: { data: { role: 'worker' } },
-    })
-    if (error) throw error
-    user.value = data.user
-    return data
-  }
-
   async function logout() {
     if (!supabase) return
     userInitiatedSignOut = true
@@ -284,7 +272,6 @@ export function useAuth() {
     init,
     startAuthListener,
     login,
-    register,
     logout,
     updatePassword,
   }

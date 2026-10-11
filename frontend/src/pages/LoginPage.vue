@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/shadcn/button'
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Label } from '@/components/ui/shadcn/label'
 import { Spinner } from '@/components/ui/shadcn/spinner'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 
@@ -17,20 +17,12 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuth()
 
-const mode = ref<'login' | 'register'>('login')
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const capsLock = ref(false)
 const error = ref<string | null>(null)
 const loading = ref(false)
-
-const isLogin = computed(() => mode.value === 'login')
-
-function switchMode() {
-  mode.value = isLogin.value ? 'register' : 'login'
-  error.value = null
-}
 
 function onPasswordKey(e: KeyboardEvent) {
   capsLock.value = typeof e.getModifierState === 'function' && e.getModifierState('CapsLock')
@@ -42,8 +34,6 @@ function humanError(e: unknown): string {
   const m = msg.toLowerCase()
   if (m.includes('invalid login credentials')) return 'Неверная почта или пароль.'
   if (m.includes('email not confirmed')) return 'Почта не подтверждена. Обратитесь к руководителю или в ИТ-отдел.'
-  if (m.includes('user already registered')) return 'Пользователь с такой почтой уже есть. Войдите или обратитесь к руководителю.'
-  if (m.includes('signups not allowed') || m.includes('signup is disabled')) return 'Самостоятельная регистрация отключена. Учётную запись создаёт руководитель.'
   if (m.includes('rate limit') || m.includes('too many')) return 'Слишком много попыток. Подождите минуту и попробуйте снова.'
   if (m.includes('failed to fetch') || m.includes('network')) return 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.'
   return msg || 'Не удалось войти. Попробуйте ещё раз.'
@@ -63,11 +53,7 @@ async function submit() {
   }
   loading.value = true
   try {
-    if (isLogin.value) {
-      await auth.login(trimmedEmail, trimmedPassword)
-    } else {
-      await auth.register(trimmedEmail, trimmedPassword)
-    }
+    await auth.login(trimmedEmail, trimmedPassword)
     const redirect = (route.query.redirect as string) || '/news'
     router.push(redirect)
   } catch (e: unknown) {
@@ -92,10 +78,8 @@ async function submit() {
       <div class="flex flex-1 items-center justify-center">
         <div class="grid w-full max-w-sm gap-6">
           <div class="grid gap-2">
-            <h1 class="text-2xl font-semibold">{{ isLogin ? 'Вход в портал' : 'Регистрация' }}</h1>
-            <p class="text-sm text-muted-foreground">
-              {{ isLogin ? 'Введите рабочую почту и пароль.' : 'Создайте учётную запись сотрудника.' }}
-            </p>
+            <h1 class="text-2xl font-semibold">Вход в портал</h1>
+            <p class="text-sm text-muted-foreground">Введите рабочую почту и пароль.</p>
           </div>
 
           <form class="grid gap-4" novalidate @submit.prevent="submit">
@@ -126,7 +110,7 @@ async function submit() {
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   placeholder="Не меньше 6 символов"
-                  :autocomplete="isLogin ? 'current-password' : 'new-password'"
+                  autocomplete="current-password"
                   @keydown="onPasswordKey"
                   @keyup="onPasswordKey"
                 />
@@ -153,19 +137,12 @@ async function submit() {
 
             <Button type="submit" class="w-full" :disabled="loading">
               <Spinner v-if="loading" />
-              {{ loading ? 'Проверяем…' : isLogin ? 'Войти' : 'Зарегистрироваться' }}
+              {{ loading ? 'Проверяем…' : 'Войти' }}
             </Button>
           </form>
 
-          <p v-if="isLogin" class="text-sm text-muted-foreground">
-            Нет доступа или забыли пароль? Обратитесь к руководителю или в ИТ-отдел.
-          </p>
-
           <p class="text-sm text-muted-foreground">
-            {{ isLogin ? 'Новый сотрудник?' : 'Уже есть учётная запись?' }}
-            <button type="button" class="font-medium text-foreground underline underline-offset-4 hover:text-primary" @click="switchMode">
-              {{ isLogin ? 'Создать аккаунт' : 'Войти' }}
-            </button>
+            Нет доступа или забыли пароль? Учётные записи создаёт руководитель — обратитесь к нему или в ИТ-отдел.
           </p>
         </div>
       </div>
