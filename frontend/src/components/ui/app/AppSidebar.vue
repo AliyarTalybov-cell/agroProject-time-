@@ -193,12 +193,14 @@ function goFirst(g: NavGroup) {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child tooltip="АГРОСИСТЕМА">
-            <RouterLink :to="{ path: '/dashboard', query: {} }" aria-label="АГРОСИСТЕМА — на главную">
-              <span class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <SproutIcon class="size-4" />
-              </span>
+            <RouterLink :to="{ path: '/dashboard', query: {} }" class="brand-link" aria-label="АГРОСИСТЕМА — на главную">
+              <img src="/logo-128.webp" alt="" width="32" height="32" class="aspect-square size-8 shrink-0 rounded-full" />
               <span class="grid flex-1 text-left leading-tight">
-                <span class="truncate text-sm font-semibold tracking-wide">АГРО<span class="text-primary">СИСТЕМА</span></span>
+                <!-- Надпись с заливкой при наведении: поверх основной строки «выезжает» зелёная копия. -->
+                <span class="brand-title">
+                  <span class="brand-title-base">АГРО<span class="text-primary dark:text-ring">СИСТЕМА</span></span>
+                  <span class="brand-title-fill text-primary dark:text-emerald-400" aria-hidden="true">АГРОСИСТЕМА</span>
+                </span>
                 <span class="text-muted-foreground truncate text-xs">Портал агронома</span>
               </span>
             </RouterLink>
@@ -298,3 +300,36 @@ function goFirst(g: NavGroup) {
     <SidebarRail />
   </Sidebar>
 </template>
+
+<style scoped>
+/* Логотип: при наведении надпись заливается цветом слева направо, справа — «курсор» и мягкое свечение. */
+.brand-title {
+  position: relative;
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.brand-title-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  overflow: hidden;
+  border-right: 0 solid transparent;
+  transition: width 0.5s ease, border-color 0.5s ease;
+  pointer-events: none;
+}
+.brand-link:hover .brand-title-fill,
+.brand-link:focus-visible .brand-title-fill {
+  width: 100%;
+  border-right: 3px solid currentColor;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, currentColor 60%, transparent));
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-title-fill { transition: none; }
+}
+</style>
