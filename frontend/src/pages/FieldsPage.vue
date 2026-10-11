@@ -4,6 +4,9 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Input } from '@/components/ui/shadcn/input'
+import FormGrid from '@/components/ui/layout/FormGrid.vue'
+import FormField from '@/components/ui/layout/FormField.vue'
+import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, FileTextIcon, PaperclipIcon, PencilIcon, PlusIcon, SearchIcon, UploadIcon } from '@lucide/vue'
@@ -1862,242 +1865,170 @@ onMounted(async () => {
       <UiModal
         v-if="isFieldModalOpen"
         :title="fieldModalTitle"
-        :max-width="1100"
+        description="Обязательные поля отмечены звёздочкой."
+        :max-width="940"
         @close="closeFieldModal"
       >
-          <div v-if="fieldFormError" class="modal-error">{{ fieldFormError }}</div>
-          <div class="modal-form modal-form--add">
-            <div class="modal-form-section">
-              <label class="modal-field modal-field--full">
-                <span class="modal-label">Название поля <span class="modal-label-required">*</span></span>
-                <Input
-                  v-model="newFieldName"
-                  type="text"
-                  class="modal-input"
-                  placeholder="Например: Поле №12 – Пшеница" />
-              </label>
-            </div>
-            <div class="modal-form-section modal-form-section--grid">
-              <label class="modal-field">
-                <span class="modal-label">Кадастровый номер</span>
-                <Input v-model="newFieldCadastral" type="text" class="modal-input" placeholder="XX:XX:XXXXXXX:XX" />
-              </label>
-              <label class="modal-field">
-                <span class="modal-label">№ поля ЕФИС ЗСН</span>
-                <Input v-model="newFieldEfisZsn" type="text" class="modal-input" placeholder="Например: EFIS-000123" />
-              </label>
-            </div>
-            <div class="modal-form-section modal-form-section--grid">
-              <label class="modal-field">
-                <span class="modal-label">Площадь, га <span class="modal-label-required">*</span></span>
-                <div class="modal-input-wrap modal-input-wrap--suffix">
-                  <Input
-                    v-model.number="newFieldArea"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="modal-input"
-                    placeholder="0.00"
-                    @input="onFieldAreaManualInput" />
-                  <span class="modal-input-suffix">га</span>
-                </div>
-                <span v-if="newFieldGeometryMode === 'polygon' && newFieldAreaAuto != null" class="field-geometry-area-hint">
-                  Авто по контуру: {{ newFieldAreaAuto }} га
-                </span>
-              </label>
-            </div>
-            <div class="modal-form-section">
-              <label class="modal-field modal-field--full">
-                <span class="modal-label">Адрес</span>
-                <Input
-                  v-model="newFieldAddress"
-                  type="text"
-                  class="modal-input"
-                  placeholder="Например: Московская обл., Раменский р-н, д. Вялки"
-                  @input="onFieldAddressInput" />
-                <div v-if="newFieldAddressCandidates.length" class="field-address-candidates">
-                  <span class="field-address-candidates-label">Варианты адреса по контуру</span>
-                  <UiSelect v-model="selectedAddressCandidate" :options="newFieldAddressCandidates.map((a) => ({ value: a, label: a }))" class="modal-select field-address-candidates-select" @change="onAddressCandidateChange" />
-                </div>
-                <p v-if="fieldMapAddressCandidatesLoading" class="field-map-picker-status">Подбираем адреса по контуру...</p>
-              </label>
-            </div>
-            <div class="modal-form-section">
-              <div class="modal-field modal-field--full">
-                <span class="modal-label">Карта участка</span>
-                <label class="modal-field modal-field--full field-map-land-select">
-                  <span class="modal-label">Земельный участок (контур для ориентира)</span>
-                  <UiSelect v-model="newFieldLandId" :options="[{ value: '', label: '— Выберите участок, чтобы показать контур —' }, ...(lands).map((land) => ({ value: land.id, label: `${land.cadastral_number || `Участок №${land.number}`}${land.address ? ` — ${land.address}` : ''}` }))]" class="modal-select" />
-                </label>
-                <div class="field-geometry-head">
-                  <span class="modal-label">Режим геометрии</span>
-                  <ToggleGroup type="single" variant="outline" size="sm" aria-label="Режим геометрии поля"
-                    :model-value="(newFieldGeometryMode === 'point') ? 'b0' : (newFieldGeometryMode === 'polygon') ? 'b1' : ''"
-                    @update:model-value="(v) => { if (v === 'b0') { setFieldGeometryMode('point') } else if (v === 'b1') { setFieldGeometryMode('polygon') } }"
-                  >
-                    <ToggleGroupItem value="b0" class="px-3">Точка</ToggleGroupItem>
-                    <ToggleGroupItem value="b1" class="px-3">Контур</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-                <div class="field-map-picker-wrap">
-                  <YandexMap
-                    :key="`${editingFieldId ?? 'new-field'}-${isFieldModalWide ? 'wide' : 'normal'}`"
-                    :lat="fieldMapCenter.lat"
-                    :lon="fieldMapCenter.lon"
-                    :zoom="12"
-                    :geometry-mode="newFieldGeometryMode"
-                    :polygon-points="fieldMapPolygonPoints"
-                    :field-markers="selectedLandContourMarkers"
-                    :fit-field-markers="selectedLandContourMarkers.length > 0"
-                    :overlay-hint="selectedLandContourMarkers.length > 0"
-                    @pick="onPickFieldMap"
-                    @polygonChange="onFieldMapPolygonChange"
-                  />
-                </div>
-                <p v-if="!newFieldLandId" class="field-map-picker-note field-map-picker-note--warn">
-                  Выберите земельный участок выше, чтобы на карте отобразился его контур.
-                </p>
-                <p class="field-map-picker-note">
-                  <template v-if="newFieldGeometryMode === 'polygon'">
-                    Постройте контур поля на карте. Площадь считается автоматически, но ее можно скорректировать вручную.
-                  </template>
-                  <template v-else>
-                    Нажмите на карту, чтобы автоматически заполнить геолокацию и адрес.
-                  </template>
-                </p>
-                <p v-if="fieldMapAddressLoading" class="field-map-picker-status">Определяем адрес по координатам...</p>
-                <p v-else-if="fieldMapAddressError" class="field-map-picker-status field-map-picker-status--error">{{ fieldMapAddressError }}</p>
-              </div>
-            </div>
-            <div class="modal-form-section modal-form-section--grid modal-form-section--grid-4">
-              <label class="modal-field">
-                <span class="modal-label modal-label--with-help">
-                  Тип земли
-                  <RefFieldHelp
-                    text="Не хватает типа земли? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'land-refs' } }"
-                    link-label="Справочники земель"
-                  />
-                </span>
-                <UiSelect v-model="newFieldLandType" :options="[...(landTypeOptions).map((t) => ({ value: t.name, label: String(t.name) }))]" class="modal-select" />
-              </label>
-              <label class="modal-field">
-                <span class="modal-label modal-label--with-help">
-                  Культура
-                  <RefFieldHelp
-                    text="Нет нужной культуры? Добавьте ее в"
-                    :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
-                    link-label="Справочники СХ культур"
-                  />
-                </span>
-                <UiSelect v-model="newFieldCropKey" :options="[...(cropOptions).map((opt) => ({ value: opt.key, label: String(opt.label) }))]" class="modal-select" />
-              </label>
-              <label class="modal-field">
-                <span class="modal-label">Год посева</span>
-                <Input v-model.number="newFieldSowingYear" type="number" class="modal-input" min="2000" :max="new Date().getFullYear() + 2" />
-              </label>
-              <label class="modal-field">
-                <span class="modal-label">Ответственный</span>
-                <UiSelect v-model="newFieldResponsibleId" :options="[{ value: '', label: 'Не назначен' }, ...(profiles).map((p) => ({ value: p.id, label: String(p.display_name || p.email) }))]" class="modal-select" />
-              </label>
-              <label class="modal-field">
-                <span class="modal-label modal-label--with-help">
-                  Муниципальное образование
-                  <RefFieldHelp
-                    text="Нет нужного муниципального образования? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'field-refs' } }"
-                    link-label="Справочники полей"
-                  />
-                </span>
-                <UiSelect v-model="newFieldMunicipality" :options="[{ value: '', label: '—' }, ...(fieldMunicipalityRefs).map((row) => ({ value: row.name, label: String(row.name) }))]" class="modal-select" />
-              </label>
-              <label class="modal-field">
-                <span class="modal-label">Регион</span>
-                <Input v-model="newFieldRegion" type="text" class="modal-input" placeholder="Например: Ростовская область" />
-              </label>
-            </div>
-            <div class="modal-form-section">
-              <label class="modal-field modal-field--full">
-                <span class="modal-label">Описание местоположения</span>
-                <textarea
-                  v-model="newFieldLocationDesc"
-                  class="modal-textarea"
-                  rows="3"
-                  placeholder="Опишите границы текстом (например: От дороги до ручья, прямоугольник 500×200 м...)"
+        <div class="tw-scope flex flex-col gap-6">
+          <Alert v-if="fieldFormError" variant="destructive">
+            <AlertDescription>{{ fieldFormError }}</AlertDescription>
+          </Alert>
+
+          <FormGrid :cols="2">
+            <FormField label="Название поля" for="fm-name" wide required>
+              <Input id="fm-name" v-model="newFieldName" type="text" placeholder="Например: Поле №12 — Пшеница" />
+            </FormField>
+            <FormField label="Кадастровый номер" for="fm-cad">
+              <Input id="fm-cad" v-model="newFieldCadastral" type="text" placeholder="XX:XX:XXXXXXX:XX" />
+            </FormField>
+            <FormField label="№ поля ЕФИС ЗСН" for="fm-efis">
+              <Input id="fm-efis" v-model="newFieldEfisZsn" type="text" placeholder="Например: EFIS-000123" />
+            </FormField>
+            <FormField
+              label="Площадь"
+              for="fm-area"
+              required
+              :hint="newFieldGeometryMode === 'polygon' && newFieldAreaAuto != null ? `Авто по контуру: ${newFieldAreaAuto} га` : undefined"
+            >
+              <InputGroup>
+                <InputGroupInput id="fm-area" v-model.number="newFieldArea" type="number" min="0" step="0.01" placeholder="0,00" @input="onFieldAreaManualInput" />
+                <InputGroupAddon align="inline-end">га</InputGroupAddon>
+              </InputGroup>
+            </FormField>
+            <FormField label="Год посева" for="fm-year">
+              <Input id="fm-year" v-model.number="newFieldSowingYear" type="number" min="2000" :max="new Date().getFullYear() + 2" />
+            </FormField>
+            <FormField label="Адрес" for="fm-address" wide :hint="fieldMapAddressCandidatesLoading ? 'Подбираем адреса по контуру…' : undefined">
+              <Input id="fm-address" v-model="newFieldAddress" type="text" placeholder="Например: Курская обл., Обоянский р-н" @input="onFieldAddressInput" />
+              <UiSelect
+                v-if="newFieldAddressCandidates.length"
+                v-model="selectedAddressCandidate"
+                block
+                aria-label="Варианты адреса по контуру"
+                placeholder="Варианты адреса по контуру"
+                :options="newFieldAddressCandidates.map((a) => ({ value: a, label: a }))"
+                @change="onAddressCandidateChange"
+              />
+            </FormField>
+          </FormGrid>
+
+          <section class="flex flex-col gap-4 rounded-xl border p-4">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <FormField label="Земельный участок для ориентира" class="min-w-0 flex-1">
+                <UiSelect
+                  v-model="newFieldLandId"
+                  block
+                  aria-label="Земельный участок"
+                  :options="[{ value: '', label: 'Выберите участок, чтобы показать контур' }, ...lands.map((land) => ({ value: land.id, label: `${land.cadastral_number || `Участок №${land.number}`}${land.address ? ` — ${land.address}` : ''}` }))]"
                 />
-              </label>
+              </FormField>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                aria-label="Режим геометрии поля"
+                :model-value="newFieldGeometryMode"
+                @update:model-value="(v) => { if (v === 'point' || v === 'polygon') setFieldGeometryMode(v) }"
+              >
+                <ToggleGroupItem value="point" class="px-3">Точка</ToggleGroupItem>
+                <ToggleGroupItem value="polygon" class="px-3">Контур</ToggleGroupItem>
+              </ToggleGroup>
             </div>
-            <div class="modal-form-section modal-form-section--grid">
-              <label class="modal-field">
-                <span class="modal-label">Геолокация</span>
-                <Input
-                  v-model="newFieldGeo"
-                  type="text"
-                  class="modal-input"
-                  placeholder="Например: 55.7558, 37.6173" />
-              </label>
-              <label class="modal-field modal-field--full">
-                <span class="modal-label">Доп. информация</span>
-                <textarea
-                  v-model="newFieldExtra"
-                  class="modal-textarea"
-                  rows="3"
-                  placeholder="Любые дополнительные заметки о поле"
-                />
-              </label>
+            <div class="field-map-picker-wrap">
+              <YandexMap
+                :key="`${editingFieldId ?? 'new-field'}-${isFieldModalWide ? 'wide' : 'normal'}`"
+                :lat="fieldMapCenter.lat"
+                :lon="fieldMapCenter.lon"
+                :zoom="12"
+                :geometry-mode="newFieldGeometryMode"
+                :polygon-points="fieldMapPolygonPoints"
+                :field-markers="selectedLandContourMarkers"
+                :fit-field-markers="selectedLandContourMarkers.length > 0"
+                :overlay-hint="selectedLandContourMarkers.length > 0"
+                @pick="onPickFieldMap"
+                @polygonChange="onFieldMapPolygonChange"
+              />
             </div>
-            <div class="modal-form-section">
-              <div class="modal-field modal-field--full">
-                <span class="modal-label">Прикрепить схему/план</span>
-                <input
-                  id="field-scheme-file-input"
-                  ref="schemeFileInputRef"
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                  class="modal-file-input-hidden"
-                  aria-hidden="true"
-                  @change="onSchemeFileSelect"
-                />
-                <label
-                  for="field-scheme-file-input"
-                  class="modal-dropzone-label"
-                  :class="{ 'modal-dropzone--loading': schemeUploading }"
-                  @dragover.prevent="onSchemeDragOver"
-                  @dragleave.prevent="onSchemeDragLeave"
-                  @drop.prevent="onSchemeDrop"
-                >
-                  <template v-if="schemeUploading">
-                    <span class="modal-dropzone-loading-inner">
-                      <UiLoadingBar size="compact" />
-                    </span>
-                  </template>
-                  <template v-else-if="newFieldSchemeFileName">
-                    <div class="modal-scheme-preview-wrap">
-                      <img
-                        v-if="isSchemeImage && schemePreviewUrl"
-                        :src="schemePreviewUrl"
-                        class="modal-scheme-preview-img"
-                        alt="Превью схемы"
-                        @error="($event.target as HTMLImageElement).style.display = 'none'"
-                      />
-                      <div v-else class="modal-scheme-preview-pdf">
-                        <FileTextIcon :size="40" />
-                        <span>PDF</span>
-                      </div>
-                      <span class="modal-dropzone-filename">{{ newFieldSchemeFileName }}</span>
-                      <UiDeleteButton size="xs" @click.prevent.stop="clearSchemeFile" />
-                    </div>
-                  </template>
-                  <template v-else>
-                    <UploadIcon class="modal-dropzone-icon" />
-                    <span class="modal-dropzone-text">Загрузить файл</span> или перетащите сюда
-                    <span class="modal-file-hint">JPG, PNG, PDF до 20 МБ</span>
-                  </template>
-                </label>
-                <div v-if="schemeUploadError" class="modal-error modal-error--dropzone" role="alert">{{ schemeUploadError }}</div>
-              </div>
-            </div>
-          </div>
+            <p class="text-xs text-muted-foreground">
+              <template v-if="newFieldGeometryMode === 'polygon'">Постройте контур поля на карте — площадь посчитается сама, её можно поправить вручную.</template>
+              <template v-else>Нажмите на карту — геолокация и адрес заполнятся сами.</template>
+            </p>
+            <p v-if="fieldMapAddressLoading" class="text-xs text-muted-foreground">Определяем адрес по координатам…</p>
+            <p v-else-if="fieldMapAddressError" class="text-xs text-destructive">{{ fieldMapAddressError }}</p>
+          </section>
+
+          <FormGrid :cols="2">
+            <FormField label="Тип земли">
+              <template #label-actions>
+                <RefFieldHelp text="Не хватает типа земли? Добавьте его в" :to="{ path: '/lands', query: { tab: 'land-refs' } }" link-label="Справочники земель" />
+              </template>
+              <UiSelect v-model="newFieldLandType" block aria-label="Тип земли" :options="landTypeOptions.map((t) => ({ value: t.name, label: String(t.name) }))" />
+            </FormField>
+            <FormField label="Культура">
+              <template #label-actions>
+                <RefFieldHelp text="Нет нужной культуры? Добавьте её в" :to="{ path: '/lands', query: { tab: 'crops-refs' } }" link-label="Справочники СХ культур" />
+              </template>
+              <UiSelect v-model="newFieldCropKey" block aria-label="Культура" :options="cropOptions.map((opt) => ({ value: opt.key, label: String(opt.label) }))" />
+            </FormField>
+            <FormField label="Ответственный">
+              <UiSelect v-model="newFieldResponsibleId" block aria-label="Ответственный" :options="[{ value: '', label: 'Не назначен' }, ...profiles.map((p) => ({ value: p.id, label: String(p.display_name || p.email) }))]" />
+            </FormField>
+            <FormField label="Муниципальное образование">
+              <template #label-actions>
+                <RefFieldHelp text="Нет нужного муниципального образования? Добавьте его в" :to="{ path: '/lands', query: { tab: 'field-refs' } }" link-label="Справочники полей" />
+              </template>
+              <UiSelect v-model="newFieldMunicipality" block aria-label="Муниципальное образование" :options="[{ value: '', label: '—' }, ...fieldMunicipalityRefs.map((row) => ({ value: row.name, label: String(row.name) }))]" />
+            </FormField>
+            <FormField label="Регион" for="fm-region">
+              <Input id="fm-region" v-model="newFieldRegion" type="text" placeholder="Например: Курская область" />
+            </FormField>
+            <FormField label="Геолокация" for="fm-geo">
+              <Input id="fm-geo" v-model="newFieldGeo" type="text" placeholder="Например: 51.1435, 36.1640" />
+            </FormField>
+            <FormField label="Описание местоположения" for="fm-locdesc" wide>
+              <Textarea id="fm-locdesc" v-model="newFieldLocationDesc" rows="3" placeholder="Границы текстом, например: от дороги до ручья, прямоугольник 500×200 м" />
+            </FormField>
+            <FormField label="Дополнительная информация" for="fm-extra" wide>
+              <Textarea id="fm-extra" v-model="newFieldExtra" rows="3" placeholder="Любые заметки о поле" />
+            </FormField>
+            <FormField label="Схема или план" wide :error="schemeUploadError || undefined" hint="JPG, PNG или PDF до 20 МБ">
+              <input
+                id="field-scheme-file-input"
+                ref="schemeFileInputRef"
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                class="hidden"
+                aria-hidden="true"
+                @change="onSchemeFileSelect"
+              />
+              <label
+                for="field-scheme-file-input"
+                class="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground transition-colors hover:bg-muted/40"
+                :class="{ 'pointer-events-none opacity-70': schemeUploading }"
+                @dragover.prevent="onSchemeDragOver"
+                @dragleave.prevent="onSchemeDragLeave"
+                @drop.prevent="onSchemeDrop"
+              >
+                <UiLoadingBar v-if="schemeUploading" size="compact" />
+                <span v-else-if="newFieldSchemeFileName" class="flex w-full min-w-0 items-center gap-3 text-left text-foreground">
+                  <img
+                    v-if="isSchemeImage && schemePreviewUrl"
+                    :src="schemePreviewUrl"
+                    class="size-12 shrink-0 rounded-md border object-cover"
+                    alt="Превью схемы"
+                    @error="($event.target as HTMLImageElement).style.display = 'none'"
+                  />
+                  <FileTextIcon v-else class="size-8 shrink-0 text-muted-foreground" />
+                  <span class="min-w-0 flex-1 truncate">{{ newFieldSchemeFileName }}</span>
+                  <UiDeleteButton size="xs" @click.prevent.stop="clearSchemeFile" />
+                </span>
+                <template v-else>
+                  <UploadIcon class="size-5" />
+                  <span><span class="font-medium text-foreground">Загрузить файл</span> или перетащите сюда</span>
+                </template>
+              </label>
+            </FormField>
+          </FormGrid>
+        </div>
         <template #actions>
           <UiButton @click="closeFieldModal">Отмена</UiButton>
           <UiButton variant="primary" @click="addField">{{ editingFieldId ? 'Сохранить' : 'Сохранить поле' }}</UiButton>

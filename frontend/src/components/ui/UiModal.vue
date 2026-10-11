@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onBeforeUnmount, ref, watch } from 'vue'
 /**
  * Окно проекта — Dialog из shadcn-vue: затемнение, заголовок, крестик, тело
  * (слот по умолчанию), кнопки (слот `actions`, как DialogFooter).
@@ -68,6 +69,32 @@ function onOpenAutoFocus(e: Event) {
   ;(finePointer && isTextField ? first! : content).focus({ preventScroll: true })
 }
 
+/**
+ * Сообщение об ошибке (Alert с красной рамкой) обычно стоит вверху формы. Если пользователь
+ * прокрутил длинное окно вниз и нажал «Сохранить», он его не увидит — прокручиваем к нему.
+ */
+const bodyEl = ref<HTMLElement | null>(null)
+let alertObserver: MutationObserver | null = null
+// Тело окна рисуется в портале чуть позже монтирования — подключаемся, когда оно появится.
+watch(bodyEl, (el) => {
+  alertObserver?.disconnect()
+  if (!el || typeof MutationObserver === 'undefined') return
+  alertObserver = new MutationObserver((records) => {
+    for (const r of records) {
+      for (const n of r.addedNodes) {
+        if (!(n instanceof HTMLElement)) continue
+        const alert = n.matches('[data-slot="alert"]') ? n : n.querySelector('[data-slot="alert"]')
+        if (alert) {
+          alert.scrollIntoView({ block: 'nearest' })
+          return
+        }
+      }
+    }
+  })
+  alertObserver.observe(el, { childList: true, subtree: true })
+})
+onBeforeUnmount(() => alertObserver?.disconnect())
+
 function guardEscape(e: Event) {
   if (props.closeDisabled) e.preventDefault()
 }
@@ -92,7 +119,7 @@ function guardEscape(e: Event) {
           <slot name="header-actions" />
         </div>
       </DialogHeader>
-      <div v-if="$slots.default" class="ui-dialog-body">
+      <div v-if="$slots.default" ref="bodyEl" class="ui-dialog-body">
         <slot />
       </div>
       <DialogFooter v-if="$slots.actions">
