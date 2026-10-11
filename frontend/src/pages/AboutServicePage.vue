@@ -2,7 +2,8 @@
 /**
  * «О сервисе» — инструкция по порталу: с чего начать, разделы меню (для чего и как
  * пользоваться), роли, общие приёмы и частые вопросы. Описывает только то, что
- * в портале действительно есть; при изменении разделов текст нужно обновлять.
+ * в портале действительно есть; при изменении разделов текст и снимки (public/about)
+ * нужно обновлять. На снимках имена, почты и фото сотрудников заменены условными.
  */
 import type { Component } from 'vue'
 import { RouterLink, type RouteLocationRaw } from 'vue-router'
@@ -23,7 +24,11 @@ import {
   WarehouseIcon,
   WheatIcon,
 } from '@lucide/vue'
+import { ref } from 'vue'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/shadcn/accordion'
+import ImagePreviewDialog from '@/components/ui/dialogs/ImagePreviewDialog.vue'
+
+const preview = ref<{ src: string; alt: string } | null>(null)
 
 withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 
@@ -50,6 +55,8 @@ interface GuideSection {
   links: GuideLink[]
   /** Только для руководителя / оговорки. */
   note?: string
+  /** Снимки экрана (public/about). Персональные данные на них заменены условными. */
+  shots?: { src: string; alt: string; phone?: boolean }[]
 }
 
 /** Порядок первоначальной настройки. */
@@ -76,6 +83,7 @@ const sections: GuideSection[] = [
       '«Мелиорация»: системы, защитные лесные насаждения и мероприятия — по вкладкам, кнопка «Добавить».',
       'Реестры выгружаются в PDF и Excel кнопками над таблицей.',
     ],
+    shots: [{ src: '/about/fields.webp', alt: 'Реестр полей' }],
     links: [
       { label: 'Земельные участки', to: '/lands' },
       { label: 'Поля', to: '/fields' },
@@ -95,6 +103,7 @@ const sections: GuideSection[] = [
       '«Перемещение» — из ячейки в ячейку, с массой, потерями в пути, машиной и водителем.',
       '«Операция» → «Продажа», «На посев», «Переработка / корм», «Списание», «Подработка» (сушка, очистка), «Инвентаризация».',
     ],
+    shots: [{ src: '/about/warehouses.webp', alt: 'Карточки складов' }],
     links: [
       { label: 'Карточки складов', to: '/warehouses' },
       { label: 'Места хранения', to: '/warehouses/storage-locations' },
@@ -112,6 +121,7 @@ const sections: GuideSection[] = [
       'Ошибочную операцию не удаляют: руководитель отменяет её (сторно) с указанием причины, остатки пересчитываются.',
       '«Контрагенты» — покупатели и поставщики с ИНН и контактами; их выбирают при продаже и закупке.',
     ],
+    shots: [{ src: '/about/journal.webp', alt: 'Журнал операций с раскрытым документом' }],
     links: [
       { label: 'Партии', to: '/grain/batches' },
       { label: 'Журнал операций', to: '/grain/journal' },
@@ -129,6 +139,7 @@ const sections: GuideSection[] = [
       'Вкладка «Орудия» → «Добавить орудие»: плуги, сеялки и т. п.; орудие можно закрепить за машиной.',
       'В карточке техники — документы, фото и история: какие операции выполнялись, топливо до и после, состояние.',
     ],
+    shots: [{ src: '/about/equipment.webp', alt: 'Список техники' }],
     links: [{ label: 'Техника', to: '/equipment' }],
   },
   {
@@ -143,6 +154,7 @@ const sections: GuideSection[] = [
       'Нажмите на задачу — откроется карточка: статус меняется прямо в ней («К выполнению», «В процессе», «На проверке», «Выполнено»), есть файлы, обсуждение и история изменений.',
       'Чтобы открыть задачу на отдельной странице, нажмите на неё с Ctrl (⌘ на Mac) или колёсиком мыши — или кнопку «Открыть в новой вкладке» в карточке.',
     ],
+    shots: [{ src: '/about/task.webp', alt: 'Задача на отдельной странице' }],
     links: [{ label: 'Задачи', to: '/task-management' }],
     note: 'Сотрудник ставит задачи себе; назначать исполнителя может руководитель.',
   },
@@ -174,6 +186,7 @@ const sections: GuideSection[] = [
       '«Сообщить о проблеме»: опишите, при необходимости прикрепите файл и выберите, кому отправить, — сообщение придёт в чат как важное.',
       'Ниже — ваши задачи и события календаря на сегодня (кнопка «В работу» запускает операцию по задаче), техника в работе и журнал смены.',
     ],
+    shots: [{ src: '/about/operator.webp', alt: 'Экран оператора' }, { src: '/about/operator-phone.webp', alt: 'Экран оператора на телефоне', phone: true }],
     links: [{ label: 'Экран оператора', to: '/mechanic' }],
   },
   {
@@ -231,6 +244,7 @@ const sections: GuideSection[] = [
       'Руководитель публикует новости: «Добавить новость» — заголовок, подводка, обложка, текст (можно вставить прямо из источника), галерея. «Сохранить» — с выбранной датой, «Опубликовать сейчас» — сразу.',
       '«Погода» — прогноз на 5 дней, подробные показатели, агро-условия на сутки, почасовой риск работ и состояние на ваших полях.',
     ],
+    shots: [{ src: '/about/weather.webp', alt: 'Погода и агро-условия' }],
     links: [
       { label: 'Новости', to: '/news' },
       { label: 'Погода', to: '/weather' },
@@ -361,35 +375,64 @@ const faq = [
       v-for="s in sections"
       :id="s.id"
       :key="s.id"
-      class="grid scroll-mt-4 gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6"
+      class="grid scroll-mt-4 gap-6 rounded-xl border bg-card p-4 shadow-xs md:p-6"
+      :class="s.shots?.length ? 'xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] xl:items-start' : ''"
     >
-      <header class="flex items-start gap-3">
-        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:text-ring">
-          <component :is="s.icon" class="size-5" />
-        </span>
-        <div class="grid min-w-0 gap-1">
-          <h2 class="text-lg font-semibold">{{ s.title }}</h2>
-          <p class="text-xs text-muted-foreground">{{ s.where }}</p>
+      <div class="grid min-w-0 gap-4">
+        <header class="flex items-start gap-3">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:text-ring">
+            <component :is="s.icon" class="size-5" />
+          </span>
+          <div class="grid min-w-0 gap-1">
+            <h2 class="text-lg font-semibold">{{ s.title }}</h2>
+            <p class="text-xs text-muted-foreground">{{ s.where }}</p>
+          </div>
+        </header>
+        <p class="text-sm md:text-base">{{ s.purpose }}</p>
+        <ol class="grid gap-2">
+          <li v-for="(step, i) in s.steps" :key="i" class="flex gap-3 text-sm leading-relaxed">
+            <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums text-muted-foreground">{{ i + 1 }}</span>
+            <span>{{ step }}</span>
+          </li>
+        </ol>
+        <p v-if="s.note" class="rounded-lg bg-muted/60 px-3 py-2 text-sm text-muted-foreground">{{ s.note }}</p>
+        <div class="flex flex-wrap gap-2">
+          <RouterLink
+            v-for="link in s.links"
+            :key="link.label"
+            :to="link.to"
+            class="inline-flex h-8 items-center gap-1.5 rounded-md border bg-background px-3 text-sm font-medium text-foreground no-underline shadow-xs transition-colors hover:bg-accent"
+          >
+            {{ link.label }}
+            <ArrowRightIcon class="size-3.5" />
+          </RouterLink>
         </div>
-      </header>
-      <p class="text-sm md:text-base">{{ s.purpose }}</p>
-      <ol class="grid gap-2">
-        <li v-for="(step, i) in s.steps" :key="i" class="flex gap-3 text-sm leading-relaxed">
-          <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums text-muted-foreground">{{ i + 1 }}</span>
-          <span>{{ step }}</span>
-        </li>
-      </ol>
-      <p v-if="s.note" class="rounded-lg bg-muted/60 px-3 py-2 text-sm text-muted-foreground">{{ s.note }}</p>
-      <div class="flex flex-wrap gap-2">
-        <RouterLink
-          v-for="link in s.links"
-          :key="link.label"
-          :to="link.to"
-          class="inline-flex h-8 items-center gap-1.5 rounded-md border bg-background px-3 text-sm font-medium text-foreground no-underline shadow-xs transition-colors hover:bg-accent"
+      </div>
+
+      <div v-if="s.shots?.length" class="flex min-w-0 items-start gap-4">
+        <button
+          v-for="shot in s.shots"
+          :key="shot.src"
+          type="button"
+          class="group block min-w-0 cursor-zoom-in overflow-hidden border bg-muted/40 text-left shadow-sm outline-none transition-shadow hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50"
+          :class="shot.phone ? 'hidden w-36 shrink-0 rounded-[1.25rem] p-1.5 sm:block' : 'flex-1 rounded-xl'"
+          :aria-label="`Открыть снимок: ${shot.alt}`"
+          @click="preview = shot"
         >
-          {{ link.label }}
-          <ArrowRightIcon class="size-3.5" />
-        </RouterLink>
+          <span v-if="!shot.phone" class="flex items-center gap-1.5 border-b bg-muted/60 px-3 py-2" aria-hidden="true">
+            <span class="size-2 rounded-full bg-muted-foreground/30" />
+            <span class="size-2 rounded-full bg-muted-foreground/30" />
+            <span class="size-2 rounded-full bg-muted-foreground/30" />
+          </span>
+          <img
+            :src="shot.src"
+            :alt="shot.alt"
+            loading="lazy"
+            decoding="async"
+            class="block h-auto w-full transition-transform duration-300 group-hover:scale-[1.01]"
+            :class="shot.phone ? 'rounded-[0.9rem]' : ''"
+          />
+        </button>
       </div>
     </section>
 
@@ -436,6 +479,8 @@ const faq = [
         </AccordionItem>
       </Accordion>
     </section>
+
+    <ImagePreviewDialog v-if="preview" :name="preview.alt" :url="preview.src" @close="preview = null" />
 
     <p class="flex items-center gap-2 pb-2 text-sm text-muted-foreground">
       <BellIcon class="size-4" />
