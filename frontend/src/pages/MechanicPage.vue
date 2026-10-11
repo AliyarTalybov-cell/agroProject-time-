@@ -19,17 +19,19 @@ import { computed, ref, onMounted, onUnmounted, onActivated, watch } from 'vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { useRouter } from 'vue-router'
 import type { ActiveDowntime, DowntimeCategory } from '@/lib/downtimeStorage'
-import { appendEvent, loadActive, saveActive, loadEvents as loadDowntimeEvents } from '@/lib/downtimeStorage'
+import { appendEvent, loadActive, saveActive, markDowntimesSynced, type StoredDowntime } from '@/lib/downtimeStorage'
 import {
   appendOperation,
-  loadOperations,
   loadActiveOperation,
+  markOperationsSynced,
   saveActiveOperation,
+  type StoredOperation,
 } from '@/lib/operationStorage'
+import { pendingDowntimes, pendingOperations, syncPendingShift } from '@/lib/shiftSync'
 import { loadDowntimeReasons, loadWorkOperations, isSupabaseConfigured } from '@/lib/reasonsAndOperations'
 import type { DowntimeReasonRow, WorkOperationRow } from '@/lib/reasonsAndOperations'
 import { loadFields, type FieldRow } from '@/lib/fieldsSupabase'
-import { insertDowntime, insertOperation } from '@/lib/analyticsSupabase'
+import { insertDowntime, insertOperation, loadDowntimesFromSupabase, loadOperationsFromSupabase } from '@/lib/analyticsSupabase'
 import { upsertOperatorStatus, deleteOperatorStatus, loadOperatorStatusesFromSupabase } from '@/lib/operatorStatusSupabase'
 import { loadCalendarTasks, updateCalendarTask } from '@/lib/calendarTasksSupabase'
 import { useAuth } from '@/stores/auth'
@@ -124,7 +126,6 @@ const isOperationsOpen = ref(false)
 const isStartedModalOpen = ref(false)
 const isFinishedModalOpen = ref(false)
 const isFinishedModalType = ref<'downtime' | 'operation'>('downtime')
-const isAddFieldOpen = ref(false)
 const isFieldsOpen = ref(false)
 const fieldsDropdownRef = ref<HTMLElement | null>(null)
 
@@ -184,8 +185,6 @@ const shouldAskEquipmentFuelLeft = computed(
 )
 const shouldAskProcessedHectares = computed(() => finishNotesType.value === 'operation')
 
-const newFieldName = ref('')
-const newFieldOperation = ref('')
 const startPlannedHectares = ref<number | null>(null)
 const startOperationPlanError = ref<string | null>(null)
 
@@ -208,8 +207,12 @@ const calendarTaskSavingIds = ref<string[]>([])
 
 const reasons = ref<Array<{ label: string; description: string; category: DowntimeCategory }>>([...DEFAULT_REASONS])
 const workOperationsList = ref<WorkOperationRow[]>([])
-const operationHistory = ref(loadOperations())
-const downtimeHistory = ref(loadDowntimeEvents())
+/** Журнал смены: записи из базы + ещё не отправленные из браузера (pending). */
+type Pending<T> = T & { pending?: boolean }
+const serverOperations = ref<StoredOperation[]>([])
+const serverDowntimes = ref<StoredDowntime[]>([])
+const operationHistory = ref<Pending<StoredOperation>[]>([])
+const downtimeHistory = ref<Pending<StoredDowntime>[]>([])
 
 const issueReportText = ref('')
 const issueReportFile = ref<File | null>(null)
@@ -228,9 +231,44 @@ const successModalOpen = ref(false)
 const successModalTitle = ref('Операция выполнена')
 const successModalMessage = ref('')
 
+/** Склеить записи из базы и неотправленные; дубли по времени начала убрать. */
+function mergeShift<T extends { startISO: string }>(server: T[], pending: T[]): Pending<T>[] {
+  const seen = new Set(server.map((x) => new Date(x.startISO).getTime()))
+  return [
+    ...server,
+    ...pending.filter((x) => !seen.has(new Date(x.startISO).getTime())).map((x) => ({ ...x, pending: true })),
+  ].sort((a, b) => new Date(a.startISO).getTime() - new Date(b.startISO).getTime())
+}
+
 function refreshShiftHistory() {
-  operationHistory.value = loadOperations()
-  downtimeHistory.value = loadDowntimeEvents()
+  const uid = auth.user.value?.id ?? ''
+  operationHistory.value = mergeShift(serverOperations.value, uid ? pendingOperations(uid, employeeDisplayName.value) : [])
+  downtimeHistory.value = mergeShift(serverDowntimes.value, uid ? pendingDowntimes(uid, employeeDisplayName.value) : [])
+}
+
+/** Дослать неотправленное и перечитать журнал из базы. Без связи остаётся то, что есть. */
+async function reloadShiftFromServer() {
+  const uid = auth.user.value?.id
+  if (!uid || !isSupabaseConfigured()) {
+    refreshShiftHistory()
+    return
+  }
+  await syncPendingShift(uid, employeeDisplayName.value).catch(() => null)
+  try {
+    const [ops, downs] = await Promise.all([
+      loadOperationsFromSupabase(true, uid, 20),
+      loadDowntimesFromSupabase(true, uid, 20),
+    ])
+    serverOperations.value = ops
+    serverDowntimes.value = downs
+  } catch (e) {
+    console.warn('Журнал смены: база недоступна, показываем сохранённое в браузере', e)
+  }
+  refreshShiftHistory()
+}
+
+function onBackOnline() {
+  void reloadShiftFromServer()
 }
 
 function toMs(iso: string | null | undefined): number {
@@ -247,6 +285,8 @@ function lastFinishedActivityMs(): number {
 
 onMounted(async () => {
   refreshShiftHistory()
+  void reloadShiftFromServer()
+  window.addEventListener('online', onBackOnline)
   const savedOp = loadActiveOperation()
   if (savedOp && !active.value) {
     activeOperation.value = savedOp
@@ -400,11 +440,12 @@ onMounted(async () => {
   window.addEventListener('mousedown', onGlobalPointerDown)
 })
 onActivated(() => {
-  refreshShiftHistory()
+  void reloadShiftFromServer()
 })
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
   window.removeEventListener('mousedown', onGlobalPointerDown)
+  window.removeEventListener('online', onBackOnline)
 })
 
 watch(
@@ -484,6 +525,8 @@ function formatJournalTime(iso: string | null | undefined): string {
 type ShiftJournalItem = {
   id: string
   isActive: boolean
+  /** Ещё не отправлено в базу. */
+  pending?: boolean
   timeLabel: string
   title: string
   subtitle: string
@@ -524,6 +567,7 @@ const shiftJournalItems = computed<ShiftJournalItem[]>(() => {
       item: {
         id: `op-${op.id}`,
         isActive: false,
+        pending: op.pending,
         timeLabel: `${formatJournalTime(op.startISO)} - ${formatJournalTime(op.endISO)}`,
         title: op.operation || 'Операция',
         subtitle: `${op.fieldName ?? 'Без поля'} (${op.durationMinutes} мин)`,
@@ -537,6 +581,7 @@ const shiftJournalItems = computed<ShiftJournalItem[]>(() => {
       item: {
         id: `down-${d.id}`,
         isActive: false,
+        pending: d.pending,
         timeLabel: `${formatJournalTime(d.startISO)} - ${formatJournalTime(d.endISO)}`,
         title: `Простой — ${d.reason}`,
         subtitle: `${d.fieldName ?? 'Без поля'} (${d.durationMinutes} мин)`,
@@ -783,9 +828,11 @@ function stopDowntimeWithNotes(notes?: string) {
   const start = new Date(active.value.startISO)
   const durationMinutes = Math.max(1, Math.round((now.getTime() - start.getTime()) / 60000))
 
-  const event = {
+  const event: StoredDowntime = {
     id: active.value.id,
     employee: active.value.employee,
+    userId: auth.user.value?.id ?? null,
+    synced: false,
     reason: active.value.reason,
     category: active.value.category,
     startISO: active.value.startISO,
@@ -799,7 +846,15 @@ function stopDowntimeWithNotes(notes?: string) {
   appendEvent(event)
   refreshShiftHistory()
   if (isSupabaseConfigured()) {
-    insertDowntime(event, auth.user.value?.id ?? null).catch(() => {})
+    insertDowntime(event, auth.user.value?.id ?? null)
+      .then(() => {
+        markDowntimesSynced([event.id])
+        void reloadShiftFromServer()
+      })
+      .catch((e) => {
+        // Запись осталась в браузере с отметкой «не отправлено» и дошлётся позже.
+        console.error('insertDowntime failed (MechanicPage)', e, { event })
+      })
   }
 
   active.value = null
@@ -830,9 +885,11 @@ function stopOperationWithNotes(notes?: string, equipmentFuelLeft?: number | nul
   const liveNote = savedOp?.operatorNote?.trim() || ''
   const finishNote = notes?.trim() || ''
   const mergedNotes = [liveNote, finishNote].filter(Boolean).join('\n\n')
-  const op = {
+  const op: StoredOperation = {
     id: now.getTime(),
     employee: employeeDisplayName.value,
+    userId: auth.user.value?.id ?? null,
+    synced: false,
     taskId: savedOp?.taskId ?? null,
     taskTitle: savedOp?.taskTitle ?? null,
     taskNumber: savedOp?.taskNumber ?? null,
@@ -855,12 +912,16 @@ function stopOperationWithNotes(notes?: string, equipmentFuelLeft?: number | nul
   appendOperation(op)
   refreshShiftHistory()
   if (isSupabaseConfigured()) {
-    insertOperation(op, auth.user.value?.id ?? null).catch((e) => {
-      console.error('insertOperation failed (MechanicPage)', e, { op })
-    })
+    insertOperation(op, auth.user.value?.id ?? null)
+      .then(() => {
+        markOperationsSynced([op.id])
+        void reloadShiftFromServer()
+      })
+      .catch((e) => {
+        // Запись осталась в браузере с отметкой «не отправлено» и дошлётся позже.
+        console.error('insertOperation failed (MechanicPage)', e, { op })
+      })
   }
-  // Диагностика: чтобы понять, что реально уходит в insertOperation.
-  // В идеале equipmentFuelPercent/equipmentCondition* должны быть числами.
   saveActiveOperation(null)
   activeOperation.value = null
   workStartedAt.value = null
@@ -1335,24 +1396,6 @@ function backFromEquipmentModalToChoice() {
 function openAddField() {
   router.push({ name: 'fields', query: { highlightAddField: '1' } })
 }
-
-function addField() {
-  const name = newFieldName.value.trim()
-  const op = newFieldOperation.value.trim()
-  if (!name || !op) {
-    return
-  }
-  const id = `field-${Date.now()}`
-  const field: MechanicField = {
-    id,
-    name,
-    operation: op,
-    area: null,
-  }
-  fields.value = [...fields.value, field]
-  currentFieldId.value = id
-  isAddFieldOpen.value = false
-}
 </script>
 
 <template>
@@ -1626,6 +1669,7 @@ function addField() {
               <span class="text-xs text-muted-foreground tabular-nums">{{ item.timeLabel }}</span>
               <span class="text-sm font-medium">{{ item.title }}</span>
               <span class="text-xs text-muted-foreground">{{ item.subtitle }}</span>
+              <span v-if="item.pending" class="text-xs text-amber-700 dark:text-amber-300">Не отправлено — дошлём, когда появится связь</span>
             </div>
           </li>
         </ol>
@@ -1835,27 +1879,6 @@ function addField() {
     >
       <template #actions>
         <UiButton variant="primary" @click="isFinishedModalOpen = false">Закрыть</UiButton>
-      </template>
-    </UiModal>
-
-    <UiModal
-      v-if="isAddFieldOpen"
-      title="Новое поле"
-      description="Поле появится в списке для учёта работ и простоев."
-      :max-width="560"
-      @close="isAddFieldOpen = false"
-    >
-      <FormGrid class="tw-scope">
-        <FormField label="Название поля" for="new-field-name">
-          <Input id="new-field-name" v-model="newFieldName" type="text" placeholder="Например: Поле №15" />
-        </FormField>
-        <FormField label="Операция" for="new-field-op">
-          <Input id="new-field-op" v-model="newFieldOperation" type="text" placeholder="Например: посев, уборка, опрыскивание" />
-        </FormField>
-      </FormGrid>
-      <template #actions>
-        <UiButton @click="isAddFieldOpen = false">Отмена</UiButton>
-        <UiButton variant="primary" @click="addField">Добавить</UiButton>
       </template>
     </UiModal>
 

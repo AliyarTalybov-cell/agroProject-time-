@@ -153,7 +153,8 @@ export async function insertDowntime(
   userId: string | null,
 ): Promise<void> {
   if (!supabase) return
-  await supabase.from('downtimes').insert({
+  // supabase-js не бросает исключение при ошибке — проверяем error сами.
+  const { error } = await supabase.from('downtimes').insert({
     user_id: userId,
     employee: event.employee,
     reason: event.reason,
@@ -166,6 +167,7 @@ export async function insertDowntime(
     operation: event.operation ?? null,
     notes: event.notes?.trim() || null,
   })
+  if (error) throw error
 }
 
 export async function insertOperation(
@@ -201,26 +203,33 @@ export async function insertOperation(
     equipment_fuel_left_percent: op.equipmentFuelLeftPercent ?? null,
   }
 
+  const sb = supabase
+  // supabase-js не бросает исключение при ошибке — проверяем error сами.
+  const insert = async (payload: Record<string, unknown>) => {
+    const { error } = await sb.from('operations').insert(payload)
+    if (error) throw error
+  }
+
   try {
     if (fuelLeftColumnAvailable === false) {
-      await supabase.from('operations').insert(payloadWithEquipment)
+      await insert(payloadWithEquipment)
       return
     }
-    await supabase.from('operations').insert(payloadWithFuelLeft)
+    await insert(payloadWithFuelLeft)
   } catch (e: unknown) {
     console.error('insertOperation: payloadWithFuelLeft failed', e, payloadWithFuelLeft)
     if (isFuelLeftColumnMissingError(e)) fuelLeftColumnAvailable = false
     if (!isMissingColumnError(e)) throw e
     // Если не существует только `equipment_fuel_left_percent`, всё равно сохраним привязку к технике и старые equipment-поля.
     try {
-      await supabase.from('operations').insert(payloadWithEquipment)
+      await insert(payloadWithEquipment)
     } catch (e2: unknown) {
       console.error('insertOperation: payloadWithEquipment fallback failed', e2, payloadWithEquipment)
       if (isFuelLeftColumnMissingError(e2)) fuelLeftColumnAvailable = false
       if (!isMissingColumnError(e2)) throw e2
       // Если БД ещё не содержит вообще колонок под технику — пишем только базовые поля.
       try {
-        await supabase.from('operations').insert(basePayload)
+        await insert(basePayload)
       } catch (e3: unknown) {
         console.error('insertOperation: basePayload fallback failed', e3, basePayload)
         throw e3
@@ -232,6 +241,7 @@ export async function insertOperation(
 export async function loadDowntimesFromSupabase(
   onlyCurrentUser: boolean,
   userId: string | null,
+  limit?: number,
 ): Promise<StoredDowntime[]> {
   if (!supabase) return []
   let q = supabase
@@ -241,6 +251,7 @@ export async function loadDowntimesFromSupabase(
   if (onlyCurrentUser && userId) {
     q = q.eq('user_id', userId)
   }
+  if (limit) q = q.limit(limit)
   const { data, error } = await q
   if (error) throw error
   return (data ?? []).map((r) => rowToDowntime(r as DowntimeRow))
@@ -249,6 +260,7 @@ export async function loadDowntimesFromSupabase(
 export async function loadOperationsFromSupabase(
   onlyCurrentUser: boolean,
   userId: string | null,
+  limit?: number,
 ): Promise<StoredOperation[]> {
   if (!supabase) return []
   const sb = supabase
@@ -262,6 +274,7 @@ export async function loadOperationsFromSupabase(
       .select(select)
       .order('start_iso', { ascending: false })
     if (onlyCurrentUser && userId) q = q.eq('user_id', userId)
+    if (limit) q = q.limit(limit)
     const { data, error } = await q
     if (error) throw error
     return (data ?? []).map((r) => rowToOperation(r as unknown as OperationRow))

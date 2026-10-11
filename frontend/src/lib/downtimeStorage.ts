@@ -3,6 +3,10 @@ export type DowntimeCategory = 'breakdown' | 'rain' | 'fuel' | 'waiting'
 export type StoredDowntime = {
   id: number
   employee: string
+  /** Кто отметил (только в копии браузера; в базе — user_id). */
+  userId?: string | null
+  /** Запись уже в базе. undefined — запись из старой версии, проверяется при синхронизации. */
+  synced?: boolean
   reason: string
   category: DowntimeCategory
   startISO: string
@@ -76,6 +80,21 @@ export function saveActive(active: ActiveDowntime | null) {
 export function appendEvent(event: StoredDowntime) {
   const existing = loadEvents()
   existing.push(event)
-  saveEvents(existing)
+  saveEvents(pruneSynced(existing))
+}
+
+/** Отметить простои отправленными в базу. */
+export function markDowntimesSynced(ids: number[]) {
+  if (!ids.length) return
+  const set = new Set(ids)
+  saveEvents(pruneSynced(loadEvents().map((d) => (set.has(d.id) ? { ...d, synced: true } : d))))
+}
+
+/** Отправленные держим недолго: источник истины — база. Неотправленные не трогаем. */
+function pruneSynced<T extends { synced?: boolean }>(list: T[], keep = 30): T[] {
+  const synced = list.filter((x) => x.synced === true)
+  if (synced.length <= keep) return list
+  const drop = new Set(synced.slice(0, synced.length - keep))
+  return list.filter((x) => !drop.has(x))
 }
 
