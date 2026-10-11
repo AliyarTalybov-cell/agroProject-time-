@@ -349,6 +349,18 @@ function isMissingDueNormColumn(error: unknown): boolean {
   return e?.code === '42703' || /due_date_norm/i.test(e?.message ?? '')
 }
 
+/** Одна задача по id (для прямой ссылки на задачу вне текущей страницы списка). */
+export async function loadTaskRowById(id: string): Promise<TaskRow | null> {
+  if (!supabase) return null
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('id, number, assignee_id, created_by, title, priority, field, due_date, status, work_type, description, created_at, updated_at')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw error
+  return (data as TaskRow | null) ?? null
+}
+
 /** Загрузка задач с фильтрами для поиска по номеру (бекенд). */
 export async function loadTasksFiltered(
   onlyMine: boolean,

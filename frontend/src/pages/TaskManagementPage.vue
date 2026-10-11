@@ -45,6 +45,7 @@ import {
   deleteTaskFile,
   getTaskFilePublicUrl,
   loadTaskParticipantsMap,
+  loadTaskRowById,
   syncTaskParticipants,
   TASK_ASSIGNEE_FILTER_UNASSIGNED,
 } from '@/lib/tasksSupabase'
@@ -323,6 +324,15 @@ async function loadData() {
       const participantsMap = await loadTaskParticipantsMap(page.rows.map((r) => r.id))
       tasks.value = tasksWithAssignees(page.rows, profileList, participantsMap)
       serverTotal.value = page.total
+    }
+    // Прямая ссылка на задачу (с «Обзора», из уведомления): она может быть не на этой странице списка.
+    const wanted = detailTaskId.value || (typeof route.query.openTaskId === 'string' ? route.query.openTaskId : '')
+    if (wanted && !tasks.value.some((t) => t.id === wanted)) {
+      const row = await loadTaskRowById(wanted)
+      if (row) {
+        const pm = await loadTaskParticipantsMap([row.id])
+        tasks.value = [...tasks.value, ...tasksWithAssignees([row], profileList, pm)]
+      }
     }
   } catch (e) {
     boardError.value = formatSupabaseError(e) || 'Не удалось загрузить задачи'
