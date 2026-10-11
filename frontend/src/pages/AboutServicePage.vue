@@ -480,6 +480,20 @@ const faq = [
       </Accordion>
     </section>
 
+    <!-- Автор портала -->
+    <section class="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs sm:flex-row sm:items-center md:p-6" aria-labelledby="guide-author">
+      <img src="/about/author.webp" width="80" height="80" alt="Фото автора портала" loading="lazy" decoding="async" class="size-20 shrink-0 rounded-full border object-cover" />
+      <div class="grid min-w-0 gap-1">
+        <h2 id="guide-author" class="text-base font-semibold">Связь с автором</h2>
+        <p class="text-sm text-muted-foreground">Вопросы, предложения и ошибки в работе портала — пишите напрямую.</p>
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <a href="mailto:aliyartalybov@icloud.com" class="font-medium text-primary no-underline hover:underline dark:text-ring">aliyartalybov@icloud.com</a>
+          <a href="https://t.me/aliyarMSK" target="_blank" rel="noopener noreferrer" class="font-medium text-primary no-underline hover:underline dark:text-ring">Telegram: @aliyarMSK</a>
+        </div>
+      </div>
+      <p class="text-xs text-muted-foreground sm:ml-auto sm:text-right">АГРОСИСТЕМА — 2026</p>
+    </section>
+
     <ImagePreviewDialog v-if="preview" :name="preview.alt" :url="preview.src" @close="preview = null" />
 
     <p class="flex items-center gap-2 pb-2 text-sm text-muted-foreground">
