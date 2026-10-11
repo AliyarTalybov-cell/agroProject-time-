@@ -2341,7 +2341,7 @@ async function confirmDeleteTask() {
               <AlertDescription class="whitespace-pre-line">{{ modalError }}</AlertDescription>
             </Alert>
 
-            <FormField label="Название" for="cal-title" wide>
+            <FormField label="Название" for="cal-title" wide required>
               <Input id="cal-title" v-model="taskTitle" type="text" placeholder="Например, планёрка с агрономами" required />
             </FormField>
 

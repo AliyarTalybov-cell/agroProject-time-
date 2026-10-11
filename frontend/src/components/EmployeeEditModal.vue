@@ -45,7 +45,7 @@ const confirmDelete = ref(false)
 const createdAtLabel = computed(() => {
   const raw = props.employee?.created_at
   if (!raw) return '—'
-  return new Date(raw).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(raw).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 })
 
 const lastLoginLabel = computed(() => {

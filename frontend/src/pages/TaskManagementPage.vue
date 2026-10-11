@@ -1401,7 +1401,7 @@ function sortIcon(key: TaskSortKey) {
           <Alert v-if="formError" variant="destructive" class="sm:col-span-full">
             <AlertDescription>{{ formError }}</AlertDescription>
           </Alert>
-          <FormField label="Название задачи" for="task-title" wide :count="form.title.length" :max="TASK_TITLE_MAX">
+          <FormField label="Название задачи" for="task-title" wide required :count="form.title.length" :max="TASK_TITLE_MAX">
             <Input id="task-title" v-model="form.title" type="text" placeholder="Например, подготовка поля к посеву" :maxlength="TASK_TITLE_MAX" />
           </FormField>
 

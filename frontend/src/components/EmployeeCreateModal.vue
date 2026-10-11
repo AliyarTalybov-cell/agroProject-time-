@@ -100,19 +100,19 @@ watch(
 </script>
 
 <template>
-  <UiModal v-if="open" title="Новый сотрудник" description="Учётная запись с доступом к порталу" :max-width="600" :close-disabled="submitting" @close="close">
+  <UiModal v-if="open" title="Новый сотрудник" description="Учётная запись с доступом к порталу. Обязательные поля отмечены звёздочкой." :max-width="600" :close-disabled="submitting" @close="close">
     <Alert v-if="message" :variant="message.type === 'error' ? 'destructive' : 'default'">
       <AlertDescription>{{ message.text }}</AlertDescription>
     </Alert>
 
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-2 sm:col-span-2">
-        <Label for="emp-fullname">Фамилия Имя Отчество</Label>
+        <Label for="emp-fullname">Фамилия Имя Отчество <span class="text-destructive" aria-hidden="true">*</span></Label>
         <Input id="emp-fullname" v-model="form.fullName" type="text" placeholder="Иванов Иван Иванович" autocomplete="name" />
       </div>
 
       <div class="grid gap-2">
-        <Label for="emp-email">Электронная почта</Label>
+        <Label for="emp-email">Электронная почта <span class="text-destructive" aria-hidden="true">*</span></Label>
         <Input id="emp-email" v-model="form.email" type="email" placeholder="example@agro.ru" autocomplete="email" />
       </div>
 
@@ -145,12 +145,12 @@ watch(
       </div>
 
       <div class="grid gap-2">
-        <Label for="emp-pass">Пароль</Label>
+        <Label for="emp-pass">Пароль <span class="text-destructive" aria-hidden="true">*</span></Label>
         <Input id="emp-pass" v-model="form.password" type="password" placeholder="Минимум 6 символов" autocomplete="new-password" />
       </div>
 
       <div class="grid gap-2">
-        <Label for="emp-pass2">Подтверждение пароля</Label>
+        <Label for="emp-pass2">Подтверждение пароля <span class="text-destructive" aria-hidden="true">*</span></Label>
         <Input id="emp-pass2" v-model="form.passwordConfirm" type="password" placeholder="Повторите пароль" autocomplete="new-password" />
       </div>
 
