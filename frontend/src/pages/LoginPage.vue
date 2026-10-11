@@ -65,110 +65,96 @@ async function submit() {
 </script>
 
 <template>
-  <div class="tw-scope grid min-h-svh bg-background lg:grid-cols-2">
-    <div class="flex flex-col gap-6 p-6 md:p-10">
-      <div class="flex items-center gap-3">
-        <img src="/logo-128.webp" width="40" height="40" alt="" class="size-10 shrink-0" />
-        <div class="grid leading-tight">
+  <div class="tw-scope relative isolate flex min-h-svh items-center justify-center p-4 sm:p-6">
+    <img
+      src="/login-bg.webp"
+      alt=""
+      width="1920"
+      height="1080"
+      decoding="async"
+      fetchpriority="high"
+      class="absolute inset-0 -z-20 size-full object-cover"
+    />
+    <div class="absolute inset-0 -z-10 bg-gradient-to-br from-black/60 via-black/40 to-black/55" aria-hidden="true" />
+
+    <div class="grid w-full max-w-sm gap-6 rounded-xl border bg-card p-6 text-card-foreground shadow-2xl sm:p-8">
+      <div class="flex flex-col items-center gap-3 text-center">
+        <img src="/logo-128.webp" width="56" height="56" alt="" class="size-14" />
+        <div class="grid gap-1">
           <span class="text-sm font-bold tracking-wide">АГРО<span class="text-primary dark:text-emerald-400">СИСТЕМА</span></span>
-          <span class="text-xs text-muted-foreground">Портал агронома</span>
+          <h1 class="text-xl font-semibold">Вход в портал</h1>
+          <p class="text-sm text-muted-foreground">Введите рабочую почту и пароль.</p>
         </div>
       </div>
 
-      <div class="flex flex-1 items-center justify-center">
-        <div class="grid w-full max-w-sm gap-6">
-          <div class="grid gap-2">
-            <h1 class="text-2xl font-semibold">Вход в портал</h1>
-            <p class="text-sm text-muted-foreground">Введите рабочую почту и пароль.</p>
-          </div>
-
-          <form class="grid gap-4" novalidate @submit.prevent="submit">
-            <div class="grid gap-2">
-              <Label for="auth-email">Почта</Label>
-              <InputGroup>
-                <InputGroupAddon><MailIcon /></InputGroupAddon>
-                <InputGroupInput
-                  id="auth-email"
-                  v-model="email"
-                  type="email"
-                  inputmode="email"
-                  placeholder="name@mail.ru"
-                  autocomplete="username"
-                  autocapitalize="none"
-                  spellcheck="false"
-                  autofocus
-                />
-              </InputGroup>
-            </div>
-
-            <div class="grid gap-2">
-              <Label for="auth-password">Пароль</Label>
-              <InputGroup>
-                <InputGroupAddon><LockIcon /></InputGroupAddon>
-                <InputGroupInput
-                  id="auth-password"
-                  v-model="password"
-                  :type="showPassword ? 'text' : 'password'"
-                  placeholder="Не меньше 6 символов"
-                  autocomplete="current-password"
-                  @keydown="onPasswordKey"
-                  @keyup="onPasswordKey"
-                />
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    type="button"
-                    size="icon-xs"
-                    :aria-label="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
-                    :aria-pressed="showPassword"
-                    @click="showPassword = !showPassword"
-                  >
-                    <EyeOffIcon v-if="showPassword" />
-                    <EyeIcon v-else />
-                  </InputGroupButton>
-                </InputGroupAddon>
-              </InputGroup>
-              <p v-if="capsLock" class="text-xs text-amber-700 dark:text-amber-300">Включён Caps Lock</p>
-            </div>
-
-            <Alert v-if="error" variant="destructive" role="alert">
-              <CircleAlertIcon />
-              <AlertDescription>{{ error }}</AlertDescription>
-            </Alert>
-
-            <Button type="submit" class="w-full" :disabled="loading">
-              <Spinner v-if="loading" />
-              {{ loading ? 'Проверяем…' : 'Войти' }}
-            </Button>
-          </form>
-
-          <p class="text-sm text-muted-foreground">
-            Нет доступа или забыли пароль? Учётные записи создаёт руководитель — обратитесь к нему или в ИТ-отдел.
-          </p>
+      <form class="grid gap-4" novalidate @submit.prevent="submit">
+        <div class="grid gap-2">
+          <Label for="auth-email">Почта</Label>
+          <InputGroup>
+            <InputGroupAddon><MailIcon /></InputGroupAddon>
+            <InputGroupInput
+              id="auth-email"
+              v-model="email"
+              type="email"
+              inputmode="email"
+              placeholder="name@mail.ru"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              autofocus
+            />
+          </InputGroup>
         </div>
-      </div>
+
+        <div class="grid gap-2">
+          <Label for="auth-password">Пароль</Label>
+          <InputGroup>
+            <InputGroupAddon><LockIcon /></InputGroupAddon>
+            <InputGroupInput
+              id="auth-password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Не меньше 6 символов"
+              autocomplete="current-password"
+              @keydown="onPasswordKey"
+              @keyup="onPasswordKey"
+            />
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                type="button"
+                size="icon-xs"
+                :aria-label="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+                :aria-pressed="showPassword"
+                @click="showPassword = !showPassword"
+              >
+                <EyeOffIcon v-if="showPassword" />
+                <EyeIcon v-else />
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
+          <p v-if="capsLock" class="text-xs text-amber-700 dark:text-amber-300">Включён Caps Lock</p>
+        </div>
+
+        <Alert v-if="error" variant="destructive" role="alert">
+          <CircleAlertIcon />
+          <AlertDescription>{{ error }}</AlertDescription>
+        </Alert>
+
+        <Button type="submit" class="w-full" :disabled="loading">
+          <Spinner v-if="loading" />
+          {{ loading ? 'Проверяем…' : 'Войти' }}
+        </Button>
+      </form>
+
+      <p class="text-center text-sm text-muted-foreground">
+        Нет доступа или забыли пароль? Учётные записи создаёт руководитель — обратитесь к нему или в ИТ-отдел.
+      </p>
 
       <p class="text-center text-xs text-balance text-muted-foreground">
         Продолжая, вы принимаете
         <RouterLink class="text-foreground underline underline-offset-4" to="/rules">правила</RouterLink>
         использования корпоративного портала.
       </p>
-    </div>
-
-    <div class="relative hidden overflow-hidden bg-muted lg:block">
-      <img
-        src="/login-bg.webp"
-        alt=""
-        width="1920"
-        height="1080"
-        decoding="async"
-        fetchpriority="high"
-        class="absolute inset-0 size-full object-cover"
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" aria-hidden="true" />
-      <div class="absolute inset-x-0 bottom-0 grid gap-2 p-10 text-white">
-        <p class="text-2xl font-semibold">Поля, склады, техника и команда — в одном месте</p>
-        <p class="text-sm text-white/80">Задачи, учёт зерна, работа в поле и аналитика хозяйства.</p>
-      </div>
     </div>
   </div>
 </template>
