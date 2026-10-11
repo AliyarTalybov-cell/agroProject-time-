@@ -9,6 +9,10 @@
 --
 -- Сигнатура и столбцы те же, что в add_chat_urgent_problem_messages.sql —
 -- фронтенд менять не нужно. Повторный запуск безопасен.
+-- Всё в одной транзакции: при любой ошибке ничего не меняется и не пишется в журнал.
+-- Выполнять от владельца объектов (supabase_admin или SQL Editor), не от postgres.
+
+begin;
 
 create index if not exists chat_messages_thread_created_idx
   on public.chat_messages (thread_id, created_at desc);
@@ -95,3 +99,5 @@ grant execute on function public.list_my_chat_threads () to authenticated;
 insert into public.applied_migrations (filename, note)
 values ('20261011_chat_thread_list_perf.sql', 'список переписок: последнее сообщение и непрочитанные через индекс, без перебора всей истории')
 on conflict (filename) do nothing;
+
+commit;
