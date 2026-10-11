@@ -5,7 +5,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGr
 import { Spinner } from '@/components/ui/shadcn/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Button } from '@/components/ui/shadcn/button'
-import { ArrowUpIcon, CheckCheckIcon, ChevronDownIcon, ChevronLeftIcon, DownloadIcon, FileIcon, MessagesSquareIcon, PaperclipIcon, RefreshCcwIcon, SearchIcon, SquarePenIcon, Trash2Icon, UsersRoundIcon, XIcon } from '@lucide/vue'
+import { ArrowUpIcon, CheckCheckIcon, ChevronDownIcon, CopyIcon, EllipsisIcon, ChevronLeftIcon, DownloadIcon, FileIcon, MessagesSquareIcon, PaperclipIcon, RefreshCcwIcon, SearchIcon, SquarePenIcon, Trash2Icon, UsersRoundIcon, XIcon } from '@lucide/vue'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Skeleton } from '@/components/ui/shadcn/skeleton'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
@@ -39,6 +39,7 @@ import {
   matchesChatListSearch,
   markThreadAsRead,
   refreshChatTotalUnread,
+  chatTotalUnread,
   CHAT_MESSAGE_MAX_CHARS,
   sendChatMessage,
   sendChatMessageWithFile,
@@ -475,27 +476,43 @@ async function appendIncomingMessage(row: ChatMessageRow) {
   if (stick) void scrollMessagesToBottomSoon()
 }
 
+/**
+ * Список переписок перечитываем не на каждое событие, а пачкой: при потоке
+ * сообщений это один запрос в секунду, а не по запросу на сообщение.
+ */
+let threadsRefreshTimer: ReturnType<typeof setTimeout> | null = null
+function scheduleRefreshThreads(delay = 800) {
+  if (threadsRefreshTimer) clearTimeout(threadsRefreshTimer)
+  threadsRefreshTimer = setTimeout(() => {
+    threadsRefreshTimer = null
+    void refreshThreads().catch(() => {})
+  }, delay)
+}
+
+// Пришло сообщение в другую переписку (счётчик в меню вырос) — обновим список.
+watch(chatTotalUnread, (next, prev) => {
+  if (next !== prev) scheduleRefreshThreads()
+})
+
 async function handleThreadMessagesRealtime(tid: string, payload: ThreadMessageRealtimePayload | null) {
   if (!configured.value || activeId.value !== tid) return
 
   if (payload?.kind === 'delete') {
     messages.value = messages.value.filter((m) => m.id !== payload.messageId)
-    void refreshThreads()
-    void refreshChatTotalUnread()
+    scheduleRefreshThreads()
     return
   }
 
   if (payload?.kind === 'insert') {
     await appendIncomingMessage(payload.record)
-    void refreshThreads()
-    void refreshChatTotalUnread()
+    scheduleRefreshThreads()
     return
   }
 
   if (!hasMoreOlderMessages.value) {
     await reloadMessages()
   }
-  void refreshThreads()
+  scheduleRefreshThreads()
   void refreshChatTotalUnread()
 }
 
@@ -676,9 +693,9 @@ async function confirmDeleteMessage() {
     await deleteChatMessage(msg.id)
     delete swipeOffsets[msg.id]
     closeDeleteMessageModal()
-    await reloadMessages()
-    await refreshThreads()
-    await refreshChatTotalUnread()
+    // Убираем у себя, не перезагружая переписку: подгруженная история и прокрутка остаются.
+    messages.value = messages.value.filter((m) => m.id !== msg.id)
+    scheduleRefreshThreads(0)
   } catch (e) {
     error.value = formatSupabaseError(e) || 'Не удалось удалить сообщение'
   } finally {
@@ -686,13 +703,11 @@ async function confirmDeleteMessage() {
   }
 }
 
-function onMessageContextMenu(e: MouseEvent, msg: UiChatMessage) {
-  if (msg.side !== 'out') return
-  e.preventDefault()
+function openMessageMenuAt(msg: UiChatMessage, clientX: number, clientY: number) {
   const menuW = 200
-  const menuH = 52
-  let x = e.clientX
-  let y = e.clientY
+  const menuH = msg.side === 'out' && msg.text ? 88 : 52
+  let x = clientX
+  let y = clientY
   if (typeof window !== 'undefined') {
     x = Math.min(x, window.innerWidth - menuW - 8)
     y = Math.min(y, window.innerHeight - menuH - 8)
@@ -700,6 +715,30 @@ function onMessageContextMenu(e: MouseEvent, msg: UiChatMessage) {
     y = Math.max(8, y)
   }
   msgContextMenu.value = { msg, x, y }
+}
+
+function onMessageContextMenu(e: MouseEvent, msg: UiChatMessage) {
+  // Чужое сообщение без текста — в меню нечего показать, оставляем меню браузера.
+  if (msg.side !== 'out' && !msg.text) return
+  e.preventDefault()
+  openMessageMenuAt(msg, e.clientX, e.clientY)
+}
+
+/** Кнопка «⋯» у сообщения — то же меню, под кнопкой. */
+function onMessageMenuButton(e: MouseEvent, msg: UiChatMessage) {
+  const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  openMessageMenuAt(msg, r.left, r.bottom + 4)
+}
+
+async function ctxMenuCopyClick() {
+  const msg = msgContextMenu.value?.msg
+  closeMsgContextMenu()
+  if (!msg?.text) return
+  try {
+    await navigator.clipboard.writeText(msg.text)
+  } catch {
+    error.value = 'Не удалось скопировать — выделите текст и скопируйте вручную.'
+  }
 }
 
 function ctxMenuDeleteClick() {
@@ -903,6 +942,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  if (threadsRefreshTimer) clearTimeout(threadsRefreshTimer)
   if (mobileChatMq && mobileChatMqHandler) {
     mobileChatMq.removeEventListener('change', mobileChatMqHandler)
   }
@@ -1189,7 +1229,7 @@ onUnmounted(() => {
                   <span class="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">{{ block.day }}</span>
                 </div>
                 <div
-                  class="flex items-end gap-2"
+                  class="group/msg flex items-end gap-2"
                   :class="[block.msg.side === 'out' ? 'justify-end' : 'justify-start', block.startsRun && !block.day ? 'mt-3' : 'mt-1']"
                 >
                   <template v-if="block.msg.side === 'in' && active.kind === 'group'">
@@ -1203,6 +1243,16 @@ onUnmounted(() => {
                     <div v-else class="w-8 shrink-0" />
                   </template>
 
+                  <button
+                    v-if="block.msg.side === 'out' || block.msg.text"
+                    type="button"
+                    class="hidden size-7 shrink-0 items-center justify-center self-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/msg:opacity-100 [@media(hover:hover)]:flex"
+                    :class="block.msg.side === 'out' ? 'order-first' : 'order-last'"
+                    aria-label="Действия с сообщением"
+                    @click="onMessageMenuButton($event, block.msg)"
+                  >
+                    <EllipsisIcon class="size-4" />
+                  </button>
                   <div
                     class="relative flex max-w-[85%] min-w-0 flex-col sm:max-w-[70%]"
                     :class="block.msg.side === 'out' ? 'items-end' : 'items-start'"
@@ -1358,7 +1408,7 @@ onUnmounted(() => {
                 </InputGroupAddon>
               </InputGroup>
               <p class="mt-2 hidden text-xs text-muted-foreground md:block">
-                Enter — отправить, Shift+Enter — новая строка. Своё сообщение можно удалить через правую кнопку мыши.
+                Enter — отправить, Shift+Enter — новая строка. Удалить или скопировать сообщение — кнопка «⋯» рядом с ним или правая кнопка мыши; на телефоне — свайп влево.
               </p>
               <p class="mt-2 text-xs text-muted-foreground md:hidden">Своё сообщение: свайп влево или долгое нажатие — удалить.</p>
             </footer>
@@ -1396,6 +1446,17 @@ onUnmounted(() => {
         @pointerdown.stop
       >
         <button
+          v-if="msgContextMenu.msg.text"
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-muted focus-visible:bg-muted"
+          @click="ctxMenuCopyClick"
+        >
+          <CopyIcon class="size-4" />
+          Копировать текст
+        </button>
+        <button
+          v-if="msgContextMenu.msg.side === 'out'"
           type="button"
           role="menuitem"
           class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive outline-none hover:bg-destructive/10 focus-visible:bg-destructive/10"
