@@ -1549,19 +1549,17 @@ function sortIcon(key: TaskSortKey) {
       @close="closeTask"
     >
       <template v-if="!detailTaskId" #header-actions>
-        <Button
-          as="a"
-          variant="ghost"
-          size="icon-sm"
-          class="-mt-1 text-muted-foreground"
+        <!-- Рядом с крестиком закрытия: та же высота, размер и прозрачность. -->
+        <a
+          class="absolute top-4 right-11 inline-flex rounded-xs text-foreground opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-hidden"
           :href="taskPageHref(selectedTask.id)"
           target="_blank"
           rel="noopener"
           title="Открыть в новой вкладке"
           aria-label="Открыть задачу в новой вкладке"
         >
-          <ExternalLinkIcon />
-        </Button>
+          <ExternalLinkIcon class="size-4" />
+        </a>
       </template>
       <div class="tw-scope relative grid gap-6">
         <Alert v-if="taskModalError" variant="destructive">

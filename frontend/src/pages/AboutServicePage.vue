@@ -1,839 +1,445 @@
 <script setup lang="ts">
 /**
- * «О сервисе» — презентационный лендинг (мотивы Shapes — Think Spatial), визуал на токенах портала: светлая/тёмная тема.
- * Секции: hero → оглавление → workflow (01–06) → погода → цитата → marquee → подвал.
+ * «О сервисе» — инструкция по порталу: с чего начать, разделы меню (для чего и как
+ * пользоваться), роли, общие приёмы и частые вопросы. Описывает только то, что
+ * в портале действительно есть; при изменении разделов текст нужно обновлять.
  */
-withDefaults(
-  defineProps<{
-    /** Вкладка «Обзор»: компенсируем padding main-content-inner для чёрного full-bleed */
-    embedded?: boolean
-  }>(),
-  { embedded: false },
-)
+import type { Component } from 'vue'
+import { RouterLink, type RouteLocationRaw } from 'vue-router'
+import {
+  ArrowRightIcon,
+  BarChart3Icon,
+  BellIcon,
+  BookMarkedIcon,
+  CalendarDaysIcon,
+  LandPlotIcon,
+  MessageCircleIcon,
+  MonitorSmartphoneIcon,
+  NewspaperIcon,
+  SquareCheckBigIcon,
+  TractorIcon,
+  UserIcon,
+  UsersIcon,
+  WarehouseIcon,
+  WheatIcon,
+} from '@lucide/vue'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/shadcn/accordion'
+
+withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 
 function scrollToId(id: string, ev?: MouseEvent) {
   ev?.preventDefault()
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-/** Якорное оглавление (карта страницы) */
-const aboutToc = [
-  { id: 'about-hero', label: 'Суть' },
-  { id: 'about-step-01', label: '01 · Поля' },
-  { id: 'about-step-02', label: '02 · Задачи' },
-  { id: 'about-step-03', label: '03 · Оператор' },
-  { id: 'about-step-04', label: '04 · Аналитика' },
-  { id: 'about-step-05', label: '05 · Календарь' },
-  { id: 'about-step-06', label: '06 · Чат' },
-  { id: 'about-weather', label: 'Погода' },
-] as const
+interface GuideLink {
+  label: string
+  to: RouteLocationRaw
+}
 
-const workflowSteps = [
-  {
-    n: '01',
-    title: 'Заведи поля и технику',
-    text:
-      '«Поля и культуры»: карточка участка — площадь, кадастр, адрес, точка на карте, тип земли, культура, год, ответственный; при необходимости описание и медиа. Заполните справочники (земля, культуры, виды работ). «Техника» — каталог машин; дальше в формах везде выбор из списка, без расхождений в названиях.',
-    image: '/about-workflow-step-01.png',
-    /** Целиком скрин интерфейса — без обрезки (contain), чтобы читались подписи и вотермарк */
-    imageFit: 'contain' as const,
-    tags: ['Поля', 'Техника', 'Справочники'],
-  },
-  {
-    n: '02',
-    title: 'Поставь задачу за минуту',
-    text:
-      'Канбан: к выполнению, в процессе, на проверке, выполнено; фильтры по людям и статусам, выгрузка при необходимости. «Создать задачу» — исполнитель, поле, приоритет, срок, тип работ, описание. Карточка переезжает по колонкам; при готовых полях и справочниках форма остаётся короткой.',
-    image: '/about-workflow-step-02.png',
-    imageFit: 'contain' as const,
-    tags: ['Задачи', 'Срок', 'Исполнитель'],
-  },
-  {
-    n: '03',
-    title: 'Работай в поле',
-    text:
-      'Крупные кнопки: в работу, простой, завершить — удобно из кабины и с телефона. Заранее заведите технику и справочники (операции, культуры, причины простоя): на поле только выбор из списков, данные совпадают с задачами и отчётами.',
-    image: '/about-workflow-step-03.png',
-    imageFit: 'contain' as const,
-    tags: ['3 клика', 'Телефон', 'Факт в моменте'],
-  },
-  {
-    n: '04',
-    title: 'Смотри аналитику',
-    text:
-      'Сводки по уже введённым данным: задачи по статусам и по людям за период; блок «Операции на полях» — список за интервал, сортировка по сотруднику, числу операций, полям, времени, дате. Настройте даты в фильтрах портала — закрывайте период цифрами, без обзвона.',
-    image: '/about-workflow-step-04.png',
-    imageFit: 'contain' as const,
-    tags: ['Период', 'Сводки', 'Прозрачность'],
-  },
-  {
-    n: '05',
-    title: 'Календарь: свои заметки и договорённости',
-    text:
-      'Не путать с канбаном: здесь личные напоминания и договорённости с коллегами. Можно открыть чужой день по «Сотруднику». Записи «Добавить задачу» попадают в планировщик. Производство по-прежнему в «Задачах», у оператора и в аналитике.',
-    image: '/about-workflow-step-05.png',
-    imageFit: 'contain' as const,
-    tags: ['Календарь', 'Заметки', 'Коллеги'],
-  },
-  {
-    n: '06',
-    title: 'Чат и оперативная связь',
-    text:
-      'Лички и команды, поиск, вкладки; счётчик на «Чат» в меню — непрочитанные. Текст и файлы до 10 МБ, до 300 символов; Enter / Shift+Enter — под полем. Быстрые алерты по полю и технике; что обязано быть в учёте — дублируйте задачей или оператором.',
-    image: '/about-workflow-step-06.png',
-    imageFit: 'contain' as const,
-    tags: ['Чат', 'Команды', 'Вложения'],
-  },
-] as const
+interface GuideSection {
+  id: string
+  icon: Component
+  title: string
+  /** Где в меню. */
+  where: string
+  /** Для чего раздел — одна-две фразы. */
+  purpose: string
+  /** Как пользоваться — шаги. */
+  steps: string[]
+  links: GuideLink[]
+  /** Только для руководителя / оговорки. */
+  note?: string
+}
 
-const marqueeParts = [
-  'Минимум текста',
-  'Три клика',
-  'Работает на телефоне',
-  'Без обучения',
-  'Прозрачность',
-  'Учёт простоев',
-] as const
+/** Порядок первоначальной настройки. */
+const startSteps: { title: string; text: string; to: RouteLocationRaw }[] = [
+  { title: 'Справочники', text: 'Культуры, типы земли, причины простоя, операции, типы мест хранения — всё, из чего потом выбирают в формах.', to: { path: '/lands', query: { tab: 'rights-refs' } } },
+  { title: 'Земельные участки', text: 'Реестр участков с кадастром, площадью, правами и землепользователями.', to: '/lands' },
+  { title: 'Поля', text: 'Поля внутри участков: площадь, культура, ответственный, точка или контур на карте.', to: '/fields' },
+  { title: 'Места хранения', text: 'Склады, силосы, тока и бурты — куда принимается зерно.', to: '/warehouses/storage-locations' },
+  { title: 'Техника', text: 'Машины и орудия — их выбирают при старте работ на экране оператора.', to: '/equipment' },
+  { title: 'Сотрудники', text: 'Учётные записи, должности и роли — чтобы назначать задачи и писать в чат.', to: '/employees' },
+]
+
+const sections: GuideSection[] = [
+  {
+    id: 'guide-lands',
+    icon: LandPlotIcon,
+    title: 'Земли: участки, поля, мелиорация',
+    where: 'Меню → Земли',
+    purpose: 'Учёт земельного фонда: участки с документами, поля для работ и сведения по мелиорации.',
+    steps: [
+      '«Земельные участки» → «Новая земля»: номер, категория, тип земли, регион, площадь, кадастровый номер, вид разрешённого использования.',
+      'Откройте участок: вкладки «Поля», «Права владения», «Землепользователи», «Севооборот», «Объекты недвижимости» — в каждой кнопка «Добавить».',
+      '«Поля» → «Добавить поле»: название и площадь обязательны. На карте выберите участок для ориентира и поставьте точку или нарисуйте контур — адрес и геолокация заполнятся сами.',
+      '«Мелиорация»: системы, защитные лесные насаждения и мероприятия — по вкладкам, кнопка «Добавить».',
+      'Реестры выгружаются в PDF и Excel кнопками над таблицей.',
+    ],
+    links: [
+      { label: 'Земельные участки', to: '/lands' },
+      { label: 'Поля', to: '/fields' },
+      { label: 'Мелиорация', to: { path: '/lands', query: { tab: 'melioration' } } },
+    ],
+  },
+  {
+    id: 'guide-stock',
+    icon: WarehouseIcon,
+    title: 'Склады',
+    where: 'Меню → Склады',
+    purpose: 'Сколько зерна лежит, где и какой культуры; все движения оформляются документами.',
+    steps: [
+      '«Места хранения» → «Добавить место хранения»: название, тип, статус, адрес, вместимость.',
+      '«Карточки складов» показывают заполненность и культуры. В карточке склада — ячейки и партии, журнал операций склада, кнопка «Ячейка» для новой ячейки.',
+      '«Приёмка» — зерно с поля (урожай) или закупка у поставщика: в новую партию или в существующую.',
+      '«Перемещение» — из ячейки в ячейку, с массой, потерями в пути, машиной и водителем.',
+      '«Операция» → «Продажа», «На посев», «Переработка / корм», «Списание», «Подработка» (сушка, очистка), «Инвентаризация».',
+    ],
+    links: [
+      { label: 'Карточки складов', to: '/warehouses' },
+      { label: 'Места хранения', to: '/warehouses/storage-locations' },
+    ],
+  },
+  {
+    id: 'guide-grain',
+    icon: WheatIcon,
+    title: 'Учёт зерна',
+    where: 'Меню → Учёт зерна',
+    purpose: 'Партии зерна, история всех операций и справочник покупателей и поставщиков.',
+    steps: [
+      '«Партии» — список с фильтрами по остатку, культуре, складу и назначению. В карточке партии: остаток, где лежит, качество; «Изменить» — сорт, урожай, назначение, показатели качества.',
+      '«Журнал операций» — все документы по датам. Нажмите на строку, чтобы увидеть движения, транспорт и комментарий.',
+      'Ошибочную операцию не удаляют: руководитель отменяет её (сторно) с указанием причины, остатки пересчитываются.',
+      '«Контрагенты» — покупатели и поставщики с ИНН и контактами; их выбирают при продаже и закупке.',
+    ],
+    links: [
+      { label: 'Партии', to: '/grain/batches' },
+      { label: 'Журнал операций', to: '/grain/journal' },
+      { label: 'Контрагенты', to: '/grain/counterparties' },
+    ],
+  },
+  {
+    id: 'guide-equipment',
+    icon: TractorIcon,
+    title: 'Техника',
+    where: 'Меню → Техника',
+    purpose: 'Каталог машин и навесных орудий с документами, фото и историей работы.',
+    steps: [
+      'Вкладка «Техника» → «Добавить технику»: марка и госномер обязательны, остальное — по документам (VIN, ПСМ, СВР, даты регистрации).',
+      'Вкладка «Орудия» → «Добавить орудие»: плуги, сеялки и т. п.; орудие можно закрепить за машиной.',
+      'В карточке техники — документы, фото и история: какие операции выполнялись, топливо до и после, состояние.',
+    ],
+    links: [{ label: 'Техника', to: '/equipment' }],
+  },
+  {
+    id: 'guide-tasks',
+    icon: SquareCheckBigIcon,
+    title: 'Задачи',
+    where: 'Меню → Задачи',
+    purpose: 'Поручения по работам: кто, что, на каком поле и к какому сроку.',
+    steps: [
+      '«Создать задачу»: название (обязательно), исполнитель, поле, участники, приоритет, срок, тип работ, описание и файлы.',
+      'Фильтры: «Все задачи» / «На мне», сотрудник, статус, срок с — по, поиск по номеру.',
+      'Нажмите на задачу — откроется карточка: статус меняется прямо в ней («К выполнению», «В процессе», «На проверке», «Выполнено»), есть файлы, обсуждение и история изменений.',
+      'Чтобы открыть задачу на отдельной странице, нажмите на неё с Ctrl (⌘ на Mac) или колёсиком мыши — или кнопку «Открыть в новой вкладке» в карточке.',
+    ],
+    links: [{ label: 'Задачи', to: '/task-management' }],
+    note: 'Сотрудник ставит задачи себе; назначать исполнителя может руководитель.',
+  },
+  {
+    id: 'guide-calendar',
+    icon: CalendarDaysIcon,
+    title: 'Календарь',
+    where: 'Меню → Календарь',
+    purpose: 'Встречи, напоминания и договорённости по времени — отдельно от производственных задач.',
+    steps: [
+      'Виды «День», «Неделя», «Месяц» и «Расписание»; мини-календарь слева переключает дату.',
+      '«Создать событие»: название, описание, дата, время, приоритет, повтор, участники. Файлы прикрепляются после сохранения.',
+      'Участники получают приглашение в «Уведомлениях».',
+    ],
+    links: [{ label: 'Календарь', to: '/tasks' }],
+    note: 'Руководитель может открыть календарь любого сотрудника.',
+  },
+  {
+    id: 'guide-operator',
+    icon: MonitorSmartphoneIcon,
+    title: 'Экран оператора',
+    where: 'Меню → Операции → Экран оператора',
+    purpose: 'Учёт работ прямо в поле: крупные кнопки, удобно с телефона и планшета.',
+    steps: [
+      'Выберите поле в списке «Поле».',
+      '«Начать операцию» → выберите операцию → решите, нужна ли техника: укажите машину, план работ в га, топливо и состояние. Пойдёт таймер.',
+      '«Пауза / простой» и «Продолжить» — во время работы. «Завершить операцию» — укажите, что сделано, сколько топлива осталось и сколько гектаров обработано.',
+      'Если работа стоит — «Начать простой» с причиной, по окончании «Завершить простой».',
+      '«Сообщить о проблеме»: опишите, при необходимости прикрепите файл и выберите, кому отправить, — сообщение придёт в чат как важное.',
+      'Ниже — ваши задачи и события календаря на сегодня (кнопка «В работу» запускает операцию по задаче), техника в работе и журнал смены.',
+    ],
+    links: [{ label: 'Экран оператора', to: '/mechanic' }],
+  },
+  {
+    id: 'guide-analytics',
+    icon: BarChart3Icon,
+    title: 'Аналитика',
+    where: 'Меню → Аналитика',
+    purpose: 'Сводка по уже введённым данным за выбранный период.',
+    steps: [
+      'Выберите период: «Сегодня», «Неделя», «Месяц» или свои даты. Руководитель может выбрать конкретного сотрудника.',
+      'Вверху — люди в полях, техника в работе, часы простоя, выполненные задачи (нажмите, чтобы открыть их список).',
+      'Ниже — кто сейчас работает или стоит, активные поля, состояние и топливо техники, задачи по статусам и по сотрудникам, завершённые операции по полям.',
+    ],
+    links: [{ label: 'Аналитика', to: '/reports' }],
+  },
+  {
+    id: 'guide-team',
+    icon: UsersIcon,
+    title: 'Сотрудники и уведомления',
+    where: 'Меню → Связь',
+    purpose: 'Учётные записи коллег и всё, что требует вашего внимания.',
+    steps: [
+      '«Сотрудники» — карточки с контактами и ролью; поиск и фильтр по должности.',
+      'Руководитель добавляет сотрудника: ФИО, почта, телефон, должность, роль и пароль; по нажатию на карточку — правка, отключение доступа или удаление.',
+      '«Уведомления» — приглашения в события календаря и новости по задачам; фильтр «Не прочитано».',
+    ],
+    links: [
+      { label: 'Сотрудники', to: '/employees' },
+      { label: 'Уведомления', to: '/notifications' },
+    ],
+  },
+  {
+    id: 'guide-chat',
+    icon: MessageCircleIcon,
+    title: 'Чат',
+    where: 'Меню → Связь → Чат',
+    purpose: 'Быстрая связь: личные переписки и командные чаты.',
+    steps: [
+      '«Написать» — выберите сотрудника, откроется личный диалог.',
+      'Сообщение — до 300 символов; Enter отправляет, Shift+Enter — новая строка. Файл — до 10 МБ, скрепкой у поля ввода.',
+      'Своё сообщение можно удалить: правой кнопкой мыши, а на телефоне — свайпом влево или долгим нажатием.',
+      'Число непрочитанных видно в меню рядом с «Чат»; вкладки «Непрочитанные» и «Команды» помогают найти нужное.',
+    ],
+    links: [{ label: 'Чат', to: '/chat' }],
+    note: 'Команду (групповой чат) создаёт руководитель кнопкой «Новая команда».',
+  },
+  {
+    id: 'guide-news',
+    icon: NewspaperIcon,
+    title: 'Новости и погода',
+    where: 'Меню → Новости, Погода',
+    purpose: 'Новости компании и условия для полевых работ.',
+    steps: [
+      '«Новости» — лента с обложками; нажмите, чтобы прочитать целиком и посмотреть галерею.',
+      'Руководитель публикует новости: «Добавить новость» — заголовок, подводка, обложка, текст (можно вставить прямо из источника), галерея. «Сохранить» — с выбранной датой, «Опубликовать сейчас» — сразу.',
+      '«Погода» — прогноз на 5 дней, подробные показатели, агро-условия на сутки, почасовой риск работ и состояние на ваших полях.',
+    ],
+    links: [
+      { label: 'Новости', to: '/news' },
+      { label: 'Погода', to: '/weather' },
+    ],
+  },
+  {
+    id: 'guide-settings',
+    icon: BookMarkedIcon,
+    title: 'Справочники и профиль',
+    where: 'Меню → Настройки; меню пользователя внизу слева',
+    purpose: 'Списки, из которых выбирают в формах, и ваши личные данные.',
+    steps: [
+      '«Настройки» → «Справочники»: права, земли, СХ культуры, мелиорация, техника, поля, севооборот, хранение.',
+      'Причины простоя и операции для экрана оператора — в «Полях», вкладки «Причины простоя» и «Операции для работы».',
+      'Не нашли нужное значение в списке — нажмите на «?» рядом с полем: там ссылка на нужный справочник.',
+      'Профиль: имя, контакты, должность, фото, смена пароля.',
+    ],
+    links: [
+      { label: 'Справочники', to: { path: '/lands', query: { tab: 'rights-refs' } } },
+      { label: 'Профиль', to: '/profile' },
+    ],
+  },
+]
+
+const roles = [
+  {
+    title: 'Руководитель',
+    icon: UserIcon,
+    items: [
+      'Назначает задачи любому сотруднику и видит календарь каждого',
+      'Добавляет, правит и отключает сотрудников',
+      'Публикует новости, создаёт командные чаты',
+      'Отменяет ошибочные складские операции (сторно)',
+      'Смотрит аналитику по всем или по конкретному сотруднику',
+    ],
+  },
+  {
+    title: 'Сотрудник',
+    icon: UsersIcon,
+    items: [
+      'Работает на экране оператора: операции, простои, сообщения о проблемах',
+      'Ставит задачи себе, ведёт свои задачи и календарь',
+      'Пишет в чат и получает уведомления',
+      'Видит аналитику по своей работе',
+    ],
+  },
+]
+
+const tips = [
+  { title: 'Звёздочка *', text: 'Поле обязательно. Пока оно пустое, кнопка сохранения неактивна.' },
+  { title: 'Знак «?» у поля', text: 'Подсказка и ссылка на справочник, где добавить недостающее значение.' },
+  { title: 'Телефон и планшет', text: 'Все разделы работают на телефоне; меню открывается кнопкой слева вверху.' },
+  { title: 'Тёмная тема', text: 'Переключатель — значок луны или солнца справа вверху.' },
+  { title: 'Выгрузка', text: 'Реестры полей, земель, техники и задач выгружаются в PDF и Excel.' },
+  { title: 'Новая вкладка', text: 'Задачу можно открыть отдельной страницей — Ctrl/⌘-клик по ней.' },
+]
+
+const faq = [
+  { q: 'В выпадающем списке нет нужной культуры или типа', a: 'Добавьте значение в «Настройки» → «Справочники» в нужной группе — или нажмите «?» рядом с полем, там прямая ссылка. После этого значение появится в форме.' },
+  { q: 'Ошиблись в складской операции', a: 'Документы не удаляются. Руководитель открывает «Журнал операций» и отменяет операцию (сторно) с причиной — остатки вернутся к прежним.' },
+  { q: 'Почему на экране оператора нельзя сменить поле', a: 'Пока идёт операция или простой, поле закреплено. Завершите работу — и выберите другое поле.' },
+  { q: 'Кнопка «Сохранить» неактивна', a: 'Заполнены не все поля со звёздочкой. Если ошибка пришла от сервера, окно само прокрутится к сообщению о ней.' },
+  { q: 'Как открыть задачу на весь экран', a: 'Нажмите на задачу с Ctrl (⌘ на Mac) или колёсиком мыши — она откроется в новой вкладке. Из карточки — кнопка «Открыть в новой вкладке».' },
+  { q: 'Какой размер файлов можно прикреплять', a: 'В чат — до 10 МБ, к схеме поля — JPG, PNG или PDF до 20 МБ.' },
+]
 </script>
 
 <template>
-  <div class="about-landing page-enter-item" :class="{ 'about-landing--embedded': embedded }">
-    <main class="about-landing__main">
-      <!-- Hero -->
-      <section id="about-hero" class="about-hero">
-        <p class="about-landing__meta about-hero__meta">[ Цифровое сельское хозяйство ]</p>
-        <h1 class="about-hero__title about-serif"> Учёт, который работает в поле </h1>
-        <p class="about-hero__context">
-          Краткая памятка по разделам портала: с чего начать и как связаны поля, задачи, поле и отчёты. Те же разделы
-          доступны в боковом меню слева — здесь собран смысл и порядок шагов. Если вы впервые на странице, пройдите по
-          оглавлению ниже или откройте нужный пункт меню приложения.
+  <div class="tw-scope flex min-w-0 flex-col gap-6">
+    <!-- Вступление -->
+    <section class="grid gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+      <div class="grid gap-2">
+        <h2 class="text-xl font-semibold md:text-2xl">Как пользоваться порталом</h2>
+        <p class="max-w-3xl text-sm text-muted-foreground md:text-base">
+          Портал агронома собирает в одном месте земли и поля, склады и зерно, технику, задачи и связь с командой.
+          Ниже — с чего начать и как работать в каждом разделе меню. В конце — роли, полезные приёмы и частые вопросы.
         </p>
-      </section>
-
-      <!-- Карта страницы: якорная навигация -->
-      <nav class="about-toc about-section" aria-label="Оглавление страницы «О сервисе»">
-        <p class="about-landing__meta about-toc__label">[ Карта ]</p>
-        <ul class="about-toc__list">
-          <li v-for="item in aboutToc" :key="item.id">
-            <a
-              :href="'#' + item.id"
-              class="about-toc__link"
-              @click="scrollToId(item.id, $event)"
-            >{{ item.label }}</a>
-          </li>
-        </ul>
+      </div>
+      <nav aria-label="Оглавление" class="flex flex-wrap gap-2">
+        <a href="#guide-start" class="rounded-full border px-3 py-1 text-sm text-foreground no-underline transition-colors hover:bg-muted" @click="scrollToId('guide-start', $event)">С чего начать</a>
+        <a
+          v-for="s in sections"
+          :key="s.id"
+          :href="`#${s.id}`"
+          class="rounded-full border px-3 py-1 text-sm text-foreground no-underline transition-colors hover:bg-muted"
+          @click="scrollToId(s.id, $event)"
+        >
+          {{ s.title.split(':')[0] }}
+        </a>
+        <a href="#guide-roles" class="rounded-full border px-3 py-1 text-sm text-foreground no-underline transition-colors hover:bg-muted" @click="scrollToId('guide-roles', $event)">Роли</a>
+        <a href="#guide-faq" class="rounded-full border px-3 py-1 text-sm text-foreground no-underline transition-colors hover:bg-muted" @click="scrollToId('guide-faq', $event)">Вопросы</a>
       </nav>
+    </section>
 
-      <!-- Workflow -->
-      <section id="about-features" class="about-section about-workflow" aria-labelledby="about-workflow-h">
-        <div class="about-workflow__head">
-          <div>
-            <p class="about-landing__meta">[ Production Flow ]</p>
-            <h2 id="about-workflow-h" class="about-workflow__title about-serif">Как это работает</h2>
-          </div>
-          <p class="about-landing__meta about-workflow__seq">
-            ШАГИ 01 — 06<br />
-            ЛИНЕЙНЫЙ СЦЕНАРИЙ
-          </p>
-        </div>
-
-        <ol class="about-workflow__list">
-          <li
-            :id="'about-step-' + step.n"
-            v-for="step in workflowSteps"
-            :key="step.n"
-            class="about-workflow-item"
+    <!-- С чего начать -->
+    <section id="guide-start" class="grid scroll-mt-4 gap-4">
+      <div class="grid gap-1">
+        <h2 class="text-lg font-semibold">С чего начать</h2>
+        <p class="text-sm text-muted-foreground">Заполните разделы в этом порядке — тогда в формах везде будет выбор из готовых списков, а данные совпадут в задачах, на экране оператора и в аналитике.</p>
+      </div>
+      <ol class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <li v-for="(step, i) in startSteps" :key="step.title">
+          <RouterLink
+            :to="step.to"
+            class="group flex h-full gap-3 rounded-xl border bg-card p-4 text-foreground no-underline shadow-xs transition-colors hover:bg-muted/40"
           >
-            <div class="about-workflow-item__text">
-              <span class="about-workflow-item__num about-serif" aria-hidden="true">{{ step.n }}</span>
-              <h3 class="about-workflow-item__title about-serif">{{ step.title }}</h3>
-              <p class="about-workflow-item__desc">{{ step.text }}</p>
-              <div class="about-workflow-item__tags">
-                <span v-for="t in step.tags" :key="t" class="about-workflow-item__tag">{{ t }}</span>
-              </div>
-            </div>
-            <div
-              class="about-workflow-item__visual"
-              :class="{ 'about-workflow-item__visual--contain': 'imageFit' in step && step.imageFit === 'contain' }"
-            >
-              <img
-                :src="step.image"
-                :alt="step.title"
-                class="about-workflow-item__img"
-                :loading="'imageFit' in step && step.imageFit === 'contain' ? 'eager' : 'lazy'"
-                decoding="async"
-              >
-            </div>
-          </li>
-        </ol>
-      </section>
+            <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground tabular-nums">{{ i + 1 }}</span>
+            <span class="grid gap-1">
+              <span class="flex items-center gap-1 text-sm font-medium">
+                {{ step.title }}
+                <ArrowRightIcon class="size-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </span>
+              <span class="text-sm text-muted-foreground">{{ step.text }}</span>
+            </span>
+          </RouterLink>
+        </li>
+      </ol>
+      <p class="text-sm text-muted-foreground">
+        Дальше каждый день: руководитель ставит <strong class="font-medium text-foreground">задачи</strong>,
+        сотрудники отмечают работу на <strong class="font-medium text-foreground">экране оператора</strong>,
+        зерно проходит через <strong class="font-medium text-foreground">склады</strong>,
+        а итоги видны в <strong class="font-medium text-foreground">аналитике</strong>.
+      </p>
+    </section>
 
-      <!-- Погода: сетка как у шагов workflow — текст слева, скрин справа -->
-      <section id="about-weather" class="about-section about-weather" aria-labelledby="about-weather-title">
-        <p class="about-landing__meta about-weather__kicker">[ Погода ]</p>
-        <div class="about-weather__row">
-          <div class="about-weather__copy">
-            <h2 id="about-weather-title" class="about-weather__title about-serif">
-              Погода для планирования смены
-            </h2>
-            <p class="about-weather__text">
-              Страница «Погода и условия»: выбор населённого пункта и кнопка «Обновить», в баннере — температура, описание
-              погоды, координаты и короткая рекомендация для работ (ветер, осадки и т. п.). Ниже — карточки показателей
-              (ветер, влажность, давление, видимость, солнце и др.); часть расширенных меток может быть с пометкой PRO API.
-              Внизу — прогноз на несколько дней. Имеет смысл смотреть рядом с полями, календарём и у оператора в поле.
-            </p>
-          </div>
-          <div class="about-weather__media">
-            <div
-              class="about-workflow-item__visual about-workflow-item__visual--contain about-weather__shot"
-            >
-              <img
-                src="/about-weather-screenshot.png"
-                alt="Интерфейс раздела «Погода и условия»: выбор города, баннер с прогнозом, карточки показателей и прогноз по дням"
-                class="about-workflow-item__img"
-                loading="lazy"
-                decoding="async"
-              >
-            </div>
-          </div>
+    <!-- Разделы -->
+    <section
+      v-for="s in sections"
+      :id="s.id"
+      :key="s.id"
+      class="grid scroll-mt-4 gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6"
+    >
+      <header class="flex items-start gap-3">
+        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:text-ring">
+          <component :is="s.icon" class="size-5" />
+        </span>
+        <div class="grid min-w-0 gap-1">
+          <h2 class="text-lg font-semibold">{{ s.title }}</h2>
+          <p class="text-xs text-muted-foreground">{{ s.where }}</p>
         </div>
-      </section>
+      </header>
+      <p class="text-sm md:text-base">{{ s.purpose }}</p>
+      <ol class="grid gap-2">
+        <li v-for="(step, i) in s.steps" :key="i" class="flex gap-3 text-sm leading-relaxed">
+          <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums text-muted-foreground">{{ i + 1 }}</span>
+          <span>{{ step }}</span>
+        </li>
+      </ol>
+      <p v-if="s.note" class="rounded-lg bg-muted/60 px-3 py-2 text-sm text-muted-foreground">{{ s.note }}</p>
+      <div class="flex flex-wrap gap-2">
+        <RouterLink
+          v-for="link in s.links"
+          :key="link.label"
+          :to="link.to"
+          class="inline-flex h-8 items-center gap-1.5 rounded-md border bg-background px-3 text-sm font-medium text-foreground no-underline shadow-xs transition-colors hover:bg-accent"
+        >
+          {{ link.label }}
+          <ArrowRightIcon class="size-3.5" />
+        </RouterLink>
+      </div>
+    </section>
 
-      <!-- Цитата -->
-      <section id="about-quote" class="about-section about-quote">
-        <blockquote class="about-quote__text about-serif">
-          «Система не магически экономит миллионы. Она убирает ежедневную рутину. То, что занимало 2 часа, теперь
-          занимает 20 минут»
-        </blockquote>
-      </section>
-
-      <!-- Marquee: дублируем контент для бесшовной анимации translateX(-50%) -->
-      <div class="about-marquee" aria-hidden="true">
-        <div class="about-marquee__inner">
-          <div class="about-marquee__track">
-            <span v-for="(part, i) in marqueeParts" :key="`a-${i}`" class="about-marquee__group">
-              <span class="about-marquee__item about-serif">{{ part }}</span>
-              <span class="about-marquee__dot" />
-            </span>
-            <span v-for="(part, i) in marqueeParts" :key="`b-${i}`" class="about-marquee__group">
-              <span class="about-marquee__item about-serif">{{ part }}</span>
-              <span class="about-marquee__dot" />
-            </span>
-          </div>
+    <!-- Роли -->
+    <section id="guide-roles" class="grid scroll-mt-4 gap-4">
+      <div class="grid gap-1">
+        <h2 class="text-lg font-semibold">Роли</h2>
+        <p class="text-sm text-muted-foreground">Роль назначает руководитель при добавлении сотрудника. Сменить свою роль можно только через ИТ-отдел.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div v-for="r in roles" :key="r.title" class="grid content-start gap-3 rounded-xl border bg-card p-4 shadow-xs md:p-6">
+          <h3 class="flex items-center gap-2 text-base font-semibold">
+            <component :is="r.icon" class="size-4 text-muted-foreground" />
+            {{ r.title }}
+          </h3>
+          <ul class="grid gap-2">
+            <li v-for="item in r.items" :key="item" class="flex gap-2 text-sm">
+              <span class="mt-2 size-1.5 shrink-0 rounded-full bg-primary dark:bg-ring" aria-hidden="true" />
+              {{ item }}
+            </li>
+          </ul>
         </div>
       </div>
+    </section>
 
-      <footer id="about-footer" class="about-landing__footer about-landing__footer--combined">
-        <div class="about-footer__inner">
-          <div id="about-contact" class="about-footer__contact" aria-labelledby="about-contact-title">
-            <img
-              class="about-contact__avatar"
-              src="/about-author.png"
-              width="80"
-              height="80"
-              alt="Фото автора портала"
-              loading="lazy"
-              decoding="async"
-            />
-            <div class="about-contact__body">
-              <h2 id="about-contact-title" class="about-contact__title">Связь с автором</h2>
-              <p class="about-contact__line">
-                <a class="about-contact__link" href="mailto:aliyartalybov@icloud.com">aliyartalybov@icloud.com</a>
-              </p>
-              <p class="about-contact__line">
-                Telegram:
-                <a
-                  class="about-contact__link"
-                  href="https://t.me/aliyarMSK"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >@aliyarMSK</a>
-              </p>
-            </div>
-          </div>
-          <div class="about-footer__brand">
-            <p class="about-landing__footer-brand">АГРОСИСТЕМА — 2026</p>
-            <p class="about-landing__footer-meta about-landing__meta">Учёт в поле · три клика · минимум текста</p>
-          </div>
+    <!-- Приёмы -->
+    <section class="grid gap-4">
+      <h2 class="text-lg font-semibold">Полезно знать</h2>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div v-for="t in tips" :key="t.title" class="grid content-start gap-1 rounded-xl border bg-card p-4 shadow-xs">
+          <span class="text-sm font-medium">{{ t.title }}</span>
+          <span class="text-sm text-muted-foreground">{{ t.text }}</span>
         </div>
-      </footer>
-    </main>
+      </div>
+    </section>
+
+    <!-- Вопросы -->
+    <section id="guide-faq" class="grid scroll-mt-4 gap-4">
+      <h2 class="text-lg font-semibold">Частые вопросы</h2>
+      <Accordion type="single" collapsible class="rounded-xl border bg-card px-4 shadow-xs md:px-6">
+        <AccordionItem v-for="(item, i) in faq" :key="i" :value="`faq-${i}`">
+          <AccordionTrigger class="text-left text-sm">{{ item.q }}</AccordionTrigger>
+          <AccordionContent class="text-sm text-muted-foreground">{{ item.a }}</AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </section>
+
+    <p class="flex items-center gap-2 pb-2 text-sm text-muted-foreground">
+      <BellIcon class="size-4" />
+      Если что-то работает не так, как описано, — напишите руководителю или в ИТ-отдел через чат.
+    </p>
   </div>
 </template>
-
-<style scoped>
-@layer legacy {
-/* --- Локальные алиасы поверх глобальных токенов портала (global.css :root / [data-theme='dark']) --- */
-.about-landing {
-  --ab-line: var(--border-color);
-  --ab-muted: var(--text-secondary);
-  --ab-meta: color-mix(in srgb, var(--text-secondary) 72%, var(--text-primary));
-  --ab-marquee-bg: color-mix(in srgb, var(--bg-panel) 88%, var(--agri-primary));
-  --ab-font-ui: 'Inter', system-ui, sans-serif;
-  --ab-font-serif: 'Playfair Display', Georgia, serif;
-  --ab-font-mono: 'Space Mono', ui-monospace, monospace;
-  --ab-pad-x: clamp(20px, 4vw, 48px);
-  --ab-scroll-margin: 12px;
-
-  position: relative;
-  box-sizing: border-box;
-  background-color: var(--agri-bg);
-  background-image: var(--bg-body-image);
-  color: var(--text-primary);
-  font-family: var(--ab-font-ui);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-/* Во всю ширину: компенсирует поле контента .main-content-inner (канон 16 / 24 от 768px). */
-.about-landing--embedded {
-  width: calc(100% + 48px);
-  max-width: none;
-  margin-left: -24px;
-  margin-right: -24px;
-}
-
-@media (max-width: 767px) {
-  .about-landing--embedded {
-    width: calc(100% + 32px);
-    margin-left: -16px;
-    margin-right: -16px;
-  }
-}
-
-.about-serif {
-  font-family: var(--ab-font-serif);
-  font-weight: 400;
-}
-
-.about-landing__meta {
-  font-family: var(--ab-font-mono);
-  font-size: 0.75rem;
-  color: var(--ab-meta);
-}
-
-.about-landing__main {
-  position: relative;
-  z-index: 1;
-  padding-top: 4px;
-  padding-bottom: 28px;
-}
-
-/* --- Hero --- */
-.about-hero {
-  text-align: center;
-  padding: clamp(12px, 2.5vw, 24px) var(--ab-pad-x) clamp(20px, 4vw, 40px);
-  scroll-margin-top: var(--ab-scroll-margin);
-}
-
-.about-hero__meta {
-  margin: 0 0 0.85rem;
-}
-
-.about-hero__title {
-  font-size: clamp(2.5rem, 7.5vw, 5.5rem);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-  margin: 0 auto;
-  max-width: 14ch;
-  color: var(--text-primary);
-}
-
-.about-hero__context {
-  margin: clamp(0.75rem, 2vw, 1.25rem) auto 0;
-  max-width: min(36rem, 100%);
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.65;
-  color: var(--ab-muted);
-  text-align: center;
-}
-
-/* --- Оглавление (якоря) --- */
-.about-toc {
-  padding-top: 0;
-  padding-bottom: clamp(4px, 1.2vw, 12px);
-}
-
-.about-toc__label {
-  margin: 0 0 8px;
-}
-
-.about-toc__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  justify-content: center;
-}
-
-.about-toc__link {
-  display: inline-block;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-decoration: none;
-  color: var(--text-primary);
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-card);
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease,
-    background 0.2s ease;
-}
-
-.about-toc__link:hover {
-  border-color: color-mix(in srgb, var(--accent-green) 40%, var(--border-color));
-  color: var(--agri-primary);
-  background: var(--bg-panel-hover);
-}
-
-/* --- Секции и цитаты --- */
-.about-section {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding-left: var(--ab-pad-x);
-  padding-right: var(--ab-pad-x);
-  scroll-margin-top: var(--ab-scroll-margin);
-}
-
-/* --- Погода --- */
-.about-weather {
-  padding-top: clamp(32px, 6vw, 56px);
-  padding-bottom: clamp(32px, 6vw, 64px);
-  border-top: 1px solid var(--ab-line);
-}
-
-.about-weather__kicker {
-  margin: 0 0 clamp(16px, 3vw, 24px);
-}
-
-.about-weather__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(28px, 5vw, 72px);
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .about-weather__row {
-    grid-template-columns: 1fr;
-  }
-
-  .about-weather__media {
-    order: 2;
-  }
-
-  .about-weather__copy {
-    order: 1;
-  }
-}
-
-.about-weather__copy {
-  min-width: 0;
-}
-
-.about-weather__title {
-  margin: 0 0 14px;
-  font-size: clamp(1.35rem, 2.8vw, 2rem);
-  line-height: 1.2;
-  color: var(--text-primary);
-}
-
-.about-weather__text {
-  margin: 0;
-  max-width: none;
-  font-size: 1.02rem;
-  line-height: 1.65;
-  color: var(--ab-muted);
-}
-
-.about-weather__media {
-  min-width: 0;
-}
-
-/* в колонке справа без лишнего внешнего margin — как .about-workflow-item__visual */
-.about-weather__shot {
-  margin: 0;
-}
-
-.about-quote {
-  text-align: center;
-  padding: clamp(28px, 6vw, 56px) 0;
-}
-
-.about-quote__text {
-  margin: 0 auto;
-  font-size: clamp(1.35rem, 3.2vw, 2.35rem);
-  line-height: 1.18;
-  letter-spacing: -0.02em;
-  max-width: 840px;
-  color: var(--ab-muted);
-}
-
-/* --- Workflow --- */
-.about-workflow {
-  padding-top: clamp(24px, 6vw, 48px);
-  padding-bottom: clamp(48px, 10vw, 100px);
-}
-
-.about-workflow__head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 24px;
-  margin-bottom: clamp(48px, 10vw, 100px);
-}
-
-.about-workflow__title {
-  margin: 0.5rem 0 0;
-  font-size: clamp(1.85rem, 4vw, 3rem);
-  color: var(--text-primary);
-}
-
-.about-workflow__seq {
-  margin: 0;
-  text-align: right;
-  line-height: 1.5;
-}
-
-@media (max-width: 640px) {
-  .about-workflow__seq {
-    text-align: left;
-    width: 100%;
-  }
-}
-
-.about-workflow__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(64px, 14vw, 120px);
-}
-
-.about-workflow-item {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(32px, 6vw, 80px);
-  align-items: center;
-  scroll-margin-top: calc(var(--ab-scroll-margin) + 8px);
-}
-
-.about-workflow-item:nth-child(even) {
-  direction: rtl;
-}
-
-.about-workflow-item:nth-child(even) > * {
-  direction: ltr;
-}
-
-@media (max-width: 900px) {
-  .about-workflow-item {
-    grid-template-columns: 1fr;
-  }
-
-  .about-workflow-item:nth-child(even) {
-    direction: ltr;
-  }
-}
-
-.about-workflow-item__num {
-  display: block;
-  font-size: clamp(4rem, 12vw, 7.5rem);
-  line-height: 0.85;
-  color: var(--ab-meta);
-  opacity: 0.35;
-  margin-bottom: 1rem;
-}
-
-.about-workflow-item__title {
-  font-size: clamp(1.4rem, 3vw, 2.25rem);
-  margin: 0 0 12px;
-  line-height: 1.2;
-  color: var(--text-primary);
-}
-
-.about-workflow-item__desc {
-  margin: 0;
-  font-size: 1.02rem;
-  font-weight: 300;
-  line-height: 1.6;
-  color: var(--ab-muted);
-  max-width: 400px;
-}
-
-.about-workflow-item__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.about-workflow-item__tag {
-  border: 1px solid var(--border-color);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  color: var(--ab-muted);
-}
-
-.about-workflow-item__visual {
-  width: 100%;
-  aspect-ratio: 4/5;
-  border-radius: clamp(16px, 3vw, 24px);
-  overflow: hidden;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-card);
-}
-
-/* Полный скрин UI: видно кадр целиком, подписи не обрезаются */
-.about-workflow-item__visual--contain {
-  aspect-ratio: auto;
-  overflow: hidden;
-  padding: clamp(10px, 2vw, 16px);
-  background: color-mix(in srgb, var(--bg-panel) 88%, var(--border-color));
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.about-workflow-item__img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: clamp(12px, 2.5vw, 18px);
-  opacity: 0.82;
-  transition:
-    opacity 0.45s ease,
-    transform 8s ease;
-}
-
-.about-workflow-item__visual--contain .about-workflow-item__img {
-  width: 100%;
-  height: auto;
-  max-width: 100%;
-  object-fit: contain;
-  object-position: center top;
-  opacity: 1;
-}
-
-.about-workflow-item__visual:hover .about-workflow-item__img {
-  opacity: 1;
-  transform: scale(1.04);
-}
-
-.about-workflow-item__visual--contain:hover .about-workflow-item__img {
-  transform: none;
-}
-
-/* --- Marquee --- */
-.about-marquee {
-  width: 100%;
-  overflow: hidden;
-  padding: clamp(28px, 6vw, 56px) 0;
-  background: var(--ab-marquee-bg);
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  position: relative;
-}
-
-.about-marquee::before,
-.about-marquee::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: min(18vw, 140px);
-  z-index: 2;
-  pointer-events: none;
-}
-
-.about-marquee::before {
-  left: 0;
-  background: linear-gradient(to right, var(--ab-marquee-bg), transparent);
-}
-
-.about-marquee::after {
-  right: 0;
-  background: linear-gradient(to left, var(--ab-marquee-bg), transparent);
-}
-
-.about-marquee__inner {
-  overflow: hidden;
-}
-
-.about-marquee__track {
-  display: flex;
-  width: max-content;
-  animation: about-marquee-scroll 42s linear infinite;
-}
-
-.about-marquee__group {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(24px, 4vw, 56px);
-  padding: 0 clamp(16px, 3vw, 36px);
-}
-
-.about-marquee__item {
-  font-size: clamp(1.35rem, 3.5vw, 2.35rem);
-  white-space: nowrap;
-  color: var(--text-primary);
-}
-
-.about-marquee__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ab-meta);
-  flex-shrink: 0;
-}
-
-@keyframes about-marquee-scroll {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .about-marquee__track {
-    animation: none;
-  }
-
-  .about-workflow-item__img {
-    transition: none;
-  }
-}
-
-/* --- Подвал: контакт + бренд в одной полосе (фон как у страницы, без отдельной зелёной плашки) --- */
-.about-landing__footer--combined {
-  max-width: none;
-  margin: 0;
-  padding: clamp(14px, 2.5vw, 22px) var(--ab-pad-x);
-  scroll-margin-top: var(--ab-scroll-margin);
-  border-top: 1px solid var(--ab-line);
-  background: transparent;
-  color: var(--text-primary);
-}
-
-.about-footer__inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: clamp(14px, 3vw, 24px);
-}
-
-.about-footer__contact {
-  display: flex;
-  align-items: center;
-  gap: clamp(12px, 2.5vw, 18px);
-  min-width: 0;
-  text-align: left;
-}
-
-.about-footer__brand {
-  text-align: right;
-  min-width: min(100%, 220px);
-}
-
-.about-contact__avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: center 18%;
-  flex-shrink: 0;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  display: block;
-}
-
-.about-contact__body {
-  min-width: 0;
-}
-
-.about-contact__title {
-  margin: 0 0 6px;
-  font-size: 0.75rem;
-  font-family: var(--ab-font-mono);
-  font-weight: 400;
-  color: var(--ab-meta);
-}
-
-.about-contact__line {
-  margin: 0 0 4px;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: var(--ab-muted);
-}
-
-.about-contact__line:last-child {
-  margin-bottom: 0;
-}
-
-.about-landing__footer--combined .about-contact__link {
-  color: var(--text-primary);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.15s ease;
-}
-
-.about-landing__footer--combined .about-contact__link:hover {
-  color: var(--agri-primary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.about-landing__footer-brand {
-  margin: 0 0 4px;
-  font-size: 0.88rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--text-primary);
-}
-
-.about-landing__footer-meta {
-  margin: 0;
-}
-
-@media (max-width: 700px) {
-  .about-footer__inner {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .about-footer__contact {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .about-footer__brand {
-    text-align: center;
-    padding-top: 8px;
-    border-top: 1px solid var(--ab-line);
-    width: 100%;
-    min-width: 0;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-}
-}
-</style>
