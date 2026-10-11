@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ruDate } from '@/lib/ruDate'
 import { Button } from '@/components/ui/shadcn/button'
 import { PencilIcon } from '@lucide/vue'
 /**
@@ -68,11 +69,11 @@ defineEmits<{
                 </div>
                 <div class="lands-right-metric">
                   <span class="lands-right-metric-label">Начало</span>
-                  <span class="lands-right-metric-value">{{ user.starts_at || '—' }}</span>
+                  <span class="lands-right-metric-value">{{ ruDate(user.starts_at) }}</span>
                 </div>
                 <div class="lands-right-metric">
                   <span class="lands-right-metric-label">Окончание</span>
-                  <span class="lands-right-metric-value">{{ user.ends_at || '—' }}</span>
+                  <span class="lands-right-metric-value">{{ ruDate(user.ends_at) }}</span>
                 </div>
                 <div class="lands-right-metric">
                   <span class="lands-right-metric-label">Площадь использования, га</span>

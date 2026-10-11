@@ -59,12 +59,12 @@ function canSave(): boolean {
         </div>
         <div class="lands-form-grid">
           <label class="lands-field">
-            <span>Сезон *</span>
+            <span>Сезон <span class="lands-req" aria-hidden="true">*</span></span>
             <Input v-model.trim="form.season" type="text" placeholder="Например: 2026" />
           </label>
           <label class="lands-field">
             <span class="lands-label-with-help">
-              Тип севооборота *
+              Тип севооборота <span class="lands-req" aria-hidden="true">*</span>
               <RefFieldHelp
                 text="Нет нужного типа севооборота? Добавьте его в"
                 :to="{ path: '/lands', query: { tab: 'crop-rotation-refs' } }"
@@ -76,7 +76,7 @@ function canSave(): boolean {
         </div>
         <label class="lands-field">
           <span class="lands-label-with-help">
-            Сельскохозяйственная культура *
+            Сельскохозяйственная культура <span class="lands-req" aria-hidden="true">*</span>
             <RefFieldHelp
               text="Нет нужной культуры? Добавьте ее в"
               :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
@@ -91,7 +91,7 @@ function canSave(): boolean {
         </label>
         <div class="lands-form-grid">
           <label class="lands-field">
-            <span>Площадь для выращивания сельхозкультур, га *</span>
+            <span>Площадь для выращивания сельхозкультур, га <span class="lands-req" aria-hidden="true">*</span></span>
             <Input v-model.number="form.areaForCropsHa" type="number" min="0" step="0.01" />
           </label>
           <label class="lands-field">

@@ -306,7 +306,12 @@
 .lands-actions--map { border-top:none; padding-top:0; margin-bottom:8px; justify-content:flex-end; }
 .lands-actions--crop { border-top:none; padding-top:0; margin-bottom:12px; justify-content:flex-end; }
 .lands-section-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
-.lands-section-head h2 { margin:0; }
+.lands-section-head h2 { margin:0; min-width:0; }
+/* На телефоне: заголовок вкладки отдельной строкой, кнопки — под ним, слева. */
+@media (max-width: 639px) {
+  .lands-section-head { flex-direction:column; align-items:stretch; }
+  .lands-section-head .lands-section-actions { justify-content:flex-start; }
+}
 .lands-section-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
 .lands-melioration-head { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-bottom:10px; }
 .lands-melioration-empty { text-align:center; padding:18px 12px; }
@@ -1098,4 +1103,14 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+}
+
+/* Звёздочка обязательного поля — красная, как в остальных окнах сайта. */
+.lands-req { color: var(--destructive); }
+@media (max-width: 639px) {
+  .lands-section-actions .lands-export-btns { margin-left: 0; }
+}
+/* Пустые ячейки-заглушки двухколоночной сетки на телефоне дают лишний отступ — прячем. */
+@media (max-width: 760px) {
+  .lands-form-grid > div:empty { display: none; }
 }

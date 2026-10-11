@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/shadcn/button'
 import { FileSpreadsheetIcon, FileTextIcon, PencilIcon } from '@lucide/vue'
+import { ruDate } from '@/lib/ruDate'
 /**
  * Вкладка «Права владения» карточки участка.
  *
@@ -85,11 +86,11 @@ defineEmits<{
                 </div>
                 <div class="lands-right-metric">
                   <span class="lands-right-metric-label">Начало</span>
-                  <span class="lands-right-metric-value">{{ right.starts_at || '—' }}</span>
+                  <span class="lands-right-metric-value">{{ ruDate(right.starts_at) }}</span>
                 </div>
                 <div class="lands-right-metric">
                   <span class="lands-right-metric-label">Окончание</span>
-                  <span class="lands-right-metric-value">{{ right.ends_at || '—' }}</span>
+                  <span class="lands-right-metric-value">{{ ruDate(right.ends_at) }}</span>
                 </div>
               </div>
             </div>

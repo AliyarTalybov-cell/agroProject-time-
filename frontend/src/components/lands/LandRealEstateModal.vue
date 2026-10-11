@@ -40,7 +40,7 @@ defineEmits<{
           <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '—' }, ...(assignedFields).map((field) => ({ value: field.id, label: `№${field.number} — ${field.name}` }))]" />
         </label>
         <label class="lands-field">
-          <span>Кадастровый номер *</span>
+          <span>Кадастровый номер <span class="lands-req" aria-hidden="true">*</span></span>
           <Input v-model.trim="form.cadastralNumber" type="text" />
         </label>
       </div>

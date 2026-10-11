@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
@@ -53,21 +54,24 @@ defineEmits<{
     <div class="lands-modal-body">
       <label class="lands-field">
         <span class="lands-label-with-help">
-          Правообладатель *
+          Правообладатель <span class="lands-req" aria-hidden="true">*</span>
           <RefFieldHelp
             text="Нет нужного правообладателя? Добавьте его в"
             :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
             link-label="Справочники прав"
           />
         </span>
-        <div class="lands-owner-mode">
-          <Button variant="outline" size="sm" type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'reference' }" @click="form.holderMode = 'reference'">
-            Выбрать из справочника
-          </Button>
-          <Button variant="outline" size="sm" type="button" class="lands-owner-mode-btn" :class="{ 'is-active': form.holderMode === 'manual' }" @click="form.holderMode = 'manual'">
-            Ввести вручную
-          </Button>
-        </div>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          class="tw-scope w-full sm:w-fit"
+          aria-label="Режим ввода правообладателя"
+          :model-value="form.holderMode"
+          @update:model-value="(v) => { if (v === 'reference' || v === 'manual') form.holderMode = v }"
+        >
+          <ToggleGroupItem value="reference" class="flex-1 px-3">Из справочника</ToggleGroupItem>
+          <ToggleGroupItem value="manual" class="flex-1 px-3">Вручную</ToggleGroupItem>
+        </ToggleGroup>
       </label>
       <div v-if="form.holderMode === 'reference'" class="lands-form-grid">
         <label class="lands-field">
@@ -77,11 +81,11 @@ defineEmits<{
       </div>
       <div class="lands-form-grid">
         <label class="lands-field">
-          <span>Наименование *</span>
+          <span>Наименование <span class="lands-req" aria-hidden="true">*</span></span>
           <Input v-model.trim="form.holderName" type="text" placeholder="СПК «Урожайный»" />
         </label>
         <label class="lands-field">
-          <span>ИНН *</span>
+          <span>ИНН <span class="lands-req" aria-hidden="true">*</span></span>
           <Input v-model.trim="form.holderInn" type="text" />
         </label>
       </div>
@@ -91,14 +95,14 @@ defineEmits<{
           <Input v-model.trim="form.holderKpp" type="text" />
         </label>
         <label class="lands-field">
-          <span>ОГРН *</span>
+          <span>ОГРН <span class="lands-req" aria-hidden="true">*</span></span>
           <Input v-model.trim="form.holderOgrn" type="text" />
         </label>
       </div>
       <div class="lands-form-grid">
         <label class="lands-field">
           <span class="lands-label-with-help">
-            Вид права *
+            Вид права <span class="lands-req" aria-hidden="true">*</span>
             <RefFieldHelp
               text="Нет нужного вида права? Добавьте его в"
               :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
@@ -109,7 +113,7 @@ defineEmits<{
         </label>
         <label class="lands-field">
           <span class="lands-label-with-help">
-            Тип подтверждающего документа *
+            Тип подтверждающего документа <span class="lands-req" aria-hidden="true">*</span>
             <RefFieldHelp
               text="Нет нужного типа документа? Добавьте его в"
               :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
@@ -120,7 +124,7 @@ defineEmits<{
         </label>
       </div>
       <label class="lands-field">
-        <span>Подтверждающие документы *</span>
+        <span>Подтверждающие документы <span class="lands-req" aria-hidden="true">*</span></span>
         <div class="lands-docs-compact-box">
           <div class="lands-docs-compact-head">
             <span class="lands-docs-compact-state" :class="{ 'is-filled': supportingLinks.length > 0 }">
@@ -159,16 +163,16 @@ defineEmits<{
       </label>
       <div class="lands-form-grid">
         <label class="lands-field">
-          <span>Начало *</span>
+          <span>Начало <span class="lands-req" aria-hidden="true">*</span></span>
           <UiDatePicker v-model="form.startsAt" />
         </label>
         <label class="lands-field">
-          <span>Окончание *</span>
+          <span>Окончание <span class="lands-req" aria-hidden="true">*</span></span>
           <UiDatePicker v-model="form.endsAt" />
         </label>
       </div>
       <label class="lands-field">
-        <span>Площадь использования поля, га *</span>
+        <span>Площадь использования поля, га <span class="lands-req" aria-hidden="true">*</span></span>
         <Input v-model.number="form.usageAreaHa" type="number" min="0" step="0.01" placeholder="7.49" />
       </label>
     </div>
