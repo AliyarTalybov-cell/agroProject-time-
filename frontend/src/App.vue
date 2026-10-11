@@ -69,6 +69,7 @@ const breadcrumbParent = computed<{ label: string; to: string } | null>(() => {
     'warehouse-cell': { label: 'Склады', to: '/warehouses' },
     'grain-batch': { label: 'Партии', to: '/grain/batches' },
     'equipment-details': { label: 'Техника', to: '/equipment' },
+    'task-details': { label: 'Задачи', to: '/task-management' },
     'news-details': { label: 'Новости', to: '/news' },
     'news-edit': { label: 'Новости', to: '/news' },
   }

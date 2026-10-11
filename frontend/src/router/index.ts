@@ -62,6 +62,7 @@ export const routes = [
   { path: '/equipment/:id', name: 'equipment-details', component: EquipmentDetailsPage, props: true, meta: { title: 'Техника' } },
   { path: '/tasks', name: 'tasks', component: TasksPage, meta: { title: 'Календарь' } },
   { path: '/task-management', name: 'task-management', component: TaskManagementPage, meta: { title: 'Задачи' } },
+  { path: '/task-management/:taskId', name: 'task-details', component: TaskManagementPage, meta: { title: 'Задача' } },
   { path: '/mechanic', name: 'mechanic', component: MechanicPage, meta: { title: 'Экран оператора' } },
   { path: '/reports', name: 'reports', component: ReportsPage, meta: { title: 'Аналитика' } },
   { path: '/profile', name: 'profile', component: ProfilePage, meta: { title: 'Настройки профиля' } },

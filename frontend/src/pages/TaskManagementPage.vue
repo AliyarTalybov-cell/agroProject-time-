@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
 import UiPersonPicker from '@/components/ui/UiPersonPicker.vue'
-import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon, CirclePlusIcon, ClipboardListIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue'
+import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon, ExternalLinkIcon, CirclePlusIcon, ClipboardListIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, PaperclipIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { ButtonGroup } from '@/components/ui/shadcn/button-group'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
@@ -23,7 +23,8 @@ import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, ref, watch, onMounted, onActivated } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import UiModalOrPage from '@/components/ui/UiModalOrPage.vue'
 import { useAuth } from '@/stores/auth'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import {
@@ -370,7 +371,29 @@ function applyAnalyticsQueryParams() {
   }
 }
 
+/** Режим отдельной страницы задачи: /task-management/:taskId. */
+const detailTaskId = computed(() => (typeof route.params.taskId === 'string' ? route.params.taskId : ''))
+
+function taskPageHref(id: string): string {
+  return router.resolve({ name: 'task-details', params: { taskId: id } }).href
+}
+
+/** Обычный клик — окно; Ctrl/⌘-клик или колёсико — задача на отдельной странице в новой вкладке. */
+function onTaskRowClick(e: MouseEvent, id: string) {
+  const newTab = e.type === 'auxclick' ? e.button === 1 : e.metaKey || e.ctrlKey
+  if (newTab) {
+    e.preventDefault()
+    window.open(taskPageHref(id), '_blank', 'noopener')
+    return
+  }
+  if (e.type === 'click') void openTask(id)
+}
+
 async function syncOpenTaskFromQuery() {
+  if (detailTaskId.value) {
+    if (tasks.value.some((t) => t.id === detailTaskId.value)) await openTask(detailTaskId.value)
+    return
+  }
   const raw = route.query.openTaskId
   const openTaskId = typeof raw === 'string' ? raw : ''
   if (!openTaskId) return
@@ -811,7 +834,8 @@ function openEdit() {
   }
   closeParticipantPicker()
   editingTaskId.value = task.id
-  selectedTaskId.value = null
+  // В окне карточка уступает место окну правки; на отдельной странице задача остаётся под ним.
+  if (!detailTaskId.value) selectedTaskId.value = null
   showCreateModal.value = true
 }
 
@@ -989,6 +1013,10 @@ async function openTask(id: string) {
   await loadMetaForTask(id)
 }
 function closeTask() {
+  if (detailTaskId.value) {
+    void router.push({ name: 'task-management' })
+    return
+  }
   selectedTaskId.value = null
   taskModalError.value = ''
   taskComments.value = []
@@ -1223,6 +1251,19 @@ function sortIcon(key: TaskSortKey) {
       <AlertDescription>{{ boardError }}</AlertDescription>
     </Alert>
 
+    <div v-if="detailTaskId && !selectedTask" class="grid gap-3 rounded-xl border bg-card p-6">
+      <template v-if="tasksLoading">
+        <Skeleton class="h-6 w-1/3" />
+        <Skeleton class="h-4 w-2/3" />
+        <Skeleton class="h-24 w-full" />
+      </template>
+      <template v-else>
+        <p class="text-sm text-muted-foreground">Задача не найдена — возможно, её удалили или у вас нет к ней доступа.</p>
+        <RouterLink :to="{ name: 'task-management' }" class="w-fit text-sm font-medium text-primary no-underline hover:underline">К списку задач</RouterLink>
+      </template>
+    </div>
+
+    <template v-if="!detailTaskId">
     <PageToolbar>
       <Tabs :model-value="activeFilter">
         <TabsList>
@@ -1303,7 +1344,8 @@ function sortIcon(key: TaskSortKey) {
             <button
               type="button"
               class="grid w-full min-w-0 grid-cols-1 gap-3 rounded-xl border bg-card p-4 text-left shadow-xs transition-colors hover:bg-muted/50"
-              @click="openTask(task.id)"
+              @click="onTaskRowClick($event, task.id)"
+              @auxclick="onTaskRowClick($event, task.id)"
             >
               <div class="flex items-start justify-between gap-3">
                 <div class="grid min-w-0 gap-1">
@@ -1354,7 +1396,7 @@ function sortIcon(key: TaskSortKey) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="task in paginatedTasks" :key="task.id" class="cursor-pointer" @click="openTask(task.id)">
+              <TableRow v-for="task in paginatedTasks" :key="task.id" class="cursor-pointer" @click="onTaskRowClick($event, task.id)" @auxclick="onTaskRowClick($event, task.id)">
                 <TableCell class="pl-4 text-muted-foreground tabular-nums">{{ getTaskNumber(task.id) }}</TableCell>
                 <TableCell class="whitespace-normal" :title="taskListSubtitleTitle(task) || task.title">
                   <div class="grid gap-0.5">
@@ -1387,6 +1429,7 @@ function sortIcon(key: TaskSortKey) {
       </template>
     </template>
     <UiPagination v-show="!tasksLoading && totalFiltered > 0" :page="currentPage" :page-size="pageSize" :total="totalFiltered" @update:page="goToPage" @update:page-size="(n) => (pageSize = n)" />
+    </template>
 
     <!-- Окно новой / редактируемой задачи — UiModal (Dialog shadcn) -->
     <UiModal
@@ -1495,13 +1538,31 @@ function sortIcon(key: TaskSortKey) {
     </UiModal>
 
     <!-- Карточка задачи — UiModal (Dialog shadcn) -->
-    <UiModal
+    <UiModalOrPage
       v-if="selectedTask"
+      :as-page="!!detailTaskId"
       title="Задача"
       :description="`№ ${getTaskNumber(selectedTask.id)}`"
       :max-width="940"
+      :back-to="{ name: 'task-management' }"
+      back-label="Все задачи"
       @close="closeTask"
     >
+      <template v-if="!detailTaskId" #header-actions>
+        <Button
+          as="a"
+          variant="ghost"
+          size="icon-sm"
+          class="-mt-1 text-muted-foreground"
+          :href="taskPageHref(selectedTask.id)"
+          target="_blank"
+          rel="noopener"
+          title="Открыть в новой вкладке"
+          aria-label="Открыть задачу в новой вкладке"
+        >
+          <ExternalLinkIcon />
+        </Button>
+      </template>
       <div class="tw-scope relative grid gap-6">
         <Alert v-if="taskModalError" variant="destructive">
           <AlertDescription>{{ taskModalError }}</AlertDescription>
@@ -1510,7 +1571,7 @@ function sortIcon(key: TaskSortKey) {
           <Spinner class="size-5 text-muted-foreground" />
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div class="grid gap-6" :class="detailTaskId ? 'lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8' : 'lg:grid-cols-[minmax(0,1fr)_17rem]'">
           <!-- Основное -->
           <div class="grid min-w-0 content-start gap-6">
             <div class="grid gap-3">
@@ -1609,10 +1670,56 @@ function sortIcon(key: TaskSortKey) {
               </ul>
               <p v-else class="text-sm text-muted-foreground">Файлы пока не прикреплены.</p>
             </section>
+
+            <Separator />
+
+            <!-- Обсуждение -->
+            <section class="grid gap-4">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-sm font-medium">
+                  Обсуждение<span v-if="taskComments.length" class="ml-1.5 font-normal text-muted-foreground">{{ taskComments.length }}</span>
+                </h3>
+                <Button
+                  v-if="taskComments.length > TASK_COMMENTS_PREVIEW"
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  :disabled="commentsLoading"
+                  @click="isTaskChatExpanded = !isTaskChatExpanded"
+                >
+                  {{ isTaskChatExpanded ? 'Свернуть' : `Показать все (${taskComments.length})` }}
+                </Button>
+              </div>
+              <div v-if="commentsLoading" class="grid gap-2">
+                <Skeleton v-for="i in 2" :key="i" class="h-12 w-full" />
+              </div>
+              <ul v-else-if="taskComments.length" class="grid gap-4">
+                <li v-for="comment in visibleTaskComments" :key="comment.id" class="flex gap-3">
+                  <UserAvatar class="size-7 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(comment.user_id)" :url="avatarUrlByUserId(comment.user_id)" :initials="profileInitials(comment.user_id)" />
+                  <div class="grid min-w-0 gap-1">
+                    <div class="flex flex-wrap items-baseline gap-x-2 text-sm">
+                      <span class="font-medium">{{ profileName(comment.user_id) }}</span>
+                      <span class="text-xs text-muted-foreground">{{ formatDateTime(comment.created_at) }}</span>
+                    </div>
+                    <p class="whitespace-pre-line break-words text-sm leading-relaxed">{{ comment.message }}</p>
+                  </div>
+                </li>
+              </ul>
+              <p v-else-if="!taskComments.length" class="text-sm text-muted-foreground">Комментариев пока нет.</p>
+              <form class="grid gap-2" @submit.prevent="submitComment">
+                <Textarea v-model="newCommentMessage" class="min-h-16" rows="2" placeholder="Комментарий для исполнителя" />
+                <div class="flex justify-end">
+                  <Button type="submit" size="sm" :disabled="!newCommentMessage.trim() || isSendingComment">
+                    <Spinner v-if="isSendingComment" />
+                    Отправить
+                  </Button>
+                </div>
+              </form>
+            </section>
           </div>
 
           <!-- Сбоку: автор и история -->
-          <aside class="grid content-start gap-6 lg:border-l lg:pl-6">
+          <aside class="grid content-start gap-6 lg:border-l lg:pl-6" :class="detailTaskId ? 'lg:sticky lg:top-0 lg:self-start' : ''">
             <section class="grid gap-3">
               <h3 class="text-sm font-medium">Автор</h3>
               <div class="flex min-w-0 items-center gap-3">
@@ -1658,58 +1765,14 @@ function sortIcon(key: TaskSortKey) {
           </aside>
         </div>
 
-        <Separator />
 
-        <!-- Обсуждение -->
-        <section class="grid gap-4">
-          <div class="flex items-center justify-between gap-2">
-            <h3 class="text-sm font-medium">
-              Обсуждение<span v-if="taskComments.length" class="ml-1.5 font-normal text-muted-foreground">{{ taskComments.length }}</span>
-            </h3>
-            <Button
-              v-if="taskComments.length > TASK_COMMENTS_PREVIEW"
-              variant="ghost"
-              size="sm"
-              type="button"
-              :disabled="commentsLoading"
-              @click="isTaskChatExpanded = !isTaskChatExpanded"
-            >
-              {{ isTaskChatExpanded ? 'Свернуть' : `Показать все (${taskComments.length})` }}
-            </Button>
-          </div>
-          <div v-if="commentsLoading" class="grid gap-2">
-            <Skeleton v-for="i in 2" :key="i" class="h-12 w-full" />
-          </div>
-          <ul v-else-if="taskComments.length" class="grid gap-4">
-            <li v-for="comment in visibleTaskComments" :key="comment.id" class="flex gap-3">
-              <UserAvatar class="size-7 shrink-0 text-[10px] font-medium text-white" :style="avatarStyleByUserId(comment.user_id)" :url="avatarUrlByUserId(comment.user_id)" :initials="profileInitials(comment.user_id)" />
-              <div class="grid min-w-0 gap-1">
-                <div class="flex flex-wrap items-baseline gap-x-2 text-sm">
-                  <span class="font-medium">{{ profileName(comment.user_id) }}</span>
-                  <span class="text-xs text-muted-foreground">{{ formatDateTime(comment.created_at) }}</span>
-                </div>
-                <p class="whitespace-pre-line break-words text-sm leading-relaxed">{{ comment.message }}</p>
-              </div>
-            </li>
-          </ul>
-          <p v-else-if="!taskComments.length" class="text-sm text-muted-foreground">Комментариев пока нет.</p>
-          <form class="grid gap-2" @submit.prevent="submitComment">
-            <Textarea v-model="newCommentMessage" class="min-h-16" rows="2" placeholder="Комментарий для исполнителя" />
-            <div class="flex justify-end">
-              <Button type="submit" size="sm" :disabled="!newCommentMessage.trim() || isSendingComment">
-                <Spinner v-if="isSendingComment" />
-                Отправить
-              </Button>
-            </div>
-          </form>
-        </section>
       </div>
       <template #actions>
         <UiButton v-if="canDeleteSelectedTask" variant="danger-quiet" class="sm:mr-auto" @click="deleteTask">Удалить</UiButton>
         <UiButton @click="openEdit">Редактировать</UiButton>
-        <UiButton variant="primary" @click="closeTask">Закрыть</UiButton>
+        <UiButton variant="primary" @click="closeTask">{{ detailTaskId ? 'К списку задач' : 'Закрыть' }}</UiButton>
       </template>
-    </UiModal>
+    </UiModalOrPage>
 
     <UiSuccessModal
       :open="successModalOpen"
