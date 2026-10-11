@@ -16,6 +16,13 @@ function isPermissionDenied(text: string): boolean {
   return /row-level security|permission denied|"code":"42501"/i.test(text)
 }
 
+export const NOT_FOUND_LINK_TEXT = 'Запись не найдена: ссылка неверная или устарела.'
+
+/** Неверный идентификатор в адресе (например, /grain/batches/abc): текст Postgres пользователю не нужен. */
+function isInvalidId(text: string): boolean {
+  return /invalid input syntax for type uuid|"code":"22P02"/i.test(text)
+}
+
 export function formatSupabaseError(err: unknown): string {
   if (err == null) return 'Неизвестная ошибка'
   let raw = ''
@@ -26,6 +33,7 @@ export function formatSupabaseError(err: unknown): string {
   }
   if (isNetworkFailure(raw)) return NETWORK_ERROR_TEXT
   if (isPermissionDenied(raw)) return PERMISSION_ERROR_TEXT
+  if (isInvalidId(raw)) return NOT_FOUND_LINK_TEXT
   if (err instanceof Error) return err.message
   if (typeof err !== 'object') return String(err)
   const o = err as Record<string, unknown>

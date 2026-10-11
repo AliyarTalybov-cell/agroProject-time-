@@ -94,22 +94,22 @@ async function save() {
     <p v-else-if="!refs.loading.value && !sources.length" class="ui-alert">На складе нет зерна для перемещения.</p>
 
     <div class="ui-form-field">
-      <label class="ui-form-label">Что и откуда *</label>
-      <UiSelect v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию в ячейке" class="ui-form-select" />
+      <label class="ui-form-label">Что и откуда <span class="text-destructive" aria-hidden="true">*</span></label>
+      <UiSelect block v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию в ячейке" class="ui-form-select" />
     </div>
     <div class="ui-form-field">
-      <label class="ui-form-label">Куда *</label>
-      <UiSelect v-model="form.toCellId" :options="[...(targets).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" placeholder="Выберите ячейку" class="ui-form-select" />
+      <label class="ui-form-label">Куда <span class="text-destructive" aria-hidden="true">*</span></label>
+      <UiSelect block v-model="form.toCellId" :options="[...(targets).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" placeholder="Выберите ячейку" class="ui-form-select" />
     </div>
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Дата и время *</label>
+        <label class="ui-form-label">Дата и время <span class="text-destructive" aria-hidden="true">*</span></label>
         <UiDateTimePicker v-model="form.docDate" />
       </div>
     </div>
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Масса, т *</label>
+        <label class="ui-form-label">Масса, т <span class="text-destructive" aria-hidden="true">*</span></label>
         <Input v-model.trim="form.tons" inputmode="decimal" class="ui-form-input" />
         <p v-if="source" class="ui-form-hint">Доступно {{ formatTons(source.available) }}</p>
       </div>

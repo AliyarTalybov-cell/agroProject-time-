@@ -88,23 +88,23 @@ async function save() {
   <UiModal title="Подработка: сушка, очистка" :max-width="600" :close-disabled="saving" @close="emit('close')">
     <p v-if="refs.error.value" class="ui-form-error">{{ refs.error.value }}</p>
     <div class="ui-form-field">
-      <label class="ui-form-label">Партия в ячейке *</label>
-      <UiSelect v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию" class="ui-form-select" />
+      <label class="ui-form-label">Партия в ячейке <span class="text-destructive" aria-hidden="true">*</span></label>
+      <UiSelect block v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию" class="ui-form-select" />
     </div>
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Дата и время *</label>
+        <label class="ui-form-label">Дата и время <span class="text-destructive" aria-hidden="true">*</span></label>
         <UiDateTimePicker v-model="form.docDate" />
       </div>
     </div>
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Масса до, т *</label>
+        <label class="ui-form-label">Масса до, т <span class="text-destructive" aria-hidden="true">*</span></label>
         <Input v-model.trim="form.before" inputmode="decimal" class="ui-form-input" />
         <p v-if="source" class="ui-form-hint">В ячейке {{ formatTons(source.available) }}</p>
       </div>
       <div class="ui-form-field">
-        <label class="ui-form-label">Масса после, т *</label>
+        <label class="ui-form-label">Масса после, т <span class="text-destructive" aria-hidden="true">*</span></label>
         <Input v-model.trim="form.after" inputmode="decimal" class="ui-form-input" />
         <p v-if="loss != null && loss > 0" class="ui-form-hint">Усушка и отходы {{ formatTons(loss, 3) }}</p>
       </div>

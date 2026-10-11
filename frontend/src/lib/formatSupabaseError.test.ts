@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatSupabaseError, NETWORK_ERROR_TEXT, PERMISSION_ERROR_TEXT } from './formatSupabaseError'
+import { formatSupabaseError, NETWORK_ERROR_TEXT, NOT_FOUND_LINK_TEXT, PERMISSION_ERROR_TEXT } from './formatSupabaseError'
 
 describe('formatSupabaseError', () => {
   it('сбой сети — понятная фраза вместо стека', () => {
@@ -11,6 +11,10 @@ describe('formatSupabaseError', () => {
   it('отказ политики доступа — фраза о правах', () => {
     expect(formatSupabaseError({ name: 'StorageApiError', message: 'new row violates row-level security policy' })).toBe(PERMISSION_ERROR_TEXT)
     expect(formatSupabaseError({ code: '42501', message: 'permission denied for table tasks' })).toBe(PERMISSION_ERROR_TEXT)
+  })
+
+  it('неверный идентификатор в ссылке — «запись не найдена»', () => {
+    expect(formatSupabaseError({ code: '22P02', message: 'invalid input syntax for type uuid: "undefined"' })).toBe(NOT_FOUND_LINK_TEXT)
   })
 
   it('ошибка PostgREST — message, details и hint', () => {

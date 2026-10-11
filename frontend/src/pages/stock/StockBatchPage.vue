@@ -313,7 +313,7 @@ async function saveEdit() {
             <FormField label="Партия во ФГИС «Зерно», №" for="be-fgis" wide>
               <Input id="be-fgis" v-model.trim="edit.fgis" />
             </FormField>
-            <div class="grid grid-cols-3 gap-4 sm:col-span-full">
+            <div class="grid grid-cols-3 items-end gap-3 sm:col-span-full sm:gap-4">
               <FormField label="Протеин, %" for="be-protein">
                 <Input id="be-protein" v-model.trim="edit.protein" inputmode="decimal" />
               </FormField>

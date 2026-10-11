@@ -65,14 +65,14 @@ async function save() {
   <UiModal :title="cell ? 'Ячейка склада' : 'Новая ячейка склада'" :close-disabled="saving" @close="emit('close')">
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Название *</label>
+        <label class="ui-form-label">Название <span class="text-destructive" aria-hidden="true">*</span></label>
         <Input v-model.trim="form.name" class="ui-form-input" placeholder="Например: Силос 3" />
       </div>
       <div class="ui-form-field">
-        <label class="ui-form-label ui-form-label--with-help">Тип *
+        <label class="ui-form-label ui-form-label--with-help">Тип <span class="text-destructive" aria-hidden="true">*</span>
           <RefFieldHelp text="Нет нужного типа? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-types' } }" link-label="Справочники хранения" />
         </label>
-        <UiSelect v-model="form.typeId" :options="[...(types).map((t) => ({ value: t.id, label: String(t.name) }))]" placeholder="Выберите тип" v-if="!isMain" class="ui-form-select" />
+        <UiSelect block v-model="form.typeId" :options="[...(types).map((t) => ({ value: t.id, label: String(t.name) }))]" placeholder="Выберите тип" v-if="!isMain" class="ui-form-select" />
         <input v-else class="ui-form-input" value="Основная" readonly tabindex="-1" />
       </div>
     </div>

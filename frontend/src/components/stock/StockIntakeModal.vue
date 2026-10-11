@@ -194,49 +194,49 @@ function num(v: number | null | undefined, digits = 2): string {
 
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Дата и время *</label>
+        <label class="ui-form-label">Дата и время <span class="text-destructive" aria-hidden="true">*</span></label>
         <UiDateTimePicker v-model="form.docDate" />
       </div>
       <div class="ui-form-field">
-        <label class="ui-form-label">Куда (ячейка склада) *</label>
-        <UiSelect v-model="form.cellId" :options="[...(cellsForLocation).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" class="ui-form-select" />
+        <label class="ui-form-label">Куда (ячейка склада) <span class="text-destructive" aria-hidden="true">*</span></label>
+        <UiSelect block v-model="form.cellId" :options="[...(cellsForLocation).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" class="ui-form-select" />
       </div>
     </div>
 
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Откуда зерно *</label>
-        <UiSelect v-model="form.origin" :options="[{ value: 'field', label: 'С поля (урожай)' }, { value: 'purchase', label: 'Закупка у поставщика' }]" class="ui-form-select" :disabled="form.mode === 'existing'" />
+        <label class="ui-form-label">Откуда зерно <span class="text-destructive" aria-hidden="true">*</span></label>
+        <UiSelect block v-model="form.origin" :options="[{ value: 'field', label: 'С поля (урожай)' }, { value: 'purchase', label: 'Закупка у поставщика' }]" class="ui-form-select" :disabled="form.mode === 'existing'" />
       </div>
       <div class="ui-form-field">
-        <label class="ui-form-label">Партия *</label>
-        <UiSelect v-model="form.mode" :options="[{ value: 'new', label: 'Новая партия' }, { value: 'existing', label: 'Досыпать в существующую' }]" class="ui-form-select" />
+        <label class="ui-form-label">Партия <span class="text-destructive" aria-hidden="true">*</span></label>
+        <UiSelect block v-model="form.mode" :options="[{ value: 'new', label: 'Новая партия' }, { value: 'existing', label: 'Досыпать в существующую' }]" class="ui-form-select" />
       </div>
     </div>
 
     <template v-if="form.mode === 'existing'">
       <div class="ui-form-field">
-        <label class="ui-form-label">Существующая партия *</label>
-        <UiSelect v-model="form.batchId" :options="[...(existingBatches).map((b) => ({ value: b.id, label: `${b.code} · ${b.cropLabel} · ${formatTons(b.tons)}` }))]" placeholder="Выберите партию" class="ui-form-select" />
+        <label class="ui-form-label">Существующая партия <span class="text-destructive" aria-hidden="true">*</span></label>
+        <UiSelect block v-model="form.batchId" :options="[...(existingBatches).map((b) => ({ value: b.id, label: `${b.code} · ${b.cropLabel} · ${formatTons(b.tons)}` }))]" placeholder="Выберите партию" class="ui-form-select" />
       </div>
     </template>
     <template v-else>
       <div class="ui-form-row ui-form-row--two">
         <div class="ui-form-field">
-          <label class="ui-form-label ui-form-label--with-help">Культура *
+          <label class="ui-form-label ui-form-label--with-help">Культура <span class="text-destructive" aria-hidden="true">*</span>
             <RefFieldHelp text="Нет нужной культуры? Добавьте её в" :to="{ path: '/lands', query: { tab: 'crops-refs' } }" link-label="Справочники СХ культур" />
           </label>
-          <UiSelect v-model="form.cropKey" :options="[...(refs.crops.value).map((c) => ({ value: c.key, label: String(c.label) }))]" placeholder="Выберите культуру" class="ui-form-select" />
+          <UiSelect block v-model="form.cropKey" :options="[...(refs.crops.value).map((c) => ({ value: c.key, label: String(c.label) }))]" placeholder="Выберите культуру" class="ui-form-select" />
         </div>
         <div v-if="form.origin === 'field'" class="ui-form-field">
-          <label class="ui-form-label">Поле *</label>
-          <UiSelect v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
+          <label class="ui-form-label">Поле <span class="text-destructive" aria-hidden="true">*</span></label>
+          <UiSelect block v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
         </div>
         <div v-else class="ui-form-field">
-          <label class="ui-form-label ui-form-label--with-help">Поставщик *
+          <label class="ui-form-label ui-form-label--with-help">Поставщик <span class="text-destructive" aria-hidden="true">*</span>
             <RefFieldHelp text="Нет поставщика? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
           </label>
-          <UiSelect v-model="form.supplierId" :options="[...(refs.suppliers.value).map((s) => ({ value: s.id, label: String(s.name) }))]" :placeholder="refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»'" class="ui-form-select" />
+          <UiSelect block v-model="form.supplierId" :options="[...(refs.suppliers.value).map((s) => ({ value: s.id, label: String(s.name) }))]" :placeholder="refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»'" class="ui-form-select" />
         </div>
       </div>
       <div class="ui-form-row ui-form-row--three">
@@ -252,7 +252,7 @@ function num(v: number | null | undefined, digits = 2): string {
           <label class="ui-form-label ui-form-label--with-help">Назначение
             <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
           </label>
-          <UiSelect v-model="form.purpose" :options="[...(refs.purposes.value).map((p) => ({ value: p.id, label: String(p.label) }))]" class="ui-form-select" />
+          <UiSelect block v-model="form.purpose" :options="[...(refs.purposes.value).map((p) => ({ value: p.id, label: String(p.label) }))]" class="ui-form-select" />
         </div>
       </div>
     </template>
@@ -269,7 +269,7 @@ function num(v: number | null | undefined, digits = 2): string {
         <Input v-model.trim="form.tare" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">
-        <label class="ui-form-label">Масса зерна, т *</label>
+        <label class="ui-form-label">Масса зерна, т <span class="text-destructive" aria-hidden="true">*</span></label>
         <Input v-model.trim="form.mass" inputmode="decimal" class="ui-form-input" />
       </div>
     </div>
@@ -277,7 +277,7 @@ function num(v: number | null | undefined, digits = 2): string {
     <p class="ui-form-section-title">Лаборатория</p>
     <div class="ui-form-row ui-form-row--three">
       <div class="ui-form-field">
-        <label class="ui-form-label">Влажность, % *</label>
+        <label class="ui-form-label">Влажность, % <span class="text-destructive" aria-hidden="true">*</span></label>
         <Input v-model.trim="form.moisture" inputmode="decimal" class="ui-form-input" />
       </div>
       <div class="ui-form-field">

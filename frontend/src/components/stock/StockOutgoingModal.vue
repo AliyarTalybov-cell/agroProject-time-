@@ -151,36 +151,36 @@ async function save() {
 
     <div class="ui-form-row ui-form-row--two">
       <div class="ui-form-field">
-        <label class="ui-form-label">Дата и время *</label>
+        <label class="ui-form-label">Дата и время <span class="text-destructive" aria-hidden="true">*</span></label>
         <UiDateTimePicker v-model="form.docDate" />
       </div>
       <div v-if="type === 'sale'" class="ui-form-field">
-        <label class="ui-form-label ui-form-label--with-help">Покупатель *
+        <label class="ui-form-label ui-form-label--with-help">Покупатель <span class="text-destructive" aria-hidden="true">*</span>
           <RefFieldHelp text="Нет покупателя? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
         </label>
-        <UiSelect v-model="form.counterpartyId" :options="[...(refs.buyers.value).map((c) => ({ value: c.id, label: `${c.name}${c.inn ? ` · ИНН ${c.inn}` : ''}` }))]" :placeholder="refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»'" class="ui-form-select" />
+        <UiSelect block v-model="form.counterpartyId" :options="[...(refs.buyers.value).map((c) => ({ value: c.id, label: `${c.name}${c.inn ? ` · ИНН ${c.inn}` : ''}` }))]" :placeholder="refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»'" class="ui-form-select" />
       </div>
       <div v-else-if="type === 'seeding'" class="ui-form-field">
-        <label class="ui-form-label">Поле *</label>
-        <UiSelect v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
+        <label class="ui-form-label">Поле <span class="text-destructive" aria-hidden="true">*</span></label>
+        <UiSelect block v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
       </div>
       <div v-else-if="type === 'consumption'" class="ui-form-field">
-        <label class="ui-form-label ui-form-label--with-help">Куда *
+        <label class="ui-form-label ui-form-label--with-help">Куда <span class="text-destructive" aria-hidden="true">*</span>
           <RefFieldHelp text="Нужно другое направление? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-consumption-targets' } }" link-label="Справочники хранения" />
         </label>
-        <UiSelect v-model="form.target" :options="[...(refs.targets.value).map((t) => ({ value: t.id, label: String(t.label) }))]" class="ui-form-select" />
+        <UiSelect block v-model="form.target" :options="[...(refs.targets.value).map((t) => ({ value: t.id, label: String(t.label) }))]" class="ui-form-select" />
       </div>
       <div v-else class="ui-form-field">
-        <label class="ui-form-label ui-form-label--with-help">Причина *
+        <label class="ui-form-label ui-form-label--with-help">Причина <span class="text-destructive" aria-hidden="true">*</span>
           <RefFieldHelp text="Нет нужной причины? Добавьте её в" :to="{ path: '/lands', query: { tab: 'storage-writeoff-reasons' } }" link-label="Справочники хранения" />
         </label>
-        <UiSelect v-model="form.reasonId" :options="[...(refs.reasons.value).map((r) => ({ value: r.id, label: String(r.label) }))]" placeholder="Выберите причину" class="ui-form-select" />
+        <UiSelect block v-model="form.reasonId" :options="[...(refs.reasons.value).map((r) => ({ value: r.id, label: String(r.label) }))]" placeholder="Выберите причину" class="ui-form-select" />
       </div>
     </div>
 
     <p class="ui-form-section-title">Из каких партий</p>
     <div v-for="(line, i) in lines" :key="i" class="stock-line">
-      <UiSelect v-model="line.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Партия в ячейке" class="ui-form-select" />
+      <UiSelect block v-model="line.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Партия в ячейке" class="ui-form-select" />
       <Input v-model.trim="line.tons" inputmode="decimal" class="ui-form-input stock-line-tons" placeholder="т" />
       <Button variant="ghost" size="icon-sm" v-if="lines.length > 1" type="button" class="stock-line-remove text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label="Убрать строку" @click="removeLine(i)">
         <XIcon :size="16" />
@@ -258,7 +258,7 @@ async function save() {
 @layer legacy {
 .stock-line {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px 32px;
+  grid-template-columns: minmax(0, 1fr) 110px auto;
   gap: 8px;
   align-items: center;
 }
@@ -299,7 +299,7 @@ async function save() {
 
 @media (max-width: 640px) {
   .stock-line {
-    grid-template-columns: minmax(0, 1fr) 90px 32px;
+    grid-template-columns: minmax(0, 1fr) 96px auto;
   }
 }
 }

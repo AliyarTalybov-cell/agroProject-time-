@@ -35,7 +35,7 @@ async function save() {
       Документ не удаляется: создаётся сторно с обратными движениями, остатки вернутся как было до него.
     </p>
     <div class="ui-form-field">
-      <label class="ui-form-label">Причина отмены *</label>
+      <label class="ui-form-label">Причина отмены <span class="text-destructive" aria-hidden="true">*</span></label>
       <textarea v-model="reason" class="ui-form-textarea" rows="3" placeholder="Например: ошибка в весе" />
     </div>
     <p v-if="error" class="ui-form-error">{{ error }}</p>
