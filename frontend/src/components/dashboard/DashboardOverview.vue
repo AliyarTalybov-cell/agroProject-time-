@@ -17,7 +17,6 @@ import { countMyUnreadNotifications } from '@/lib/notificationsSupabase'
 import { chatTotalUnread, fetchChatThreadList, refreshChatTotalUnread } from '@/lib/chatSupabase'
 import { loadOperatorStatusesFromSupabase, type OperatorStatusRow } from '@/lib/operatorStatusSupabase'
 import { loadWarehousesOverview, type WarehouseOverview } from '@/lib/stockLedger'
-import { loadNewsPostsPage, type NewsPostRow } from '@/lib/newsSupabase'
 import { ruDate } from '@/lib/ruDate'
 
 type Block<T> = { loading: boolean; error: boolean; data: T }
@@ -124,9 +123,6 @@ function sinceLabel(iso: string): string {
   return h < 24 ? `${h} ч ${min % 60} мин` : `с ${ruDate(iso)}`
 }
 
-/* ——— Новости ——— */
-const news = block<NewsPostRow[]>([])
-
 onMounted(() => {
   const uid = user.value?.id
   if (!uid) return
@@ -145,7 +141,6 @@ onMounted(() => {
     void refreshChatTotalUnread()
     return (await fetchChatThreadList()).reduce((s, t) => s + (t.unread_urgent_count ?? 0), 0)
   })
-  void fill(news, async () => (await loadNewsPostsPage(1, 3)).items)
   if (isManager.value) {
     void fill(review, async () => (await loadTasksFiltered(false, uid, { status: 'review', limit: 500 })).length)
     void fill(inField, () => loadOperatorStatusesFromSupabase(false, null))
@@ -362,30 +357,6 @@ const attention = computed(() => {
         </CardContent>
       </Card>
 
-      <!-- Новости -->
-      <Card class="gap-4" :class="isManager ? 'lg:col-span-2' : ''">
-        <CardHeader>
-          <CardTitle>Новости</CardTitle>
-          <CardAction>
-            <Button variant="ghost" size="sm" as-child><RouterLink to="/news">Все новости</RouterLink></Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent>
-          <div v-if="news.loading" class="flex flex-col gap-2">
-            <Skeleton v-for="i in 3" :key="i" class="h-10 w-full" />
-          </div>
-          <p v-else-if="news.error" class="text-sm text-destructive">Не удалось загрузить новости</p>
-          <p v-else-if="news.data.length === 0" class="text-sm text-muted-foreground">Новостей пока нет</p>
-          <ul v-else class="-mx-2 flex flex-col">
-            <li v-for="n in news.data" :key="n.id">
-              <RouterLink :to="`/news/${n.id}`" class="flex items-baseline gap-4 rounded-md px-2 py-2 text-foreground no-underline transition-colors hover:bg-muted/60">
-                <span class="min-w-0 flex-1 text-sm font-medium line-clamp-1">{{ n.title }}</span>
-                <span class="shrink-0 text-xs text-muted-foreground tabular-nums">{{ ruDate(n.published_at) }}</span>
-              </RouterLink>
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
     </div>
   </section>
 </template>
