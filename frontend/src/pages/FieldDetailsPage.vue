@@ -4,7 +4,6 @@ import { addCropByLabel as qaAddCrop, addLandType as qaAddLandType } from '@/lib
 import { addFieldMunicipalityRef as qaAddMunicipality } from '@/lib/fieldsSupabase'
 import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
-import UiPagination from '@/components/ui/UiPagination.vue'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Button } from '@/components/ui/shadcn/button'
@@ -30,7 +29,7 @@ import {
 import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
 import { loadCrops, loadLandTypes, type CropRow, type LandTypeRow } from '@/lib/landTypesAndCrops'
 import { loadLands, type LandRow } from '@/lib/landsSupabase'
-import { loadOperationsByFieldFromSupabase, type FieldOperationHistoryRow } from '@/lib/analyticsSupabase'
+import OperationHistoryCard from '@/components/history/OperationHistoryCard.vue'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
@@ -89,11 +88,6 @@ const editAddressLastAuto = ref('')
 const editFieldAreaAuto = ref<number | null>(null)
 const editFieldAreaManualTouched = ref(false)
 const editContourDraftPoints = ref<LatLon[]>([])
-const historyLoading = ref(false)
-const history = ref<FieldOperationHistoryRow[]>([])
-const historyPage = ref(1)
-const historyPageSize = ref(5)
-const historyTotal = ref(0)
 
 const isManager = computed(() => auth.userRole.value === 'manager')
 
@@ -233,61 +227,6 @@ const updatedFormatted = computed(() => {
   return new Date(raw).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' })
 })
 
-const historyTotalFiltered = computed(() => historyTotal.value)
-const historyTotalPages = computed(() => Math.max(1, Math.ceil(historyTotal.value / historyPageSize.value)))
-const historyPaginationStart = computed(() =>
-  historyTotal.value ? (historyPage.value - 1) * historyPageSize.value + 1 : 0,
-)
-const historyPaginationEnd = computed(() =>
-  Math.min(historyPage.value * historyPageSize.value, historyTotal.value),
-)
-const paginatedHistory = computed(() => history.value)
-const historyPageNumbers = computed(() => {
-  const total = historyTotalPages.value
-  const current = historyPage.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-
-  const pages: (number | 'ellipsis')[] = [1]
-  const start = Math.max(2, current - 1)
-  const end = Math.min(total - 1, current + 1)
-
-  if (start > 2) pages.push('ellipsis')
-  for (let p = start; p <= end; p += 1) pages.push(p)
-  if (end < total - 1) pages.push('ellipsis')
-  pages.push(total)
-  return pages
-})
-
-function goHistoryPage(page: number) {
-  historyPage.value = Math.max(1, Math.min(page, historyTotalPages.value))
-}
-
-watch(historyPageSize, () => {
-  historyPage.value = 1
-  void refreshHistory()
-})
-
-watch(historyTotal, () => {
-  if (historyPage.value > historyTotalPages.value) historyPage.value = Math.max(1, historyTotalPages.value)
-})
-
-watch(historyPage, () => {
-  void refreshHistory()
-})
-
-function formatHistoryDate(iso: string | null | undefined): string {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-function formatHistoryTime(iso: string | null | undefined): string {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-}
 
 /** Главное изображение: последнее фото или схема поля */
 const mainMedia = computed(() => {
@@ -360,7 +299,6 @@ async function loadData() {
     fieldMunicipalityRefs.value = municipalityRefsList
     photos.value = photosList
     if (!fieldData) error.value = 'Поле не найдено'
-    await refreshHistory()
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Ошибка загрузки'
   } finally {
@@ -368,25 +306,6 @@ async function loadData() {
   }
 }
 
-async function refreshHistory() {
-  if (!props.id || !isSupabaseConfigured()) return
-  historyLoading.value = true
-  try {
-    const onlyMine = !isManager.value
-    const userId = auth.user.value?.id ?? null
-    const page = await loadOperationsByFieldFromSupabase(props.id, onlyMine, userId, historyPage.value, historyPageSize.value)
-    history.value = page.rows
-    historyTotal.value = page.total
-  } catch (e) {
-    // См. EquipmentDetailsPage: пустая история без объяснения читается как
-    // «операций не было».
-    error.value = formatSupabaseError(e) || 'Не удалось загрузить историю операций'
-    history.value = []
-    historyTotal.value = 0
-  } finally {
-    historyLoading.value = false
-  }
-}
 
 function goBack() {
   router.push({ name: 'fields' })
@@ -621,8 +540,6 @@ onMounted(loadData)
 watch(
   () => props.id,
   () => {
-    historyPage.value = 1
-    historyTotal.value = 0
     void loadData()
   },
 )
@@ -1110,80 +1027,13 @@ async function quickAddMunicipality(name: string) {
         </Card>
       </div>
 
-      <Card class="field-details-card field-history-section gap-0">
-        <div class="field-details-media-header">
-          <div>
-            <h2 class="field-details-media-title">История взаимодействия с полем</h2>
-            <p class="field-details-media-subtitle">
-              <template v-if="historyLoading">
-                <UiLoadingBar size="compact" />
-              </template>
-              <template v-else>Записей: {{ history.length }}</template>
-            </p>
-          </div>
-        </div>
-
-        <div v-if="historyLoading" class="field-history-loading-wrap">
-          <UiLoadingBar size="md" />
-        </div>
-        <div v-else-if="!history.length" class="field-details-muted">
-          По этому полю пока нет зафиксированных взаимодействий.
-        </div>
-        <template v-else>
-          <ul class="field-history-list">
-            <li v-for="h in paginatedHistory" :key="h.id" class="field-history-item">
-              <div class="field-history-head">
-                <div class="field-history-title-wrap">
-                  <span class="field-history-op-icon" aria-hidden="true">
-                    <SproutIcon :size="17" />
-                  </span>
-                  <div>
-                    <div class="field-history-title">{{ h.operation || 'Операция' }}</div>
-                    <div class="field-history-meta">{{ formatHistoryDate(h.startISO) }} • {{ formatHistoryTime(h.startISO) }}</div>
-                  </div>
-                </div>
-                <div class="field-history-duration">Длительность: {{ h.durationMinutes }} мин</div>
-              </div>
-
-              <div class="field-history-grid">
-                <div class="field-history-cell">
-                  <span class="field-history-label">Кто</span>
-                  <span class="field-history-value">{{ h.employee || '—' }}</span>
-                </div>
-                <div class="field-history-cell">
-                  <span class="field-history-label">Когда</span>
-                  <span class="field-history-value">{{ formatHistoryDate(h.startISO) }}</span>
-                </div>
-                <div class="field-history-cell">
-                  <span class="field-history-label">Во сколько</span>
-                  <span class="field-history-value">{{ formatHistoryTime(h.startISO) }}</span>
-                </div>
-                <div class="field-history-cell">
-                  <span class="field-history-label">Техника</span>
-                  <RouterLink
-                    v-if="h.equipmentId"
-                    class="field-history-eq-link"
-                    :to="{ name: 'equipment-details', params: { id: h.equipmentId } }"
-                  >
-                    {{ h.equipmentLabel || 'Открыть технику' }}
-                  </RouterLink>
-                  <span v-else class="field-history-value">Не указана</span>
-                </div>
-                <div class="field-history-cell">
-                  <span class="field-history-label">Обработано, Га</span>
-                  <span class="field-history-value">{{ h.processedHectares ?? '—' }}</span>
-                </div>
-                <div class="field-history-cell field-history-cell--full">
-                  <span class="field-history-label">Список дел после выполнения</span>
-                  <span class="field-history-value field-history-value--multiline">{{ h.notes || '—' }}</span>
-                </div>
-              </div>
-            </li>
-          </ul>
-
-          <UiPagination v-if="historyTotalFiltered > 0" :page="historyPage" :page-size="historyPageSize" :total="historyTotalFiltered" @update:page="goHistoryPage" @update:page-size="(n) => (historyPageSize = n)" />
-        </template>
-      </Card>
+      <OperationHistoryCard
+        scope="field"
+        :id="props.id"
+        title="История взаимодействия с полем"
+        :only-user-id="isManager ? null : (auth.user.value?.id ?? null)"
+        :profiles="profiles"
+      />
     </template>
   </div>
 </template>
@@ -1768,147 +1618,5 @@ async function quickAddMunicipality(name: string) {
   z-index: 2;
 }
 
-.field-history-section {
-  margin-top: 24px;
-}
-
-.field-history-loading-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0 8px;
-}
-
-.field-history-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.field-history-item {
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  background: var(--bg-panel);
-  padding: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.field-history-item:hover {
-  border-color: rgba(15, 23, 42, 0.12);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-}
-
-.field-history-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.field-history-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.field-history-op-icon {
-  width: var(--control-h);
-  height: var(--control-h);
-  border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: rgba(34, 197, 94, 0.2);
-  color: #16a34a;
-}
-
-.field-history-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.field-history-meta {
-  margin-top: 2px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.field-history-duration {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.field-history-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
-}
-
-.field-history-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.field-history-cell--full {
-  grid-column: 1 / -1;
-}
-
-.field-history-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.field-history-value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  word-break: break-word;
-}
-
-.field-history-value--multiline {
-  white-space: pre-wrap;
-}
-
-.field-history-eq-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(76, 175, 80, 0.5);
-  background: rgba(76, 175, 80, 0.15);
-  color: var(--text-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-decoration: none;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.field-history-eq-link:hover {
-  background: rgba(76, 175, 80, 0.22);
-}
-
-@media (max-width: 900px) {
-  .field-history-grid {
-    grid-template-columns: 1fr;
-  }
-  .field-history-head {
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-}
 }
 </style>

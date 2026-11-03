@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
-import UiPagination from '@/components/ui/UiPagination.vue'
 import { Button } from '@/components/ui/shadcn/button'
-import { CalendarIcon, ChevronDownIcon, CircleCheckIcon, CircleQuestionMarkIcon, ClipboardCheckIcon, PlusIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, LeafIcon, PenLineIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon, WrenchIcon } from '@lucide/vue'
+import { CalendarIcon, CircleCheckIcon, CircleQuestionMarkIcon, PlusIcon, ClipboardListIcon, FileIcon, GaugeIcon, IdCardIcon, PencilIcon, SlidersVerticalIcon, TextAlignJustifyIcon, TrashIcon, TruckIcon, UserIcon } from '@lucide/vue'
 import ImagePreviewDialog from '@/components/ui/dialogs/ImagePreviewDialog.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -27,12 +26,10 @@ import {
   type EquipmentImplementRow,
   type EquipmentRow,
 } from '@/lib/equipmentSupabase'
-import { loadOperationsByEquipmentFromSupabase, type EquipmentOperationHistoryRow } from '@/lib/analyticsSupabase'
+import OperationHistoryCard from '@/components/history/OperationHistoryCard.vue'
 import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
-import { avatarColorByPosition } from '@/lib/avatarColors'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
-import UserAvatar from '@/components/UserAvatar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -72,9 +69,6 @@ const implementOptions = ref<EquipmentImplementRow[]>([])
 const equipmentTypeOptions = ref<{ value: string; label: string }[]>([])
 const equipmentConditionOptions = ref<{ value: string; label: string }[]>([])
 
-const historyLoading = ref(false)
-const history = ref<EquipmentOperationHistoryRow[]>([])
-const historyTotal = ref(0)
 
 function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return '—'
@@ -114,165 +108,6 @@ const implementLabel = computed(() => {
   return item?.name ?? 'Неизвестно'
 })
 
-function employeeInitials(employee: string): string {
-  const base = employee.includes('@') ? employee.split('@')[0] : employee
-  const parts = base.trim().split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-  if (parts[0]?.length >= 2) return parts[0].slice(0, 2).toUpperCase()
-  return '?'
-}
-
-/** Как в «Задачах» / профиле: цвет от должности; иначе — стабильный хэш по строке сотрудника */
-function profileByEmployeeString(employee: string): ProfileRow | undefined {
-  const raw = employee.trim()
-  if (!raw) return undefined
-  const lower = raw.toLowerCase()
-  return profiles.value.find((p) => {
-    const mail = (p.email || '').trim().toLowerCase()
-    const name = (p.display_name || '').trim().toLowerCase()
-    return mail === lower || name === lower || (raw.includes('@') && mail === lower)
-  })
-}
-
-function employeeAccentColor(employee: string): string {
-  const p = profileByEmployeeString(employee)
-  if (p?.position && p.position.trim()) return avatarColorByPosition(p.position)
-  return avatarColorByPosition(employee)
-}
-
-function employeeAvatarStyle(employee: string): Record<string, string> {
-  return { background: employeeAccentColor(employee) }
-}
-
-function employeeAvatarUrl(employee: string): string | null {
-  return profileByEmployeeString(employee)?.avatar_url ?? null
-}
-
-function conditionToneClass(h: EquipmentOperationHistoryRow): string {
-  const label = (h.equipmentConditionLabel ?? '').toLowerCase()
-  if (label.includes('плох') || label.includes('низк')) return 'equipment-history-tone--bad'
-  if (label.includes('частич') || label.includes('требует') || label.includes('ремонт')) return 'equipment-history-tone--warn'
-  if (label.includes('приемл')) return 'equipment-history-tone--good'
-  return 'equipment-history-tone--good'
-}
-
-type OperationVisualKind = 'analysis' | 'field' | 'control' | 'default'
-
-function operationVisual(operation: string | null | undefined): {
-  kind: OperationVisualKind
-  boxBg: string
-  iconColor: string
-} {
-  const s = (operation ?? '').toLowerCase()
-  if (s.includes('агрохим') || s.includes('анализ')) {
-    return { kind: 'analysis', boxBg: 'rgba(236, 72, 153, 0.2)', iconColor: '#db2777' }
-  }
-  if (s.includes('обработк')) {
-    return { kind: 'field', boxBg: 'rgba(34, 197, 94, 0.2)', iconColor: '#16a34a' }
-  }
-  if (s.includes('контроль') || (s.includes('полев') && s.includes('работ'))) {
-    return { kind: 'control', boxBg: 'rgba(59, 130, 246, 0.2)', iconColor: '#2563eb' }
-  }
-  return { kind: 'default', boxBg: 'rgba(61, 92, 64, 0.14)', iconColor: 'var(--agro)' }
-}
-
-function fuelBarClass(pct: number | null | undefined): string {
-  if (pct == null || Number.isNaN(pct)) return 'equipment-history-fuel-fill--empty'
-  if (pct < 34) return 'equipment-history-fuel-fill--low'
-  if (pct < 67) return 'equipment-history-fuel-fill--mid'
-  return 'equipment-history-fuel-fill--high'
-}
-
-function fuelStartValue(h: EquipmentOperationHistoryRow): number | null {
-  return h.equipmentFuelPercent ?? null
-}
-
-function fuelFinalValue(h: EquipmentOperationHistoryRow): number | null {
-  return h.equipmentFuelLeftPercent ?? null
-}
-
-/** Раскрытие карточек истории */
-const expandedHistory = ref<Record<number, boolean>>({})
-
-function isHistoryExpanded(id: number): boolean {
-  return expandedHistory.value[id] !== false
-}
-
-function toggleHistoryExpand(id: number) {
-  expandedHistory.value = { ...expandedHistory.value, [id]: !isHistoryExpanded(id) }
-}
-
-function initHistoryExpanded() {
-  const next: Record<number, boolean> = {}
-  // По умолчанию раскрываем только 3 самых свежих записи (они уже отсортированы DESC по `start_iso` на бэке).
-  const DEFAULT_OPEN_COUNT = 3
-  const openIds = new Set(history.value.slice(0, DEFAULT_OPEN_COUNT).map((h) => h.id))
-
-  for (const h of history.value) next[h.id] = openIds.has(h.id)
-  expandedHistory.value = next
-}
-
-/** Пагинация (как на странице «Задачи» / TaskManagementPage) */
-const historyPage = ref(1)
-const historyPageSize = ref(5)
-
-const historyTotalFiltered = computed(() => historyTotal.value)
-const historyTotalPages = computed(() => Math.max(1, Math.ceil(historyTotal.value / historyPageSize.value)))
-
-const historyPaginationStart = computed(() =>
-  historyTotal.value ? (historyPage.value - 1) * historyPageSize.value + 1 : 0,
-)
-const historyPaginationEnd = computed(() =>
-  Math.min(historyPage.value * historyPageSize.value, historyTotal.value),
-)
-
-const paginatedHistory = computed(() => history.value)
-
-const paginatedHistoryVm = computed(() =>
-  paginatedHistory.value.map((h) => ({ h, visual: operationVisual(h.operation) })),
-)
-
-const historyPageNumbers = computed(() => {
-  const total = historyTotalPages.value
-  const current = historyPage.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  const pages: (number | 'ellipsis')[] = [1]
-  if (current <= 4) {
-    for (let p = 2; p <= 5; p += 1) pages.push(p)
-    pages.push('ellipsis')
-    pages.push(total)
-    return pages
-  }
-  if (current >= total - 3) {
-    pages.push('ellipsis')
-    for (let p = total - 4; p <= total; p += 1) pages.push(p)
-    return pages
-  }
-  pages.push('ellipsis')
-  for (let p = current - 1; p <= current + 1; p += 1) pages.push(p)
-  pages.push('ellipsis')
-  pages.push(total)
-  return pages
-})
-
-function goHistoryPage(page: number) {
-  historyPage.value = Math.max(1, Math.min(page, historyTotalPages.value))
-}
-
-watch(historyPageSize, () => {
-  historyPage.value = 1
-  void refreshHistory()
-})
-
-watch(historyTotal, () => {
-  if (historyPage.value > historyTotalPages.value) {
-    historyPage.value = Math.max(1, historyTotalPages.value)
-  }
-})
-
-watch(historyPage, () => {
-  void refreshHistory()
-})
 
 const mainMedia = computed(() => {
   const p = photos.value[0]
@@ -302,7 +137,6 @@ async function refreshAll() {
     if (!isSupabaseConfigured()) {
       equipment.value = null
       photos.value = []
-      history.value = []
       error.value = 'Supabase не настроен'
       return
     }
@@ -331,7 +165,6 @@ async function refreshAll() {
 
     if (!eq) error.value = 'Техника не найдена'
 
-    await refreshHistory()
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Ошибка загрузки'
   } finally {
@@ -339,27 +172,6 @@ async function refreshAll() {
   }
 }
 
-async function refreshHistory() {
-  const id = equipmentId.value
-  if (!id) return
-  historyLoading.value = true
-  try {
-    const onlyMine = !isManager.value
-    const userId = auth.user.value?.id ?? null
-    const page = await loadOperationsByEquipmentFromSupabase(id, onlyMine, userId, historyPage.value, historyPageSize.value)
-    history.value = page.rows
-    historyTotal.value = page.total
-  } catch (e) {
-    // История — то, ради чего открыли вкладку. Пустой список без объяснения
-    // читается как «операций не было», а это неправда.
-    error.value = formatSupabaseError(e) || 'Не удалось загрузить историю операций'
-    history.value = []
-    historyTotal.value = 0
-  } finally {
-    historyLoading.value = false
-    initHistoryExpanded()
-  }
-}
 
 function goBack() {
   router.push({ name: 'equipment' })
@@ -725,146 +537,14 @@ function formatDuration(minutes: number | null | undefined): string {
         </Card>
       </div>
 
-      <Card class="field-details-card equipment-history-section gap-0">
-        <div class="field-details-media-header">
-          <div>
-            <h2 class="field-details-media-title">История взаимодействия</h2>
-            <p class="field-details-media-subtitle field-details-media-subtitle--history">
-              <template v-if="historyLoading">
-                <UiLoadingBar size="compact" />
-              </template>
-              <template v-else>Записей: {{ history.length }}</template>
-            </p>
-          </div>
-        </div>
-
-        <div v-if="historyLoading" class="equipment-history-loading-wrap">
-          <UiLoadingBar size="md" />
-        </div>
-        <div v-else-if="!history.length" class="field-details-muted">
-          Нет записей в журнале операций с этой техникой.
-        </div>
-        <template v-else>
-          <ul class="equipment-history-list">
-            <li v-for="{ h, visual } in paginatedHistoryVm" :key="h.id" class="equipment-history-card">
-              <button
-                type="button"
-                class="equipment-history-card-toggle"
-                :aria-expanded="isHistoryExpanded(h.id)"
-                @click="toggleHistoryExpand(h.id)"
-              >
-                <div class="equipment-history-toggle-left">
-                  <span
-                    class="equipment-history-op-icon"
-                    :style="{ background: visual.boxBg, color: visual.iconColor }"
-                    aria-hidden="true"
-                  >
-                    <!-- Агрохим / анализ -->
-                    <template v-if="visual.kind === 'analysis'">
-                      <TrashIcon :size="18" />
-                    </template>
-                    <!-- Обработка полей -->
-                    <template v-else-if="visual.kind === 'field'">
-                      <LeafIcon :size="18" />
-                    </template>
-                    <!-- Контроль полевых работ -->
-                    <template v-else-if="visual.kind === 'control'">
-                      <ClipboardCheckIcon :size="18" />
-                    </template>
-                    <template v-else>
-                      <PencilIcon :size="18" />
-                    </template>
-                  </span>
-                  <div class="equipment-history-op-text">
-                    <div class="equipment-history-op-title">{{ h.operation || 'Операция' }}</div>
-                    <div class="equipment-history-op-meta">
-                      {{ formatDateTime(h.startISO) }} · {{ formatDuration(h.durationMinutes) }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="equipment-history-toggle-right">
-                  <div class="equipment-history-toggle-employee">
-                    <UserAvatar class="equipment-history-avatar" :style="employeeAvatarStyle(h.employee)" :url="employeeAvatarUrl(h.employee)" :initials="employeeInitials(h.employee)" />
-                    <span class="equipment-history-toggle-employee-name">{{ h.employee }}</span>
-                  </div>
-                  <span class="equipment-history-condition-pill" :class="conditionToneClass(h)">
-                    {{ h.equipmentConditionLabel || (h.equipmentConditionValue != null ? `${h.equipmentConditionValue}%` : '—') }}
-                  </span>
-                  <span class="equipment-history-chevron" :class="{ 'equipment-history-chevron--open': isHistoryExpanded(h.id) }" aria-hidden="true">
-                    <ChevronDownIcon :size="20" />
-                  </span>
-                </div>
-              </button>
-
-              <div v-show="isHistoryExpanded(h.id)" class="equipment-history-card-body">
-                <div class="equipment-history-body-grid">
-                  <div class="equipment-history-body-col">
-                    <div class="equipment-history-body-col-head">
-                      <span class="equipment-history-body-col-icon" aria-hidden="true">
-                        <ClipboardListIcon />
-                      </span>
-                      <span class="equipment-history-body-col-label">Топливо</span>
-                    </div>
-
-                    <div class="equipment-history-fuel-rows">
-                      <div class="equipment-history-fuel-row">
-                        <span class="equipment-history-fuel-row-label">Старт</span>
-                        <div class="equipment-history-fuel-row-track">
-                          <div
-                            class="equipment-history-fuel-fill"
-                            :class="fuelBarClass(fuelStartValue(h))"
-                            :style="{ width: fuelStartValue(h) != null ? `${Math.min(100, Math.max(0, fuelStartValue(h) as number))}%` : '0%' }"
-                          />
-                        </div>
-                        <span class="equipment-history-fuel-row-pct">{{ fuelStartValue(h) != null ? `${fuelStartValue(h)}%` : '—' }}</span>
-                      </div>
-
-                      <div v-if="fuelFinalValue(h) != null" class="equipment-history-fuel-row equipment-history-fuel-row--final">
-                        <span class="equipment-history-fuel-row-label">Остаток</span>
-                        <div class="equipment-history-fuel-row-track">
-                          <div
-                            class="equipment-history-fuel-fill"
-                            :class="fuelBarClass(fuelFinalValue(h))"
-                            :style="{ width: fuelFinalValue(h) != null ? `${Math.min(100, Math.max(0, fuelFinalValue(h) as number))}%` : '0%' }"
-                          />
-                        </div>
-                        <span class="equipment-history-fuel-row-pct">{{ fuelFinalValue(h) != null ? `${fuelFinalValue(h)}%` : '—' }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="equipment-history-body-col">
-                    <div class="equipment-history-body-col-head">
-                      <span class="equipment-history-body-col-icon" aria-hidden="true">
-                        <PenLineIcon :size="14" />
-                      </span>
-                      <span class="equipment-history-body-col-label">Список дел / заметки</span>
-                    </div>
-                    <div class="equipment-history-body-box" :class="{ 'equipment-history-body-box--empty': !h.notes }">
-                      {{ h.notes || 'Нет' }}
-                    </div>
-                  </div>
-
-                  <div class="equipment-history-body-col">
-                    <div class="equipment-history-body-col-head">
-                      <span class="equipment-history-body-col-icon" aria-hidden="true">
-                        <WrenchIcon />
-                      </span>
-                      <span class="equipment-history-body-col-label">Починка / проблемы</span>
-                    </div>
-                    <div class="equipment-history-body-box" :class="{ 'equipment-history-body-box--empty': !h.equipmentRepairNotes }">
-                      {{ h.equipmentRepairNotes || 'Нет' }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-
-          <UiPagination v-if="historyTotalFiltered > 0" :page="historyPage" :page-size="historyPageSize" :total="historyTotalFiltered" @update:page="goHistoryPage" @update:page-size="(n) => (historyPageSize = n)" />
-        </template>
-      </Card>
+      <OperationHistoryCard
+        v-if="equipmentId"
+        scope="equipment"
+        :id="equipmentId"
+        title="История взаимодействия с техникой"
+        :only-user-id="isManager ? null : (auth.user.value?.id ?? null)"
+        :profiles="profiles"
+      />
     </template>
 
     <ImagePreviewDialog
