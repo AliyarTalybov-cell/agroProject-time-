@@ -128,7 +128,7 @@ watch(
         <Label for="emp-position" class="inline-flex items-center gap-1.5">
           Должность
           <RefFieldHelp
-            text="Нет нужной должности? Впишите её — она появится в справочнике и выберется здесь."
+            text="Нет нужной должности? Добавьте её здесь или в справочнике."
             :to="{ path: '/lands', query: { tab: 'staff-refs' } }"
             link-label="Справочники сотрудников"
             add-placeholder="Название должности"

@@ -93,6 +93,7 @@ defineEmits<{
           <span class="lands-label-with-help">
             Вид правообладания
             <RefFieldHelp
+              v-if="form.holderMode !== 'reference'"
               text="Нет нужного вида правообладания? Добавьте его здесь или в справочнике."
               :to="{ path: '/lands', query: { tab: 'holder-types' } }"
               link-label="Справочники прав"
