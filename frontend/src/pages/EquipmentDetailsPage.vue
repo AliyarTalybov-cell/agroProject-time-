@@ -27,6 +27,7 @@ import {
   type EquipmentRow,
 } from '@/lib/equipmentSupabase'
 import OperationHistoryCard from '@/components/history/OperationHistoryCard.vue'
+import { photoTitle } from '@/lib/photoTitle'
 import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
@@ -114,7 +115,7 @@ const mainMedia = computed(() => {
   if (!p) return null
   return {
     url: p.file_url,
-    title: p.title || 'Фото техники',
+    title: photoTitle(p.title, 'Фото техники'),
     description: p.description || '',
     date: p.created_at,
     photo: p,
@@ -125,7 +126,7 @@ const galleryItems = computed(() => {
   return photos.value.slice(0, 8).map((p) => ({
     id: p.id,
     url: p.file_url,
-    title: p.title || 'Фото',
+    title: photoTitle(p.title, 'Фото'),
     photo: p,
   }))
 })

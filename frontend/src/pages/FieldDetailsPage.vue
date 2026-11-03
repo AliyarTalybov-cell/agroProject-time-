@@ -30,6 +30,7 @@ import { loadProfiles, type ProfileRow } from '@/lib/tasksSupabase'
 import { loadCrops, loadLandTypes, type CropRow, type LandTypeRow } from '@/lib/landTypesAndCrops'
 import { loadLands, type LandRow } from '@/lib/landsSupabase'
 import OperationHistoryCard from '@/components/history/OperationHistoryCard.vue'
+import { photoTitle } from '@/lib/photoTitle'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import UiDeleteButton from '@/components/UiDeleteButton.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
@@ -543,13 +544,6 @@ watch(
     void loadData()
   },
 )
-
-/** Подпись фото: служебное имя файла (uuid) пользователю ничего не говорит — показываем общее название. */
-function photoTitle(title: string | null | undefined, fallback: string): string {
-  const t = (title ?? '').trim()
-  if (!t || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/i.test(t)) return fallback
-  return t
-}
 
 // Подсказки «?» в форме поля: недостающее значение добавляется в справочник и сразу выбирается.
 async function quickAddLandType(name: string) {

@@ -198,6 +198,15 @@ function conditionTone(label: string | null): UiBadgeTone {
   return 'success'
 }
 
+/** Короткая подпись состояния — бейджи в колонке одного размера; полное — в подсказке. */
+function conditionShort(label: string | null): string {
+  const tone = conditionTone(label)
+  if (tone === 'danger') return 'Неисправна'
+  if (tone === 'warning') return 'Нужен ремонт'
+  if (tone === 'success') return 'Исправна'
+  return '—'
+}
+
 function fuelLabel(row: OperationHistoryRow): string {
   if (row.fuelStart == null && row.fuelLeft == null) return '—'
   if (row.fuelLeft == null) return `${row.fuelStart}%`
@@ -221,7 +230,7 @@ const stats = computed(() => {
 </script>
 
 <template>
-  <Card class="tw-scope gap-4 p-4 md:p-6">
+  <Card class="tw-scope mt-6 gap-4 p-4 md:p-6">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="grid gap-1">
         <h2 class="text-base font-semibold">{{ title }}</h2>
@@ -277,12 +286,12 @@ const stats = computed(() => {
           </div>
           <div class="flex flex-wrap items-center gap-2 text-xs">
             <template v-if="isField">
-              <RouterLink v-if="r.equipmentId" class="text-primary hover:underline" :to="{ name: 'equipment-details', params: { id: r.equipmentId } }">{{ r.equipmentLabel || 'Техника' }}</RouterLink>
+              <RouterLink v-if="r.equipmentId" class="text-primary hover:underline dark:text-green-400" :to="{ name: 'equipment-details', params: { id: r.equipmentId } }">{{ r.equipmentLabel || 'Техника' }}</RouterLink>
             </template>
             <template v-else>
-              <RouterLink v-if="r.fieldId" class="text-primary hover:underline" :to="{ name: 'field-details', params: { id: r.fieldId } }">{{ r.fieldName || 'Поле' }}</RouterLink>
+              <RouterLink v-if="r.fieldId" class="text-primary hover:underline dark:text-green-400" :to="{ name: 'field-details', params: { id: r.fieldId } }">{{ r.fieldName || 'Поле' }}</RouterLink>
               <span v-else-if="r.fieldName" class="text-muted-foreground">{{ r.fieldName }}</span>
-              <UiBadge v-if="r.conditionLabel" :tone="conditionTone(r.conditionLabel)">{{ r.conditionLabel }}</UiBadge>
+              <UiBadge v-if="r.conditionLabel" :tone="conditionTone(r.conditionLabel)" :title="r.conditionLabel">{{ conditionShort(r.conditionLabel) }}</UiBadge>
             </template>
           </div>
           <p v-if="r.notes" class="text-muted-foreground text-xs whitespace-pre-line">{{ r.notes }}</p>
@@ -301,8 +310,8 @@ const stats = computed(() => {
               <TableHead class="w-[18%]">Исполнитель</TableHead>
               <TableHead v-if="isField" class="w-[20%]">Техника</TableHead>
               <TableHead v-if="isField" class="w-24 text-right">Площадь</TableHead>
-              <TableHead v-if="!isField" class="w-28">Топливо</TableHead>
-              <TableHead v-if="!isField" class="w-[15%]">Состояние</TableHead>
+              <TableHead v-if="!isField" class="w-32">Топливо</TableHead>
+              <TableHead v-if="!isField" class="w-32">Состояние</TableHead>
               <TableHead class="w-28 pr-4 text-right">Длительность</TableHead>
             </TableRow>
           </TableHeader>
@@ -315,9 +324,10 @@ const stats = computed(() => {
               <TableCell class="whitespace-normal">
                 <div class="font-medium leading-snug">{{ r.operation || 'Операция' }}</div>
                 <div v-if="r.notes" class="text-muted-foreground line-clamp-2 text-xs" :title="r.notes">{{ r.notes }}</div>
+                <div v-if="!isField && r.repairNotes" class="line-clamp-2 text-xs text-amber-700 dark:text-amber-300" :title="r.repairNotes">Неисправность: {{ r.repairNotes }}</div>
               </TableCell>
               <TableCell v-if="!isField" class="whitespace-normal">
-                <RouterLink v-if="r.fieldId" class="text-primary hover:underline" :to="{ name: 'field-details', params: { id: r.fieldId } }">{{ r.fieldName || 'Поле' }}</RouterLink>
+                <RouterLink v-if="r.fieldId" class="text-primary hover:underline dark:text-green-400" :to="{ name: 'field-details', params: { id: r.fieldId } }">{{ r.fieldName || 'Поле' }}</RouterLink>
                 <span v-else class="text-muted-foreground">{{ r.fieldName || '—' }}</span>
               </TableCell>
               <TableCell>
@@ -327,7 +337,7 @@ const stats = computed(() => {
                 </span>
               </TableCell>
               <TableCell v-if="isField" class="whitespace-normal">
-                <RouterLink v-if="r.equipmentId" class="text-primary hover:underline" :to="{ name: 'equipment-details', params: { id: r.equipmentId } }">{{ r.equipmentLabel || 'Техника' }}</RouterLink>
+                <RouterLink v-if="r.equipmentId" class="text-primary hover:underline dark:text-green-400" :to="{ name: 'equipment-details', params: { id: r.equipmentId } }">{{ r.equipmentLabel || 'Техника' }}</RouterLink>
                 <span v-else class="text-muted-foreground">—</span>
               </TableCell>
               <TableCell v-if="isField" class="text-right tabular-nums">
@@ -337,9 +347,8 @@ const stats = computed(() => {
                 {{ fuelLabel(r) }}
               </TableCell>
               <TableCell v-if="!isField" class="whitespace-normal">
-                <UiBadge v-if="r.conditionLabel" :tone="conditionTone(r.conditionLabel)" class="h-auto max-w-full text-left whitespace-normal">{{ r.conditionLabel }}</UiBadge>
+                <UiBadge v-if="r.conditionLabel" :tone="conditionTone(r.conditionLabel)" :title="r.conditionLabel">{{ conditionShort(r.conditionLabel) }}</UiBadge>
                 <span v-else class="text-muted-foreground">—</span>
-                <div v-if="r.repairNotes" class="text-muted-foreground mt-1 line-clamp-2 text-xs" :title="r.repairNotes">{{ r.repairNotes }}</div>
               </TableCell>
               <TableCell class="pr-4 text-right tabular-nums">{{ formatDurationMinutes(r.durationMinutes) }}</TableCell>
             </TableRow>
