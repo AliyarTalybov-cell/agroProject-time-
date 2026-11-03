@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import StatusDonutChart from '@/components/ui/charts/StatusDonutChart.vue'
-import CountBarChart from '@/components/ui/charts/CountBarChart.vue'
+import TaskStatsSection from '@/components/reports/TaskStatsSection.vue'
+import { computeTaskStats, loadTaskDoneMoments } from '@/lib/taskStats'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
 import { ChevronLeftIcon, ChevronRightIcon, ClockIcon, RefreshCcwIcon } from '@lucide/vue'
@@ -18,10 +18,8 @@ import { isSupabaseConfigured } from '@/lib/supabase'
 import {
   loadProfiles,
   loadTasksFromSupabase,
-  taskDueDateToYmd,
   type ProfileRow,
   type TaskRow,
-  type TaskStatus,
 } from '@/lib/tasksSupabase'
 import {
   loadDowntimesFromSupabase,
@@ -222,13 +220,6 @@ function initials(p: ProfileRow): string {
   return local.length >= 2 ? local.slice(0, 2).toUpperCase() : local[0]?.toUpperCase() || '?'
 }
 
-function shortName(p: ProfileRow): string {
-  const name = (p.display_name || '').trim()
-  if (!name) return p.email.split('@')[0] || '—'
-  const parts = name.split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) return `${parts[0]} ${parts[1][0]}.`
-  return name
-}
 
 function avatarBg(p: ProfileRow): string {
   if (p.position?.trim()) return avatarColorByPosition(p.position)
@@ -321,151 +312,33 @@ const kpiDowntimeTrend = computed(() => {
   return { pct: Math.abs(pct), up: pct >= 0 }
 })
 
-/**
- * Выполненные задачи по сроку (due_date):
- * — если в фильтре один день (С = По): все со сроком **не позже** этой даты (накопительно «до даты»);
- * — если интервал: срок строго внутри «С»–«По» включительно.
- */
-const tasksCompletedDueInFilter = computed(() => {
-  const from = dateFrom.value
-  const to = dateTo.value
-  if (!to) return 0
-  const singleDay = Boolean(from && from === to)
-  return tasks.value.filter((t) => {
-    const dueYmd = taskDueDateToYmd(t.due_date)
-    if (!dueYmd) return false
-    if (t.status !== 'done') return false
-    if (singleDay) {
-      if (dueYmd > to) return false
-    } else {
-      if (!from || dueYmd < from || dueYmd > to) return false
-    }
-    if (selectedEmployeeId.value && t.assignee_id !== selectedEmployeeId.value) return false
-    return true
-  }).length
-})
+/* ---------- Задачи: одни правила для KPI и блока «Задачи» (lib/taskStats) ---------- */
+const taskDoneMoments = ref<Map<string, string>>(new Map())
+const taskDoneMomentsLoading = ref(false)
 
-const tasksKpiTitle = computed(() => 'Задачи по сроку (выполненные)')
-
-const tasksKpiRangeHint = computed(() => {
-  if (!dateTo.value) return ''
-  if (dateFrom.value && dateFrom.value === dateTo.value) {
-    const d = parseYmd(dateTo.value)
-    return `срок не позже ${d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+async function loadTaskDoneMomentsForRange() {
+  if (!isSupabaseConfigured()) return
+  taskDoneMomentsLoading.value = true
+  try {
+    taskDoneMoments.value = await loadTaskDoneMoments(rangeBounds.value.start.toISOString())
+  } catch {
+    // без истории — по дате изменения задачи
+    taskDoneMoments.value = new Map()
+  } finally {
+    taskDoneMomentsLoading.value = false
   }
-  const ru = (ymd: string) => parseYmd(ymd).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-  if (dateFrom.value) {
-    return `срок с ${ru(dateFrom.value)} по ${ru(dateTo.value)}`
-  }
-  return `срок до ${ru(dateTo.value)}`
-})
-
-/** Для одного дня — на странице задач открываем фильтр «до даты» без нижней границы по сроку. */
-const tasksKpiLinkQuery = computed(() => {
-  const from = dateFrom.value
-  const to = dateTo.value
-  if (from && to && from === to) {
-    return { due_to: to, due_upto: '1', kpi_completed_due: '1' }
-  }
-  return { due_from: from, due_to: to, kpi_completed_due: '1' }
-})
-
-const tasksInRange = computed(() => {
-  const { start, end } = rangeBounds.value
-  return tasks.value.filter((t) => {
-    if (selectedEmployeeId.value && t.assignee_id !== selectedEmployeeId.value) return false
-    const u = new Date(t.updated_at).getTime()
-    return u >= start.getTime() && u <= end.getTime()
-  })
-})
-
-const taskStatusLabels: Record<TaskStatus, string> = {
-  done: 'Выполнено',
-  in_progress: 'В процессе',
-  review: 'На проверке',
-  todo: 'К выполнению',
 }
+watch(() => rangeBounds.value.start.getTime(), () => void loadTaskDoneMomentsForRange(), { immediate: true })
 
-const taskDonut = computed(() => {
-  const list = tasksInRange.value
-  const done = list.filter((t) => t.status === 'done').length
-  const prog = list.filter((t) => t.status === 'in_progress').length
-  const review = list.filter((t) => t.status === 'review').length
-  const todo = list.filter((t) => t.status === 'todo').length
-  const total = list.length
-  if (!total) {
-    return { total: 0, slices: [] as { key: string; label: string; count: number; pct: number; color: string }[] }
-  }
-  const slices = [
-    { key: 'done', label: taskStatusLabels.done, count: done, pct: (done / total) * 100, color: 'var(--chart-5)' },
-    { key: 'in_progress', label: taskStatusLabels.in_progress, count: prog, pct: (prog / total) * 100, color: 'var(--chart-2)' },
-    { key: 'review', label: taskStatusLabels.review, count: review, pct: (review / total) * 100, color: 'var(--chart-3)' },
-    { key: 'todo', label: taskStatusLabels.todo, count: todo, pct: (todo / total) * 100, color: 'var(--chart-4)' },
-  ].filter((s) => s.count > 0)
-  return { total, slices }
-})
+const taskStats = computed(() =>
+  computeTaskStats(tasks.value, taskDoneMoments.value, rangeBounds.value, selectedEmployeeId.value || null),
+)
 
-const taskDonutGradient = computed(() => {
-  const { slices } = taskDonut.value
-  if (!slices.length) return { background: 'var(--donut-inner-bg)' }
-  let acc = 0
-  const parts = slices.map((s) => {
-    const start = acc
-    acc += s.pct
-    return `${s.color} ${start}% ${acc}%`
-  })
-  return { background: `conic-gradient(${parts.join(', ')})` }
-})
-
-/** Вертикальные столбцы: высота = только «Выполнено»; шкала Y — по максимуму активных задач в периоде (не done), чтобы видеть объём активной работы. */
-const taskEmployeeBarChart = computed(() => {
-  const { start, end } = rangeBounds.value
-  const t0 = start.getTime()
-  const t1 = end.getTime()
-
-  const activeByAssignee = new Map<string, number>()
-  for (const t of tasks.value) {
-    if (!t.assignee_id) continue
-    if (selectedEmployeeId.value && t.assignee_id !== selectedEmployeeId.value) continue
-    if (t.status === 'done') continue
-    const u = new Date(t.updated_at).getTime()
-    if (u < t0 || u > t1) continue
-    activeByAssignee.set(t.assignee_id, (activeByAssignee.get(t.assignee_id) ?? 0) + 1)
-  }
-  const maxActive = activeByAssignee.size ? Math.max(...activeByAssignee.values()) : 0
-
-  const doneMap = new Map<string, { id: string; label: string; count: number }>()
-  for (const t of tasks.value) {
-    if (!t.assignee_id) continue
-    if (t.status !== 'done') continue
-    if (selectedEmployeeId.value && t.assignee_id !== selectedEmployeeId.value) continue
-    const u = new Date(t.updated_at).getTime()
-    if (u < t0 || u > t1) continue
-    const existing = doneMap.get(t.assignee_id)
-    const p = profileById.value.get(t.assignee_id)
-    doneMap.set(t.assignee_id, {
-      id: t.assignee_id,
-      label: p ? shortName(p) : '—',
-      count: (existing?.count ?? 0) + 1,
-    })
-  }
-  const rows = Array.from(doneMap.values())
-    .filter((r) => r.count > 0)
-    .sort((a, b) => {
-      if (b.count !== a.count) return b.count - a.count
-      return a.label.localeCompare(b.label, 'ru')
-    })
-    .slice(0, 8)
-
-  const maxDone = rows.length ? Math.max(...rows.map((r) => r.count)) : 0
-  const scaleRaw = Math.max(1, maxActive, maxDone)
-  const roughStep = Math.max(1, Math.ceil(scaleRaw / 4))
-  const niceSteps = [1, 2, 5, 10, 15, 20, 25, 50, 100]
-  const niceStep = niceSteps.find((n) => n >= roughStep) ?? Math.ceil(roughStep / 10) * 10
-  const yTop = Math.max(niceStep, Math.ceil(scaleRaw / niceStep) * niceStep)
-  const yTicks: number[] = []
-  for (let v = yTop; v >= 0; v -= niceStep) yTicks.push(v)
-  return { rows, yTop, yTicks }
+const taskPeriodLabel = computed(() => {
+  if (periodPreset.value === 'today' && dateFrom.value === dateTo.value) return 'сегодня'
+  const ru = (ymd: string) => parseYmd(ymd).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
+  if (dateFrom.value && dateTo.value && dateFrom.value !== dateTo.value) return `с ${ru(dateFrom.value)} по ${ru(dateTo.value)}`
+  return dateTo.value ? `за ${ru(dateTo.value)}` : 'за период'
 })
 
 function categoryLabelRu(cat: string | null | undefined): string {
@@ -1051,14 +924,16 @@ onUnmounted(() => {
           </UiBadge>
         </span>
       </div>
-      <RouterLink
+      <a
+        href="#reports-tasks"
         class="grid content-start gap-1 rounded-xl border bg-card p-4 text-foreground no-underline shadow-xs transition-colors hover:bg-muted/40 md:p-6"
-        :to="{ name: 'task-management', query: tasksKpiLinkQuery }"
       >
         <span class="text-sm text-muted-foreground">Выполнено задач</span>
-        <span class="text-2xl font-semibold tabular-nums">{{ tasksCompletedDueInFilter }}</span>
-        <span class="text-xs text-muted-foreground">{{ tasksKpiRangeHint }}</span>
-      </RouterLink>
+        <span class="text-2xl font-semibold tabular-nums">{{ taskStats.done }}</span>
+        <span class="text-xs text-muted-foreground">
+          {{ taskPeriodLabel }}<template v-if="taskStats.overdue"> · <span class="text-destructive">просрочено {{ taskStats.overdue }}</span></template>
+        </span>
+      </a>
     </div>
 
     <section class="flex flex-col gap-4">
@@ -1211,33 +1086,14 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <section class="flex flex-col gap-4">
-      <h2 class="text-base font-semibold">Статистика задач</h2>
-      <div class="grid items-start gap-6 lg:grid-cols-2">
-        <div class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
-          <h3 class="text-sm font-medium">По статусам</h3>
-          <div v-if="taskDonut.total" class="grid items-center gap-4 sm:grid-cols-[minmax(0,220px)_1fr]">
-            <StatusDonutChart :slices="taskDonut.slices" :total="taskDonut.total" total-label="Всего задач" />
-            <ul class="grid gap-2 text-sm">
-              <li v-for="sl in taskDonut.slices" :key="sl.key" class="flex items-center gap-2">
-                <span class="size-2.5 shrink-0 rounded-sm" :style="{ background: sl.color }" />
-                <span class="flex-1 text-muted-foreground">{{ sl.label }}</span>
-                <span class="font-medium tabular-nums">{{ sl.count }}</span>
-              </li>
-            </ul>
-          </div>
-          <p v-else class="text-sm text-muted-foreground">Нет задач в выбранном периоде.</p>
-        </div>
-        <div class="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-4 shadow-xs md:p-6">
-          <div class="grid gap-1">
-            <h3 class="text-sm font-medium">Выполнено по сотрудникам</h3>
-            <p class="text-xs text-muted-foreground">Сколько задач каждый закрыл за период.</p>
-          </div>
-          <CountBarChart v-if="taskEmployeeBarChart.rows.length" :rows="taskEmployeeBarChart.rows" series-label="Выполнено" color="var(--chart-5)" />
-          <p v-else class="text-sm text-muted-foreground">Нет завершённых задач в периоде.</p>
-        </div>
-      </div>
-    </section>
+    <TaskStatsSection
+      id="reports-tasks"
+      class="scroll-mt-20"
+      :stats="taskStats"
+      :profiles="profiles"
+      :loading="loading"
+      :period-label="taskPeriodLabel"
+    />
 
     <section class="flex flex-col gap-4" aria-labelledby="dash-ops-stats-title">
       <div class="grid gap-1">
