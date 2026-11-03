@@ -27,6 +27,7 @@ import {
   MapIcon,
   MessageCircleIcon,
   MonitorIcon,
+  CalendarClockIcon,
   NewspaperIcon,
   ScrollTextIcon,
   SettingsIcon,
@@ -142,7 +143,10 @@ const sections: { label?: string; entries: NavEntry[] }[] = [
   },
   {
     label: 'Операции',
-    entries: [{ title: 'Экран оператора', to: '/mechanic', icon: MonitorIcon, active: () => route.path.startsWith('/mechanic') }],
+    entries: [
+      { title: 'Экран оператора', to: '/mechanic', icon: MonitorIcon, active: () => route.path.startsWith('/mechanic') },
+      { title: 'Табель', to: '/timesheet', icon: CalendarClockIcon, active: () => route.path.startsWith('/timesheet') },
+    ],
   },
   {
     label: 'Связь',

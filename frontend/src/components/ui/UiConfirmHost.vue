@@ -16,6 +16,7 @@ function finish(ok: boolean) {
     :title="confirmRequest.title"
     :text="confirmRequest.text"
     :confirm-label="confirmRequest.confirmLabel"
+    :danger="confirmRequest.danger"
     @confirm="finish(true)"
     @cancel="finish(false)"
   />

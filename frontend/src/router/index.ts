@@ -16,6 +16,7 @@ const ReportsPage = () => import('@/pages/ReportsPage.vue')
 const TasksPage = () => import('@/pages/TasksPage.vue')
 const TaskManagementPage = () => import('@/pages/TaskManagementPage.vue')
 const MechanicPage = () => import('@/pages/MechanicPage.vue')
+const TimesheetPage = () => import('@/pages/TimesheetPage.vue')
 const WeatherPage = () => import('@/pages/WeatherPage.vue')
 const EquipmentPage = () => import('@/pages/EquipmentPage.vue')
 const EquipmentDetailsPage = () => import('@/pages/EquipmentDetailsPage.vue')
@@ -64,6 +65,7 @@ export const routes = [
   { path: '/task-management', name: 'task-management', component: TaskManagementPage, meta: { title: 'Задачи' } },
   { path: '/task-management/:taskId', name: 'task-details', component: TaskManagementPage, meta: { title: 'Задача' } },
   { path: '/mechanic', name: 'mechanic', component: MechanicPage, meta: { title: 'Экран оператора' } },
+  { path: '/timesheet', name: 'timesheet', component: TimesheetPage, meta: { title: 'Табель' } },
   { path: '/reports', name: 'reports', component: ReportsPage, meta: { title: 'Аналитика' } },
   { path: '/profile', name: 'profile', component: ProfilePage, meta: { title: 'Настройки профиля' } },
   { path: '/employees', name: 'employees', component: EmployeesPage, meta: { title: 'Сотрудники' } },

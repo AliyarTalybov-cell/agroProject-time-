@@ -10,6 +10,8 @@ export interface ConfirmRequest {
   title: string
   text: string
   confirmLabel: string
+  /** Красная кнопка — для удаления и необратимого; иначе — основная. */
+  danger: boolean
   resolve: (ok: boolean) => void
 }
 
@@ -19,9 +21,10 @@ export function askConfirm(
   title: string,
   text = 'Это действие нельзя отменить.',
   confirmLabel = 'Удалить',
+  danger = true,
 ): Promise<boolean> {
   confirmRequest.value?.resolve(false)
   return new Promise((resolve) => {
-    confirmRequest.value = { title, text, confirmLabel, resolve }
+    confirmRequest.value = { title, text, confirmLabel, danger, resolve }
   })
 }

@@ -47,6 +47,7 @@ import { loadEmployees, loadPositions, searchEmployees, type EmployeeRow, type P
 import { getOrCreateDmThread, sendChatMessage, sendChatMessageWithFile } from '@/lib/chatSupabase'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
+import WorkDayBar from '@/components/timesheet/WorkDayBar.vue'
 
 const DEFAULT_REASONS: Array<{ label: string; description: string; category: DowntimeCategory }> = [
   { label: 'Поломка техники', description: 'Неисправность, требующая остановки работы', category: 'breakdown' },
@@ -91,6 +92,14 @@ function operationElapsedSeconds(now = Date.now()): number {
     }
   }
   return Math.max(0, Math.floor((now - startMs) / 1000) - pauseSeconds)
+}
+
+/** Табель: полоса «Рабочий день» и автоначало дня при старте работы. */
+const workDayBar = ref<InstanceType<typeof WorkDayBar> | null>(null)
+const workDayBusy = computed(() => !!active.value || !!workStartedAt.value)
+const liveOperationMinutes = computed(() => (workStartedAt.value && !active.value ? Math.floor(operationElapsedSeconds(Date.now()) / 60) : 0))
+function ensureWorkDayStarted() {
+  void workDayBar.value?.ensureStarted()
 }
 
 const elapsedSeconds = computed(() => {
@@ -735,6 +744,7 @@ function openTaskInTaskManagement(task: TaskRow) {
 }
 
 function startDowntime(reason: { label: string; category: DowntimeCategory }) {
+  ensureWorkDayStarted()
   workStartedAt.value = null
   activeOperation.value = null
   saveActiveOperation(null)
@@ -1101,6 +1111,7 @@ function startOperationConfirmedWithoutEquipment() {
   if (!pending) return
   const plannedHectares = validatePlannedHectares()
   if (plannedHectares == null) return
+  ensureWorkDayStarted()
   const startISO = new Date().toISOString()
   workStartedAt.value = startISO
   activeOperation.value = {
@@ -1152,6 +1163,7 @@ function startOperationConfirmedWithEquipment() {
   const equipmentId = selectedEquipmentId.value
   if (!equipmentId) return
   if (equipmentConditionRequiresNotes.value && !equipmentRepairNotes.value.trim()) return
+  ensureWorkDayStarted()
 
   const startISO = new Date().toISOString()
   workStartedAt.value = startISO
@@ -1403,6 +1415,13 @@ function openAddField() {
     <Alert v-if="loadError" variant="destructive">
       <AlertDescription>{{ loadError }}</AlertDescription>
     </Alert>
+
+    <WorkDayBar
+      ref="workDayBar"
+      :user-id="auth.user.value?.id ?? null"
+      :busy="workDayBusy"
+      :live-operation-minutes="liveOperationMinutes"
+    />
 
     <!-- Текущая работа -->
     <section class="grid gap-6 rounded-xl border bg-card p-4 shadow-xs md:p-6 lg:grid-cols-2 lg:gap-8">
