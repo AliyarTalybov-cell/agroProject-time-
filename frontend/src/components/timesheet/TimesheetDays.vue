@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Табель одного сотрудника за месяц: итоги, дни (таблица / карточки),
+ * Табель одного сотрудника за период: итоги, дни (таблица / карточки),
  * исправление дня, добавление забытого, выгрузка в Excel.
  *
  *   own      — это табель вошедшего: можно добавить забытый день;
@@ -14,6 +14,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { Skeleton } from '@/components/ui/shadcn/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table'
 import UiBadge from '@/components/ui/UiBadge.vue'
+import UiPagination from '@/components/ui/UiPagination.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import { downloadXls } from '@/lib/tableExport'
 import {
@@ -30,8 +31,9 @@ import WorkDayEditModal from './WorkDayEditModal.vue'
 const props = defineProps<{
   userId: string
   personName: string
-  /** Первый день месяца, ГГГГ-ММ-01. */
-  month: string
+  /** Период, ГГГГ-ММ-ДД включительно. */
+  from: string
+  to: string
   own: boolean
   canEdit: boolean
   nameOf: (userId: string | null) => string
@@ -41,17 +43,17 @@ const days = ref<WorkDay[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const editing = ref<{ day: WorkDay | null } | null>(null)
+/** Период может быть и год — дни показываем страницами. */
+const page = ref(1)
+const pageSize = ref(31)
+const pagedDays = computed(() => days.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value))
 
-const monthEnd = computed(() => {
-  const [y, m] = props.month.split('-').map(Number)
-  return `${props.month.slice(0, 8)}${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`
-})
 
 async function load() {
   loading.value = true
   error.value = null
   try {
-    days.value = await listWorkDays(props.month, monthEnd.value, props.userId)
+    days.value = await listWorkDays(props.from, props.to, props.userId)
   } catch (e) {
     error.value = isTimesheetMissing(e)
       ? 'Табель ещё не включён в базе — нужна миграция 20261103_work_days_timesheet.sql.'
@@ -62,7 +64,7 @@ async function load() {
   }
 }
 
-watch(() => [props.userId, props.month], load, { immediate: true })
+watch(() => [props.userId, props.from, props.to], () => { page.value = 1; void load() }, { immediate: true })
 
 /** Не закрыт и уже не сегодняшний — забыли закончить день. */
 const isForgotten = (d: WorkDay) => d.is_open && Date.now() - Date.parse(d.started_at) > 86_400_000
@@ -114,7 +116,7 @@ function exportXls() {
     ]
   })
   rows.push(['Итого', '', '', '', '', formatHoursShort(totals.value.worked), '', '', ''])
-  downloadXls(headers, rows, `табель_${props.personName.replace(/\s+/g, '_')}_${props.month.slice(0, 7)}.xls`)
+  downloadXls(headers, rows, `табель_${props.personName.replace(/\s+/g, '_')}_${props.from}_${props.to}.xls`)
 }
 
 function onSaved() {
@@ -159,11 +161,11 @@ defineExpose({ reload: load })
       </Alert>
 
       <div class="flex flex-wrap justify-end gap-2">
-        <Button v-if="days.length" variant="outline" size="sm" @click="exportXls">
+        <Button v-if="days.length" variant="outline" @click="exportXls">
           <DownloadIcon />
           Excel
         </Button>
-        <Button v-if="own" variant="outline" size="sm" @click="editing = { day: null }">
+        <Button v-if="own" variant="outline" @click="editing = { day: null }">
           <PlusIcon />
           Добавить забытый день
         </Button>
@@ -176,9 +178,9 @@ defineExpose({ reload: load })
       <Empty v-else-if="!days.length" class="border">
         <EmptyHeader>
           <EmptyMedia variant="icon"><CalendarClockIcon /></EmptyMedia>
-          <EmptyTitle>В этом месяце дней нет</EmptyTitle>
+          <EmptyTitle>За этот период дней нет</EmptyTitle>
           <EmptyDescription>
-            {{ own ? 'Начните день на экране оператора — он появится здесь. Забыли отметить — добавьте день вручную.' : 'Сотрудник не отмечал рабочие дни в этом месяце.' }}
+            {{ own ? 'Начните день на экране оператора — он появится здесь. Забыли отметить — добавьте день вручную.' : 'Сотрудник не отмечал рабочие дни за этот период.' }}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -186,7 +188,7 @@ defineExpose({ reload: load })
       <template v-else>
         <!-- Телефон -->
         <ul class="grid gap-2 md:hidden" :class="{ 'opacity-60': loading }">
-          <li v-for="d in days" :key="d.id" class="grid gap-2 rounded-lg border p-3">
+          <li v-for="d in pagedDays" :key="d.id" class="grid gap-2 rounded-lg border p-3">
             <div class="flex items-start justify-between gap-3">
               <div class="grid gap-0.5">
                 <span class="font-medium tabular-nums">{{ dayLabel(d).date }} <span class="text-muted-foreground font-normal">{{ dayLabel(d).weekday }}</span></span>
@@ -228,7 +230,7 @@ defineExpose({ reload: load })
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="d in days" :key="d.id">
+              <TableRow v-for="d in pagedDays" :key="d.id">
                 <TableCell class="pl-4 tabular-nums">
                   {{ dayLabel(d).date }} <span class="text-muted-foreground">{{ dayLabel(d).weekday }}</span>
                 </TableCell>
@@ -252,6 +254,16 @@ defineExpose({ reload: load })
             </TableBody>
           </Table>
         </div>
+
+        <UiPagination
+          v-if="days.length > 31"
+          :page="page"
+          :page-size="pageSize"
+          :total="days.length"
+          :page-size-options="[31, 62, 100]"
+          @update:page="(p) => (page = p)"
+          @update:page-size="(n) => (pageSize = n)"
+        />
       </template>
     </template>
 

@@ -5,8 +5,9 @@
  * Причина обязательна: она уходит в журнал вместе с «было → стало», а день
  * в табеле помечается «Исправлено». Ниже — история прошлых исправлений.
  */
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
+import { Button } from '@/components/ui/shadcn/button'
 import { Input } from '@/components/ui/shadcn/input'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import FormField from '@/components/ui/layout/FormField.vue'
@@ -18,6 +19,7 @@ import UiModal from '@/components/ui/UiModal.vue'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
 import {
   correctWorkDay,
+  formatHoursShort,
   formatWorkMinutes,
   loadWorkDayEdits,
   moscowDate,
@@ -82,6 +84,50 @@ const workedPreview = computed(() => {
   return Math.max(0, durationMinutes.value - (Number(breakMinutes.value) || 0))
 })
 
+/* «Отработано» можно вписать самому: конец дня = начало + отработано + перерыв. */
+const workedText = ref('')
+const workedFocused = ref(false)
+watch(
+  workedPreview,
+  (v) => {
+    if (!workedFocused.value) workedText.value = v != null ? formatHoursShort(v) : ''
+  },
+  { immediate: true },
+)
+
+/** «10», «10:30», «10.5», «10,5» → минуты. */
+function parseHours(text: string): number | null {
+  const t = text.trim().replace(',', '.')
+  if (!t) return null
+  const hm = /^(\d{1,2}):(\d{1,2})$/.exec(t)
+  if (hm) return Number(hm[1]) * 60 + Number(hm[2])
+  if (/^\d{1,2}(\.\d+)?$/.test(t)) return Math.round(Number(t) * 60)
+  return null
+}
+
+function onWorkedInput(text: string) {
+  workedText.value = text
+  const minutes = parseHours(text)
+  const s = Date.parse(startedAt.value)
+  if (minutes == null || Number.isNaN(s)) return
+  const end = new Date(s + (minutes + (Number(breakMinutes.value) || 0)) * 60000)
+  endedAt.value = toLocalInput(end.toISOString())
+}
+
+function onWorkedBlur() {
+  workedFocused.value = false
+  workedText.value = workedPreview.value != null ? formatHoursShort(workedPreview.value) : ''
+}
+
+const quickDates = computed(() => {
+  const d1 = moscowDate(new Date(Date.now() - 86_400_000))
+  const d2 = moscowDate(new Date(Date.now() - 2 * 86_400_000))
+  return [
+    { label: 'Вчера', value: d1 },
+    { label: 'Позавчера', value: d2 },
+  ]
+})
+
 const validation = computed<string | null>(() => {
   if (!startedAt.value || !endedAt.value) return 'Укажите начало и конец дня.'
   if (durationMinutes.value == null) return 'Конец дня должен быть позже начала.'
@@ -138,7 +184,19 @@ const title = computed(() => {
 
       <FormGrid :cols="2">
         <FormField v-if="isNew" label="Дата" wide required>
-          <UiDatePicker :model-value="workDate" @update:model-value="onDateChange" />
+          <div class="flex flex-wrap gap-2">
+            <UiDatePicker :model-value="workDate" :max="moscowDate()" :clearable="false" class="min-w-40 flex-1" @update:model-value="onDateChange" />
+            <Button
+              v-for="q in quickDates"
+              :key="q.value"
+              type="button"
+              variant="outline"
+              :class="workDate === q.value ? 'bg-accent text-accent-foreground' : ''"
+              @click="onDateChange(q.value)"
+            >
+              {{ q.label }}
+            </Button>
+          </div>
         </FormField>
         <FormField label="Начало" required>
           <UiDateTimePicker v-model="startedAt" />
@@ -149,10 +207,17 @@ const title = computed(() => {
         <FormField label="Перерывы за день, мин" for="wd-break">
           <Input id="wd-break" v-model.number="breakMinutes" type="number" min="0" step="5" inputmode="numeric" />
         </FormField>
-        <FormField label="Отработано">
-          <div class="bg-muted/50 flex h-9 items-center rounded-md px-3 text-sm font-medium tabular-nums">
-            {{ workedPreview != null ? formatWorkMinutes(workedPreview) : '—' }}
-          </div>
+        <FormField label="Отработано, ч:мм" for="wd-worked" hint="Можно вписать — конец дня пересчитается.">
+          <Input
+            id="wd-worked"
+            :model-value="workedText"
+            inputmode="decimal"
+            placeholder="8:00"
+            class="tabular-nums"
+            @focus="workedFocused = true"
+            @blur="onWorkedBlur"
+            @update:model-value="(v) => onWorkedInput(String(v))"
+          />
         </FormField>
         <FormField :label="isNew ? 'Почему день не отмечен' : 'Причина исправления'" for="wd-reason" wide required :count="reason.length" :max="500">
           <Textarea id="wd-reason" v-model="reason" rows="2" maxlength="500" placeholder="Например: забыл закончить день на экране оператора" />

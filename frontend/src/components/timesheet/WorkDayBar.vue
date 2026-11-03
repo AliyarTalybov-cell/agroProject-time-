@@ -33,7 +33,11 @@ const props = defineProps<{
   busy: boolean
   /** Минуты текущей, ещё не завершённой операции — в счётчик «Операции». */
   liveOperationMinutes: number
+  /** Ссылка «Мой табель» — не нужна на самой странице табеля. */
+  hideTimesheetLink?: boolean
 }>()
+
+const emit = defineEmits<{ changed: [] }>()
 
 const day = ref<WorkDay | null>(null)
 const loadedAt = ref(Date.now())
@@ -61,7 +65,7 @@ let tick: ReturnType<typeof setInterval> | null = null
 let poll: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
   void refresh()
-  tick = setInterval(() => (now.value = Date.now()), 15_000)
+  tick = setInterval(() => (now.value = Date.now()), 1000)
   // Раз в 5 минут — с сервера: подтянуть завершённые операции и простои.
   poll = setInterval(() => void refresh(), 5 * 60_000)
 })
@@ -76,7 +80,17 @@ const onBreak = computed(() => Boolean(day.value?.on_break))
 const isClosed = computed(() => Boolean(day.value && !day.value.is_open))
 
 /** Живая добавка с последней загрузки: идёт день — к отработанному, перерыв — к перерыву. */
-const sinceLoad = computed(() => (isOpen.value ? Math.max(0, Math.floor((now.value - loadedAt.value) / 60000)) : 0))
+const sinceLoadSec = computed(() => (isOpen.value ? Math.max(0, Math.floor((now.value - loadedAt.value) / 1000)) : 0))
+const sinceLoad = computed(() => Math.floor(sinceLoadSec.value / 60))
+/** Секундомер отработанного: часы:минуты:секунды, идёт, пока день открыт и не перерыв. */
+const workedClock = computed(() => {
+  if (!day.value) return '0:00:00'
+  const sec = day.value.worked_minutes * 60 + (onBreak.value ? 0 : sinceLoadSec.value)
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  const ss = sec % 60
+  return `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+})
 const worked = computed(() => (day.value ? day.value.worked_minutes + (onBreak.value ? 0 : sinceLoad.value) : 0))
 const breaks = computed(() => (day.value ? day.value.break_minutes + (onBreak.value ? sinceLoad.value : 0) : 0))
 const operations = computed(() => (day.value?.operation_minutes ?? 0) + (isOpen.value ? props.liveOperationMinutes : 0))
@@ -97,6 +111,7 @@ async function act(fn: () => Promise<void>) {
   try {
     await fn()
     await refresh()
+    emit('changed')
   } catch (e) {
     error.value = navigator.onLine
       ? formatSupabaseError(e) || 'Не удалось сохранить отметку'
@@ -127,6 +142,7 @@ async function ensureStarted() {
   try {
     await startWorkDay()
     await refresh()
+    emit('changed')
   } catch {
     // нет связи — оператор начнёт день сам, когда появится интернет
   }
@@ -144,7 +160,9 @@ defineExpose({ ensureStarted, refresh })
       </div>
       <div v-if="loading" class="text-muted-foreground text-sm">Загрузка…</div>
       <template v-else-if="day">
-        <div class="text-2xl font-semibold tabular-nums">{{ formatWorkMinutes(worked) }}</div>
+        <div class="text-2xl font-semibold tabular-nums" :class="{ 'text-muted-foreground': onBreak }" :aria-label="`Отработано ${formatWorkMinutes(worked)}`">
+          {{ isOpen ? workedClock : formatWorkMinutes(worked) }}
+        </div>
         <div class="text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums">
           <span>Операции {{ formatWorkMinutes(operations) }}</span>
           <span v-if="downtimes">Простои {{ formatWorkMinutes(downtimes) }}</span>
@@ -157,7 +175,7 @@ defineExpose({ ensureStarted, refresh })
     </div>
 
     <div class="grid shrink-0 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
-      <RouterLink to="/timesheet" class="text-primary px-1 text-sm font-medium hover:underline dark:text-green-400 max-sm:order-last max-sm:text-center">
+      <RouterLink v-if="!hideTimesheetLink" to="/timesheet" class="text-primary px-1 text-sm font-medium hover:underline dark:text-green-400 max-sm:order-last max-sm:text-center">
         Мой табель
       </RouterLink>
       <template v-if="!loading">
