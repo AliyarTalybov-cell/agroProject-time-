@@ -6,6 +6,8 @@ export type NotificationType =
   | 'task_status_changed'
   | 'task_comment_added'
   | 'task_participant_added'
+  | 'task_due_soon'
+  | 'task_overdue'
 export type NotificationFilter = 'all' | 'read' | 'unread'
 
 export type NotificationRow = {
@@ -20,6 +22,8 @@ export type NotificationRow = {
   calendar_title: string | null
   calendar_date: string | null
   actor_name: string | null
+  /** Срок задачи (ГГГГ-ММ-ДД) — у напоминаний task_due_soon / task_overdue. */
+  due_date?: string | null
 }
 
 export async function loadMyNotifications(args?: {
@@ -56,6 +60,18 @@ export async function markMyNotificationsRead(ids?: string[]): Promise<number> {
   const { data, error } = await supabase.rpc('mark_my_notifications_read', {
     p_ids: clean.length ? clean : null,
   })
+  if (error) throw error
+  return Number(data ?? 0)
+}
+
+/**
+ * Создать недостающие напоминания о сроках задач для вошедшего
+ * (функция generate_my_task_reminders в базе, без дублей). Возвращает,
+ * сколько напоминаний добавлено.
+ */
+export async function generateMyTaskReminders(): Promise<number> {
+  if (!supabase) return 0
+  const { data, error } = await supabase.rpc('generate_my_task_reminders')
   if (error) throw error
   return Number(data ?? 0)
 }

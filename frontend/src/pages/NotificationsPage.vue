@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/shadcn/button'
-import { BellIcon, CalendarIcon, CheckCheckIcon, CircleAlertIcon, ClipboardListIcon } from '@lucide/vue'
+import { BellIcon, CalendarIcon, CheckCheckIcon, CircleAlertIcon, ClipboardListIcon, ClockIcon } from '@lucide/vue'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/shadcn/alert'
 import { Badge } from '@/components/ui/shadcn/badge'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
@@ -101,11 +101,32 @@ function titleForType(type: NotificationRow['type']): string {
   if (type === 'task_participant_added') return 'Вас добавили участником задачи'
   if (type === 'task_comment_added') return 'Новый комментарий в задаче'
   if (type === 'calendar_invited') return 'Вас добавили участником события'
+  if (type === 'task_due_soon') return 'Скоро срок задачи'
+  if (type === 'task_overdue') return 'Задача просрочена'
   return 'Изменение в задаче'
 }
 
 function actorLabel(row: NotificationRow): string {
   return row.actor_name || 'Система'
+}
+
+function isReminderType(type: NotificationRow['type']): boolean {
+  return type === 'task_due_soon' || type === 'task_overdue'
+}
+
+/** Срок в напоминании: «завтра, 5 ноября» — относительно дня, когда пришло напоминание. */
+function reminderDueLabel(row: NotificationRow): string {
+  if (!row.due_date) return ''
+  const [y, m, d] = row.due_date.split('-').map(Number)
+  if (!y || !m || !d) return row.due_date
+  const created = new Date(row.created_at)
+  const createdDay = Date.UTC(created.getFullYear(), created.getMonth(), created.getDate())
+  const diff = Math.round((Date.UTC(y, m - 1, d) - createdDay) / 86_400_000)
+  const date = `${d} ${monthNamesGenitive[m - 1]}`
+  if (row.type === 'task_overdue') return `срок истёк ${date}`
+  if (diff === 0) return `срок сегодня, ${date}`
+  if (diff === 1) return `срок завтра, ${date}`
+  return `срок ${date}`
 }
 
 function isTaskDirectLinkType(type: NotificationRow['type']): boolean {
@@ -295,19 +316,21 @@ onMounted(() => {
             v-for="item in group.items"
             :key="item.id"
             variant="outline"
-            :class="item.isRead ? 'opacity-70' : 'bg-card'"
+            :class="item.isRead ? 'opacity-70' : 'bg-card relative'"
           >
             <ItemMedia variant="icon">
               <CalendarIcon v-if="item.type === 'calendar_invited'" />
+              <ClockIcon v-else-if="item.type === 'task_due_soon'" />
+              <CircleAlertIcon v-else-if="item.type === 'task_overdue'" class="text-destructive" />
               <ClipboardListIcon v-else />
             </ItemMedia>
             <ItemContent>
-              <ItemTitle>
+              <ItemTitle class="block">
                 {{ item.title }}
-                <span v-if="!item.isRead" class="bg-primary size-2 rounded-full" aria-label="Не прочитано" />
+                <span v-if="!item.isRead" class="bg-primary ml-1 inline-block size-2 rounded-full align-middle" aria-label="Не прочитано" />
               </ItemTitle>
             <ItemDescription class="line-clamp-none">
-                <template v-if="isTaskDirectLinkType(item.type)">
+                <template v-if="isReminderType(item.type)">
                   Задача
                   <RouterLink
                     v-if="item.row.task_id && item.row.task_number"
@@ -319,7 +342,20 @@ onMounted(() => {
                   <span v-else> без номера</span>
                   <template v-if="item.row.task_title">
                     "{{ item.row.task_title }}"
-                  </template>.
+                  </template>
+                  — {{ reminderDueLabel(item.row) }}.
+                </template>
+                <template v-else-if="isTaskDirectLinkType(item.type)">
+                  Задача
+                  <RouterLink
+                    v-if="item.row.task_id && item.row.task_number"
+                    class="notification-task-link"
+                    :to="{ path: '/task-management', query: { openTaskId: item.row.task_id } }"
+                  >
+                    №{{ item.row.task_number }}
+                  </RouterLink>
+                  <span v-else> без номера</span>
+                  <template v-if="item.row.task_title"> "{{ item.row.task_title }}"</template>.
                   Автор: {{ actorLabel(item.row) }}.
                 </template>
                 <template v-else>
@@ -328,7 +364,7 @@ onMounted(() => {
               </ItemDescription>
               <span class="text-muted-foreground text-xs">{{ item.timeLabel }}</span>
             </ItemContent>
-            <ItemActions v-if="!item.isRead">
+            <ItemActions v-if="!item.isRead" class="max-sm:absolute max-sm:right-2 max-sm:bottom-2">
               <Button variant="ghost" size="sm" :disabled="markBusyId === item.id" @click="markOneAsRead(item.id)">Прочитано</Button>
             </ItemActions>
           </Item>

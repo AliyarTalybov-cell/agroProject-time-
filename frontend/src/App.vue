@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/shadcn/separator'
 import { Button } from '@/components/ui/shadcn/button'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/shadcn/breadcrumb'
 import { chatTotalUnread, refreshChatTotalUnread } from '@/lib/chatSupabase'
-import { countMyUnreadNotifications } from '@/lib/notificationsSupabase'
+import { countMyUnreadNotifications, generateMyTaskReminders } from '@/lib/notificationsSupabase'
 import { startActivityHeartbeat, stopActivityHeartbeat } from '@/lib/activityHeartbeat'
 import { loadProfileById } from '@/lib/tasksSupabase'
 import { isSupabaseConfigured } from '@/lib/supabase'
@@ -202,8 +202,30 @@ const chatUnreadDisplay = computed(() => Number(chatTotalUnread.value) || 0)
 const notificationsUnread = ref(0)
 const notificationsUnreadDisplay = computed(() => Number(notificationsUnread.value) || 0)
 
+// Напоминания о сроках задач создаются при открытии портала и дальше не чаще
+// раза в 10 минут — так «завтра срок» появляется и у тех, кто не закрывает
+// вкладку через полночь. Если функции в базе нет (миграция не применена),
+// больше не пытаемся до перезагрузки.
+const REMINDERS_INTERVAL_MS = 10 * 60_000
+let remindersAt = 0
+let remindersUnavailable = false
+async function ensureTaskReminders() {
+  if (remindersUnavailable || !auth.user.value) return
+  const now = Date.now()
+  if (now - remindersAt < REMINDERS_INTERVAL_MS) return
+  remindersAt = now
+  try {
+    await generateMyTaskReminders()
+  } catch (e) {
+    const code = (e as { code?: string } | null)?.code
+    if (code === 'PGRST202' || code === '42883') remindersUnavailable = true
+    console.error('Напоминания о сроках задач', e)
+  }
+}
+
 async function refreshHeaderUnreadCounters() {
   await refreshChatTotalUnread()
+  await ensureTaskReminders()
   try {
     notificationsUnread.value = await countMyUnreadNotifications()
   } catch (e) {
