@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
@@ -11,6 +12,7 @@ import { useAuth } from '@/stores/auth'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import {
   loadPositions,
+  addPosition,
   searchEmployeesPage,
   loadEmployeesPage,
   type EmployeeRow,
@@ -28,6 +30,10 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const employees = ref<EmployeeRow[]>([])
 const positions = ref<PositionRow[]>([])
+/** Должность из окна сотрудника: без дублей, сразу в общий список. */
+function quickAddPosition(name: string): Promise<PositionRow> {
+  return findOrCreate(positions, name, (p) => p.name, addPosition)
+}
 
 const search = ref('')
 const positionFilter = ref<string>('')
@@ -250,6 +256,7 @@ function openEmployee(e: EmployeeRow) {
       v-if="canManage"
       :open="createOpen"
       :positions="positions"
+      :add-position="quickAddPosition"
       @close="createOpen = false"
       @created="refresh"
     />
@@ -259,6 +266,7 @@ function openEmployee(e: EmployeeRow) {
       :open="editOpen"
       :employee="selected"
       :positions="positions"
+      :add-position="quickAddPosition"
       @close="editOpen = false"
       @updated="refresh"
     />

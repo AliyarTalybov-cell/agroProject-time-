@@ -2,7 +2,7 @@
 /**
  * Поле формы по канону: подпись → контрол → подсказка/счётчик, промежуток gap-2.
  * Справа от подписи можно поставить действие (слот `label-actions`, например
- * «Добавить»), под полем — подсказку `hint` и счётчик `count` / `max`.
+ * «Добавить»), сразу за подписью — подсказку «?» (слот `label-help`), под полем — подсказку `hint` и счётчик `count` / `max`.
  * `wide` — поле во всю ширину сетки FormGrid cols=2. `error` — ошибка поля
  * красным вместо подсказки.
  */
@@ -26,7 +26,11 @@ withDefaults(
 <template>
   <div class="grid min-w-0 content-start gap-2" :class="wide ? 'sm:col-span-full' : ''">
     <div v-if="label || $slots['label-actions']" class="flex min-h-5 items-center justify-between gap-2">
-      <Label v-if="label" :for="$props.for">{{ label }}<span v-if="required" class="-ml-1.5 text-destructive" aria-hidden="true">*</span></Label>
+      <span v-if="label && $slots['label-help']" class="inline-flex min-w-0 items-center gap-1.5">
+        <Label :for="$props.for">{{ label }}<span v-if="required" class="-ml-1.5 text-destructive" aria-hidden="true">*</span></Label>
+        <slot name="label-help" />
+      </span>
+      <Label v-else-if="label" :for="$props.for">{{ label }}<span v-if="required" class="-ml-1.5 text-destructive" aria-hidden="true">*</span></Label>
       <slot name="label-actions" />
     </div>
     <slot />

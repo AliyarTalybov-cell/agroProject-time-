@@ -3,12 +3,11 @@ import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
-import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-group'
-import { FileSpreadsheetIcon, FileTextIcon, PencilIcon, PlusIcon } from '@lucide/vue'
+import { FileSpreadsheetIcon, FileTextIcon } from '@lucide/vue'
 import { useMediaQuery } from '@vueuse/core'
 import UiSuccessModal from '@/components/UiSuccessModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -20,6 +19,7 @@ import {
   cropRotationTypeRefs,
   crops,
   equipmentConditionRefs,
+  equipmentRefsTab,
   equipmentTypeRefs,
   fieldMunicipalityRefs,
   landCategories,
@@ -27,6 +27,8 @@ import {
   landMeliorationSubtypes,
   landMeliorationTypes,
   landRefsTab,
+  meliorationRefsTab,
+  rightsRefsTab,
   landRightDocumentTypes,
   landRightHolders,
   landRightHolderTypes,
@@ -51,10 +53,13 @@ import LandUsersTab from '@/components/lands/LandUsersTab.vue'
 import LandRightModal from '@/components/lands/LandRightModal.vue'
 import LandUserModal from '@/components/lands/LandUserModal.vue'
 import LandMeliorationModal from '@/components/lands/LandMeliorationModal.vue'
+import LandMeliorationListTab, { type MeliorationTabId } from '@/components/lands/LandMeliorationListTab.vue'
+import LandsRegistryTab from '@/components/lands/LandsRegistryTab.vue'
 import LandRealEstateModal from '@/components/lands/LandRealEstateModal.vue'
 import LandsConfirmModal from '@/components/lands/LandsConfirmModal.vue'
 import UiLoadingBar from '@/components/UiLoadingBar.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
+import { quickAdd } from '@/components/lands/refs/refQuickAdd'
 import YandexMap from '@/components/YandexMap.vue'
 import type { MapFieldMarker } from '@/components/YandexMap.vue'
 import { resolveYandexAddressCandidates, resolveYandexAddressLine } from '@/lib/yandexGeocode'
@@ -200,8 +205,10 @@ const REF_GROUPS = [
   { value: 'field-refs', label: 'Справочники полей' },
   { value: 'crop-rotation-refs', label: 'Справочники севооборота' },
   { value: 'storage-refs', label: 'Справочники хранения' },
+  { value: 'staff-refs', label: 'Справочники сотрудников' },
 ] as const
-const landsRootTab = ref<'registry' | 'melioration' | 'land-refs' | 'rights-refs' | 'crops-refs' | 'melioration-refs' | 'equipment-refs' | 'field-refs' | 'crop-rotation-refs' | 'storage-refs'>('registry')
+const landsRootTab = ref<'registry' | 'melioration' | 'land-refs' | 'rights-refs' | 'crops-refs' | 'melioration-refs' | 'equipment-refs' | 'field-refs' | 'crop-rotation-refs' | 'storage-refs' | 'staff-refs'>('registry')
+const isRefsTab = computed(() => REF_GROUPS.some((g) => g.value === landsRootTab.value))
 
 function extractErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message
@@ -281,7 +288,7 @@ let landsSearchRequestId = 0
 let addressCandidatesRequestId = 0
 const route = useRoute()
 const router = useRouter()
-const ROOT_TAB_QUERY_MAP = new Set(['registry', 'melioration', 'land-refs', 'land-types', 'land-categories', 'land-usage', 'rights-refs', 'crops-refs', 'melioration-refs', 'equipment-refs', 'field-refs', 'crop-rotation-refs', 'storage-refs', 'storage-types', 'storage-statuses', 'storage-fill-statuses', 'storage-writeoff-reasons', 'storage-consumption-targets', 'storage-purposes'])
+const ROOT_TAB_QUERY_MAP = new Set(['registry', 'melioration', 'land-refs', 'land-types', 'land-categories', 'land-usage', 'rights-refs', 'crops-refs', 'melioration-refs', 'equipment-refs', 'field-refs', 'crop-rotation-refs', 'storage-refs', 'storage-types', 'storage-statuses', 'storage-fill-statuses', 'storage-writeoff-reasons', 'storage-consumption-targets', 'storage-purposes', 'ownership-forms', 'right-types', 'document-types', 'holder-types', 'holders', 'melioration-types', 'melioration-subtypes', 'melioration-event-types', 'equipment-types', 'equipment-conditions', 'staff-refs'])
 /** Площадь в гектарах по-русски: «50 879,03». */
 function formatHa(v: number | string | null | undefined): string {
   return Number(v || 0).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -306,6 +313,8 @@ const landsListSubtitle = computed(() => (
         ? 'Справочники для заполнения севооборота'
       : landsRootTab.value === 'storage-refs'
         ? 'Справочники мест хранения (склады, силосы, тока, бурты)'
+      : landsRootTab.value === 'staff-refs'
+        ? 'Справочники для карточек сотрудников'
       : landsRootTab.value === 'melioration'
         ? 'Сведения по мелиорации'
         : 'Реестр, паспорты и справочники земельных участков'
@@ -464,12 +473,7 @@ const cropRotationTypeOptions = computed(() => (
     ? cropRotationTypeRefs.value.map((x) => x.name)
     : [...DEFAULT_CROP_ROTATION_TYPE_OPTIONS]
 ))
-const MELIORATION_TABS = [
-  { id: 'systems', label: 'Мелиоративные системы, расположенные на земельном участке', short: 'Системы' },
-  { id: 'forest', label: 'Мелиоративные защитные лесные насаждения', short: 'Защитные лесные насаждения' },
-  { id: 'events', label: 'Мелиоративные мероприятия', short: 'Мероприятия' },
-] as const
-const MELIORATION_KIND_MAP: Record<(typeof MELIORATION_TABS)[number]['id'], string> = {
+const MELIORATION_KIND_MAP: Record<MeliorationTabId, string> = {
   systems: 'systems',
   forest: 'forest',
   events: 'events',
@@ -2348,6 +2352,24 @@ watch(() => String(route.query.tab || ''), (tab) => {
     landRefsTab.value = tab
     return
   }
+  // Прямые ссылки на подвкладку справочника — из подсказок «?» у полей форм.
+  const rightsSub = { 'ownership-forms': 'ownership-forms', 'right-types': 'right-types', 'document-types': 'document-types', 'holder-types': 'holder-types', holders: 'holders' } as const
+  if (tab in rightsSub) {
+    landsRootTab.value = 'rights-refs'
+    rightsRefsTab.value = rightsSub[tab as keyof typeof rightsSub]
+    return
+  }
+  const meliorationSub = { 'melioration-types': 'types', 'melioration-subtypes': 'subtypes', 'melioration-event-types': 'event-types' } as const
+  if (tab in meliorationSub) {
+    landsRootTab.value = 'melioration-refs'
+    meliorationRefsTab.value = meliorationSub[tab as keyof typeof meliorationSub]
+    return
+  }
+  if (tab === 'equipment-types' || tab === 'equipment-conditions') {
+    landsRootTab.value = 'equipment-refs'
+    equipmentRefsTab.value = tab === 'equipment-types' ? 'types' : 'conditions'
+    return
+  }
   if (
     tab === 'storage-types' || tab === 'storage-statuses' || tab === 'storage-fill-statuses' ||
     tab === 'storage-writeoff-reasons' || tab === 'storage-consumption-targets' || tab === 'storage-purposes'
@@ -2384,19 +2406,6 @@ watch([meliorationTab, landsRootTab, isDetailsMode], ([, rootTab, detailsMode]) 
 })
 
 const landsTotalPages = computed(() => Math.max(1, Math.ceil(landsTotal.value / landsPageSize.value)))
-const landsPageStart = computed(() => (landsTotal.value ? (landsPage.value - 1) * landsPageSize.value + 1 : 0))
-const landsPageEnd = computed(() => Math.min(landsPage.value * landsPageSize.value, landsTotal.value))
-const landsPageNumbers = computed(() => {
-  const total = landsTotalPages.value
-  const current = landsPage.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  const pages: (number | 'ellipsis')[] = [1]
-  if (current > 4) pages.push('ellipsis')
-  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p += 1) pages.push(p)
-  if (current < total - 3) pages.push('ellipsis')
-  pages.push(total)
-  return pages
-})
 function setLandsPage(p: number) {
   const next = Math.max(1, Math.min(p, landsTotalPages.value))
   if (next === landsPage.value) return
@@ -2409,19 +2418,6 @@ function onLandsPageSizeChange() {
 }
 
 const meliorationTotalPages = computed(() => Math.max(1, Math.ceil(meliorationTotal.value / meliorationPageSize.value)))
-const meliorationPageStart = computed(() => (meliorationTotal.value ? (meliorationPage.value - 1) * meliorationPageSize.value + 1 : 0))
-const meliorationPageEnd = computed(() => Math.min(meliorationPage.value * meliorationPageSize.value, meliorationTotal.value))
-const meliorationPageNumbers = computed(() => {
-  const total = meliorationTotalPages.value
-  const current = meliorationPage.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  const pages: (number | 'ellipsis')[] = [1]
-  if (current > 4) pages.push('ellipsis')
-  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p += 1) pages.push(p)
-  if (current < total - 3) pages.push('ellipsis')
-  pages.push(total)
-  return pages
-})
 function setMeliorationPage(p: number) {
   const next = Math.max(1, Math.min(p, meliorationTotalPages.value))
   if (next === meliorationPage.value) return
@@ -2531,7 +2527,7 @@ onMounted(() => void reloadAll())
 
     <div v-else class="lands-content">
       <div v-if="!isDetailsMode" class="lands-list-shell">
-        <div v-if="isPhone && (landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs')" class="mb-4">
+        <div v-if="isPhone && isRefsTab" class="mb-4">
           <UiSelect
             :model-value="landsRootTab"
             block
@@ -2540,8 +2536,8 @@ onMounted(() => void reloadAll())
             @update:model-value="(v) => (landsRootTab = v as typeof landsRootTab)"
           />
         </div>
-        <div v-if="!isPhone && (landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs')" class="lands-tabs lands-tabs--top">
-          <template v-if="landsRootTab === 'rights-refs' || landsRootTab === 'land-refs' || landsRootTab === 'crops-refs' || landsRootTab === 'melioration-refs' || landsRootTab === 'equipment-refs' || landsRootTab === 'field-refs' || landsRootTab === 'crop-rotation-refs' || landsRootTab === 'storage-refs'">
+        <div v-if="!isPhone && isRefsTab" class="lands-tabs lands-tabs--top">
+          <template v-if="isRefsTab">
             <button type="button" class="lands-tab-btn" :class="{ 'is-active': landsRootTab === 'rights-refs' }" @click="landsRootTab = 'rights-refs'">
               Справочники прав
             </button>
@@ -2566,6 +2562,9 @@ onMounted(() => void reloadAll())
             <button type="button" class="lands-tab-btn" :class="{ 'is-active': landsRootTab === 'storage-refs' }" @click="landsRootTab = 'storage-refs'">
               Справочники хранения
             </button>
+            <button type="button" class="lands-tab-btn" :class="{ 'is-active': landsRootTab === 'staff-refs' }" @click="landsRootTab = 'staff-refs'">
+              Справочники сотрудников
+            </button>
           </template>
           <template v-else-if="landsRootTab === 'melioration'">
             <button type="button" class="lands-tab-btn is-active">Мелиорация</button>
@@ -2578,157 +2577,45 @@ onMounted(() => void reloadAll())
         </div>
 
         <template v-if="landsRootTab === 'registry'">
-          <div class="lands-table-top">
-            <h2 class="sr-only">Реестр земель</h2>
-            <div class="lands-table-tools">
-              <Input v-model.trim="landsSearch" class="lands-search" type="text" placeholder="Поиск по адресу или кадастровому номеру" />
-              <div class="tw-scope flex flex-wrap items-center gap-2">
-                <Button variant="outline" type="button" :disabled="!lands.length" @click="exportLandsToPdf">
-                  <FileTextIcon />
-                  PDF
-                </Button>
-                <Button variant="outline" type="button" :disabled="!lands.length" @click="exportLandsToExcel">
-                  <FileSpreadsheetIcon />
-                  Excel
-                </Button>
-                <Button type="button" @click="openCreateLand">
-                  <PlusIcon />
-                  Новая земля
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div class="lands-table-wrap">
-            <table class="lands-table" v-card-table>
-              <thead>
-                <tr>
-                  <th>Кадастровый номер</th>
-                  <th>№ поля ЕФИС ЗСН</th>
-                  <th>Адрес</th>
-                  <th>Категория земли</th>
-                  <th>Площадь, га</th>
-                  <th>Вид разрешенного использования</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="land in lands"
-                  :key="land.id"
-                  class="lands-list-row"
-                  :class="{ 'is-active': land.id === selectedLandId }"
-                  @click="openLandPage(land.id)"
-                >
-                  <td class="lands-list-title-main">{{ land.cadastral_number || '—' }}</td>
-                  <td>{{ landEfisNumberDisplay(land) }}</td>
-                  <td>{{ land.address || '—' }}</td>
-                  <td>{{ land.land_category || '—' }}</td>
-                  <td>{{ formatHa(land.area || 0) }}</td>
-                  <td>{{ land.permitted_use_docs || '—' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p v-if="!lands.length && landsSearch.trim()" class="lands-muted">По вашему запросу ничего не найдено.</p>
-          <p v-else-if="!lands.length" class="lands-muted">Пока нет созданных земель.</p>
-
-          <UiPagination v-if="landsTotal > 0" :page="landsPage" :page-size="landsPageSize" :total="landsTotal" :page-size-options="[10, 25, 50]" @update:page="setLandsPage" @update:page-size="(n) => { landsPageSize = n; onLandsPageSizeChange() }" />
+          <LandsRegistryTab
+            :items="lands"
+            :search="landsSearch"
+            :selected-id="selectedLandId"
+            :page="landsPage"
+            :page-size="landsPageSize"
+            :total="landsTotal"
+            :efis-number="landEfisNumberDisplay"
+            :format-ha="formatHa"
+            @update:search="(v) => { landsSearch = v }"
+            @update:page="setLandsPage"
+            @update:page-size="(n) => { landsPageSize = n; onLandsPageSizeChange() }"
+            @export-pdf="exportLandsToPdf"
+            @export-excel="exportLandsToExcel"
+            @create="openCreateLand"
+            @open="openLandPage"
+          />
         </template>
 
         <template v-else-if="landsRootTab === 'melioration'">
-          <div class="tw-scope flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-            <Tabs :model-value="meliorationTab" class="min-w-0">
-              <TabsList class="h-auto max-w-full flex-wrap justify-start">
-                <TabsTrigger v-for="tab in MELIORATION_TABS" :key="tab.id" :value="tab.id" class="flex-none" :title="tab.label" @click="meliorationTab = tab.id">
-                  {{ tab.short }}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <div class="flex flex-wrap items-center gap-2">
-              <Button variant="outline" type="button" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToPdf">
-                <FileTextIcon />
-                PDF
-              </Button>
-              <Button variant="outline" type="button" :disabled="!meliorationEntriesByTab.length" @click="exportMeliorationTabToExcel">
-                <FileSpreadsheetIcon />
-                Excel
-              </Button>
-              <Button type="button" @click="openMeliorationModal">
-                <PlusIcon />
-                Добавить
-              </Button>
-            </div>
-          </div>
-          <div class="lands-table-wrap lands-table-wrap--melioration">
-            <table class="lands-table" v-card-table>
-              <thead>
-                <tr v-if="meliorationTab === 'systems'">
-                  <th>№ поля ЕФИС ЗСН</th>
-                  <th>Тип мелиорации</th>
-                  <th>Вид мелиорации</th>
-                  <th>Описание системы и местоположения</th>
-                  <th>Кадастровый номер земельного участка</th>
-                  <th>Дата ввода в эксплуатацию</th>
-                  <th>Площадь орошаемых (осушаемых) земель, га</th>
-                  <th>Действия</th>
-                </tr>
-                <tr v-else-if="meliorationTab === 'forest'">
-                  <th>№ поля ЕФИС ЗСН</th>
-                  <th>Площадь МЗЛН, га</th>
-                  <th>Количественные, качественные характеристики</th>
-                  <th>Год создания</th>
-                  <th>Информация о реконструкции насаждений</th>
-                  <th>Кадастровый номер земельного участка</th>
-                  <th>Действия</th>
-                </tr>
-                <tr v-else>
-                  <th>№ поля ЕФИС ЗСН</th>
-                  <th>Тип мероприятия</th>
-                  <th>Дата проведения</th>
-                  <th>Площадь земельного участка, га</th>
-                  <th>Согласование проектов мелиорации</th>
-                  <th>Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="entry in meliorationEntriesByTab" :key="entry.id" :class="{ 'lands-mel-row': true }">
-                  <td>{{ meliorationFieldLabel(entry.field_id) }}</td>
-                  <template v-if="meliorationTab === 'systems'">
-                    <td>{{ entry.melioration_type || '—' }}</td>
-                    <td>{{ entry.melioration_subtype || '—' }}</td>
-                    <td>{{ entry.description_location || '—' }}</td>
-                    <td>{{ entry.cadastral_number || '—' }}</td>
-                    <td>{{ formatIsoDate(entry.commissioned_at) }}</td>
-                    <td>{{ formatRotationMetric(entry.irrigated_area_ha ?? entry.area_ha) }}</td>
-                  </template>
-                  <template v-else-if="meliorationTab === 'forest'">
-                    <td>{{ formatRotationMetric(entry.forest_area_ha ?? entry.area_ha) }}</td>
-                    <td>{{ entry.forest_characteristics || '—' }}</td>
-                    <td>{{ entry.forest_year_created ?? '—' }}</td>
-                    <td>{{ entry.reconstruction_info || '—' }}</td>
-                    <td>{{ entry.cadastral_number || '—' }}</td>
-                  </template>
-                  <template v-else>
-                    <td>{{ entry.event_type || '—' }}</td>
-                    <td>{{ formatIsoDate(entry.event_date) }}</td>
-                    <td>{{ formatRotationMetric(entry.area_ha) }}</td>
-                    <td>{{ entry.project_approval || '—' }}</td>
-                  </template>
-                  <td @click.stop>
-                    <div class="lands-item-actions">
-                      <Button variant="ghost" size="icon-sm" type="button" class="lands-action-btn lands-action-btn--edit" aria-label="Редактировать" title="Редактировать" @click="openMeliorationEditModal(entry)">
-                        <PencilIcon :size="17" :stroke-width="2.1" />
-                      </Button>
-                      <UiDeleteButton size="sm" @click="requestDeleteMelioration(entry.id)" />
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="!meliorationEntriesByTab.length && !loading">
-                  <td :colspan="meliorationTab === 'systems' ? 8 : meliorationTab === 'forest' ? 7 : 6" class="lands-muted lands-melioration-empty">нет данных для отображения</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <UiPagination v-if="meliorationTotal > 0" :page="meliorationPage" :page-size="meliorationPageSize" :total="meliorationTotal" :page-size-options="[10, 25, 50]" @update:page="setMeliorationPage" @update:page-size="(n) => { meliorationPageSize = n; onMeliorationPageSizeChange() }" />
+          <LandMeliorationListTab
+            :tab="meliorationTab"
+            :items="meliorationEntriesByTab"
+            :loading="loading"
+            :page="meliorationPage"
+            :page-size="meliorationPageSize"
+            :total="meliorationTotal"
+            :field-label="meliorationFieldLabel"
+            :format-date="formatIsoDate"
+            :format-metric="formatRotationMetric"
+            @update:tab="(t) => { meliorationTab = t }"
+            @update:page="setMeliorationPage"
+            @update:page-size="(n) => { meliorationPageSize = n; onMeliorationPageSizeChange() }"
+            @export-pdf="exportMeliorationTabToPdf"
+            @export-excel="exportMeliorationTabToExcel"
+            @create="openMeliorationModal"
+            @edit="openMeliorationEditModal"
+            @remove="requestDeleteMelioration"
+          />
         </template>
         <LandsRefsPanel v-else :tab="landsRootTab" />
       </div>
@@ -2741,9 +2628,12 @@ onMounted(() => void reloadAll())
               <span class="lands-label-with-help">
                 Категория земель
                 <RefFieldHelp
-                  text="Нет нужной категории? Добавьте ее в"
+                  v-if="landInlineEditOpen"
+                  text="Нет нужной категории земель? Добавьте её здесь или в справочнике."
                   :to="{ path: '/lands', query: { tab: 'land-categories' } }"
                   link-label="Справочники земель"
+                  add-placeholder="Категория земель"
+                  :add="async (n) => { form.landCategory = (await quickAdd.landCategory(n)).name }"
                 />
               </span>
               <UiSelect v-model="form.landCategory" :options="[{ value: '', label: '—' }, ...(landCategories).map((category) => ({ value: category.name, label: String(category.name) }))]" v-if="landInlineEditOpen" class="lands-passport-input" />
@@ -2753,9 +2643,12 @@ onMounted(() => void reloadAll())
               <span class="lands-label-with-help">
                 Использование участка
                 <RefFieldHelp
-                  text="Нет нужного варианта? Добавьте его в"
+                  v-if="landInlineEditOpen"
+                  text="Нет нужного варианта использования? Добавьте его здесь или в справочнике."
                   :to="{ path: '/lands', query: { tab: 'land-usage' } }"
-                  link-label="Использование участка"
+                  link-label="Справочники земель"
+                  add-placeholder="Использование участка"
+                  :add="async (n) => { form.actualUseStatus = (await quickAdd.landUsage(n)).name }"
                 />
               </span>
               <UiSelect v-model="form.actualUseStatus" :options="[{ value: '', label: '—' }, ...(actualUseOptions).map((option) => ({ value: option.name, label: String(option.name) }))]" v-if="landInlineEditOpen" class="lands-passport-input" />
@@ -2780,9 +2673,12 @@ onMounted(() => void reloadAll())
               <span class="lands-label-with-help">
                 ВРИ по документам
                 <RefFieldHelp
-                  text="Нет нужного ВРИ? Добавьте его в"
-                  :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
-                  link-label="Типы прав"
+                  v-if="landInlineEditOpen"
+                  text="Нет нужного значения? Добавьте его здесь или в справочнике (список общий с видами прав)."
+                  :to="{ path: '/lands', query: { tab: 'right-types' } }"
+                  link-label="Справочники прав"
+                  add-placeholder="Новое значение"
+                  :add="async (n) => { form.permittedUseDocs = (await quickAdd.rightType(n)).name }"
                 />
               </span>
               <UiSelect v-model="form.permittedUseDocs" :options="[{ value: '', label: '—' }, ...(landRightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" v-if="landInlineEditOpen" class="lands-passport-input" />
@@ -2917,9 +2813,12 @@ onMounted(() => void reloadAll())
               <span class="lands-label-with-help">
                 Отнесение к сельхозугодьям (тип земли)
                 <RefFieldHelp
-                  text="Нет нужного типа земли? Добавьте его в"
+                  v-if="landInlineEditOpen"
+                  text="Нет нужного типа земли? Добавьте его здесь или в справочнике."
                   :to="{ path: '/lands', query: { tab: 'land-types' } }"
                   link-label="Справочники земель"
+                  add-placeholder="Тип земли"
+                  :add="async (n) => { form.isAgriLand = (await quickAdd.landType(n)).id }"
                 />
               </span>
               <UiSelect v-model="form.isAgriLand" :options="[{ value: '', label: '—' }, ...(landTypes).map((type) => ({ value: type.id, label: String(type.name) }))]" />
@@ -2944,9 +2843,12 @@ onMounted(() => void reloadAll())
               <span class="lands-label-with-help">
                 Использование участка
                 <RefFieldHelp
-                  text="Нет нужного варианта? Добавьте его в"
+                  v-if="landInlineEditOpen"
+                  text="Нет нужного варианта использования? Добавьте его здесь или в справочнике."
                   :to="{ path: '/lands', query: { tab: 'land-usage' } }"
-                  link-label="Использование участка"
+                  link-label="Справочники земель"
+                  add-placeholder="Использование участка"
+                  :add="async (n) => { form.actualUseStatus = (await quickAdd.landUsage(n)).name }"
                 />
               </span>
                 <UiSelect v-model="form.actualUseStatus" :options="[{ value: '', label: '—' }, ...(actualUseOptions).map((option) => ({ value: option.name, label: String(option.name) }))]" />
@@ -3069,9 +2971,11 @@ onMounted(() => void reloadAll())
                 <span class="lands-label-with-help">
                   Категория земель
                   <RefFieldHelp
-                    text="Нет нужной категории? Добавьте ее в"
-                    :to="{ path: '/lands', query: { tab: 'land-refs' } }"
+                    text="Нет нужной категории земель? Добавьте её здесь или в справочнике."
+                    :to="{ path: '/lands', query: { tab: 'land-categories' } }"
                     link-label="Справочники земель"
+                    add-placeholder="Категория земель"
+                    :add="async (n) => { form.landCategory = (await quickAdd.landCategory(n)).name }"
                   />
                 </span>
                 <UiSelect v-model="form.landCategory" :options="[{ value: '', label: '—' }, ...(landCategories).map((category) => ({ value: category.name, label: String(category.name) }))]" />
@@ -3082,9 +2986,11 @@ onMounted(() => void reloadAll())
                 <span class="lands-label-with-help">
                   Тип земли
                   <RefFieldHelp
-                    text="Нет нужного типа? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'land-refs' } }"
+                    text="Нет нужного типа земли? Добавьте его здесь или в справочнике."
+                    :to="{ path: '/lands', query: { tab: 'land-types' } }"
                     link-label="Справочники земель"
+                    add-placeholder="Тип земли"
+                    :add="async (n) => { form.landTypeId = (await quickAdd.landType(n)).id }"
                   />
                 </span>
                 <UiSelect v-model="form.landTypeId" :options="[{ value: '', label: '— Не указан —' }, ...(landTypes).map((type) => ({ value: type.id, label: String(type.name) }))]" />
@@ -3106,7 +3012,16 @@ onMounted(() => void reloadAll())
             </div>
             <div class="lands-form-grid">
               <label class="lands-field">
-                <span>Вид разрешенного использования (документы)</span>
+                <span class="lands-label-with-help">
+                  Вид разрешенного использования (документы)
+                  <RefFieldHelp
+                    text="Нет нужного значения? Добавьте его здесь или в справочнике (список общий с видами прав)."
+                    :to="{ path: '/lands', query: { tab: 'right-types' } }"
+                    link-label="Справочники прав"
+                    add-placeholder="Новое значение"
+                    :add="async (n) => { form.permittedUseDocs = (await quickAdd.rightType(n)).name }"
+                  />
+                </span>
                 <UiSelect v-model="form.permittedUseDocs" :options="[{ value: '', label: '—' }, ...(landRightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
               </label>
               <label class="lands-field">

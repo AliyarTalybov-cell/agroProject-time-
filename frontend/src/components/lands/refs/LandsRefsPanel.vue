@@ -3,7 +3,7 @@
  * Вкладки справочников раздела «Земли» (Настройки → Справочники).
  * Списки — в landRefsStore (их же использует реестр участков), правка — здесь.
  */
-import { computed, ref, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import RefList from '@/components/ui/RefList.vue'
 import FormField from '@/components/ui/layout/FormField.vue'
@@ -15,8 +15,11 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import LandsStockRefList from '@/components/lands/LandsStockRefList.vue'
 import { askConfirm } from '@/composables/useConfirm'
 import { isSupabaseConfigured } from '@/lib/supabase'
+import { useAuth } from '@/stores/auth'
+import { addPosition, deletePosition, loadPositions, type PositionRow } from '@/lib/employeesSupabase'
 import {
   addCropByLabel,
+  setCropIsGrain,
   addLandActualUseOption,
   addLandCategory,
   addLandType,
@@ -103,11 +106,16 @@ import {
   storageLocationTypeRefs,
   storageRefsTab,
 } from './landRefsStore'
+import { codeFromName, uniqueConditionCode } from './refQuickAdd'
 import { errorText, useRefCrud } from './useRefCrud'
 
-defineProps<{
-  tab: 'land-refs' | 'rights-refs' | 'crops-refs' | 'melioration-refs' | 'equipment-refs' | 'field-refs' | 'crop-rotation-refs' | 'storage-refs'
+const props = defineProps<{
+  tab: 'land-refs' | 'rights-refs' | 'crops-refs' | 'melioration-refs' | 'equipment-refs' | 'field-refs' | 'crop-rotation-refs' | 'storage-refs' | 'staff-refs'
 }>()
+
+const auth = useAuth()
+/** Удалять значения справочников может только руководитель — так же решает база. */
+const isManager = computed(() => auth.userRole.value === 'manager')
 
 const busy = ref(false)
 const error = ref<string | null>(null)
@@ -159,6 +167,21 @@ const crop = useRefCrud<CropRow>(
   },
   state,
 )
+
+/** Культура для склада: только зерновые принимаются на хранение. */
+async function toggleGrain(row: CropRow, value: boolean) {
+  if (!isSupabaseConfigured()) return
+  busy.value = true
+  error.value = null
+  try {
+    await setCropIsGrain(row.id, value)
+    crops.value = crops.value.map((c) => (c.id === row.id ? { ...c, is_grain: value } : c))
+  } catch (e) {
+    error.value = errorText(e, 'Не удалось изменить отметку «Зерновая»')
+  } finally {
+    busy.value = false
+  }
+}
 
 // Права
 const ownershipForm = simple(landRightOwnershipForms, 'Новое название формы собственности', 'форму собственности', {
@@ -224,25 +247,7 @@ const storageStatus = simple(storageLocationStatusRefs, 'Новое назван
   remove: deleteStorageLocationStatus,
 })
 
-// Техника: у типа нужен латинский код, у состояния — уникальный код
-function codeFromName(value: string): string {
-  const map: Record<string, string> = {
-    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y',
-    к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f',
-    х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
-  }
-  const translit = value.trim().toLowerCase().split('').map((ch) => map[ch] ?? ch).join('')
-  return translit.replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '')
-}
-
-function uniqueConditionCode(name: string): string {
-  const base = codeFromName(name) || `condition-${Date.now()}`
-  const used = new Set(equipmentConditionRefs.value.map((x) => x.code))
-  if (!used.has(base)) return base
-  let idx = 2
-  while (used.has(`${base}-${idx}`)) idx += 1
-  return `${base}-${idx}`
-}
+// Техника: у типа нужен латинский код, у состояния — уникальный код (refQuickAdd)
 
 const equipmentType = simple(equipmentTypeRefs, 'Новое название типа техники', 'тип техники', {
   add: (name) => addEquipmentTypeRef({ code: codeFromName(name) || `type-${Date.now()}`, name }),
@@ -269,6 +274,33 @@ const DEFAULT_EQUIPMENT_CONDITIONS: EquipmentConditionRefRow[] = [
 ]
 const equipmentConditionRows = computed(() =>
   (equipmentConditionRefs.value.length ? equipmentConditionRefs.value : DEFAULT_EQUIPMENT_CONDITIONS).map((r) => ({ ...r, id: r.code })),
+)
+
+// Сотрудники: должности. Название должности записано в карточках сотрудников
+// текстом, поэтому переименование не даём — оно разошлось бы с карточками.
+const positions = ref<PositionRow[]>([])
+const position = useRefCrud<PositionRow>(
+  {
+    items: positions,
+    promptTitle: 'Новое название должности',
+    errors: { add: 'добавить должность', update: 'обновить должность', remove: 'удалить должность' },
+    create: addPosition,
+    update: async () => {},
+    remove: (row) => deletePosition(row.id),
+  },
+  state,
+)
+watch(
+  () => props.tab,
+  async (tab) => {
+    if (tab !== 'staff-refs' || !isSupabaseConfigured()) return
+    try {
+      positions.value = await loadPositions()
+    } catch (e) {
+      error.value = errorText(e, 'Не удалось загрузить должности')
+    }
+  },
+  { immediate: true },
 )
 
 // Правообладатели: своя форма с реквизитами
@@ -343,6 +375,7 @@ async function removeHolder(row: LandRightHolderRow) {
       </Tabs>
       <RefList
         v-if="landRefsTab === 'land-types'"
+        :can-remove="isManager"
         v-model="landType.draft.value"
         title="Типы земли"
         :items="landTypes"
@@ -356,6 +389,7 @@ async function removeHolder(row: LandRightHolderRow) {
       />
       <RefList
         v-else-if="landRefsTab === 'land-categories'"
+        :can-remove="isManager"
         v-model="landCategory.draft.value"
         title="Категории земли"
         :items="landCategories"
@@ -368,6 +402,7 @@ async function removeHolder(row: LandRightHolderRow) {
         @remove="landCategory.remove"
       />
       <RefList
+        :can-remove="isManager"
         v-else
         v-model="landUsage.draft.value"
         title="Использование участка"
@@ -384,16 +419,25 @@ async function removeHolder(row: LandRightHolderRow) {
 
     <RefList
       v-else-if="tab === 'crops-refs'"
+      :can-remove="isManager"
       v-model="crop.draft.value"
       title="Справочники СХ культур"
       :items="crops"
       placeholder="Например: Пшеница"
       :busy="busy"
       empty-text="Пока нет культур."
+      hint="Отметка «Зерновая» нужна, чтобы культуру можно было принять на склад и вести по ней остатки."
       @add="crop.add"
       @edit="crop.edit"
       @remove="crop.remove"
-    />
+    >
+      <template #actions="{ item }">
+        <label class="flex shrink-0 cursor-pointer items-center gap-2 pr-1 text-xs text-muted-foreground">
+          <Checkbox :model-value="Boolean(item.is_grain)" :disabled="busy" @update:model-value="(v) => toggleGrain(item, v === true)" />
+          Зерновая
+        </label>
+      </template>
+    </RefList>
 
     <template v-else-if="tab === 'melioration-refs'">
       <Tabs :model-value="meliorationRefsTab" class="mb-4">
@@ -405,6 +449,7 @@ async function removeHolder(row: LandRightHolderRow) {
       </Tabs>
       <RefList
         v-if="meliorationRefsTab === 'types'"
+        :can-remove="isManager"
         v-model="meliorationType.draft.value"
         title="Типы мелиорации"
         :items="landMeliorationTypes"
@@ -418,6 +463,7 @@ async function removeHolder(row: LandRightHolderRow) {
       />
       <RefList
         v-else-if="meliorationRefsTab === 'subtypes'"
+        :can-remove="isManager"
         v-model="meliorationSubtype.draft.value"
         title="Виды мелиорации"
         :items="landMeliorationSubtypes"
@@ -430,6 +476,7 @@ async function removeHolder(row: LandRightHolderRow) {
         @remove="meliorationSubtype.remove"
       />
       <RefList
+        :can-remove="isManager"
         v-else
         v-model="meliorationEventType.draft.value"
         title="Типы мероприятий"
@@ -453,6 +500,7 @@ async function removeHolder(row: LandRightHolderRow) {
       </Tabs>
       <RefList
         v-if="equipmentRefsTab === 'types'"
+        :can-remove="isManager"
         v-model="equipmentType.draft.value"
         title="Тип техники"
         :items="equipmentTypeRefs"
@@ -465,6 +513,7 @@ async function removeHolder(row: LandRightHolderRow) {
         @remove="equipmentType.remove"
       />
       <RefList
+        :can-remove="isManager"
         v-else
         v-model="equipmentCondition.draft.value"
         title="Состояние техники"
@@ -480,6 +529,7 @@ async function removeHolder(row: LandRightHolderRow) {
 
     <template v-else-if="tab === 'field-refs'">
       <RefList
+        :can-remove="isManager"
         v-model="municipality.draft.value"
         title="Муниципальные образования"
         :items="fieldMunicipalityRefs"
@@ -495,6 +545,7 @@ async function removeHolder(row: LandRightHolderRow) {
 
     <template v-else-if="tab === 'crop-rotation-refs'">
       <RefList
+        :can-remove="isManager"
         v-model="cropRotationType.draft.value"
         title="Типы севооборота"
         :items="cropRotationTypeRefs"
@@ -520,6 +571,7 @@ async function removeHolder(row: LandRightHolderRow) {
       </Tabs>
       <RefList
         v-if="storageRefsTab === 'types'"
+        :can-remove="isManager"
         v-model="storageType.draft.value"
         title="Типы мест хранения"
         :items="storageLocationTypeRefs"
@@ -533,6 +585,7 @@ async function removeHolder(row: LandRightHolderRow) {
       />
       <RefList
         v-else-if="storageRefsTab === 'statuses'"
+        :can-remove="isManager"
         v-model="storageStatus.draft.value"
         title="Статусы мест хранения"
         hint="Статус с признаком «не используется» визуально выделяет неактивные места в реестре."
@@ -575,7 +628,7 @@ async function removeHolder(row: LandRightHolderRow) {
       />
     </template>
 
-    <template v-else>
+    <template v-else-if="tab === 'rights-refs'">
       <Tabs :model-value="rightsRefsTab" class="mb-4">
         <TabsList class="max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="ownership-forms" @click="rightsRefsTab = 'ownership-forms'">Формы собственности</TabsTrigger>
@@ -587,6 +640,7 @@ async function removeHolder(row: LandRightHolderRow) {
       </Tabs>
       <RefList
         v-if="rightsRefsTab === 'ownership-forms'"
+        :can-remove="isManager"
         v-model="ownershipForm.draft.value"
         title="Формы собственности"
         :items="landRightOwnershipForms"
@@ -599,6 +653,7 @@ async function removeHolder(row: LandRightHolderRow) {
       />
       <RefList
         v-else-if="rightsRefsTab === 'right-types'"
+        :can-remove="isManager"
         v-model="rightType.draft.value"
         title="Виды прав"
         :items="landRightTypes"
@@ -611,6 +666,7 @@ async function removeHolder(row: LandRightHolderRow) {
       />
       <RefList
         v-else-if="rightsRefsTab === 'document-types'"
+        :can-remove="isManager"
         v-model="documentType.draft.value"
         title="Типы подтверждающих документов"
         :items="landRightDocumentTypes"
@@ -623,6 +679,7 @@ async function removeHolder(row: LandRightHolderRow) {
       />
       <RefList
         v-else-if="rightsRefsTab === 'holder-types'"
+        :can-remove="isManager"
         v-model="holderType.draft.value"
         title="Виды правообладания"
         :items="landRightHolderTypes"
@@ -670,13 +727,30 @@ async function removeHolder(row: LandRightHolderRow) {
             <Button variant="ghost" size="icon-sm" type="button" class="shrink-0 text-muted-foreground" :aria-label="`Изменить «${row.name}»`" @click="editHolder(row)">
               <PencilIcon />
             </Button>
-            <Button variant="ghost" size="icon-sm" type="button" class="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :aria-label="`Удалить «${row.name}»`" :disabled="busy" @click="removeHolder(row)">
+            <Button v-if="isManager" variant="ghost" size="icon-sm" type="button" class="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :aria-label="`Удалить «${row.name}»`" :disabled="busy" @click="removeHolder(row)">
               <Trash2Icon />
             </Button>
           </li>
         </ul>
         <p v-else class="rounded-xl border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">Правообладателей пока нет.</p>
       </section>
+    </template>
+
+    <template v-else-if="tab === 'staff-refs'">
+      <RefList
+        v-model="position.draft.value"
+        title="Должности"
+        hint="Выбираются в карточке сотрудника и в профиле. Переименовать должность нельзя — добавьте новую и удалите старую."
+        :items="positions"
+        :get-label="(row) => row.name"
+        placeholder="Например: Агроном-семеновод"
+        :busy="busy"
+        :can-remove="isManager"
+        :can-edit="false"
+        empty-text="Пока нет должностей."
+        @add="position.add"
+        @remove="position.remove"
+      />
     </template>
   </div>
 </template>

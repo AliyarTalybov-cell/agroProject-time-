@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { Input } from '@/components/ui/shadcn/input'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -98,7 +99,9 @@ async function save() {
       <UiSelect block v-model="form.source" :options="[...(sources).map((p) => ({ value: p.key, label: `${p.label} · ${formatTons(p.tons)}` }))]" placeholder="Выберите партию в ячейке" class="ui-form-select" />
     </div>
     <div class="ui-form-field">
-      <label class="ui-form-label">Куда <span class="text-destructive" aria-hidden="true">*</span></label>
+      <label class="ui-form-label ui-form-label--with-help">Куда <span class="text-destructive" aria-hidden="true">*</span>
+        <RefFieldHelp text="Нет нужной ячейки? Ячейки создаются в карточке склада, сам склад — в «Местах хранения»." :to="{ path: '/warehouses' }" link-label="Склады" />
+      </label>
       <UiSelect block v-model="form.toCellId" :options="[...(targets).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" placeholder="Выберите ячейку" class="ui-form-select" />
     </div>
     <div class="ui-form-row ui-form-row--two">

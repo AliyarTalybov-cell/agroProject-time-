@@ -3,6 +3,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/shadcn/toggle-grou
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
+import { quickAdd } from '@/components/lands/refs/refQuickAdd'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { FileIcon, XIcon } from '@lucide/vue'
@@ -70,7 +71,14 @@ defineEmits<{
       </div>
       <div v-if="form.holderMode === 'reference'" class="lands-form-grid">
         <label class="lands-field">
-          <span>Правообладатель из справочника</span>
+          <span class="lands-label-with-help">
+            Правообладатель из справочника
+            <RefFieldHelp
+              text="Нет нужного правообладателя? Добавьте его в справочник с реквизитами (ИНН, ОГРН) или заполните поля ниже вручную."
+              :to="{ path: '/lands', query: { tab: 'holders' } }"
+              link-label="Справочник правообладателей"
+            />
+          </span>
           <UiSelect v-model="form.holderRefId" :options="[{ value: '', label: '— Выберите правообладателя —' }, ...(holders).map((holder) => ({ value: holder.id, label: `${holder.name} · ИНН: ${holder.inn || '—'}` }))]" />
         </label>
         <div />
@@ -82,7 +90,16 @@ defineEmits<{
           <Input v-model.trim="form.holderName" type="text" placeholder="СПК «Урожайный»" />
         </label>
         <label class="lands-field">
-          <span>Вид правообладания</span>
+          <span class="lands-label-with-help">
+            Вид правообладания
+            <RefFieldHelp
+              text="Нет нужного вида правообладания? Добавьте его здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'holder-types' } }"
+              link-label="Справочники прав"
+              add-placeholder="Вид правообладания"
+              :add="async (n) => { form.holderTypeId = (await quickAdd.holderType(n)).id }"
+            />
+          </span>
           <UiSelect v-model="form.holderTypeId" :options="[{ value: '', label: '—' }, ...(holderTypes).map((row) => ({ value: row.id, label: String(row.name) }))]" :disabled="form.holderMode === 'reference'" />
         </label>
       </div>
@@ -112,9 +129,11 @@ defineEmits<{
           <span class="lands-label-with-help">
             Форма собственности <span class="lands-req" aria-hidden="true">*</span>
             <RefFieldHelp
-              text="Нет нужной формы собственности? Добавьте ее в"
-              :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
+              text="Нет нужной формы собственности? Добавьте её здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'ownership-forms' } }"
               link-label="Справочники прав"
+              add-placeholder="Форма собственности"
+              :add="async (n) => { form.ownershipForm = (await quickAdd.ownershipForm(n)).name }"
             />
           </span>
           <UiSelect v-model="form.ownershipForm" :options="[{ value: '', label: '— Выберите форму собственности —' }, ...(ownershipForms).map((row) => ({ value: row.name, label: String(row.name) }))]" />
@@ -125,9 +144,11 @@ defineEmits<{
           <span class="lands-label-with-help">
             Вид права <span class="lands-req" aria-hidden="true">*</span>
             <RefFieldHelp
-              text="Нет нужного вида права? Добавьте его в"
-              :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
+              text="Нет нужного вида права? Добавьте его здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'right-types' } }"
               link-label="Справочники прав"
+              add-placeholder="Вид права"
+              :add="async (n) => { form.rightType = (await quickAdd.rightType(n)).name }"
             />
           </span>
           <UiSelect v-model="form.rightType" :options="[{ value: '', label: '— Выберите вид права —' }, ...(rightTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
@@ -136,9 +157,11 @@ defineEmits<{
           <span class="lands-label-with-help">
             Тип подтверждающего документа <span class="lands-req" aria-hidden="true">*</span>
             <RefFieldHelp
-              text="Нет нужного типа документа? Добавьте его в"
-              :to="{ path: '/lands', query: { tab: 'rights-refs' } }"
+              text="Нет нужного типа документа? Добавьте его здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'document-types' } }"
               link-label="Справочники прав"
+              add-placeholder="Тип документа"
+              :add="async (n) => { form.documentType = (await quickAdd.documentType(n)).name }"
             />
           </span>
           <UiSelect v-model="form.documentType" :options="[{ value: '', label: '— Выберите тип документа —' }, ...(documentTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />

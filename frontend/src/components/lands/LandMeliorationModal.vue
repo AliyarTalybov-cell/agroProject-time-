@@ -2,6 +2,7 @@
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
+import { quickAdd } from '@/components/lands/refs/refQuickAdd'
 import { Input } from '@/components/ui/shadcn/input'
 import UiDatePicker from '@/components/ui/UiDatePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -45,16 +46,21 @@ defineEmits<{
     <div class="lands-modal-body">
       <div class="lands-form-grid">
         <label class="lands-field">
-          <span>№ поля ЕФИС ЗСН</span>
+          <span class="lands-label-with-help">
+            № поля ЕФИС ЗСН
+            <RefFieldHelp text="Нет нужного поля? Создайте его в разделе «Поля и культуры»." :to="{ path: '/fields' }" link-label="Поля и культуры" />
+          </span>
           <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '—' }, ...(fieldOptions).map((field) => ({ value: field.id, label: String(fieldLabel(field.id)) }))]" />
         </label>
         <label v-if="tab === 'systems'" class="lands-field">
           <span class="lands-label-with-help">
             Тип мелиорации
             <RefFieldHelp
-              text="Нет нужного типа мелиорации? Добавьте его в"
-              :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
+              text="Нет нужного типа мелиорации? Добавьте его здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'melioration-types' } }"
               link-label="Справочники мелиорации"
+              add-placeholder="Тип мелиорации"
+              :add="async (n) => { form.meliorationType = (await quickAdd.meliorationType(n)).name }"
             />
           </span>
           <UiSelect v-model="form.meliorationType" :options="[{ value: '', label: '—' }, ...(types).map((row) => ({ value: row.name, label: String(row.name) }))]" />
@@ -67,9 +73,11 @@ defineEmits<{
           <span class="lands-label-with-help">
             Тип мероприятия
             <RefFieldHelp
-              text="Нет нужного типа мероприятия? Добавьте его в"
-              :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
-              link-label="Типы мероприятий"
+              text="Нет нужного типа мероприятия? Добавьте его здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'melioration-event-types' } }"
+              link-label="Справочники мелиорации"
+              add-placeholder="Тип мероприятия"
+              :add="async (n) => { form.eventType = (await quickAdd.meliorationEventType(n)).name }"
             />
           </span>
           <UiSelect v-model="form.eventType" :options="[{ value: '', label: '—' }, ...(eventTypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />
@@ -80,9 +88,11 @@ defineEmits<{
           <span class="lands-label-with-help">
             Вид мелиорации
             <RefFieldHelp
-              text="Нет нужного вида мелиорации? Добавьте его в"
-              :to="{ path: '/lands', query: { tab: 'melioration-refs' } }"
+              text="Нет нужного вида мелиорации? Добавьте его здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'melioration-subtypes' } }"
               link-label="Справочники мелиорации"
+              add-placeholder="Вид мелиорации"
+              :add="async (n) => { form.meliorationSubtype = (await quickAdd.meliorationSubtype(n)).name }"
             />
           </span>
           <UiSelect v-model="form.meliorationSubtype" :options="[{ value: '', label: '—' }, ...(subtypes).map((row) => ({ value: row.name, label: String(row.name) }))]" />

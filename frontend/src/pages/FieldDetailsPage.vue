@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { addCropByLabel as qaAddCrop, addLandType as qaAddLandType } from '@/lib/landTypesAndCrops'
+import { addFieldMunicipalityRef as qaAddMunicipality } from '@/lib/fieldsSupabase'
 import { askConfirm } from '@/composables/useConfirm'
 import { Card } from '@/components/ui/shadcn/card'
 import UiPagination from '@/components/ui/UiPagination.vue'
@@ -630,6 +633,17 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
   if (!t || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-/i.test(t)) return fallback
   return t
 }
+
+// Подсказки «?» в форме поля: недостающее значение добавляется в справочник и сразу выбирается.
+async function quickAddLandType(name: string) {
+  editForm.value.land_type = (await findOrCreate(landTypes, name, (r) => r.name, qaAddLandType)).name
+}
+async function quickAddCrop(name: string) {
+  editForm.value.crop_key = (await findOrCreate(crops, name, (r) => r.label, qaAddCrop)).key
+}
+async function quickAddMunicipality(name: string) {
+  editForm.value.municipality = (await findOrCreate(fieldMunicipalityRefs, name, (r) => r.name, (n) => qaAddMunicipality({ name: n }))).name
+}
 </script>
 
 <template>
@@ -889,9 +903,11 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
                 <span class="field-details-edit-label field-details-edit-label--with-help">
                   Муниципальное образование
                   <RefFieldHelp
-                    text="Нет нужного муниципального образования? Добавьте его в"
+                    text="Нет нужного муниципального образования? Добавьте его здесь или в справочнике."
                     :to="{ path: '/lands', query: { tab: 'field-refs' } }"
                     link-label="Справочники полей"
+                    add-placeholder="Муниципальное образование"
+                    :add="quickAddMunicipality"
                   />
                 </span>
                 <UiSelect v-model="editForm.municipality" :options="[{ value: '', label: '—' }, ...(fieldMunicipalityRefs).map((row) => ({ value: row.name, label: String(row.name) }))]" class="field-details-edit-select" />
@@ -908,9 +924,11 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
                 <span class="field-details-edit-label field-details-edit-label--with-help">
                   Тип земли
                   <RefFieldHelp
-                    text="Нет нужного типа земли? Добавьте его в"
-                    :to="{ path: '/lands', query: { tab: 'land-refs' } }"
+                    text="Нет нужного типа земли? Добавьте его здесь или в справочнике."
+                    :to="{ path: '/lands', query: { tab: 'land-types' } }"
                     link-label="Справочники земель"
+                    add-placeholder="Тип земли"
+                    :add="quickAddLandType"
                   />
                 </span>
                 <UiSelect
@@ -926,9 +944,11 @@ function photoTitle(title: string | null | undefined, fallback: string): string 
                 <span class="field-details-edit-label field-details-edit-label--with-help">
                   Культура
                   <RefFieldHelp
-                    text="Нет нужной культуры? Добавьте ее в"
+                    text="Нет нужной культуры? Добавьте её здесь или в справочнике."
                     :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
                     link-label="Справочники СХ культур"
+                    add-placeholder="Культура"
+                    :add="quickAddCrop"
                   />
                 </span>
                 <UiSelect v-model="editForm.crop_key" :options="[...(crops).map((c) => ({ value: c.key, label: String(c.label) }))]" class="field-details-edit-select" />

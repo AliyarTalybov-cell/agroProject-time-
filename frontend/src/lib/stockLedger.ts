@@ -361,6 +361,20 @@ export async function saveSimpleRef(table: SimpleRefTable, id: string | null, la
   if (error) throw error
 }
 
+/** Добавить значение и вернуть строку — чтобы сразу выбрать его в форме. */
+export async function addSimpleRef(table: SimpleRefTable, label: string): Promise<SimpleRefRow> {
+  const labelCol = table === 'stock_writeoff_reasons' ? 'name' : 'label'
+  const idCol = table === 'stock_writeoff_reasons' ? 'id' : 'key'
+  const { data, error } = await db()
+    .from(table)
+    .insert({ [labelCol]: label.trim() })
+    .select(`${idCol}, ${labelCol}, sort_order, active`)
+    .single()
+  if (error) throw error
+  const r = data as Record<string, unknown>
+  return { id: String(r[idCol]), label: String(r[labelCol]), sort_order: Number(r.sort_order ?? 100), active: r.active !== false }
+}
+
 export async function setSimpleRefActive(table: SimpleRefTable, id: string, active: boolean): Promise<void> {
   const idCol = table === 'stock_writeoff_reasons' ? 'id' : 'key'
   const { error } = await db().from(table).update({ active }).eq(idCol, id)
@@ -764,6 +778,11 @@ export async function saveCounterparty(id: string | null, input: CounterpartyInp
   const { data, error } = await q
   if (error) throw error
   return data as Counterparty
+}
+
+/** Контрагент по одному названию — из окна документа; реквизиты дописываются позже. */
+export function addCounterpartyByName(name: string, kind: CounterpartyKind): Promise<Counterparty> {
+  return saveCounterparty(null, { name, kind, inn: null, kpp: null, address: null, phone: null, email: null, contact_person: null, comment: null })
 }
 
 export async function deleteCounterparty(id: string): Promise<void> {

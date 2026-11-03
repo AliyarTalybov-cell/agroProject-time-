@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { addSimpleRef } from '@/lib/stockLedger'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { Textarea } from '@/components/ui/shadcn/textarea'
@@ -170,6 +172,11 @@ async function saveEdit() {
     editSaving.value = false
   }
 }
+
+// Подсказка «?» у назначения: значение добавляется в справочник и сразу выбирается.
+async function quickAddPurpose(name: string) {
+  edit.value.purpose = (await findOrCreate(purposes, name, (p) => p.label, (n) => addSimpleRef('stock_batch_purposes', n))).id as StockPurpose
+}
 </script>
 
 <template>
@@ -303,7 +310,13 @@ async function saveEdit() {
             </FormField>
             <FormField label="Назначение">
               <template #label-actions>
-                <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
+                <RefFieldHelp
+                  text="Нет нужного назначения? Добавьте его здесь или в справочнике."
+                  :to="{ path: '/lands', query: { tab: 'storage-purposes' } }"
+                  link-label="Справочники хранения"
+                  add-placeholder="Назначение"
+                  :add="quickAddPurpose"
+                />
               </template>
               <UiSelect v-model="edit.purpose" block aria-label="Назначение" :options="purposes.map((p) => ({ value: p.id, label: String(p.label), disabled: !p.active && p.id !== edit.purpose }))" />
             </FormField>

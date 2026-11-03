@@ -11,6 +11,9 @@ import FormField from '@/components/ui/layout/FormField.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiConfirmModal from '@/components/ui/UiConfirmModal.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
+import { addPosition, loadPositions, type PositionRow } from '@/lib/employeesSupabase'
+import { findOrCreate } from '@/lib/refFindOrCreate'
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -23,14 +26,19 @@ import { compressImageFile } from '@/lib/imageCompress'
 
 const PROFILE_STORAGE_KEY = 'agro:profile'
 
-const POSITIONS = [
-  'Главный агроном',
-  'Агроном',
-  'Инженер',
-  'Механик',
-  'Диспетчер',
-  'Специалист',
-]
+/** Должности — из справочника «Справочники сотрудников». */
+const positions = ref<PositionRow[]>([])
+const positionOptions = computed(() => {
+  const names = positions.value.map((p) => p.name)
+  const current = profileForm.value.position?.trim()
+  // Должность, которой уже нет в справочнике, всё равно показываем — иначе поле опустеет.
+  if (current && !names.includes(current)) names.unshift(current)
+  return names.map((n) => ({ value: n, label: n }))
+})
+const isManager = computed(() => auth.userRole.value === 'manager')
+async function quickAddPosition(name: string) {
+  profileForm.value.position = (await findOrCreate(positions, name, (p) => p.name, addPosition)).name
+}
 
 const auth = useAuth()
 const router = useRouter()
@@ -97,7 +105,7 @@ function applyProfileToForm(p: ProfileRow) {
   profileForm.value.lastName = parts[1] || ''
   profileForm.value.patronymic = parts[2] || ''
   profileForm.value.phone = p.phone ?? ''
-  profileForm.value.position = p.position || POSITIONS[0]
+  profileForm.value.position = p.position || ''
   profileForm.value.additionalInfo = p.additional_info ?? ''
 }
 
@@ -219,7 +227,7 @@ async function loadProfile() {
       profileForm.value.lastName = parts[1] || ''
       profileForm.value.patronymic = parts[2] || ''
       profileForm.value.phone = (user.user_metadata?.phone as string) || ''
-      profileForm.value.position = (user.user_metadata?.position as string) || POSITIONS[0]
+      profileForm.value.position = (user.user_metadata?.position as string) || ''
       profileForm.value.additionalInfo = (user.user_metadata?.additional_info as string) || ''
     }
     return
@@ -232,12 +240,20 @@ async function loadProfile() {
     profileForm.value.lastName = parts[1] || ''
     profileForm.value.patronymic = parts[2] || ''
     profileForm.value.phone = (user.user_metadata?.phone as string) || ''
-    profileForm.value.position = (user.user_metadata?.position as string) || POSITIONS[0]
+    profileForm.value.position = (user.user_metadata?.position as string) || ''
     profileForm.value.additionalInfo = (user.user_metadata?.additional_info as string) || ''
   }
 }
 
 onMounted(loadProfile)
+onMounted(async () => {
+  if (!isSupabaseConfigured()) return
+  try {
+    positions.value = await loadPositions()
+  } catch {
+    // Без справочника поле покажет только текущую должность.
+  }
+})
 watch(() => auth.user.value?.id, (id) => { if (id) loadProfile() })
 
 onBeforeUnmount(() => {
@@ -603,7 +619,17 @@ async function confirmDeleteAccount() {
               <Input id="pf-patronymic" v-model="profileForm.patronymic" type="text" placeholder="Отчество" />
             </FormField>
             <FormField label="Должность" for="pf-position">
-              <UiSelect id="pf-position" v-model="profileForm.position" block :options="POSITIONS.map((p) => ({ value: p, label: String(p) }))" />
+              <template #label-help>
+                <RefFieldHelp
+                  v-if="isManager"
+                  text="Нет нужной должности? Впишите её — она появится в справочнике и выберется здесь."
+                  :to="{ path: '/lands', query: { tab: 'staff-refs' } }"
+                  link-label="Справочники сотрудников"
+                  add-placeholder="Название должности"
+                  :add="quickAddPosition"
+                />
+              </template>
+              <UiSelect id="pf-position" v-model="profileForm.position" block :options="positionOptions" placeholder="Выберите должность" />
             </FormField>
             <FormField label="Электронная почта" for="pf-email">
               <InputGroup>

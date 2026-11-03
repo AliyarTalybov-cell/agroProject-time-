@@ -13,6 +13,8 @@ export type CropRow = {
   key: string
   label: string
   base_moisture_percent: number
+  /** Зерновая: можно принять на склад. */
+  is_grain?: boolean
   sort_order: number
   created_at: string
 }
@@ -110,7 +112,7 @@ export async function loadCrops(): Promise<CropRow[]> {
   if (!supabase) return []
   const { data, error } = await supabase
     .from(CROPS_TABLE)
-    .select('id, key, label, base_moisture_percent, sort_order, created_at')
+    .select('id, key, label, base_moisture_percent, is_grain, sort_order, created_at')
     .order('sort_order', { ascending: true })
     .order('label', { ascending: true })
   if (error) throw error
@@ -141,6 +143,24 @@ export async function addCrop(key: string, label: string): Promise<CropRow> {
     .single()
   if (error) throw error
   return data as CropRow
+}
+
+/** Новая зерновая культура — сразу доступна для приёмки на склад. */
+export async function addGrainCropByLabel(label: string): Promise<CropRow> {
+  if (!supabase) throw new Error('Supabase не настроен')
+  const { data, error } = await supabase
+    .from(CROPS_TABLE)
+    .insert({ key: keyFromLabel(label), label: label.trim(), sort_order: 999, is_grain: true })
+    .select()
+    .single()
+  if (error) throw error
+  return data as CropRow
+}
+
+export async function setCropIsGrain(id: string, isGrain: boolean): Promise<void> {
+  if (!supabase) throw new Error('Supabase не настроен')
+  const { error } = await supabase.from(CROPS_TABLE).update({ is_grain: isGrain }).eq('id', id)
+  if (error) throw error
 }
 
 /** Добавить культуру по одному названию — ключ создаётся автоматически. */

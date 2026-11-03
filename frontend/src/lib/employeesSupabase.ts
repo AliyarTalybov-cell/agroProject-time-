@@ -157,6 +157,19 @@ export async function loadPositions(): Promise<PositionRow[]> {
   return (data ?? []) as PositionRow[]
 }
 
+export async function addPosition(name: string): Promise<PositionRow> {
+  if (!supabase) throw new Error('Supabase не настроен')
+  const { data, error } = await supabase.from('employee_positions').insert({ name: name.trim() }).select('id, name, sort_order').single()
+  if (error) throw error
+  return data as PositionRow
+}
+
+export async function deletePosition(id: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase не настроен')
+  const { error } = await supabase.from('employee_positions').delete().eq('id', id)
+  if (error) throw error
+}
+
 /**
  * Ошибка вызова функции сервера (admin-*-employee) — понятным текстом.
  * Причину отказа функция пишет в теле ответа ({ error }), supabase-js кладёт

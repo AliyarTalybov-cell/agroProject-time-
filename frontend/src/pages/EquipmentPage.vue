@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { codeFromName } from '@/components/lands/refs/refQuickAdd'
+import { addEquipmentConditionRef as qaAddCondition, addEquipmentTypeRef as qaAddType } from '@/lib/equipmentSupabase'
 import { askConfirm } from '@/composables/useConfirm'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
@@ -657,6 +660,30 @@ function formatIsoDate(value: string | null | undefined): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '')
   return m ? `${m[3]}.${m[2]}.${m[1]}` : value || '—'
 }
+
+// Подсказки «?» у типа и состояния: значение добавляется в справочник и сразу
+// выбирается. Пока справочник пуст, показываются встроенные значения — тогда
+// добавлять отсюда нельзя (новое значение заслонило бы встроенные), только в разделе.
+function uniqueCode(base: string, used: string[], prefix: string): string {
+  const root = base || `${prefix}-${Date.now()}`
+  if (!used.includes(root)) return root
+  let idx = 2
+  while (used.includes(`${root}-${idx}`)) idx += 1
+  return `${root}-${idx}`
+}
+async function quickAddEquipmentType(name: string) {
+  const row = await findOrCreate(equipmentTypeRefs, name, (r) => r.name, (n) =>
+    qaAddType({ code: uniqueCode(codeFromName(n), equipmentTypeRefs.value.map((r) => r.code), 'type'), name: n }),
+  )
+  form.value.equipment_type = row.code
+}
+async function quickAddCondition(name: string, target: 'equipment' | 'implement') {
+  const row = await findOrCreate(equipmentConditionRefs, name, (r) => r.name, (n) =>
+    qaAddCondition({ code: uniqueCode(codeFromName(n), equipmentConditionRefs.value.map((r) => r.code), 'condition'), name: n }),
+  )
+  if (target === 'equipment') form.value.condition = row.code as EquipmentCondition
+  else implementForm.value.condition = row.code as EquipmentCondition
+}
 </script>
 
 <template>
@@ -736,9 +763,11 @@ function formatIsoDate(value: string | null | undefined): string {
             <label class="equipment-label equipment-label--with-help" for="eq-type">
               <span>Тип техники</span>
               <RefFieldHelp
-                text="Нет нужного типа техники? Добавьте его в"
-                :to="{ path: '/lands', query: { tab: 'equipment-refs' } }"
+                text="Нет нужного типа техники? Добавьте его здесь или в справочнике."
+                :to="{ path: '/lands', query: { tab: 'equipment-types' } }"
                 link-label="Справочники техники"
+                add-placeholder="Тип техники"
+                :add="equipmentTypeRefs.length ? quickAddEquipmentType : undefined"
               />
             </label>
             <UiSelect v-model="form.equipment_type" :options="[...(equipmentTypeOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-type" class="equipment-input equipment-select" />
@@ -801,9 +830,11 @@ function formatIsoDate(value: string | null | undefined): string {
             <label class="equipment-label equipment-label--with-help" for="eq-condition">
               <span>Состояние</span>
               <RefFieldHelp
-                text="Нет нужного состояния? Добавьте его в"
-                :to="{ path: '/lands', query: { tab: 'equipment-refs' } }"
+                text="Нет нужного состояния? Добавьте его здесь или в справочнике."
+                :to="{ path: '/lands', query: { tab: 'equipment-conditions' } }"
                 link-label="Справочники техники"
+                add-placeholder="Состояние"
+                :add="equipmentConditionRefs.length ? (n: string) => quickAddCondition(n, 'equipment') : undefined"
               />
             </label>
             <UiSelect v-model="form.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="eq-condition" class="equipment-input equipment-select" />
@@ -1028,7 +1059,16 @@ function formatIsoDate(value: string | null | undefined): string {
             <Input id="impl-purpose" v-model="implementForm.purpose" type="text" class="equipment-input" placeholder="Например: Вспашка почвы" />
           </div>
           <div class="equipment-form-field">
-            <label class="equipment-label" for="impl-condition">Состояние</label>
+            <label class="equipment-label equipment-label--with-help" for="impl-condition">
+              <span>Состояние</span>
+              <RefFieldHelp
+                text="Нет нужного состояния? Добавьте его здесь или в справочнике."
+                :to="{ path: '/lands', query: { tab: 'equipment-conditions' } }"
+                link-label="Справочники техники"
+                add-placeholder="Состояние"
+                :add="equipmentConditionRefs.length ? (n: string) => quickAddCondition(n, 'implement') : undefined"
+              />
+            </label>
             <UiSelect v-model="implementForm.condition" :options="[...(conditionOptions).map((opt) => ({ value: opt.value, label: String(opt.label) }))]" id="impl-condition" class="equipment-input equipment-select" />
           </div>
           <div class="equipment-form-field equipment-form-field--full">

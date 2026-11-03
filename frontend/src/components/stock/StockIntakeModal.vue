@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { addCounterpartyByName, addSimpleRef } from '@/lib/stockLedger'
+import { addGrainCropByLabel } from '@/lib/landTypesAndCrops'
 import { Input } from '@/components/ui/shadcn/input'
 import UiDateTimePicker from '@/components/ui/UiDateTimePicker.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
@@ -186,6 +189,18 @@ async function save() {
 function num(v: number | null | undefined, digits = 2): string {
   return v == null ? '—' : v.toLocaleString('ru-RU', { maximumFractionDigits: digits })
 }
+
+// Подсказки «?»: недостающее значение добавляется в справочник и сразу выбирается.
+async function quickAddCrop(name: string) {
+  form.value.cropKey = (await findOrCreate(refs.crops, name, (c) => c.label, addGrainCropByLabel)).key
+}
+async function quickAddSupplier(name: string) {
+  const row = await findOrCreate(refs.counterparties, name, (c) => c.name, (n) => addCounterpartyByName(n, 'supplier'))
+  form.value.supplierId = row.id
+}
+async function quickAddPurpose(name: string) {
+  form.value.purpose = (await findOrCreate(refs.purposes, name, (p) => p.label, (n) => addSimpleRef('stock_batch_purposes', n))).id
+}
 </script>
 
 <template>
@@ -198,7 +213,9 @@ function num(v: number | null | undefined, digits = 2): string {
         <UiDateTimePicker v-model="form.docDate" />
       </div>
       <div class="ui-form-field">
-        <label class="ui-form-label">Куда (ячейка склада) <span class="text-destructive" aria-hidden="true">*</span></label>
+        <label class="ui-form-label ui-form-label--with-help">Куда (ячейка склада) <span class="text-destructive" aria-hidden="true">*</span>
+          <RefFieldHelp text="Нет нужной ячейки? Ячейки создаются в карточке склада, сам склад — в «Местах хранения»." :to="{ path: '/warehouses' }" link-label="Склады" />
+        </label>
         <UiSelect block v-model="form.cellId" :options="[...(cellsForLocation).map((c) => ({ value: c.id, label: `${c.label}${c.cropLabel ? ` · ${c.cropLabel}, ${formatTons(c.tons)}` : ' · пусто'}` }))]" class="ui-form-select" />
       </div>
     </div>
@@ -224,17 +241,31 @@ function num(v: number | null | undefined, digits = 2): string {
       <div class="ui-form-row ui-form-row--two">
         <div class="ui-form-field">
           <label class="ui-form-label ui-form-label--with-help">Культура <span class="text-destructive" aria-hidden="true">*</span>
-            <RefFieldHelp text="Нет нужной культуры? Добавьте её в" :to="{ path: '/lands', query: { tab: 'crops-refs' } }" link-label="Справочники СХ культур" />
+            <RefFieldHelp
+              text="Нет нужной культуры? Добавьте её здесь — она сразу станет зерновой и выберется в поле."
+              :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
+              link-label="Справочники СХ культур"
+              add-placeholder="Культура"
+              :add="quickAddCrop"
+            />
           </label>
           <UiSelect block v-model="form.cropKey" :options="[...(refs.crops.value).map((c) => ({ value: c.key, label: String(c.label) }))]" placeholder="Выберите культуру" class="ui-form-select" />
         </div>
         <div v-if="form.origin === 'field'" class="ui-form-field">
-          <label class="ui-form-label">Поле <span class="text-destructive" aria-hidden="true">*</span></label>
+          <label class="ui-form-label ui-form-label--with-help">Поле <span class="text-destructive" aria-hidden="true">*</span>
+            <RefFieldHelp text="Нет нужного поля? Создайте его в разделе «Поля и культуры»." :to="{ path: '/fields' }" link-label="Поля и культуры" />
+          </label>
           <UiSelect block v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
         </div>
         <div v-else class="ui-form-field">
           <label class="ui-form-label ui-form-label--with-help">Поставщик <span class="text-destructive" aria-hidden="true">*</span>
-            <RefFieldHelp text="Нет поставщика? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
+            <RefFieldHelp
+              text="Нет поставщика? Добавьте его по названию — реквизиты и договоры можно дописать позже в «Контрагентах»."
+              :to="{ path: '/grain/counterparties' }"
+              link-label="Контрагенты"
+              add-placeholder="Название поставщика"
+              :add="quickAddSupplier"
+            />
           </label>
           <UiSelect block v-model="form.supplierId" :options="[...(refs.suppliers.value).map((s) => ({ value: s.id, label: String(s.name) }))]" :placeholder="refs.suppliers.value.length ? 'Выберите поставщика' : 'Сначала добавьте поставщика в «Контрагентах»'" class="ui-form-select" />
         </div>
@@ -250,7 +281,13 @@ function num(v: number | null | undefined, digits = 2): string {
         </div>
         <div class="ui-form-field">
           <label class="ui-form-label ui-form-label--with-help">Назначение
-            <RefFieldHelp text="Нужно своё назначение? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-purposes' } }" link-label="Справочники хранения" />
+            <RefFieldHelp
+              text="Нет нужного назначения? Добавьте его здесь или в справочнике."
+              :to="{ path: '/lands', query: { tab: 'storage-purposes' } }"
+              link-label="Справочники хранения"
+              add-placeholder="Назначение"
+              :add="quickAddPurpose"
+            />
           </label>
           <UiSelect block v-model="form.purpose" :options="[...(refs.purposes.value).map((p) => ({ value: p.id, label: String(p.label) }))]" class="ui-form-select" />
         </div>

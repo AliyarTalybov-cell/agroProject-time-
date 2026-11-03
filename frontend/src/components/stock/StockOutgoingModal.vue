@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { addCounterpartyByName, addSimpleRef } from '@/lib/stockLedger'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { PlusIcon, XIcon } from '@lucide/vue'
@@ -142,6 +144,18 @@ async function save() {
     saving.value = false
   }
 }
+
+// Подсказки «?»: недостающее значение добавляется в справочник и сразу выбирается.
+async function quickAddBuyer(name: string) {
+  const row = await findOrCreate(refs.counterparties, name, (c) => c.name, (n) => addCounterpartyByName(n, 'buyer'))
+  form.value.counterpartyId = row.id
+}
+async function quickAddTarget(name: string) {
+  form.value.target = (await findOrCreate(refs.targets, name, (t) => t.label, (n) => addSimpleRef('stock_consumption_targets', n))).id
+}
+async function quickAddReason(name: string) {
+  form.value.reasonId = (await findOrCreate(refs.reasons, name, (r) => r.label, (n) => addSimpleRef('stock_writeoff_reasons', n))).id
+}
 </script>
 
 <template>
@@ -156,23 +170,43 @@ async function save() {
       </div>
       <div v-if="type === 'sale'" class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Покупатель <span class="text-destructive" aria-hidden="true">*</span>
-          <RefFieldHelp text="Нет покупателя? Добавьте его в" :to="{ path: '/grain/counterparties' }" link-label="Контрагенты" />
+          <RefFieldHelp
+            text="Нет покупателя? Добавьте его по названию — реквизиты и договоры можно дописать позже в «Контрагентах»."
+            :to="{ path: '/grain/counterparties' }"
+            link-label="Контрагенты"
+            add-placeholder="Название покупателя"
+            :add="quickAddBuyer"
+          />
         </label>
         <UiSelect block v-model="form.counterpartyId" :options="[...(refs.buyers.value).map((c) => ({ value: c.id, label: `${c.name}${c.inn ? ` · ИНН ${c.inn}` : ''}` }))]" :placeholder="refs.buyers.value.length ? 'Выберите покупателя' : 'Сначала добавьте покупателя в «Контрагентах»'" class="ui-form-select" />
       </div>
       <div v-else-if="type === 'seeding'" class="ui-form-field">
-        <label class="ui-form-label">Поле <span class="text-destructive" aria-hidden="true">*</span></label>
+        <label class="ui-form-label ui-form-label--with-help">Поле <span class="text-destructive" aria-hidden="true">*</span>
+          <RefFieldHelp text="Нет нужного поля? Создайте его в разделе «Поля и культуры»." :to="{ path: '/fields' }" link-label="Поля и культуры" />
+        </label>
         <UiSelect block v-model="form.fieldId" :options="[...(refs.fields.value).map((f) => ({ value: f.id, label: String(fieldOptionLabel(f)) }))]" placeholder="Выберите поле" class="ui-form-select" />
       </div>
       <div v-else-if="type === 'consumption'" class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Куда <span class="text-destructive" aria-hidden="true">*</span>
-          <RefFieldHelp text="Нужно другое направление? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-consumption-targets' } }" link-label="Справочники хранения" />
+          <RefFieldHelp
+            text="Нет нужного направления? Добавьте его здесь или в справочнике."
+            :to="{ path: '/lands', query: { tab: 'storage-consumption-targets' } }"
+            link-label="Справочники хранения"
+            add-placeholder="Направление"
+            :add="quickAddTarget"
+          />
         </label>
         <UiSelect block v-model="form.target" :options="[...(refs.targets.value).map((t) => ({ value: t.id, label: String(t.label) }))]" class="ui-form-select" />
       </div>
       <div v-else class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Причина <span class="text-destructive" aria-hidden="true">*</span>
-          <RefFieldHelp text="Нет нужной причины? Добавьте её в" :to="{ path: '/lands', query: { tab: 'storage-writeoff-reasons' } }" link-label="Справочники хранения" />
+          <RefFieldHelp
+            text="Нет нужной причины? Добавьте её здесь или в справочнике."
+            :to="{ path: '/lands', query: { tab: 'storage-writeoff-reasons' } }"
+            link-label="Справочники хранения"
+            add-placeholder="Причина списания"
+            :add="quickAddReason"
+          />
         </label>
         <UiSelect block v-model="form.reasonId" :options="[...(refs.reasons.value).map((r) => ({ value: r.id, label: String(r.label) }))]" placeholder="Выберите причину" class="ui-form-select" />
       </div>

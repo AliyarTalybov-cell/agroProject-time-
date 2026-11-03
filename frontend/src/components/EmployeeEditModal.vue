@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import UiSelect from '@/components/ui/UiSelect.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { computed, ref, watch } from 'vue'
 import { Trash2 } from '@lucide/vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -21,6 +22,8 @@ const props = defineProps<{
   open: boolean
   employee: EmployeeRow | null
   positions: PositionRow[]
+  /** Добавить должность в справочник (страница допишет её в общий список). */
+  addPosition: (name: string) => Promise<PositionRow>
 }>()
 
 const emit = defineEmits<{
@@ -209,7 +212,16 @@ watch(
           <Input id="eem-phone" v-model="form.phone" type="tel" placeholder="+7 (___) ___-__-__" />
         </div>
         <div class="grid gap-2">
-          <Label for="eem-pos">Должность</Label>
+          <Label for="eem-pos" class="inline-flex items-center gap-1.5">
+          Должность
+          <RefFieldHelp
+            text="Нет нужной должности? Впишите её — она появится в справочнике и выберется здесь."
+            :to="{ path: '/lands', query: { tab: 'staff-refs' } }"
+            link-label="Справочники сотрудников"
+            add-placeholder="Название должности"
+            :add="async (n: string) => { form.position = (await addPosition(n)).name }"
+          />
+        </Label>
           <UiSelect id="eem-pos" v-model="form.position" :options="positions.map((p) => ({ value: p.name, label: p.name }))" placeholder="Выберите должность" block />
         </div>
         <div class="grid gap-2">

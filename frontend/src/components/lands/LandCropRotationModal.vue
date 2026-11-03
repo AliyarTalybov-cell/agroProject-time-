@@ -17,6 +17,7 @@ import UiSelect from '@/components/ui/UiSelect.vue'
 // попадает в сборку одной копией, а не отдельной на каждый компонент.
 import './landsShared.css'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
+import { quickAdd } from '@/components/lands/refs/refQuickAdd'
 import type { CropRotationFieldOption, CropRotationForm } from '@/components/lands/types'
 import type { CropRow } from '@/lib/landTypesAndCrops'
 
@@ -49,7 +50,10 @@ function canSave(): boolean {
       <div class="lands-modal-body">
         <div class="lands-form-grid">
           <label class="lands-field">
-            <span>№ поля ЕФИС ЗСН</span>
+            <span class="lands-label-with-help">
+              № поля ЕФИС ЗСН
+              <RefFieldHelp text="В списке — поля этого участка. Нет нужного? Создайте поле в «Полях и культурах» и укажите в нём этот участок." :to="{ path: '/fields' }" link-label="Поля и культуры" />
+            </span>
             <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '— Выберите поле —' }, ...(assignedFields).map((field) => ({ value: field.id, label: `№${field.number} — ${field.name}` }))]" />
           </label>
           <label class="lands-field">
@@ -66,9 +70,11 @@ function canSave(): boolean {
             <span class="lands-label-with-help">
               Тип севооборота <span class="lands-req" aria-hidden="true">*</span>
               <RefFieldHelp
-                text="Нет нужного типа севооборота? Добавьте его в"
+                text="Нет нужного типа севооборота? Добавьте его здесь или в справочнике."
                 :to="{ path: '/lands', query: { tab: 'crop-rotation-refs' } }"
                 link-label="Справочники севооборота"
+                add-placeholder="Тип севооборота"
+                :add="async (n) => { form.rotationType = (await quickAdd.cropRotationType(n)).name }"
               />
             </span>
             <UiSelect v-model="form.rotationType" :options="[{ value: '', label: '— Выберите тип —' }, ...(cropRotationTypeOptions).map((type) => ({ value: type, label: String(type) }))]" />
@@ -78,9 +84,11 @@ function canSave(): boolean {
           <span class="lands-label-with-help">
             Сельскохозяйственная культура <span class="lands-req" aria-hidden="true">*</span>
             <RefFieldHelp
-              text="Нет нужной культуры? Добавьте ее в"
+              text="Нет нужной культуры? Добавьте её здесь или в справочнике."
               :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
               link-label="Справочники СХ культур"
+              add-placeholder="Культура"
+              :add="async (n) => { form.cropKey = (await quickAdd.crop(n)).key }"
             />
           </span>
           <UiSelect v-model="form.cropKey" :options="[{ value: '', label: '— Выберите культуру —' }, ...(crops).map((crop) => ({ value: crop.key, label: String(crop.label) }))]" />

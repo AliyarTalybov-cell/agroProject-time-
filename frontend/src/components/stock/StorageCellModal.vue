@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { addStorageLocationType as qaAddType } from '@/lib/storageRefsSupabase'
 import { Input } from '@/components/ui/shadcn/input'
 import UiSelect from '@/components/ui/UiSelect.vue'
 /** Ячейка склада. Тип — из справочника «Типы мест хранения» (силос, бункер, секция…). */
@@ -59,6 +61,11 @@ async function save() {
     saving.value = false
   }
 }
+
+// Подсказка «?» у типа: значение добавляется в справочник и сразу выбирается.
+async function quickAddType(name: string) {
+  form.value.typeId = (await findOrCreate(types, name, (r) => r.name, qaAddType)).id
+}
 </script>
 
 <template>
@@ -70,7 +77,13 @@ async function save() {
       </div>
       <div class="ui-form-field">
         <label class="ui-form-label ui-form-label--with-help">Тип <span class="text-destructive" aria-hidden="true">*</span>
-          <RefFieldHelp text="Нет нужного типа? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-types' } }" link-label="Справочники хранения" />
+          <RefFieldHelp
+            text="Нет нужного типа? Добавьте его здесь или в справочнике."
+            :to="{ path: '/lands', query: { tab: 'storage-types' } }"
+            link-label="Справочники хранения"
+            add-placeholder="Тип ячейки"
+            :add="quickAddType"
+          />
         </label>
         <UiSelect block v-model="form.typeId" :options="[...(types).map((t) => ({ value: t.id, label: String(t.name) }))]" placeholder="Выберите тип" v-if="!isMain" class="ui-form-select" />
         <input v-else class="ui-form-input" value="Основная" readonly tabindex="-1" />

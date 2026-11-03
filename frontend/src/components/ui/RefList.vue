@@ -8,7 +8,7 @@
  *
  * Своя подпись строки — слот `label` ({ item }), дополнительные поля строки
  * добавления (например, флажок) — слот `add-extra`, свои кнопки строки — слот
- * `actions` ({ item }). `canRemove: false` прячет удаление (нет прав).
+ * `actions` ({ item }). `canRemove: false` прячет удаление (нет прав), `canEdit: false` — переименование.
  */
 import { Button } from '@/components/ui/shadcn/button'
 import { Input } from '@/components/ui/shadcn/input'
@@ -26,8 +26,10 @@ const props = withDefaults(
     /** Ошибка списка (загрузки, сохранения). */
     error?: string | null
     canRemove?: boolean
+    /** false прячет переименование — когда название уже разошлось по записям. */
+    canEdit?: boolean
   }>(),
-  { title: undefined, hint: undefined, getLabel: undefined, placeholder: 'Новое значение', busy: false, emptyText: 'Пока пусто.', error: null, canRemove: true },
+  { title: undefined, hint: undefined, getLabel: undefined, placeholder: 'Новое значение', busy: false, emptyText: 'Пока пусто.', error: null, canRemove: true, canEdit: true },
 )
 
 const newValue = defineModel<string>({ default: '' })
@@ -68,7 +70,7 @@ function add() {
           <slot name="label" :item="item">{{ labelOf(item) }}</slot>
         </span>
         <slot name="actions" :item="item" />
-        <Button variant="ghost" size="icon-sm" type="button" class="shrink-0 text-muted-foreground" :aria-label="`Изменить «${labelOf(item)}»`" :disabled="busy" @click="emit('edit', item)">
+        <Button v-if="canEdit" variant="ghost" size="icon-sm" type="button" class="shrink-0 text-muted-foreground" :aria-label="`Изменить «${labelOf(item)}»`" :disabled="busy" @click="emit('edit', item)">
           <PencilIcon />
         </Button>
         <Button

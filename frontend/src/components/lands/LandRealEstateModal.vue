@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { Input } from '@/components/ui/shadcn/input'
@@ -36,7 +37,10 @@ defineEmits<{
     <div class="lands-modal-body">
       <div class="lands-form-grid">
         <label class="lands-field">
-          <span>№ поля ЕФИС ЗСН</span>
+          <span class="lands-label-with-help">
+            № поля ЕФИС ЗСН
+            <RefFieldHelp text="В списке — поля этого участка. Нет нужного? Создайте поле в «Полях и культурах» и укажите в нём этот участок." :to="{ path: '/fields' }" link-label="Поля и культуры" />
+          </span>
           <UiSelect v-model="form.fieldId" :options="[{ value: '', label: '—' }, ...(assignedFields).map((field) => ({ value: field.id, label: `№${field.number} — ${field.name}` }))]" />
         </label>
         <label class="lands-field">

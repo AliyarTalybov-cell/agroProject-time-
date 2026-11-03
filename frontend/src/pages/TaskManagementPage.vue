@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { askConfirm } from '@/composables/useConfirm'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
@@ -51,7 +52,7 @@ import {
 } from '@/lib/tasksSupabase'
 import { canDeleteTask } from '@/lib/deletePermissions'
 import { loadFields as loadFieldsApi } from '@/lib/fieldsSupabase'
-import { loadWorkOperations, type WorkOperationRow } from '@/lib/reasonsAndOperations'
+import { addWorkOperation, loadWorkOperations, type WorkOperationRow } from '@/lib/reasonsAndOperations'
 import type { Task as TaskType, ProfileRow, TaskCommentRow, TaskEventRow, TaskFileRow } from '@/lib/tasksSupabase'
 import { avatarColorByPosition } from '@/lib/avatarColors'
 import { formatSupabaseError } from '@/lib/formatSupabaseError'
@@ -1256,6 +1257,19 @@ function sortIcon(key: TaskSortKey) {
   const d = sortIndicator(key)
   return d === 'asc' ? ArrowUpIcon : d === 'desc' ? ArrowDownIcon : ChevronsUpDownIcon
 }
+
+/** Тип работ из окна задачи: пишется в «Операции для работы» и сразу выбирается. */
+async function quickAddWorkType(name: string) {
+  const clean = name.trim()
+  const existing = workTypes.value.find((w) => w.toLocaleLowerCase('ru') === clean.toLocaleLowerCase('ru'))
+  if (existing) {
+    form.value.workType = existing
+    return
+  }
+  const row = await addWorkOperation(clean, auth.user.value?.id ?? null)
+  workTypes.value = [...workTypes.value, row.name]
+  form.value.workType = row.name
+}
 </script>
 
 <template>
@@ -1466,6 +1480,9 @@ function sortIcon(key: TaskSortKey) {
             <Input v-else model-value="Назначить себе" disabled />
           </FormField>
           <FormField label="Объект / поле">
+            <template #label-help>
+              <RefFieldHelp text="Нет нужного поля? Создайте его в разделе «Поля и культуры»." :to="{ path: '/fields' }" link-label="Поля и культуры" />
+            </template>
             <UiSelect v-model="form.field" block :options="[{ value: '', label: 'Не выбрано' }, ...fields.map((f) => ({ value: f, label: String(f) }))]" />
           </FormField>
 
@@ -1501,6 +1518,15 @@ function sortIcon(key: TaskSortKey) {
             <UiDatePicker v-model="formDueDateIso" placeholder="Без срока" clearable block aria-label="Срок выполнения" />
           </FormField>
           <FormField label="Тип работ" wide>
+            <template #label-help>
+              <RefFieldHelp
+                text="Нет нужного типа работ? Добавьте его здесь или в списке операций."
+                :to="{ path: '/fields', query: { tab: 'work-operations' } }"
+                link-label="Операции для работы"
+                add-placeholder="Тип работ"
+                :add="quickAddWorkType"
+              />
+            </template>
             <UiSelect v-model="form.workType" block :options="[{ value: '', label: 'Не указано' }, ...workTypes.map((w) => ({ value: w, label: String(w) }))]" />
           </FormField>
 

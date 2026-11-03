@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { addStorageLocationStatus as qaAddStatus, addStorageLocationType as qaAddType } from '@/lib/storageRefsSupabase'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Skeleton } from '@/components/ui/shadcn/skeleton'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/shadcn/empty'
@@ -360,6 +362,14 @@ function onPageSizeChange(size: number) {
   page.value = 1
   void reloadStorageLocations()
 }
+
+// Подсказки «?»: значение добавляется в справочник и сразу выбирается.
+async function quickAddType(name: string) {
+  form.value.typeId = (await findOrCreate(storageTypes, name, (r) => r.name, qaAddType)).id
+}
+async function quickAddStatus(name: string) {
+  form.value.statusId = (await findOrCreate(storageStatuses, name, (r) => r.name, (n) => qaAddStatus({ name: n }))).id
+}
 </script>
 
 <template>
@@ -464,13 +474,25 @@ function onPageSizeChange(size: number) {
           </FormField>
           <FormField label="Тип" required>
             <template #label-actions>
-              <RefFieldHelp text="Нет нужного типа? Добавьте его в" :to="{ path: '/lands', query: { tab: 'storage-types' } }" link-label="Справочники хранения" />
+              <RefFieldHelp
+                text="Нет нужного типа? Добавьте его здесь или в справочнике."
+                :to="{ path: '/lands', query: { tab: 'storage-types' } }"
+                link-label="Справочники хранения"
+                add-placeholder="Тип места хранения"
+                :add="quickAddType"
+              />
             </template>
             <UiSelect v-model="form.typeId" block aria-label="Тип" :options="storageTypes.map((t) => ({ value: t.id, label: t.name }))" :placeholder="storageTypes.length ? 'Выберите тип' : 'Сначала добавьте типы'" />
           </FormField>
           <FormField label="Статус" required>
             <template #label-actions>
-              <RefFieldHelp text="Нужен другой статус? Создайте его в" :to="{ path: '/lands', query: { tab: 'storage-statuses' } }" link-label="Справочники хранения" />
+              <RefFieldHelp
+                text="Нет нужного статуса? Добавьте его здесь или в справочнике."
+                :to="{ path: '/lands', query: { tab: 'storage-statuses' } }"
+                link-label="Справочники хранения"
+                add-placeholder="Статус"
+                :add="quickAddStatus"
+              />
             </template>
             <UiSelect v-model="form.statusId" block aria-label="Статус" :options="storageStatuses.map((st) => ({ value: st.id, label: st.name }))" :placeholder="storageStatuses.length ? 'Выберите статус' : 'Сначала добавьте статусы'" />
           </FormField>

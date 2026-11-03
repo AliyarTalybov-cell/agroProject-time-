@@ -10,7 +10,7 @@
 
 | | |
 |---|---|
-| `LandsPage.vue` | 6128 → 5177 → 3303 строк |
+| `LandsPage.vue` | 6128 → 5177 → 3303 → 3218 строк |
 | `LandsPage.css` | 1127 → 109 строк |
 | Окон вынесено | 10 из 11 |
 | Вкладок вынесено | 5 из 6 |
@@ -20,7 +20,13 @@
 `LandUserModal`, `LandRightModal`.
 
 Компоненты вкладок: `LandFieldsTab`, `LandRightsTab`, `LandUsersTab`,
-`LandCropRotationTab`, `LandRealEstateTab`.
+`LandCropRotationTab`, `LandRealEstateTab`; разделы списка (2026-11-03):
+`LandsRegistryTab` (реестр земель), `LandMeliorationListTab` (мелиорация).
+
+Быстрое добавление значений справочника из форм (подсказка «?» с полем
+ввода) — `refs/refQuickAdd.ts`; поиск без дублей — `lib/refFindOrCreate.ts`.
+Прямые ссылки на подвкладки: `/lands?tab=right-types`, `holder-types`,
+`melioration-event-types`, `equipment-conditions`, `staff-refs` и т. д.
 
 Справочники (2026-10-12): все вкладки «Справочники …» — `refs/LandsRefsPanel.vue`;
 списки, нужные и реестру, — `refs/landRefsStore.ts`; добавить / переименовать /

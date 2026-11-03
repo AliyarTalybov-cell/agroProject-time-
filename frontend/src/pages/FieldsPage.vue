@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { findOrCreate } from '@/lib/refFindOrCreate'
+import { addCropByLabel as qaAddCrop, addLandType as qaAddLandType } from '@/lib/landTypesAndCrops'
+import { addFieldMunicipalityRef as qaAddMunicipality } from '@/lib/fieldsSupabase'
 import UiPagination from '@/components/ui/UiPagination.vue'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/shadcn/input-group'
@@ -1557,6 +1560,17 @@ onMounted(async () => {
     loadRefs()
   }
 })
+
+// Подсказки «?» в окне нового поля: недостающее значение добавляется в справочник и сразу выбирается.
+async function quickAddLandType(name: string) {
+  newFieldLandType.value = (await findOrCreate(landTypes, name, (r) => r.name, qaAddLandType)).name
+}
+async function quickAddCrop(name: string) {
+  newFieldCropKey.value = (await findOrCreate(crops, name, (r) => r.label, qaAddCrop)).key
+}
+async function quickAddMunicipality(name: string) {
+  newFieldMunicipality.value = (await findOrCreate(fieldMunicipalityRefs, name, (r) => r.name, (n) => qaAddMunicipality({ name: n }))).name
+}
 </script>
 
 <template>
@@ -1915,6 +1929,9 @@ onMounted(async () => {
           <section class="flex flex-col gap-4 rounded-xl border p-4">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <FormField label="Земельный участок для ориентира" class="min-w-0 flex-1">
+                <template #label-help>
+                  <RefFieldHelp text="Нет нужного участка? Добавьте его в реестр земель." :to="{ path: '/lands' }" link-label="Реестр земель" />
+                </template>
                 <UiSelect
                   v-model="newFieldLandId"
                   block
@@ -1959,13 +1976,25 @@ onMounted(async () => {
           <FormGrid :cols="2">
             <FormField label="Тип земли">
               <template #label-actions>
-                <RefFieldHelp text="Не хватает типа земли? Добавьте его в" :to="{ path: '/lands', query: { tab: 'land-refs' } }" link-label="Справочники земель" />
+                <RefFieldHelp
+                  text="Нет нужного типа земли? Добавьте его здесь или в справочнике."
+                  :to="{ path: '/lands', query: { tab: 'land-types' } }"
+                  link-label="Справочники земель"
+                  add-placeholder="Тип земли"
+                  :add="quickAddLandType"
+                />
               </template>
               <UiSelect v-model="newFieldLandType" block aria-label="Тип земли" :options="landTypeOptions.map((t) => ({ value: t.name, label: String(t.name) }))" />
             </FormField>
             <FormField label="Культура">
               <template #label-actions>
-                <RefFieldHelp text="Нет нужной культуры? Добавьте её в" :to="{ path: '/lands', query: { tab: 'crops-refs' } }" link-label="Справочники СХ культур" />
+                <RefFieldHelp
+                  text="Нет нужной культуры? Добавьте её здесь или в справочнике."
+                  :to="{ path: '/lands', query: { tab: 'crops-refs' } }"
+                  link-label="Справочники СХ культур"
+                  add-placeholder="Культура"
+                  :add="quickAddCrop"
+                />
               </template>
               <UiSelect v-model="newFieldCropKey" block aria-label="Культура" :options="cropOptions.map((opt) => ({ value: opt.key, label: String(opt.label) }))" />
             </FormField>
@@ -1974,7 +2003,13 @@ onMounted(async () => {
             </FormField>
             <FormField label="Муниципальное образование">
               <template #label-actions>
-                <RefFieldHelp text="Нет нужного муниципального образования? Добавьте его в" :to="{ path: '/lands', query: { tab: 'field-refs' } }" link-label="Справочники полей" />
+                <RefFieldHelp
+                  text="Нет нужного муниципального образования? Добавьте его здесь или в справочнике."
+                  :to="{ path: '/lands', query: { tab: 'field-refs' } }"
+                  link-label="Справочники полей"
+                  add-placeholder="Муниципальное образование"
+                  :add="quickAddMunicipality"
+                />
               </template>
               <UiSelect v-model="newFieldMunicipality" block aria-label="Муниципальное образование" :options="[{ value: '', label: '—' }, ...fieldMunicipalityRefs.map((row) => ({ value: row.name, label: String(row.name) }))]" />
             </FormField>

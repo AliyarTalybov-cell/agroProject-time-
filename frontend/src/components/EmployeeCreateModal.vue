@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import UiSelect from '@/components/ui/UiSelect.vue'
+import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { computed, ref, watch } from 'vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -13,6 +14,8 @@ import { createEmployee, type EmployeeRole, type PositionRow } from '@/lib/emplo
 const props = defineProps<{
   open: boolean
   positions: PositionRow[]
+  /** Добавить должность в справочник (страница допишет её в общий список). */
+  addPosition: (name: string) => Promise<PositionRow>
 }>()
 
 const emit = defineEmits<{
@@ -122,12 +125,21 @@ watch(
       </div>
 
       <div class="grid gap-2 sm:col-span-2">
-        <Label for="emp-position">Должность</Label>
+        <Label for="emp-position" class="inline-flex items-center gap-1.5">
+          Должность
+          <RefFieldHelp
+            text="Нет нужной должности? Впишите её — она появится в справочнике и выберется здесь."
+            :to="{ path: '/lands', query: { tab: 'staff-refs' } }"
+            link-label="Справочники сотрудников"
+            add-placeholder="Название должности"
+            :add="async (n: string) => { form.position = (await addPosition(n)).name }"
+          />
+        </Label>
         <UiSelect id="emp-position" v-model="form.position" :options="positions.map((p) => ({ value: p.name, label: p.name }))" placeholder="Выберите должность" block />
       </div>
 
       <div class="grid gap-2 sm:col-span-2">
-        <Label>Роль доступа</Label>
+        <Label>Роль в системе</Label>
         <RadioGroup v-model="form.role" class="grid gap-3 sm:grid-cols-2">
           <Label
             v-for="r in roles"
