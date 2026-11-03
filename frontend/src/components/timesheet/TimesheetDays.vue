@@ -233,7 +233,7 @@ defineExpose({ reload: load })
                   {{ dayLabel(d).date }} <span class="text-muted-foreground">{{ dayLabel(d).weekday }}</span>
                 </TableCell>
                 <TableCell class="tabular-nums" :class="{ 'text-destructive': isForgotten(d) }">{{ range(d) }}</TableCell>
-                <TableCell class="text-right tabular-nums">{{ d.break_minutes ? formatHoursShort(d.break_minutes) : '—' }}</TableCell>
+                <TableCell class="text-muted-foreground text-right tabular-nums">{{ d.break_minutes ? formatHoursShort(d.break_minutes) : '—' }}</TableCell>
                 <TableCell class="text-right font-medium tabular-nums">{{ isForgotten(d) ? '—' : formatHoursShort(d.worked_minutes) }}</TableCell>
                 <TableCell class="text-muted-foreground text-right tabular-nums">{{ d.operation_minutes ? formatHoursShort(d.operation_minutes) : '—' }}</TableCell>
                 <TableCell class="text-muted-foreground text-right tabular-nums">{{ d.downtime_minutes ? formatHoursShort(d.downtime_minutes) : '—' }}</TableCell>

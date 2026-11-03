@@ -192,7 +192,7 @@ defineExpose({ reload: load })
                 v-for="c in columns"
                 :key="c.n"
                 class="relative px-1 py-2 text-center text-xs tabular-nums"
-                :class="[c.weekend ? 'bg-muted/30' : '', r.cells.get(c.n) ? '' : 'text-muted-foreground/40']"
+                :class="c.weekend ? 'bg-muted/30' : ''"
                 :title="cellTitle(r.cells.get(c.n))"
               >
                 <template v-if="r.cells.get(c.n)">
@@ -200,7 +200,6 @@ defineExpose({ reload: load })
                   <template v-else>{{ formatHoursShort(r.cells.get(c.n)!.worked_minutes) }}</template>
                   <span v-if="r.cells.get(c.n)!.edited" class="absolute top-1 right-1 size-1.5 rounded-full bg-sky-500" aria-label="Исправлено" />
                 </template>
-                <template v-else>·</template>
               </td>
               <td class="px-3 py-2 text-right tabular-nums">{{ r.count }}</td>
               <td class="px-4 py-2 text-right font-medium tabular-nums">{{ formatHoursShort(r.total) }}</td>

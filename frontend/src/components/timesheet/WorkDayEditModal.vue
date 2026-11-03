@@ -146,7 +146,7 @@ const title = computed(() => {
         <FormField label="Конец" required :hint="isNew || day?.ended_at ? undefined : 'День не был закрыт — укажите, когда вы закончили.'">
           <UiDateTimePicker v-model="endedAt" />
         </FormField>
-        <FormField label="Перерывы, мин" for="wd-break" hint="Обед и другие перерывы за день, одним числом.">
+        <FormField label="Перерывы за день, мин" for="wd-break">
           <Input id="wd-break" v-model.number="breakMinutes" type="number" min="0" step="5" inputmode="numeric" />
         </FormField>
         <FormField label="Отработано">
@@ -154,7 +154,7 @@ const title = computed(() => {
             {{ workedPreview != null ? formatWorkMinutes(workedPreview) : '—' }}
           </div>
         </FormField>
-        <FormField label="Причина исправления" for="wd-reason" wide required :count="reason.length" :max="500">
+        <FormField :label="isNew ? 'Почему день не отмечен' : 'Причина исправления'" for="wd-reason" wide required :count="reason.length" :max="500">
           <Textarea id="wd-reason" v-model="reason" rows="2" maxlength="500" placeholder="Например: забыл закончить день на экране оператора" />
         </FormField>
       </FormGrid>
