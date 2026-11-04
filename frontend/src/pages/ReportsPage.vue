@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiPersonSelect from '@/components/ui/UiPersonSelect.vue'
+import { toPersonOption } from '@/lib/peopleSearch'
 import TaskStatsSection from '@/components/reports/TaskStatsSection.vue'
 import { computeTaskStats, loadTaskDoneMoments } from '@/lib/taskStats'
 import { Button } from '@/components/ui/shadcn/button'
@@ -874,12 +876,12 @@ onUnmounted(() => {
     </Alert>
 
     <PageToolbar>
-      <UiSelect
+      <UiPersonSelect
         v-if="isManager"
         v-model="selectedEmployeeId"
         block
         class="sm:w-56"
-        :options="[{ value: '', label: 'Все сотрудники' }, ...profilesForEmployeeFilter.map((p) => ({ value: p.id, label: `${p.display_name || p.email}${p.role === 'manager' ? ' (руководитель)' : ''}` }))]"
+        :people="profilesForEmployeeFilter.map((p) => toPersonOption(p))" :extra="[{ value: '', label: 'Все сотрудники' }]"
         aria-label="Сотрудник"
       />
       <ToggleGroup
