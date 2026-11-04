@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiPersonSelect from '@/components/ui/UiPersonSelect.vue'
+import { toPersonOption } from '@/lib/peopleSearch'
 import { findOrCreate } from '@/lib/refFindOrCreate'
 import { codeFromName } from '@/components/lands/refs/refQuickAdd'
 import { addEquipmentConditionRef as qaAddCondition, addEquipmentTypeRef as qaAddType } from '@/lib/equipmentSupabase'
@@ -824,7 +826,7 @@ async function quickAddCondition(name: string, target: 'equipment' | 'implement'
           </div>
           <div class="equipment-form-field">
             <label class="equipment-label" for="eq-responsible">Ответственный</label>
-            <UiSelect v-model="form.responsible_id" :options="[{ value: '', label: 'Не назначен' }, ...(responsibleOptions).map((opt) => ({ value: opt.id, label: String(opt.label) }))]" id="eq-responsible" class="equipment-input equipment-select" />
+            <UiPersonSelect id="eq-responsible" :model-value="form.responsible_id ?? ''" @update:model-value="(v) => (form.responsible_id = v || null)" block aria-label="Ответственный" :people="profiles.map((p) => toPersonOption(p))" :extra="[{ value: '', label: 'Не назначен' }]" />
           </div>
           <div class="equipment-form-field">
             <label class="equipment-label equipment-label--with-help" for="eq-condition">

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiPersonSelect from '@/components/ui/UiPersonSelect.vue'
+import { toPersonOption } from '@/lib/peopleSearch'
 import RefFieldHelp from '@/components/RefFieldHelp.vue'
 import { askConfirm } from '@/composables/useConfirm'
 import UiPagination from '@/components/ui/UiPagination.vue'
@@ -1325,10 +1327,11 @@ async function quickAddWorkType(name: string) {
         <InputGroupInput v-model.trim="searchTaskNumber" type="text" inputmode="numeric" placeholder="Номер задачи" />
       </InputGroup>
       <div v-if="isManager" class="min-w-0 sm:w-48">
-        <UiSelect
+        <UiPersonSelect
           v-model="filterEmployeeId"
           block
-          :options="[{ value: '', label: 'Все сотрудники' }, { value: TASK_ASSIGNEE_FILTER_UNASSIGNED, label: 'Без исполнителя' }, ...assignees.map((a) => ({ value: a.id, label: String(a.name) }))]"
+          :people="profiles.map((p) => toPersonOption(p))"
+          :extra="[{ value: '', label: 'Все сотрудники' }, { value: TASK_ASSIGNEE_FILTER_UNASSIGNED, label: 'Без исполнителя' }]"
           aria-label="Сотрудник"
           :disabled="!assignees.length"
         />
@@ -1476,7 +1479,7 @@ async function quickAddWorkType(name: string) {
           </FormField>
 
           <FormField label="Исполнитель">
-            <UiSelect v-if="isManager" v-model="form.assigneeId" block :options="[{ value: '', label: 'Без исполнителя' }, ...assignees.map((a) => ({ value: a.id, label: String(a.name) }))]" />
+            <UiPersonSelect v-if="isManager" v-model="form.assigneeId" block :people="profiles.map((p) => toPersonOption(p))" :extra="[{ value: '', label: 'Без исполнителя' }]" />
             <Input v-else model-value="Назначить себе" disabled />
           </FormField>
           <FormField label="Объект / поле">

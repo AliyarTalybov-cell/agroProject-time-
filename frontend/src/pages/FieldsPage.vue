@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiPersonSelect from '@/components/ui/UiPersonSelect.vue'
+import { toPersonOption } from '@/lib/peopleSearch'
 import { findOrCreate } from '@/lib/refFindOrCreate'
 import { addCropByLabel as qaAddCrop, addLandType as qaAddLandType } from '@/lib/landTypesAndCrops'
 import { addFieldMunicipalityRef as qaAddMunicipality } from '@/lib/fieldsSupabase'
@@ -1734,12 +1736,13 @@ async function quickAddMunicipality(name: string) {
                 <td class="hidden 2xl:table-cell">{{ f.region || '—' }}</td>
                 <td class="fields-td-responsible" @click.stop>
                   <div class="w-44">
-                    <UiSelect
+                    <UiPersonSelect
                       :model-value="f.responsibleId || ''"
                       block
                       size="sm"
                       aria-label="Ответственный"
-                      :options="[{ value: '', label: 'Не назначен' }, ...profiles.map((p) => ({ value: p.id, label: p.display_name || p.email || '' }))]"
+                      :people="profiles.map((p) => toPersonOption(p))"
+                      :extra="[{ value: '', label: 'Не назначен' }]"
                       @update:model-value="(v) => onResponsibleChange(f.id, String(v))"
                     />
                   </div>
@@ -1999,7 +2002,7 @@ async function quickAddMunicipality(name: string) {
               <UiSelect v-model="newFieldCropKey" block aria-label="Культура" :options="cropOptions.map((opt) => ({ value: opt.key, label: String(opt.label) }))" />
             </FormField>
             <FormField label="Ответственный">
-              <UiSelect v-model="newFieldResponsibleId" block aria-label="Ответственный" :options="[{ value: '', label: 'Не назначен' }, ...profiles.map((p) => ({ value: p.id, label: String(p.display_name || p.email) }))]" />
+              <UiPersonSelect v-model="newFieldResponsibleId" block aria-label="Ответственный" :people="profiles.map((p) => toPersonOption(p))" :extra="[{ value: '', label: 'Не назначен' }]" />
             </FormField>
             <FormField label="Муниципальное образование">
               <template #label-actions>

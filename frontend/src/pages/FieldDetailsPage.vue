@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiPersonSelect from '@/components/ui/UiPersonSelect.vue'
+import { toPersonOption } from '@/lib/peopleSearch'
 import { findOrCreate } from '@/lib/refFindOrCreate'
 import { addCropByLabel as qaAddCrop, addLandType as qaAddLandType } from '@/lib/landTypesAndCrops'
 import { addFieldMunicipalityRef as qaAddMunicipality } from '@/lib/fieldsSupabase'
@@ -870,7 +872,7 @@ async function quickAddMunicipality(name: string) {
               </label>
               <label class="field-details-edit-field">
                 <span class="field-details-edit-label">Ответственный</span>
-                <UiSelect v-model="editForm.responsible_id" :options="[{ value: '', label: 'Не назначен' }, ...(profiles).map((p) => ({ value: p.id, label: String(p.display_name || p.email) }))]" class="field-details-edit-select" />
+                <UiPersonSelect v-model="editForm.responsible_id" block aria-label="Ответственный" :people="profiles.map((p) => toPersonOption(p))" :extra="[{ value: '', label: 'Не назначен' }]" />
               </label>
               <label class="field-details-edit-field field-details-edit-field--full">
                 <span class="field-details-edit-label">Доп. информация</span>

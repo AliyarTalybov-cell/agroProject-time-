@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiPersonSelect from '@/components/ui/UiPersonSelect.vue'
+import { toPersonOption } from '@/lib/peopleSearch'
 import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { Textarea } from '@/components/ui/shadcn/textarea'
@@ -238,6 +240,56 @@ const daySlotHeight = 44
 const dayGridTopPadding = 14
 const dayGridBottomPadding = 10
 const nowMarkerMinutes = ref<number | null>(null)
+const daySelection = ref<{ dayKey: string; start: number; end: number } | null>(null)
+const selectingDay = ref(false)
+let selectionGrid: HTMLElement | null = null
+let selectionAnchor = 0
+let suppressDayGridClick = false
+const daySelectionWeekIndex = computed(() => {
+  if (!daySelection.value) return 0
+  return Math.max(0, weekDays.value.findIndex((day) => day.key === daySelection.value?.dayKey))
+})
+function dayMinutesAt(e: MouseEvent, grid: HTMLElement) {
+  const rect = grid.getBoundingClientRect()
+  const scrollTop = grid.parentElement?.scrollTop ?? 0
+  const y = Math.max(dayGridTopPadding, Math.min(grid.scrollHeight, e.clientY - rect.top + scrollTop))
+  return dayStartHour * 60 + Math.floor((y - dayGridTopPadding) / daySlotHeight) * daySlotMinutes
+}
+function onDayGridPointerDown(e: MouseEvent) {
+  if (e.button !== 0 || (e.target as HTMLElement)?.closest('.day-event-card')) return
+  selectionGrid = e.currentTarget as HTMLElement
+  const m = dayMinutesAt(e, selectionGrid)
+  const rect = selectionGrid.getBoundingClientRect()
+  const usableWidth = Math.max(1, rect.width - gridGutter)
+  const relativeX = Math.max(0, Math.min(usableWidth - 1, e.clientX - rect.left - gridGutter))
+  const dayIndex = Math.max(0, Math.min(6, Math.floor((relativeX / usableWidth) * 7)))
+  const dayKey = isWeekView.value ? weekDays.value[dayIndex]?.key ?? selectedDate.value : selectedDate.value
+  selectionAnchor = m
+  selectingDay.value = true
+  daySelection.value = { dayKey, start: m, end: m + daySlotMinutes }
+  window.addEventListener('mousemove', onDayGridPointerMove)
+  window.addEventListener('mouseup', onDayGridPointerUp, { once: true })
+}
+function onDayGridPointerMove(e: MouseEvent) {
+  if (!selectingDay.value || !selectionGrid || !daySelection.value) return
+  const m = dayMinutesAt(e, selectionGrid)
+  daySelection.value = { ...daySelection.value, start: Math.min(selectionAnchor, m), end: Math.max(selectionAnchor + daySlotMinutes, m + daySlotMinutes) }
+}
+function onDayGridPointerUp() {
+  selectingDay.value = false
+  window.removeEventListener('mousemove', onDayGridPointerMove)
+  const range = daySelection.value
+  if (!range) return
+  selectedDate.value = range.dayKey
+  openNewTaskModal(minutesToHhmm(range.start))
+  taskEndTime.value = minutesToHhmm(Math.min(dayEndHour * 60, range.end))
+  daySelection.value = null
+  suppressDayGridClick = true
+  window.setTimeout(() => {
+    suppressDayGridClick = false
+  }, 0)
+}
+
 const nowMarkerLabel = ref('')
 let nowMarkerTimer: ReturnType<typeof setInterval> | null = null
 
@@ -1563,6 +1615,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (nowMarkerTimer) clearInterval(nowMarkerTimer)
+  window.removeEventListener('mousemove', onDayGridPointerMove)
+  window.removeEventListener('mouseup', onDayGridPointerUp)
+  selectionGrid = null
+  selectingDay.value = false
 })
 
 function openNewTaskModal(startTime?: string) {
@@ -1588,12 +1644,14 @@ function openNewTaskModal(startTime?: string) {
 }
 
 function onDayGridClick(e: MouseEvent) {
+  if (suppressDayGridClick) return
   const target = e.target as HTMLElement | null
   if (target?.closest('.day-event-card')) return
   const grid = e.currentTarget as HTMLElement | null
   if (!grid) return
   const rect = grid.getBoundingClientRect()
-  const y = Math.max(dayGridTopPadding, Math.min(grid.scrollHeight, e.clientY - rect.top))
+  const scrollTop = grid.parentElement?.scrollTop ?? 0
+  const y = Math.max(dayGridTopPadding, Math.min(grid.scrollHeight, e.clientY - rect.top + scrollTop))
   const minutesFromStart = Math.floor((y - dayGridTopPadding) / daySlotHeight) * daySlotMinutes
   const startMinutes = dayStartHour * 60 + minutesFromStart
   if (isWeekView.value) {
@@ -1949,11 +2007,11 @@ async function confirmDeleteTask() {
         <ToggleGroupItem value="schedule" class="px-3">Расписание</ToggleGroupItem>
       </ToggleGroup>
       <div v-if="isManager" class="w-full sm:w-64">
-        <UiSelect
+        <UiPersonSelect
           v-model="managerCalendarUserId"
           block
           aria-label="Чей календарь показать"
-          :options="managerCalendarOptions.map((opt) => ({ value: opt.id, label: `${opt.label}${opt.id === auth.user.value?.id ? ' (я)' : ''}` }))"
+          :people="managerCalendarOptions.map((opt) => ({ id: opt.id, label: opt.label, initials: opt.label.slice(0, 2) }))"
         />
       </div>
       <template #actions>
@@ -2052,6 +2110,7 @@ async function confirmDeleteTask() {
                 class="relative cursor-cell"
                 :style="{ height: `${dayGridHeight}px` }"
                 @click="onDayGridClick"
+                @mousedown="onDayGridPointerDown"
                 @dragover="onWeekGridDragOver"
                 @drop="onWeekGridDrop"
               >
@@ -2111,6 +2170,18 @@ async function confirmDeleteTask() {
                   }"
                 >
                   {{ minutesToHhmm(weekDragPreview.start) }}–{{ minutesToHhmm(weekDragPreview.end) }}
+                </div>
+                <div
+                  v-if="daySelection"
+                  class="pointer-events-none absolute rounded-md border border-primary bg-primary/15 px-1.5 py-1 text-xs text-primary tabular-nums"
+                  :style="{
+                    top: `${dayGridTopPadding + ((daySelection.start - dayStartHour * 60) / daySlotMinutes) * daySlotHeight}px`,
+                    height: `${Math.max(daySlotHeight, ((daySelection.end - daySelection.start) / daySlotMinutes) * daySlotHeight - 4)}px`,
+                    left: `calc(${gridGutter}px + ${daySelectionWeekIndex} * ((100% - ${gridGutter}px) / 7) + 2px)`,
+                    width: `calc((100% - ${gridGutter}px) / 7 - 4px)`,
+                  }"
+                >
+                  {{ minutesToHhmm(daySelection.start) }}–{{ minutesToHhmm(daySelection.end) }}
                 </div>
                 <div v-if="showNowMarker" class="pointer-events-none absolute right-0 z-10 h-px bg-red-500" :style="{ top: `${nowMarkerTop}px`, left: `${gridGutter}px` }" aria-hidden="true">
                   <span class="absolute -left-1 -top-1 size-2 rounded-full bg-red-500" />
@@ -2240,6 +2311,7 @@ async function confirmDeleteTask() {
                 class="relative cursor-cell"
                 :style="{ height: `${dayGridHeight}px` }"
                 @click.self="onDayGridClick"
+                @mousedown="onDayGridPointerDown"
                 @dragover="onDayGridDragOver"
                 @drop="onDayGridDrop"
               >
@@ -2292,6 +2364,13 @@ async function confirmDeleteTask() {
                     <span v-if="dayEventAssignees(event.task.id).length > 4" class="text-muted-foreground">+{{ dayEventAssignees(event.task.id).length - 4 }}</span>
                   </div>
                 </article>
+                <div
+                  v-if="daySelection"
+                  class="pointer-events-none absolute right-2 rounded-md border border-primary bg-primary/15 px-2 py-1 text-xs text-primary tabular-nums"
+                  :style="{ top: `${dayGridTopPadding + ((daySelection.start - dayStartHour * 60) / daySlotMinutes) * daySlotHeight}px`, height: `${Math.max(daySlotHeight, ((daySelection.end - daySelection.start) / daySlotMinutes) * daySlotHeight - 4)}px`, left: `${gridGutter}px` }"
+                >
+                  {{ minutesToHhmm(daySelection.start) }}–{{ minutesToHhmm(daySelection.end) }}
+                </div>
                 <div
                   v-if="dayDragPreview"
                   class="pointer-events-none absolute rounded-md border border-dashed border-primary bg-primary/10 px-2 py-1 text-xs text-primary tabular-nums"
