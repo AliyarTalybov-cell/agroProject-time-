@@ -251,8 +251,7 @@ const daySelectionWeekIndex = computed(() => {
 })
 function dayMinutesAt(e: MouseEvent, grid: HTMLElement) {
   const rect = grid.getBoundingClientRect()
-  const scrollTop = grid.parentElement?.scrollTop ?? 0
-  const y = Math.max(dayGridTopPadding, Math.min(grid.scrollHeight, e.clientY - rect.top + scrollTop))
+  const y = Math.max(dayGridTopPadding, Math.min(grid.scrollHeight, e.clientY - rect.top))
   return dayStartHour * 60 + Math.floor((y - dayGridTopPadding) / daySlotHeight) * daySlotMinutes
 }
 function onDayGridPointerDown(e: MouseEvent) {
@@ -1650,8 +1649,7 @@ function onDayGridClick(e: MouseEvent) {
   const grid = e.currentTarget as HTMLElement | null
   if (!grid) return
   const rect = grid.getBoundingClientRect()
-  const scrollTop = grid.parentElement?.scrollTop ?? 0
-  const y = Math.max(dayGridTopPadding, Math.min(grid.scrollHeight, e.clientY - rect.top + scrollTop))
+  const y = Math.max(dayGridTopPadding, Math.min(grid.scrollHeight, e.clientY - rect.top))
   const minutesFromStart = Math.floor((y - dayGridTopPadding) / daySlotHeight) * daySlotMinutes
   const startMinutes = dayStartHour * 60 + minutesFromStart
   if (isWeekView.value) {
